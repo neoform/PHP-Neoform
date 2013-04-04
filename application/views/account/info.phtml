@@ -1,244 +1,244 @@
 <?php $this->inc('templates/header'); ?>
-	
-	<script>
-		var page = {
-			onload: function() {
-				page.div = $("#page");
-				
-				$("button[name='save']", page.div)
-					.on("click", page.update);
-				
-				$("form", page.div)
-					.on("submit", page.update);
-										
-				$("select[name='province']", page.div)
-					.on("change", function(){ page.cities($(this).val()); });
-			},
-			
-			update: function() {				
-		
-				$.ajax({ 
-					url: "/account/ajax/update?rc=<?php echo core::http()->get_ref(); ?>", 
-					data: {
-						name_first: $("input[name='name_first']", page.div).val(),
-						name_last: 	$("input[name='name_last']", page.div).val(),
-						phone: 		$("input[name='phone']", page.div).val(),
-						fax: 		$("input[name='fax']", page.div).val(),
-						
-						label:			$("input[name='business_name']", page.div).val(),
-						address1:		$("input[name='address1']", page.div).val(),
-						country:		$("select[name='country']", page.div).val(),
-						province:		$("select[name='province']", page.div).val(),
-						city:			$("select[name='city']", page.div).val(),
-						postal:			$("input[name='postal']", page.div).val()
-					},
-					success: function(response) {	
-						if (response.status === 'good') {
-							alert("Your account info has been updated");
-							return;
-						} else {								
-							if (response.message && response.message.length) {
-								$("div#error", page.div).html(response.message).show();
-							} else {
-								$("div#error").html('There was a problem updating your account info').show();
-							}
-							
-							$(".tiny.error").hide();
-							
-							if (response.errors) {
-								for (var k in response.errors) {
-									$(".error-" + k).html(response.errors[k]).show();
-								}
-							}
-						}
-			    	},
-			    	error: function(response) {
-			    		$("div#error").html('There was a problem updating your account info').slideDown();
-			    	}
-			    });
-			    
-			    return false;
-			},
-			
-			cities: function(province) {
-				$.ajax({ 
-					url: "/listing/ajax/cities/province:" + province + "?rc=<?php echo core::http()->get_ref(); ?>", 
-					success: function(response) {	
-				
-						var select = $("select[name='city']", page.div);
-						select.empty();
-						if (response.cities && response.cities.length) {
-							for (var k in response.cities) {
-								select.append(
-									$("<option/>")
-										.attr('value', response.cities[k].id)
-										.html(response.cities[k].name)
-								);
-							}
-						}
-			    	},
-			    	error: function(response) {
-			    		alert('There was a problem loading the cities list, please select your province again.');
-			    	}
-			    });
-			}			
-		};
-		
-		$(page.onload);
-					
-	</script>
-	
-	<div id="page" class="account-page">
-		
-		<?php $this->inc('account/templates/sidebar'); ?>
-		
-		<div class="middle">
-			
-			<div class="box outlined">
-				<form>
-					<div class="inner mini">
-						Contact Information
-					</div>
-					<div class="inner body">
-						<table>
-							<tr>
-								<td width="150" align="right">			
-									<label>First Name</label>
-									<div class="error-name_first tiny error" style="display: none;"></div>
-								</td>
-								<td width="10">&nbsp;</td>
-								<td>
-									<input type="text" name="name_first" style="width: 240px;" value="<?php echo htmlspecialchars($this->contact->name_first); ?>" />
-								</td>
-							</tr>
-							<tr>
-								<td width="150" align="right">			
-									<label>Last Name</label>
-									<div class="error-name_last tiny error" style="display: none;"></div>
-								</td>
-								<td width="10">&nbsp;</td>
-								<td>
-									<input type="text" name="name_last" style="width: 240px;" value="<?php echo htmlspecialchars($this->contact->name_last); ?>" />
-								</td>
-							</tr>
-							<tr>
-								<td width="150" align="right">			
-									<label>Phone Number</label>
-									<div class="error-phone tiny error" style="display: none;"></div>
-								</td>
-								<td width="10">&nbsp;</td>
-								<td>
-									<input type="text" name="phone" style="width: 240px;" value="<?php echo htmlspecialchars($this->contact->phone ? $this->contact->phone() : ''); ?>" />
-								</td>
-							</tr>
-							<tr>
-								<td width="150" align="right">			
-									<label>Fax Number</label>
-									<div class="error-fax tiny error" style="display: none;"></div>
-								</td>
-								<td width="10">&nbsp;</td>
-								<td>
-									<input type="text" name="fax" style="width: 240px;" value="<?php echo htmlspecialchars($this->contact->fax ? $this->contact->fax() : ''); ?>" />
-								</td>
-							</tr>
-						</table>
-					</div>	
-					<div class="inner mini">
-						Business Information
-					</div>
-					<div class="inner body">
-						<table>
-							<tr>
-								<td width="150" align="right">			
-									<label>Business Name</label>
-									<div class="error-business_name tiny error" style="display: none;"></div>
-								</td>
-								<td width="10">&nbsp;</td>
-								<td>
-									<input type="text" name="business_name" style="width: 500px;" value="<?php if ($this->address) { echo htmlspecialchars($this->address->label); } ?>" />
-								</td>
-							</tr>
-							<tr>
-								<td width="150" align="right">			
-									<label>Address</label>
-									<div class="error-address1 tiny error" style="display: none;"></div>
-								</td>
-								<td width="10">&nbsp;</td>
-								<td>
-									<input type="text" name="address1" style="width: 500px;" value="<?php if ($this->address) { echo htmlspecialchars($this->address->address1); } ?>" />
-								</td>
-							</tr>
-							
-							<tr>
-								<td width="150" align="right">			
-									<label>Country</label>
-									<div class="error-country tiny error" style="display: none;"></div>
-								</td>
-								<td width="10">&nbsp;</td>
-								<td>
-									<select name="country">
-										<option value="1">Canada</option>
-									</select>
-								</td>
-							</tr>
-							<tr>
-								<td width="150" align="right">		
-									<label>Province</label>	
-									<div class="error-province tiny error" style="display: none;"></div>
-								</td>
-								<td width="10">&nbsp;</td>
-								<td>
-									<select name="province" style="min-width: 100px;">
-										<option value=""></option>
-										<?php if ($this->provinces): ?>
-											<?php foreach ($this->provinces as $province): ?>
-												<option value="<?php echo $province->id; ?>"<?php if ($this->address && $province->id === $this->address->province_id) { echo ' selected="selected"'; } ?>><?php echo htmlspecialchars($province->name); ?></option>
-											<?php endforeach; ?>
-										<?php endif; ?>
-									</select>
-								</td>
-							</tr>
-							<tr>
-								<td width="150" align="right">
-									<label>City</label>
-									<div class="error-city tiny error" style="display: none;"></div>
-								</td>
-								<td width="10">&nbsp;</td>
-								<td>
-									<select name="city" style="min-width: 100px;">
-										<option value=""></option>
-										<?php if ($this->cities): ?>
-											<?php foreach ($this->cities as $city): ?>
-												<option value="<?php echo $city['id']; ?>"<?php if ($this->address && (int) $city['id'] === $this->address->city_id) { echo ' selected="selected"'; } ?>><?php echo htmlspecialchars($city['name']); ?></option>
-											<?php endforeach; ?>
-										<?php endif; ?>
-									</select>
-								</td>
-							</tr>
-							<tr>
-								<td width="150" align="right">
-									<label>Postal Code</label>
-									<div class="error-postal tiny error" style="display: none;"></div>
-								</td>
-								<td width="10">&nbsp;</td>
-								<td>
-									<input type="text" name="postal" style="width: 100px;" value="<?php if ($this->address && $this->address->postal_id && $this->address->postal()) { echo htmlspecialchars(strtoupper($this->address->postal()->code)); } ?>" />
-								</td>
-							</tr>
-							
-						</table>
-					</div>					
-					<div class="inner light">
-						<div style="margin: 0 0 0 160px;">
-							<button name="save" style="font-size: 15px;">Update Info</button>
-						</div>
-					</div>
-			
-				</form>
-			</div>
-			
-		</div>
-		
-	</div>
+
+    <script>
+        var page = {
+            onload: function() {
+                page.div = $("#page");
+
+                $("button[name='save']", page.div)
+                    .on("click", page.update);
+
+                $("form", page.div)
+                    .on("submit", page.update);
+
+                $("select[name='province']", page.div)
+                    .on("change", function(){ page.cities($(this).val()); });
+            },
+
+            update: function() {
+
+                $.ajax({
+                    url: "/account/ajax/update?rc=<?php echo core::http()->get_ref(); ?>",
+                    data: {
+                        name_first: $("input[name='name_first']", page.div).val(),
+                        name_last:     $("input[name='name_last']", page.div).val(),
+                        phone:         $("input[name='phone']", page.div).val(),
+                        fax:         $("input[name='fax']", page.div).val(),
+
+                        label:            $("input[name='business_name']", page.div).val(),
+                        address1:        $("input[name='address1']", page.div).val(),
+                        country:        $("select[name='country']", page.div).val(),
+                        province:        $("select[name='province']", page.div).val(),
+                        city:            $("select[name='city']", page.div).val(),
+                        postal:            $("input[name='postal']", page.div).val()
+                    },
+                    success: function(response) {
+                        if (response.status === 'good') {
+                            alert("Your account info has been updated");
+                            return;
+                        } else {
+                            if (response.message && response.message.length) {
+                                $("div#error", page.div).html(response.message).show();
+                            } else {
+                                $("div#error").html('There was a problem updating your account info').show();
+                            }
+
+                            $(".tiny.error").hide();
+
+                            if (response.errors) {
+                                for (var k in response.errors) {
+                                    $(".error-" + k).html(response.errors[k]).show();
+                                }
+                            }
+                        }
+                    },
+                    error: function(response) {
+                        $("div#error").html('There was a problem updating your account info').slideDown();
+                    }
+                });
+
+                return false;
+            },
+
+            cities: function(province) {
+                $.ajax({
+                    url: "/listing/ajax/cities/province:" + province + "?rc=<?php echo core::http()->get_ref(); ?>",
+                    success: function(response) {
+
+                        var select = $("select[name='city']", page.div);
+                        select.empty();
+                        if (response.cities && response.cities.length) {
+                            for (var k in response.cities) {
+                                select.append(
+                                    $("<option/>")
+                                        .attr('value', response.cities[k].id)
+                                        .html(response.cities[k].name)
+                                );
+                            }
+                        }
+                    },
+                    error: function(response) {
+                        alert('There was a problem loading the cities list, please select your province again.');
+                    }
+                });
+            }
+        };
+
+        $(page.onload);
+
+    </script>
+
+    <div id="page" class="account-page">
+
+        <?php $this->inc('account/templates/sidebar'); ?>
+
+        <div class="middle">
+
+            <div class="box outlined">
+                <form>
+                    <div class="inner mini">
+                        Contact Information
+                    </div>
+                    <div class="inner body">
+                        <table>
+                            <tr>
+                                <td width="150" align="right">
+                                    <label>First Name</label>
+                                    <div class="error-name_first tiny error" style="display: none;"></div>
+                                </td>
+                                <td width="10">&nbsp;</td>
+                                <td>
+                                    <input type="text" name="name_first" style="width: 240px;" value="<?php echo htmlspecialchars($this->contact->name_first); ?>" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="150" align="right">
+                                    <label>Last Name</label>
+                                    <div class="error-name_last tiny error" style="display: none;"></div>
+                                </td>
+                                <td width="10">&nbsp;</td>
+                                <td>
+                                    <input type="text" name="name_last" style="width: 240px;" value="<?php echo htmlspecialchars($this->contact->name_last); ?>" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="150" align="right">
+                                    <label>Phone Number</label>
+                                    <div class="error-phone tiny error" style="display: none;"></div>
+                                </td>
+                                <td width="10">&nbsp;</td>
+                                <td>
+                                    <input type="text" name="phone" style="width: 240px;" value="<?php echo htmlspecialchars($this->contact->phone ? $this->contact->phone() : ''); ?>" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="150" align="right">
+                                    <label>Fax Number</label>
+                                    <div class="error-fax tiny error" style="display: none;"></div>
+                                </td>
+                                <td width="10">&nbsp;</td>
+                                <td>
+                                    <input type="text" name="fax" style="width: 240px;" value="<?php echo htmlspecialchars($this->contact->fax ? $this->contact->fax() : ''); ?>" />
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="inner mini">
+                        Business Information
+                    </div>
+                    <div class="inner body">
+                        <table>
+                            <tr>
+                                <td width="150" align="right">
+                                    <label>Business Name</label>
+                                    <div class="error-business_name tiny error" style="display: none;"></div>
+                                </td>
+                                <td width="10">&nbsp;</td>
+                                <td>
+                                    <input type="text" name="business_name" style="width: 500px;" value="<?php if ($this->address) { echo htmlspecialchars($this->address->label); } ?>" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="150" align="right">
+                                    <label>Address</label>
+                                    <div class="error-address1 tiny error" style="display: none;"></div>
+                                </td>
+                                <td width="10">&nbsp;</td>
+                                <td>
+                                    <input type="text" name="address1" style="width: 500px;" value="<?php if ($this->address) { echo htmlspecialchars($this->address->address1); } ?>" />
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td width="150" align="right">
+                                    <label>Country</label>
+                                    <div class="error-country tiny error" style="display: none;"></div>
+                                </td>
+                                <td width="10">&nbsp;</td>
+                                <td>
+                                    <select name="country">
+                                        <option value="1">Canada</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="150" align="right">
+                                    <label>Province</label>
+                                    <div class="error-province tiny error" style="display: none;"></div>
+                                </td>
+                                <td width="10">&nbsp;</td>
+                                <td>
+                                    <select name="province" style="min-width: 100px;">
+                                        <option value=""></option>
+                                        <?php if ($this->provinces): ?>
+                                            <?php foreach ($this->provinces as $province): ?>
+                                                <option value="<?php echo $province->id; ?>"<?php if ($this->address && $province->id === $this->address->province_id) { echo ' selected="selected"'; } ?>><?php echo htmlspecialchars($province->name); ?></option>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="150" align="right">
+                                    <label>City</label>
+                                    <div class="error-city tiny error" style="display: none;"></div>
+                                </td>
+                                <td width="10">&nbsp;</td>
+                                <td>
+                                    <select name="city" style="min-width: 100px;">
+                                        <option value=""></option>
+                                        <?php if ($this->cities): ?>
+                                            <?php foreach ($this->cities as $city): ?>
+                                                <option value="<?php echo $city['id']; ?>"<?php if ($this->address && (int) $city['id'] === $this->address->city_id) { echo ' selected="selected"'; } ?>><?php echo htmlspecialchars($city['name']); ?></option>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="150" align="right">
+                                    <label>Postal Code</label>
+                                    <div class="error-postal tiny error" style="display: none;"></div>
+                                </td>
+                                <td width="10">&nbsp;</td>
+                                <td>
+                                    <input type="text" name="postal" style="width: 100px;" value="<?php if ($this->address && $this->address->postal_id && $this->address->postal()) { echo htmlspecialchars(strtoupper($this->address->postal()->code)); } ?>" />
+                                </td>
+                            </tr>
+
+                        </table>
+                    </div>
+                    <div class="inner light">
+                        <div style="margin: 0 0 0 160px;">
+                            <button name="save" style="font-size: 15px;">Update Info</button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+
+    </div>
 
 <?php $this->inc('templates/footer'); ?>

@@ -156,53 +156,53 @@ footer {
 .message {
     padding: 7px 8px 8px 8px;
     -webkit-border-radius: 4px;
-	   -moz-border-radius: 4px;
-			border-radius: 4px;
+       -moz-border-radius: 4px;
+            border-radius: 4px;
     font-size: 12px;
     line-height: 16px;
     margin: 0;
-	font-weight: bold;
+    font-weight: bold;
     border: 1px solid #c0d4de;
-	-webkit-box-shadow: inset 0 -2px 0 0 #c0d4de;
+    -webkit-box-shadow: inset 0 -2px 0 0 #c0d4de;
        -moz-box-shadow: inset 0 -2px 0 0 #c0d4de;
             box-shadow: inset 0 -2px 0 0 #c0d4de;
     background: #f1f5ff;
-	color: #005486;
+    color: #005486;
 }
 .message.standalone {
     margin: 10px;
 }
 .message.good {
     border: 1px solid #cdedba;
-	-webkit-box-shadow: inset 0 -2px 0 0 #cdedba;
+    -webkit-box-shadow: inset 0 -2px 0 0 #cdedba;
        -moz-box-shadow: inset 0 -2px 0 0 #cdedba;
             box-shadow: inset 0 -2px 0 0 #cdedba;
-	background: #f0faee;
-	color: #0d9c14;
+    background: #f0faee;
+    color: #0d9c14;
 }
 .message.info {
     border: 1px solid #ccc;
-	-webkit-box-shadow: inset 0 -2px 0 0 #ccc;
+    -webkit-box-shadow: inset 0 -2px 0 0 #ccc;
        -moz-box-shadow: inset 0 -2px 0 0 #ccc;
             box-shadow: inset 0 -2px 0 0 #ccc;
-	background: #fff;
-	color: #666;
+    background: #fff;
+    color: #666;
 }
 .message.error {
     border: 1px solid #efc0c0;
-	-webkit-box-shadow: inset 0 -2px 0 0 #efc0c0;
+    -webkit-box-shadow: inset 0 -2px 0 0 #efc0c0;
        -moz-box-shadow: inset 0 -2px 0 0 #efc0c0;
             box-shadow: inset 0 -2px 0 0 #efc0c0;
-	background: #faeeee;
-	color: #c71010;
+    background: #faeeee;
+    color: #c71010;
 }
 .message.alert {
     border: 1px solid #edd7bf;
-	-webkit-box-shadow: inset 0 -2px 0 0 #edd7bf;
+    -webkit-box-shadow: inset 0 -2px 0 0 #edd7bf;
        -moz-box-shadow: inset 0 -2px 0 0 #edd7bf;
             box-shadow: inset 0 -2px 0 0 #edd7bf;
-	background: #faf4ee;
-	color: #cf7b0a;
+    background: #faf4ee;
+    color: #cf7b0a;
 }
 
 /**
@@ -212,8 +212,8 @@ footer {
     border: 1px solid #c2c2c2;
     padding: 1px;
     background: #fff;
-	border-radius: 4px;
-	-webkit-box-shadow: 0 0 4px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    -webkit-box-shadow: 0 0 4px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.15);
        -moz-box-shadow: 0 0 4px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.15);
             box-shadow: 0 0 4px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.15);
 }
@@ -321,16 +321,16 @@ footer {
     color: #444;
     vertical-align: middle;
     padding: 4px;
-	-webkit-border-radius: 4px;
-	   -moz-border-radius: 4px;
-			border-radius: 4px;
+    -webkit-border-radius: 4px;
+       -moz-border-radius: 4px;
+            border-radius: 4px;
 }
 .box .regular-body a.button:hover {
     text-decoration: none;
     background: #ddd;
     border: 1px solid #ccc;
     padding: 3px;
-	-webkit-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .05);
+    -webkit-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .05);
        -moz-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .05);
             box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .05);
 }
@@ -339,7 +339,7 @@ footer {
     background: #ccc;
     border: 1px solid #bababa;
     padding: 3px;
-	-webkit-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .1);
+    -webkit-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .1);
        -moz-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .1);
             box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .1);
 }
@@ -350,16 +350,16 @@ footer {
     color: #444;
     vertical-align: middle;
     padding: 5px;
-	-webkit-border-radius: 3px;
-	   -moz-border-radius: 3px;
-			border-radius: 3px;
+    -webkit-border-radius: 3px;
+       -moz-border-radius: 3px;
+            border-radius: 3px;
 }
 .box .regular-foot a.button:hover {
     text-decoration: none;
     background: #ddd;
     border: 1px solid #ccc;
     padding: 4px;
-	-webkit-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .05);
+    -webkit-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .05);
        -moz-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .05);
             box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .05);
 }
@@ -368,7 +368,7 @@ footer {
     background: #ccc;
     border: 1px solid #bababa;
     padding: 4px;
-	-webkit-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .1);
+    -webkit-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .1);
        -moz-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .1);
             box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .1);
 }

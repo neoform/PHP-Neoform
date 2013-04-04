@@ -1,48 +1,48 @@
 <?php
 
-	core::output()->output_type('json');
-	core::http()->ref();
+    core::output()->output_type('json');
+    core::http()->ref();
 
-	$json = new render_json();
+    $json = new render_json();
 
-	switch (core::http()->segment(5)) {
+    switch (core::http()->segment(5)) {
 
-		case 'create':
-			try {
-				locale_key_api::insert(
-					core::http()->posts()
-				);
+        case 'create':
+            try {
+                locale_key_api::insert(
+                    core::http()->posts()
+                );
                 $json->status = 'good';
-			} catch (input_exception $e) {
+            } catch (input_exception $e) {
                 $json->status = 'error';
-				$json->message = $e->message() ? $e->message() : 'Translation could not be created';
-				$json->errors = $e->errors();
-			}
-			break;
+                $json->message = $e->message() ? $e->message() : 'Translation could not be created';
+                $json->errors = $e->errors();
+            }
+            break;
 
-		case 'update':
-			try {
-				locale_key_message_api::update(
-					core::http()->posts()
-				);
+        case 'update':
+            try {
+                locale_key_message_api::update(
+                    core::http()->posts()
+                );
                 $json->status = 'good';
-			} catch (input_exception $e) {
+            } catch (input_exception $e) {
                 $json->status = 'error';
-				$json->message = $e->message() ? $e->message() : 'Translation could not be updated';
-				$json->errors = $e->errors();
-			}
-			break;
+                $json->message = $e->message() ? $e->message() : 'Translation could not be updated';
+                $json->errors = $e->errors();
+            }
+            break;
 
-		case 'delete':
-			try {
-				locale_key_api::delete(new locale_key_model(core::http()->parameter('id')));
+        case 'delete':
+            try {
+                locale_key_api::delete(new locale_key_model(core::http()->parameter('id')));
                 $json->status = 'good';
-			} catch (input_exception $e) {
+            } catch (input_exception $e) {
                 $json->status = 'error';
-				$json->message = $e->message() ? $e->message() : 'Translation could not be deleted';
-				$json->errors = $e->errors();
-			}
-			break;
-	}
+                $json->message = $e->message() ? $e->message() : 'Translation could not be deleted';
+                $json->errors = $e->errors();
+            }
+            break;
+    }
 
-	$json->render();
+    $json->render();

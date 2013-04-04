@@ -1,6 +1,6 @@
 <?php
 
-	class generate_collection extends generate {
-	
-		
-	}
+    class generate_collection extends generate {
+
+
+    }

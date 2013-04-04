@@ -108,18 +108,18 @@
                 $this->code .= "\t\t */\n";
 
                 $this->code .= "\t\tpublic static function by_" . $field->name_idless . "_multi(" . $field->referenced_field->table->name . "_collection $" . $field->referenced_field->table->name . "_collection) {\n";
-        		$this->code .= "\t\t\t\$keys = [];\n";
-    			$this->code .= "\t\t\tforeach ($" . $field->referenced_field->table->name . "_collection as \$k => $" . $field->referenced_field->table->name . ") {\n";
-        		$this->code .= "\t\t\t\t\$keys[\$k] = [\n";
-        		if ($field->allows_null()) {
-                	$this->code .= "\t\t\t\t\t'" . $field->name . "' => $" . $field->referenced_field->table->name . "->" . $field->referenced_field->name . " === null ? null : (" . $field->casting . ") $" . $field->referenced_field->table->name . "->" . $field->referenced_field->name . ",\n";
-               	} else {
-                   	$this->code .= "\t\t\t\t\t'" . $field->name . "' => (" . $field->casting . ") $" . $field->referenced_field->table->name . "->" . $field->referenced_field->name . ",\n";
+                $this->code .= "\t\t\t\$keys = [];\n";
+                $this->code .= "\t\t\tforeach ($" . $field->referenced_field->table->name . "_collection as \$k => $" . $field->referenced_field->table->name . ") {\n";
+                $this->code .= "\t\t\t\t\$keys[\$k] = [\n";
+                if ($field->allows_null()) {
+                    $this->code .= "\t\t\t\t\t'" . $field->name . "' => $" . $field->referenced_field->table->name . "->" . $field->referenced_field->name . " === null ? null : (" . $field->casting . ") $" . $field->referenced_field->table->name . "->" . $field->referenced_field->name . ",\n";
+                   } else {
+                       $this->code .= "\t\t\t\t\t'" . $field->name . "' => (" . $field->casting . ") $" . $field->referenced_field->table->name . "->" . $field->referenced_field->name . ",\n";
                 }
-        		$this->code .= "\t\t\t\t];\n";
-        		$this->code .= "\t\t\t}\n";
-        		$this->code .= "\t\t\treturn self::_by_fields_multi(self::BY_" . strtoupper($field->name_idless) . ", \$keys);\n";
-        		$this->code .= "\t\t}\n\n";
+                $this->code .= "\t\t\t\t];\n";
+                $this->code .= "\t\t\t}\n";
+                $this->code .= "\t\t\treturn self::_by_fields_multi(self::BY_" . strtoupper($field->name_idless) . ", \$keys);\n";
+                $this->code .= "\t\t}\n\n";
             }
 
             // if the primary key is a tinyint then add an all() method

@@ -211,4 +211,4 @@
         public function user_status(user_status_model $user_status=null) {
             return $user_status !== null ? ($this->_vars['user_status'] = $user_status) : $this->_model('user_status', $this->vars['status_id'], 'user_status_model');
         }
-	}
+    }

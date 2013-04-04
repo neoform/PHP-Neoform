@@ -1,52 +1,52 @@
 <?php
 
-	class generate_link_dao extends generate_dao {
+    class generate_link_dao extends generate_dao {
 
-		public function code() {
+        public function code() {
 
-			$this->code .= '<?php'."\n\n";
+            $this->code .= '<?php'."\n\n";
 
             $this->code .= "\t/**\n";
             $this->code .= "\t * " . ucwords(str_replace('_', ' ', $this->table->name)) . " link DAO\n";
             $this->code .= "\t */\n";
-			$this->code .= "\tclass " . $this->table->name . "_dao extends link_dao implements " . $this->table->name . "_definition {\n\n";
+            $this->code .= "\tclass " . $this->table->name . "_dao extends link_dao implements " . $this->table->name . "_definition {\n\n";
 
-			$this->constants();
+            $this->constants();
 
-			$this->code .= "\t\t// READS\n\n";
-			$this->selectors();
+            $this->code .= "\t\t// READS\n\n";
+            $this->selectors();
 
-			$this->code .= "\t\t// WRITES\n\n";
+            $this->code .= "\t\t// WRITES\n\n";
 
-			$this->insert();
-			$this->inserts();
-			$this->update();
-			$this->delete();
-			$this->deletes();
+            $this->insert();
+            $this->inserts();
+            $this->update();
+            $this->delete();
+            $this->deletes();
 
-			$this->code .= "\t}\n";
-		}
+            $this->code .= "\t}\n";
+        }
 
-		protected function constants() {
+        protected function constants() {
             $longest_part = $this->table->longest_index_combinations();
             foreach ($this->table->all_index_combinations as $keys => $fields) {
                 $this->code .= "\t\tconst " . str_pad('BY_' . strtoupper($keys), $longest_part + 3) . " = 'by_" . strtolower($keys) . "';\n";
             }
 
-			$this->code .= "\n";
-		}
+            $this->code .= "\n";
+        }
 
-		protected function selectors() {
+        protected function selectors() {
 
-			foreach ($this->table->all_indexes as $index) {
+            foreach ($this->table->all_indexes as $index) {
 
-				$vars         = [];
+                $vars         = [];
                 $names        = [];
                 $longest_part = $this->longest_length($index);
                 foreach ($index as $field) {
-					$vars[]  = '$' . $field->name;
+                    $vars[]  = '$' . $field->name;
                     $names[] = $field->name_idless;
-				}
+                }
                 $name = join('_',  $names);
 
                 // commenting
@@ -77,35 +77,35 @@
 
                 // end commenting
 
-				$this->code .= "\t\tpublic static function by_" . $name . "(" . join(', ', $vars) . ") {\n";
-				$this->code .= "\t\t\treturn self::_by_fields(\n";
-				$this->code .= "\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
+                $this->code .= "\t\tpublic static function by_" . $name . "(" . join(', ', $vars) . ") {\n";
+                $this->code .= "\t\t\treturn self::_by_fields(\n";
+                $this->code .= "\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
 
-				// fields selected
-				$this->code .= "\t\t\t\t[\n";
-				foreach ($this->table->fields as $field) {
-					// if there is only 1 where key don't select that key for the result set.
-					if (count($index) !== 1 || $field !== current($index)) {
-						$this->code .= "\t\t\t\t\t'" . $field->name . "',\n";
-					}
-				}
-				$this->code .= "\t\t\t\t],\n";
+                // fields selected
+                $this->code .= "\t\t\t\t[\n";
+                foreach ($this->table->fields as $field) {
+                    // if there is only 1 where key don't select that key for the result set.
+                    if (count($index) !== 1 || $field !== current($index)) {
+                        $this->code .= "\t\t\t\t\t'" . $field->name . "',\n";
+                    }
+                }
+                $this->code .= "\t\t\t\t],\n";
 
-				// fields where
-				$this->code .= "\t\t\t\t[\n";
-				foreach ($index as $field) {
-					if ($field->allows_null()) {
+                // fields where
+                $this->code .= "\t\t\t\t[\n";
+                foreach ($index as $field) {
+                    if ($field->allows_null()) {
                         $this->code .= "\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => $" . $field->name . " === null ? null : (" . $field->casting . ") $" . $field->name . ",\n";
                     } else {
                         $this->code .= "\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") $" . $field->name . ",\n";
                     }
-				}
-				$this->code .= "\t\t\t\t]\n";
-				$this->code .= "\t\t\t);\n";
-				$this->code .= "\t\t}\n\n";
-			}
+                }
+                $this->code .= "\t\t\t\t]\n";
+                $this->code .= "\t\t\t);\n";
+                $this->code .= "\t\t}\n\n";
+            }
 
-			// Multi
+            // Multi
             foreach ($this->table->foreign_keys as $foreign_key_field) {
 
                 // comments
@@ -128,34 +128,34 @@
 
                 $this->code .= "\t\tpublic static function by_" . $foreign_key_field->referenced_field->table->name . "_multi(" . $foreign_key_field->referenced_field->table->name . "_collection $" . $foreign_key_field->referenced_field->table->name . "_collection) {\n";
 
-        		$this->code .= "\t\t\t\$keys = [];\n";
-    			$this->code .= "\t\t\tforeach ($" . $foreign_key_field->referenced_field->table->name . "_collection as \$k => $" . $foreign_key_field->referenced_field->table->name . ") {\n";
-        		$this->code .= "\t\t\t\t\$keys[\$k] = [\n";
-        		if ($foreign_key_field->allows_null()) {
-                	$this->code .= "\t\t\t\t\t'" . $foreign_key_field->name . "' => $" . $foreign_key_field->referenced_field->table->name . "->" . $foreign_key_field->referenced_field->name . " === null ? null : (" . $foreign_key_field->referenced_field->casting . ") $" . $foreign_key_field->referenced_field->table->name . "->" . $foreign_key_field->referenced_field->name . ",\n";
-               	} else {
-                   	$this->code .= "\t\t\t\t\t'" . $foreign_key_field->name . "' => (" . $foreign_key_field->referenced_field->casting . ") $" . $foreign_key_field->referenced_field->table->name . "->" . $foreign_key_field->referenced_field->name . ",\n";
+                $this->code .= "\t\t\t\$keys = [];\n";
+                $this->code .= "\t\t\tforeach ($" . $foreign_key_field->referenced_field->table->name . "_collection as \$k => $" . $foreign_key_field->referenced_field->table->name . ") {\n";
+                $this->code .= "\t\t\t\t\$keys[\$k] = [\n";
+                if ($foreign_key_field->allows_null()) {
+                    $this->code .= "\t\t\t\t\t'" . $foreign_key_field->name . "' => $" . $foreign_key_field->referenced_field->table->name . "->" . $foreign_key_field->referenced_field->name . " === null ? null : (" . $foreign_key_field->referenced_field->casting . ") $" . $foreign_key_field->referenced_field->table->name . "->" . $foreign_key_field->referenced_field->name . ",\n";
+                   } else {
+                       $this->code .= "\t\t\t\t\t'" . $foreign_key_field->name . "' => (" . $foreign_key_field->referenced_field->casting . ") $" . $foreign_key_field->referenced_field->table->name . "->" . $foreign_key_field->referenced_field->name . ",\n";
                 }
                 $this->code .= "\t\t\t\t];\n";
                 $this->code .= "\t\t\t}\n\n";
 
-        		$this->code .= "\t\t\treturn self::_by_fields_multi(\n";
-        		$this->code .= "\t\t\t\tself::BY_" . strtoupper($foreign_key_field->referenced_field->table->name) . ",\n";
+                $this->code .= "\t\t\treturn self::_by_fields_multi(\n";
+                $this->code .= "\t\t\t\tself::BY_" . strtoupper($foreign_key_field->referenced_field->table->name) . ",\n";
 
-        		// fields selected
-				$this->code .= "\t\t\t\t[\n";
-				foreach ($this->table->fields as $field) {
-					if ($field !== $foreign_key_field) {
-						$this->code .= "\t\t\t\t\t'" . $field->name . "',\n";
-					}
-				}
-				$this->code .= "\t\t\t\t],\n";
+                // fields selected
+                $this->code .= "\t\t\t\t[\n";
+                foreach ($this->table->fields as $field) {
+                    if ($field !== $foreign_key_field) {
+                        $this->code .= "\t\t\t\t\t'" . $field->name . "',\n";
+                    }
+                }
+                $this->code .= "\t\t\t\t],\n";
 
-        		$this->code .= "\t\t\t\t\$keys\n";
-        		$this->code .= "\t\t\t);\n";
-        		$this->code .= "\t\t}\n\n";
+                $this->code .= "\t\t\t\t\$keys\n";
+                $this->code .= "\t\t\t);\n";
+                $this->code .= "\t\t}\n\n";
             }
-		}
+        }
 
         protected function insert() {
 
@@ -301,7 +301,7 @@
             $this->code .= "\t\t}\n\n";
         }
 
-		protected function update() {
+        protected function update() {
 
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Update " . ucwords(str_replace('_', ' ', $this->table->name)) . " link records based on \$where inputs\n";
@@ -314,71 +314,71 @@
 
             $this->code .= "\t\tpublic static function update(array \$new_info, array \$where) {\n";
             $this->code .= "\t\t\t\$return = parent::_update(\$new_info, \$where);\n\n";
-			$this->code .= "\t\t\t// Delete Cache\n";
+            $this->code .= "\t\t\t// Delete Cache\n";
 
-			foreach ($this->table->all_indexes as $index) {
+            foreach ($this->table->all_indexes as $index) {
 
-				// $new_info
-				$issets       = [];
+                // $new_info
+                $issets       = [];
                 $names        = [];
                 $longest_part = $this->longest_length($index);
-				foreach ($index as $field) {
+                foreach ($index as $field) {
                     $issets[] = "array_key_exists('" . $field->name . "', \$new_info)";
                     $names[]  = $field->name_idless;
-				}
+                }
                 $name = join('_',  $names);
 
-				$this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
-				$this->code .= "\t\t\tif (" . join(' && ', $issets) . ") {\n";
-				$this->code .= "\t\t\t\tparent::_cache_delete(\n";
-				$this->code .= "\t\t\t\t\tparent::_build_key(\n";
-				$this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
-				$this->code .= "\t\t\t\t\t\t[\n";
-				foreach ($index as $field) {
-					if ($field->allows_null()) {
+                $this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
+                $this->code .= "\t\t\tif (" . join(' && ', $issets) . ") {\n";
+                $this->code .= "\t\t\t\tparent::_cache_delete(\n";
+                $this->code .= "\t\t\t\t\tparent::_build_key(\n";
+                $this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
+                $this->code .= "\t\t\t\t\t\t[\n";
+                foreach ($index as $field) {
+                    if ($field->allows_null()) {
                         $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => \$new_info['" . $field->name . "'] === null ? null : (" . $field->casting . ") \$new_info['" . $field->name . "'],\n";
                     } else {
-				        $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") \$new_info['" . $field->name . "'],\n";
-				    }
-				}
-				$this->code .= "\t\t\t\t\t\t]\n";
-				$this->code .= "\t\t\t\t\t)\n";
-				$this->code .= "\t\t\t\t);\n";
-				$this->code .= "\t\t\t}\n";
+                        $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") \$new_info['" . $field->name . "'],\n";
+                    }
+                }
+                $this->code .= "\t\t\t\t\t\t]\n";
+                $this->code .= "\t\t\t\t\t)\n";
+                $this->code .= "\t\t\t\t);\n";
+                $this->code .= "\t\t\t}\n";
 
-				// $where
-				$issets = [];
+                // $where
+                $issets = [];
                 $names  = [];
-				foreach ($index as $field) {
-					$issets[] = "array_key_exists('" . $field->name . "', \$where)";
+                foreach ($index as $field) {
+                    $issets[] = "array_key_exists('" . $field->name . "', \$where)";
                     $names[]  = $field->name_idless;
-				}
+                }
                 $name = join('_',  $names);
 
-				$this->code .= "\t\t\tif (" . join(' && ', $issets) . ") {\n";
-				$this->code .= "\t\t\t\tparent::_cache_delete(\n";
-				$this->code .= "\t\t\t\t\tparent::_build_key(\n";
-				$this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
-				$this->code .= "\t\t\t\t\t\t[\n";
-				foreach ($index as $field) {
-					if ($field->allows_null()) {
+                $this->code .= "\t\t\tif (" . join(' && ', $issets) . ") {\n";
+                $this->code .= "\t\t\t\tparent::_cache_delete(\n";
+                $this->code .= "\t\t\t\t\tparent::_build_key(\n";
+                $this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
+                $this->code .= "\t\t\t\t\t\t[\n";
+                foreach ($index as $field) {
+                    if ($field->allows_null()) {
                         $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => \$where['" . $field->name . "'] === null ? null : (" . $field->casting . ") \$where['" . $field->name . "'],\n";
                     } else {
-				        $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") \$where['" . $field->name . "'],\n";
-				    }
-				}
-				$this->code .= "\t\t\t\t\t\t]\n";
-				$this->code .= "\t\t\t\t\t)\n";
-				$this->code .= "\t\t\t\t);\n";
-				$this->code .= "\t\t\t}\n\n";
-			}
+                        $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") \$where['" . $field->name . "'],\n";
+                    }
+                }
+                $this->code .= "\t\t\t\t\t\t]\n";
+                $this->code .= "\t\t\t\t\t)\n";
+                $this->code .= "\t\t\t\t);\n";
+                $this->code .= "\t\t\t}\n\n";
+            }
 
-			$this->code .= "\t\t\treturn \$return;\n";
-			$this->code .= "\t\t}\n\n";
+            $this->code .= "\t\t\treturn \$return;\n";
+            $this->code .= "\t\t}\n\n";
 
-		}
+        }
 
-		protected function delete() {
+        protected function delete() {
 
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Delete multiple " . ucwords(str_replace('_', ' ', $this->table->name)) . " link records based on an array of associative arrays\n";
@@ -388,11 +388,11 @@
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-			$this->code .= "\t\tpublic static function delete(array \$keys) {\n";
-			$this->code .= "\t\t\t\$return = parent::_delete(\$keys);\n\n";
-			$this->code .= "\t\t\t// Delete Cache\n";
+            $this->code .= "\t\tpublic static function delete(array \$keys) {\n";
+            $this->code .= "\t\t\t\$return = parent::_delete(\$keys);\n\n";
+            $this->code .= "\t\t\t// Delete Cache\n";
 
-			foreach ($this->table->all_indexes as $index) {
+            foreach ($this->table->all_indexes as $index) {
 
                 $names  = [];
                 foreach ($index as $field) {
@@ -402,28 +402,28 @@
 
                 $longest_part = $this->longest_length($index);
 
-				$this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
-				$this->code .= "\t\t\tparent::_cache_delete(\n";
-				$this->code .= "\t\t\t\tparent::_build_key(\n";
-				$this->code .= "\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
-				$this->code .= "\t\t\t\t\t[\n";
-				foreach ($index as $field) {
-					if ($field->allows_null()) {
+                $this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
+                $this->code .= "\t\t\tparent::_cache_delete(\n";
+                $this->code .= "\t\t\t\tparent::_build_key(\n";
+                $this->code .= "\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
+                $this->code .= "\t\t\t\t\t[\n";
+                foreach ($index as $field) {
+                    if ($field->allows_null()) {
                         $this->code .= "\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => \$keys['" . $field->name . "'] === null ? null : (" . $field->casting . ") \$keys['" . $field->name . "'],\n";
                     } else {
                         $this->code .= "\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") \$keys['" . $field->name . "'],\n";
                     }
-				}
-				$this->code .= "\t\t\t\t\t]\n";
-				$this->code .= "\t\t\t\t)\n";
-				$this->code .= "\t\t\t);\n\n";
-			}
+                }
+                $this->code .= "\t\t\t\t\t]\n";
+                $this->code .= "\t\t\t\t)\n";
+                $this->code .= "\t\t\t);\n\n";
+            }
 
-			$this->code .= "\t\t\treturn \$return;\n";
-			$this->code .= "\t\t}\n\n";
-		}
+            $this->code .= "\t\t\treturn \$return;\n";
+            $this->code .= "\t\t}\n\n";
+        }
 
-		protected function deletes() {
+        protected function deletes() {
 
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Delete multiple sets of " . ucwords(str_replace('_', ' ', $this->table->name)) . " link records based on an array of associative arrays\n";
@@ -433,52 +433,52 @@
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-    		$this->code .= "\t\tpublic static function deletes(array \$keys_arr) {\n";
-    		$this->code .= "\t\t\t\$return = parent::_deletes(\$keys_arr);\n\n";
+            $this->code .= "\t\tpublic static function deletes(array \$keys_arr) {\n";
+            $this->code .= "\t\t\t\$return = parent::_deletes(\$keys_arr);\n\n";
 
-    		$this->code .= "\t\t\t// PRIMARY KEYS\n";
-    		$this->code .= "\t\t\tforeach (\$keys_arr as \$keys) {\n";
+            $this->code .= "\t\t\t// PRIMARY KEYS\n";
+            $this->code .= "\t\t\tforeach (\$keys_arr as \$keys) {\n";
 
-        	$idless = [];
-        	foreach ($this->table->primary_keys as $field) {
-        	    $idless[] = $field->name_idless;
-        	    $this->code .= "\t\t\t\t\$unique_" . $field->name . "_arr[(int) \$keys['" . $field->name . "']] = (" . $field->casting . ") \$keys['" . $field->name . "'];\n";
+            $idless = [];
+            foreach ($this->table->primary_keys as $field) {
+                $idless[] = $field->name_idless;
+                $this->code .= "\t\t\t\t\$unique_" . $field->name . "_arr[(int) \$keys['" . $field->name . "']] = (" . $field->casting . ") \$keys['" . $field->name . "'];\n";
             }
 
-			$this->code .= "\n";
+            $this->code .= "\n";
 
-			$full_index = join('_', $idless);
+            $full_index = join('_', $idless);
 
-			$this->code .= "\t\t\t\t// BY_" . strtoupper($full_index) . "\n";
-			$this->code .= "\t\t\t\tparent::_cache_delete(\n";
-			$this->code .= "\t\t\t\t\tparent::_build_key(\n";
-			$this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($full_index) . ",\n";
-			$this->code .= "\t\t\t\t\t\t[\n";
+            $this->code .= "\t\t\t\t// BY_" . strtoupper($full_index) . "\n";
+            $this->code .= "\t\t\t\tparent::_cache_delete(\n";
+            $this->code .= "\t\t\t\t\tparent::_build_key(\n";
+            $this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($full_index) . ",\n";
+            $this->code .= "\t\t\t\t\t\t[\n";
 
-			$longest = $this->longest_length($this->table->primary_keys);
-			foreach ($this->table->primary_keys as $field) {
-				$this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest +1) . " => (" . $field->casting . ") \$keys['" . $field->name . "'],\n";
-			}
-			$this->code .= "\t\t\t\t\t\t]\n";
-			$this->code .= "\t\t\t\t\t)\n";
-			$this->code .= "\t\t\t\t);\n";
+            $longest = $this->longest_length($this->table->primary_keys);
+            foreach ($this->table->primary_keys as $field) {
+                $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest +1) . " => (" . $field->casting . ") \$keys['" . $field->name . "'],\n";
+            }
+            $this->code .= "\t\t\t\t\t\t]\n";
+            $this->code .= "\t\t\t\t\t)\n";
+            $this->code .= "\t\t\t\t);\n";
             $this->code .= "\t\t\t}\n\n";
 
-    		foreach ($this->table->primary_keys as $field) {
-			    $this->code .= "\t\t\t// BY_" . strtoupper($field->name_idless) . "\n";
-    		    $this->code .= "\t\t\tforeach (\$unique_" . $field->name . "_arr as $" . $field->name . ") {\n";
-    		    $this->code .= "\t\t\t\tparent::_cache_delete(\n";
-        		$this->code .= "\t\t\t\t\tparent::_build_key(\n";
-        		$this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($field->name_idless) . ",\n";
-        		$this->code .= "\t\t\t\t\t\t[\n";
-        		$this->code .= "\t\t\t\t\t\t\t'" . $field->name . "' => (" . $field->casting . ") $" . $field->name . ",\n";
-        		$this->code .= "\t\t\t\t\t\t]\n";
-        		$this->code .= "\t\t\t\t\t)\n";
+            foreach ($this->table->primary_keys as $field) {
+                $this->code .= "\t\t\t// BY_" . strtoupper($field->name_idless) . "\n";
+                $this->code .= "\t\t\tforeach (\$unique_" . $field->name . "_arr as $" . $field->name . ") {\n";
+                $this->code .= "\t\t\t\tparent::_cache_delete(\n";
+                $this->code .= "\t\t\t\t\tparent::_build_key(\n";
+                $this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($field->name_idless) . ",\n";
+                $this->code .= "\t\t\t\t\t\t[\n";
+                $this->code .= "\t\t\t\t\t\t\t'" . $field->name . "' => (" . $field->casting . ") $" . $field->name . ",\n";
+                $this->code .= "\t\t\t\t\t\t]\n";
+                $this->code .= "\t\t\t\t\t)\n";
                 $this->code .= "\t\t\t\t);\n";
-    		    $this->code .= "\t\t\t}\n\n";
-    		}
+                $this->code .= "\t\t\t}\n\n";
+            }
 
-    		$this->code .= "\t\t\treturn \$return;\n";
-    		$this->code .= "\t\t}\n";
-		}
-	}
+            $this->code .= "\t\t\treturn \$return;\n";
+            $this->code .= "\t\t}\n";
+        }
+    }

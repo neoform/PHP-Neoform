@@ -1,3 +1,3 @@
 <?php
 
-	class cache_exception extends exception {}
+    class cache_exception extends exception {}

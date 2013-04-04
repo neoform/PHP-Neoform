@@ -1,6 +1,6 @@
 <?php
 
-	class generate_dao extends generate {
+    class generate_dao extends generate {
 
 
-	}
+    }

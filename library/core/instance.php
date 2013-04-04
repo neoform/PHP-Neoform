@@ -5,4 +5,4 @@
      */
     trait core_instance {
         public function kill() { }
-	}
+    }

@@ -7,21 +7,21 @@
 
         use core_instance;
 
-		protected $vars;
+        protected $vars;
 
-		public function __construct($file=null) {
-			$this->exchangeArray(
-				config_dao::get($file !== null ? '/' . $file : '')
-			);
-		}
+        public function __construct($file=null) {
+            $this->exchangeArray(
+                config_dao::get($file !== null ? '/' . $file : '')
+            );
+        }
 
-		public function __get($key) {
-			return isset($this[$key]) ? $this[$key] : null;
-		}
+        public function __get($key) {
+            return isset($this[$key]) ? $this[$key] : null;
+        }
 
-		public function overload(array $overload) {
-			$this->exchangeArray(
-				array_replace_recursive((array) $this, $overload)
-			);
-		}
-	}
+        public function overload(array $overload) {
+            $this->exchangeArray(
+                array_replace_recursive((array) $this, $overload)
+            );
+        }
+    }

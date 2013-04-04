@@ -1,5 +1,5 @@
 <?php
 
-	class user_lostpassword_lib {
+    class user_lostpassword_lib {
 
-	}
+    }

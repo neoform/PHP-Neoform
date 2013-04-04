@@ -1,3 +1,3 @@
 <?php
-	
-	class paypal_exception extends exception { }
+
+    class paypal_exception extends exception { }

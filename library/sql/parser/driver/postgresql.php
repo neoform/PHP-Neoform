@@ -10,8 +10,8 @@
 
         protected function get_all_tables() {
             $sql = core::sql()->prepare("
-				SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name ASC
-			");
+                SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name ASC
+            ");
             $sql->execute();
             $tables = [];
             foreach ($sql->fetchAll() as $table) {
@@ -31,8 +31,8 @@
             ];
 
             $sql = core::sql()->prepare("
-				SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = ? ORDER BY ordinal_position ASC
-			");
+                SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = ? ORDER BY ordinal_position ASC
+            ");
             $sql->execute([
                 $table,
             ]);

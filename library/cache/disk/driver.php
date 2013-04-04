@@ -1,6 +1,6 @@
 <?php
 
-	class cache_disk_driver implements cache_driver {
+    class cache_disk_driver implements cache_driver {
 
         /**
          * Increment the value of a cached entry (only works if the value is an int)
@@ -135,4 +135,4 @@
                 }
             }
         }
-	}
+    }

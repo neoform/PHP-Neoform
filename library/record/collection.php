@@ -19,26 +19,26 @@
          */
         public function __construct(array $pks=null, array $infos=null, $map_field=null) {
 
-			if ($pks !== null) {
-				$dao   = static::ENTITY_NAME . '_dao';
-				$infos = $dao::by_pks($pks);
-			}
+            if ($pks !== null) {
+                $dao   = static::ENTITY_NAME . '_dao';
+                $infos = $dao::by_pks($pks);
+            }
 
-			if ($infos !== null && count($infos)) {
-				$model = static::ENTITY_NAME . '_model';
-				foreach ($infos as $key => $info) {
-					try {
-						if (is_array($info)) {
+            if ($infos !== null && count($infos)) {
+                $model = static::ENTITY_NAME . '_model';
+                foreach ($infos as $key => $info) {
+                    try {
+                        if (is_array($info)) {
                             $this[$map_field !== null ? $info[$map_field] : $key] = new $model(null, $info);
-						} else if ($info instanceof $model) {
+                        } else if ($info instanceof $model) {
                             $this[$map_field !== null ? $info->$map_field : $key] = $info;
-						}
-					} catch (model_exception $e) {
+                        }
+                    } catch (model_exception $e) {
 
-					}
-				}
-			}
-		}
+                    }
+                }
+            }
+        }
 
         /**
          * Get a collection by a given field or fields
@@ -69,26 +69,26 @@
          * @return record_collection $this
          */
         public function add($info, $map_field=null) {
-			$model = static::ENTITY_NAME . '_model';
-			if ($info instanceof $model) {
-				$v = $info;
-			} else if (is_array($info)) {
-				$v = new $model(null, $info);
-			} else {
-				$v = new $model($info);
-			}
+            $model = static::ENTITY_NAME . '_model';
+            if ($info instanceof $model) {
+                $v = $info;
+            } else if (is_array($info)) {
+                $v = new $model(null, $info);
+            } else {
+                $v = new $model($info);
+            }
 
-			if ($map_field !== null) {
-				$this[$v->$map_field] = $v;
-			} else {
-				$this[] = $v;
-			}
+            if ($map_field !== null) {
+                $this[$v->$map_field] = $v;
+            } else {
+                $this[] = $v;
+            }
 
-			//reset
-			$this->_vars = [];
+            //reset
+            $this->_vars = [];
 
             return $this;
-		}
+        }
 
         /**
          * Remove a model from the collection
@@ -98,13 +98,13 @@
          * @return record_collection $this
          */
         public function del($k) {
-			unset($this[$k]);
+            unset($this[$k]);
 
-			//reset
-			$this->_vars = [];
+            //reset
+            $this->_vars = [];
 
             return $this;
-		}
+        }
 
         /**
          * Remap the collection according to a certain field - this makes the key of the collection be that field
@@ -115,15 +115,15 @@
          * @return record_collection $this
          */
         public function remap($field, $ignore_null=false) {
-			$new = [];
-			foreach ($this as $record) {
-				if (! $ignore_null || $record->$field !== null) {
-					$new[$record->$field] = $record;
-				}
-			}
-			$this->exchangeArray($new);
-			return $this;
-		}
+            $new = [];
+            foreach ($this as $record) {
+                if (! $ignore_null || $record->$field !== null) {
+                    $new[$record->$field] = $record;
+                }
+            }
+            $this->exchangeArray($new);
+            return $this;
+        }
 
         /**
          * Get an array with the values of the models in the collection
@@ -133,14 +133,14 @@
          * @return array
          */
         public function field($field) {
-			if (! array_key_exists($field, $this->_vars)) {
-				$this->_vars[$field] = [];
-				foreach ($this as $k => $record) {
-					$this->_vars[$field][$k] = $record->$field;
-				}
-			}
-			return $this->_vars[$field];
-		}
+            if (! array_key_exists($field, $this->_vars)) {
+                $this->_vars[$field] = [];
+                foreach ($this as $k => $record) {
+                    $this->_vars[$field][$k] = $record->$field;
+                }
+            }
+            return $this->_vars[$field];
+        }
 
         /**
          * Exports an array with all the data from the models, or select fields
@@ -150,12 +150,12 @@
          * @return array
          */
         public function export(array $fields=null) {
-			$return = [];
-			foreach ($this as $k => $v) {
-				$return[$k] = $v->export($fields);
-			}
-			return $return;
-		}
+            $return = [];
+            foreach ($this as $k => $v) {
+                $return[$k] = $v->export($fields);
+            }
+            return $return;
+        }
 
         /**
          * Sort the collection based on $f (function) or $f field name
@@ -166,39 +166,39 @@
          * @return record_collection
          */
         public function sort($f, $order='asc') {
-			if (is_callable($f)) {
-				$this->uasort(function ($a, $b) use ($f, $order) {
-					$a = $f($a);
-					$b = $f($b);
+            if (is_callable($f)) {
+                $this->uasort(function ($a, $b) use ($f, $order) {
+                    $a = $f($a);
+                    $b = $f($b);
 
-					if ($a === $b) {
-						return 0;
-					}
+                    if ($a === $b) {
+                        return 0;
+                    }
 
-					if ($order === 'asc') {
-						return ($a < $b) ? -1 : 1;
-					} else {
-						return ($a > $b) ? -1 : 1;
-					}
-				});
-			} else {
-				$this->uasort(function ($a, $b) use ($f, $order) {
-					$a_field = $a->$f;
-					$b_field = $b->$f;
+                    if ($order === 'asc') {
+                        return ($a < $b) ? -1 : 1;
+                    } else {
+                        return ($a > $b) ? -1 : 1;
+                    }
+                });
+            } else {
+                $this->uasort(function ($a, $b) use ($f, $order) {
+                    $a_field = $a->$f;
+                    $b_field = $b->$f;
 
-					if ($a_field === $b_field) {
-						return 0;
-					}
+                    if ($a_field === $b_field) {
+                        return 0;
+                    }
 
-					if ($order === 'asc') {
-						return ($a_field < $b_field) ? -1 : 1;
-					} else {
-						return ($a_field > $b_field) ? -1 : 1;
-					}
-				});
-			}
-			return $this;
-		}
+                    if ($order === 'asc') {
+                        return ($a_field < $b_field) ? -1 : 1;
+                    } else {
+                        return ($a_field > $b_field) ? -1 : 1;
+                    }
+                });
+            }
+            return $this;
+        }
 
 
         /**
@@ -216,47 +216,47 @@
          */
         protected function _preload_one_to_many($entity, $by_function, $method_override=null) {
 
-		    $collection_name  = "{$entity}_collection";
-		    $dao_name         = "$entity}_dao";
-		    $by_function      .= '_multi';
+            $collection_name  = "{$entity}_collection";
+            $dao_name         = "$entity}_dao";
+            $by_function      .= '_multi';
 
-		    // Get the ids for those
-		    $pks_groups = $dao_name::$by_function($this);
-		    $pks        = [];
+            // Get the ids for those
+            $pks_groups = $dao_name::$by_function($this);
+            $pks        = [];
 
-		    // make a flat array of all keys, removing dupes along the way.
-		    foreach ($pks_groups as $k => $pks_group) {
-		        foreach ($pks_group as $pk) {
-		            $pks[$pk] = $pk;
-		        }
-		    }
+            // make a flat array of all keys, removing dupes along the way.
+            foreach ($pks_groups as $k => $pks_group) {
+                foreach ($pks_group as $pk) {
+                    $pks[$pk] = $pk;
+                }
+            }
 
-		    // get all the records all in one shot
-		    $models = new $collection_name(null, $dao_name::by_pks($pks));
+            // get all the records all in one shot
+            $models = new $collection_name(null, $dao_name::by_pks($pks));
 
-		    // sort flat array back into grouped data again
-		    foreach ($pks_groups as & $pks_group) {
-		        foreach ($pks_group as $k => $pk) {
-		            if (isset($models[$pk])) {
-    		            $pks_group[$k] = $models[$pk];
-    		        } else {
-    		            // this shouldn't actually happen...
-    		            unset($pks_group[$k]);
-    		        }
-		        }
-		    }
+            // sort flat array back into grouped data again
+            foreach ($pks_groups as & $pks_group) {
+                foreach ($pks_group as $k => $pk) {
+                    if (isset($models[$pk])) {
+                        $pks_group[$k] = $models[$pk];
+                    } else {
+                        // this shouldn't actually happen...
+                        unset($pks_group[$k]);
+                    }
+                }
+            }
 
             $model_method = $method_override !== null ? $method_override : $collection_name;
 
-		    foreach ($this as $key => $model) {
-		        if (isset($pks_groups[$key])) {
-		            $model->$model_method(
-		                new $collection_name(null, $pks_groups[$key])
-		            );
-		        }
-		    }
-		    return $models;
-		}
+            foreach ($this as $key => $model) {
+                if (isset($pks_groups[$key])) {
+                    $model->$model_method(
+                        new $collection_name(null, $pks_groups[$key])
+                    );
+                }
+            }
+            return $models;
+        }
 
         /**
          * Get many groups of records all in one shot.
@@ -274,48 +274,48 @@
          */
         protected function _preload_many_to_many($entity, $by_function, $foreign_type, $method_override=null) {
 
-		    $dao                 = "{$entity}_dao";
-		    $by_function        .= '_multi';
-		    $foreign_dao         = "{$foreign_type}_dao";
-		    $foreign_collection  = "{$foreign_type}_collection";
+            $dao                 = "{$entity}_dao";
+            $by_function        .= '_multi';
+            $foreign_dao         = "{$foreign_type}_dao";
+            $foreign_collection  = "{$foreign_type}_collection";
 
-		    // Get the ids for those
-		    $pks_groups = $dao::$by_function($this);
-		    $pks        = [];
+            // Get the ids for those
+            $pks_groups = $dao::$by_function($this);
+            $pks        = [];
 
-		    // make a flat array of all keys, removing dupes along the way.
-		    foreach ($pks_groups as $k => $pks_group) {
-		        foreach ($pks_group as $pk) {
-		            $pks[$pk] = $pk;
-		        }
-		    }
+            // make a flat array of all keys, removing dupes along the way.
+            foreach ($pks_groups as $k => $pks_group) {
+                foreach ($pks_group as $pk) {
+                    $pks[$pk] = $pk;
+                }
+            }
 
-		    // get all the records all in one shot
-		    $models = new $foreign_collection(null, $foreign_dao::by_pks($pks));
+            // get all the records all in one shot
+            $models = new $foreign_collection(null, $foreign_dao::by_pks($pks));
 
-		    // sort flat array back into grouped data again
-		    foreach ($pks_groups as & $pks_group) {
-		        foreach ($pks_group as $k => $pk) {
-		            if (isset($models[$pk])) {
-    		            $pks_group[$k] = $models[$pk];
-    		        } else {
-    		            // this shouldn't actually happen...
-    		            unset($pks_group[$k]);
-    		        }
-		        }
-		    }
+            // sort flat array back into grouped data again
+            foreach ($pks_groups as & $pks_group) {
+                foreach ($pks_group as $k => $pk) {
+                    if (isset($models[$pk])) {
+                        $pks_group[$k] = $models[$pk];
+                    } else {
+                        // this shouldn't actually happen...
+                        unset($pks_group[$k]);
+                    }
+                }
+            }
 
             $model_method = $method_override !== null ? $method_override : $foreign_collection;
 
-		    foreach ($this as $key => $model) {
-		        if (isset($pks_groups[$key])) {
-		            $model->$model_method(
-		                new $foreign_collection(null, $pks_groups[$key])
-		            );
-		        }
-		    }
-		    return $models;
-		}
+            foreach ($this as $key => $model) {
+                if (isset($pks_groups[$key])) {
+                    $model->$model_method(
+                        new $foreign_collection(null, $pks_groups[$key])
+                    );
+                }
+            }
+            return $models;
+        }
 
         /**
          * Get many groups of records all in one shot.
@@ -332,30 +332,30 @@
          */
         protected function _preload_one_to_one($entity, $field, $method_override=null) {
 
-		    $dao_name = "{$entity}_dao";
+            $dao_name = "{$entity}_dao";
 
-		    $pks = [];
-		    // we don't want to look up duplicates, just unique values
-		    foreach ($this as $model) {
-		        $pks[$model->$field] = $model->$field;
-		    }
-		    $infos  = $dao_name::by_pks($pks);
-		    $models = [];
+            $pks = [];
+            // we don't want to look up duplicates, just unique values
+            foreach ($this as $model) {
+                $pks[$model->$field] = $model->$field;
+            }
+            $infos  = $dao_name::by_pks($pks);
+            $models = [];
 
             if ($method_override !== null) {
                 $type = $method_override;
             }
 
-		    foreach ($this as $key => $model) {
-		        $k = $model->$field;
-		        if (isset($infos[$k])) {
-		            $model->$type(
-		                $models[$key] = new $model_name(null, $infos[$k])
-		            );
-		        }
-		    }
-		    return new $collection_name(null, $models);
-		}
-	}
+            foreach ($this as $key => $model) {
+                $k = $model->$field;
+                if (isset($infos[$k])) {
+                    $model->$type(
+                        $models[$key] = new $model_name(null, $infos[$k])
+                    );
+                }
+            }
+            return new $collection_name(null, $models);
+        }
+    }
 
 

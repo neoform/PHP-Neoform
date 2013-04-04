@@ -1,103 +1,103 @@
 <ul class="pages">
-	<?php
-		/*
-			$url
-			$current_page 
-			$page_count	
-			$link_count
-		*/	
-		
-		$page_count 	= (int) $page_count;
-		$current_page 	= (int) $current_page;
-		$link_count 	= (int) $link_count;
-		
-		if (! isset($next)) 			{ $next = false; } 
-		if (! isset($prev)) 			{ $prev = false; }
-		if (! isset($max_link_count)) 	{ $max_link_count = false; }
-			
-		if ($current_page) {
-			if (! $page_count) { 
-				$page_count = 1; 
-			}
-							
-			if ($prev && $current_page != 1 && $current_page > 0) { 
-				echo '<li><a href="' . $url . '/page:' . ($current_page - 1) . '" class="pagenumber">&laquo;&laquo; ' . $this->locale->translate('Prev') . '</a></li>'; 
-			}		
-			
-			if (! $max_link_count) { 
-				$max_link_count = $link_count > 2 ? $link_count : 3; 
-			}
-	
-			//if page count is more than max links, reduce the number.
-			if ($page_count > $max_link_count) {
-				//page 1 and last page always show
-				if ($current_page === 1) { 
-					echo '<li class="active">1</li>'; 
-				} else { 
-					echo '<li><a href="' . $url . '/page:1">1</a></li>'; 
-				}
-								
-				//the pages in the middle
-				
-				//subtract 3 from $max_link_count because of the first and last links not counting as well as the current page
-				//we want the link count for front and aft
-				$link_count			= $max_link_count - 3;
-				$split_link_count 	= floor($link_count / 2);
-							
-				//if the starting link is less than 2, then start at 2 and move up
-				$starting_link = $current_page - $split_link_count;
-				if ($starting_link <= 2) { 
-					$starting_link = 2; 
-					$front = '';
-				} else { 
-					$front = '<li class="empty">..</li>'; 
-				}
-		
-				//max is how high the link loop will go before stopping
-				$max_link = $link_count + $starting_link;
-	
-				if ($max_link >= $page_count - 1) { 
-					$starting_link = $page_count - $link_count - 1; 
-					$max_link = $page_count - 1;
-					$aft = '';
-				} else { 
-					$aft = '<li class="empty">..</li>'; 
-				}			
-				
-				echo $front;
-				
-				for ($i=$starting_link; $i <= $max_link; $i++) {
-					if ($i == $current_page) { 
-						echo '<li class="active">' . $i . '</li>'; 
-					} else { 
-						echo '<li><a href="' . $url . '/page:' . $i . '">' . number_format($i) . '</a></li>'; 
-					}
-				}
-					
-				echo $aft;	
-				
-				//last page always shows
-				if ($current_page === $page_count) { 
-					echo '<li class="active">' . number_format($page_count) . '</li>'; 
-				} else { 
-					echo '<li><a href="' . $url . '/page:' . $page_count . '">'.number_format($page_count).'</a></li>'; 
-				}
-			} else {
-				for ($i=1; $i <= $page_count; $i++) {
-					if ($i === $current_page) { 
-						echo '<li class="active">' . $i . '</li>'; 
-					} else { 
-						echo '<li><a href="' . $url . '/page:' . $i . '">'.number_format($i).'</a></li>'; 
-					}
-				}
-			}
-			
-			if ($next && $current_page != $page_count && $current_page < $page_count) { 
-				echo '<li><a href="' . $url . '/page:' . ($current_page + 1) . '">' . $this->locale->translate('Next') . '&raquo;&raquo;</a></li>'; 
-			}
-		} else {
-			echo '<li><a href="' . $url . '/page:1">' . $this->locale->translate('View More') . '</a></li>';
-		}
-	?>
+    <?php
+        /*
+            $url
+            $current_page
+            $page_count
+            $link_count
+        */
+
+        $page_count     = (int) $page_count;
+        $current_page     = (int) $current_page;
+        $link_count     = (int) $link_count;
+
+        if (! isset($next))             { $next = false; }
+        if (! isset($prev))             { $prev = false; }
+        if (! isset($max_link_count))     { $max_link_count = false; }
+
+        if ($current_page) {
+            if (! $page_count) {
+                $page_count = 1;
+            }
+
+            if ($prev && $current_page != 1 && $current_page > 0) {
+                echo '<li><a href="' . $url . '/page:' . ($current_page - 1) . '" class="pagenumber">&laquo;&laquo; ' . $this->locale->translate('Prev') . '</a></li>';
+            }
+
+            if (! $max_link_count) {
+                $max_link_count = $link_count > 2 ? $link_count : 3;
+            }
+
+            //if page count is more than max links, reduce the number.
+            if ($page_count > $max_link_count) {
+                //page 1 and last page always show
+                if ($current_page === 1) {
+                    echo '<li class="active">1</li>';
+                } else {
+                    echo '<li><a href="' . $url . '/page:1">1</a></li>';
+                }
+
+                //the pages in the middle
+
+                //subtract 3 from $max_link_count because of the first and last links not counting as well as the current page
+                //we want the link count for front and aft
+                $link_count            = $max_link_count - 3;
+                $split_link_count     = floor($link_count / 2);
+
+                //if the starting link is less than 2, then start at 2 and move up
+                $starting_link = $current_page - $split_link_count;
+                if ($starting_link <= 2) {
+                    $starting_link = 2;
+                    $front = '';
+                } else {
+                    $front = '<li class="empty">..</li>';
+                }
+
+                //max is how high the link loop will go before stopping
+                $max_link = $link_count + $starting_link;
+
+                if ($max_link >= $page_count - 1) {
+                    $starting_link = $page_count - $link_count - 1;
+                    $max_link = $page_count - 1;
+                    $aft = '';
+                } else {
+                    $aft = '<li class="empty">..</li>';
+                }
+
+                echo $front;
+
+                for ($i=$starting_link; $i <= $max_link; $i++) {
+                    if ($i == $current_page) {
+                        echo '<li class="active">' . $i . '</li>';
+                    } else {
+                        echo '<li><a href="' . $url . '/page:' . $i . '">' . number_format($i) . '</a></li>';
+                    }
+                }
+
+                echo $aft;
+
+                //last page always shows
+                if ($current_page === $page_count) {
+                    echo '<li class="active">' . number_format($page_count) . '</li>';
+                } else {
+                    echo '<li><a href="' . $url . '/page:' . $page_count . '">'.number_format($page_count).'</a></li>';
+                }
+            } else {
+                for ($i=1; $i <= $page_count; $i++) {
+                    if ($i === $current_page) {
+                        echo '<li class="active">' . $i . '</li>';
+                    } else {
+                        echo '<li><a href="' . $url . '/page:' . $i . '">'.number_format($i).'</a></li>';
+                    }
+                }
+            }
+
+            if ($next && $current_page != $page_count && $current_page < $page_count) {
+                echo '<li><a href="' . $url . '/page:' . ($current_page + 1) . '">' . $this->locale->translate('Next') . '&raquo;&raquo;</a></li>';
+            }
+        } else {
+            echo '<li><a href="' . $url . '/page:1">' . $this->locale->translate('View More') . '</a></li>';
+        }
+    ?>
 </ul>
-			
+

@@ -10,20 +10,20 @@
         use core_instance;
 
         protected $http_response_code = 200;
-		protected $headers = [];
-		protected $body;
+        protected $headers = [];
+        protected $body;
 
-		const HTML = 'text/html';
-		const JSON = 'application/json';
-		const XML  = 'application/xml';
+        const HTML = 'text/html';
+        const JSON = 'application/json';
+        const XML  = 'application/xml';
 
-		protected $headers_sent = false;
-		protected $output_type = self::HTML;
+        protected $headers_sent = false;
+        protected $output_type = self::HTML;
 
-		public function __construct() {
-			$this->header('Core', 'v6.1');
-			$this->header('cache-control', 'private, max-age=0');
-		}
+        public function __construct() {
+            $this->header('Core', 'v6.1');
+            $this->header('cache-control', 'private, max-age=0');
+        }
 
         /**
          * Set an HTTP header
@@ -34,13 +34,13 @@
          * @return output_instance
          */
         public function header($type, $val=null) {
-			$header = $type . ($val ? ': ' . $val : '');
-			$hash 	= md5($header);
-			if (! isset($this->headers[$hash])) {
-				$this->headers[$hash] = $header;
-			}
-			return $this;
-		}
+            $header = $type . ($val ? ': ' . $val : '');
+            $hash     = md5($header);
+            if (! isset($this->headers[$hash])) {
+                $this->headers[$hash] = $header;
+            }
+            return $this;
+        }
 
         /**
          * Create a new cookie
@@ -53,20 +53,20 @@
          */
         public function cookie_set($key, $val, $ttl=false) {
 
-			if ($ttl === false || ! is_numeric($ttl)) {
-				$ttl = time() + core::config()->cookies['ttl'];
-			}
+            if ($ttl === false || ! is_numeric($ttl)) {
+                $ttl = time() + core::config()->cookies['ttl'];
+            }
 
-			return setcookie(
-				$key,
-				base64_encode($val),
-				time() + intval($ttl),
-				isset(core::config()->cookies['path']) ? core::config()->cookies['path'] : core::http()->server('subdir'),
-				core::config()->system['domain'],
-				(bool) core::config()->cookies['secure'],
-				(bool) core::config()->cookies['httponly']
-			);
-		}
+            return setcookie(
+                $key,
+                base64_encode($val),
+                time() + intval($ttl),
+                isset(core::config()->cookies['path']) ? core::config()->cookies['path'] : core::http()->server('subdir'),
+                core::config()->system['domain'],
+                (bool) core::config()->cookies['secure'],
+                (bool) core::config()->cookies['httponly']
+            );
+        }
 
         /**
          * Delete a cookie from browser
@@ -76,14 +76,14 @@
          * @return bool
          */
         public static function cookie_delete($key) {
-			return setcookie(
-				$key,
-				'',
-				time() - 100000,
-				isset(core::config()->cookies['path']) ? core::config()->cookies['path'] : core::http()->server('subdir'),
-				core::config()->system['domain']
-			);
-		}
+            return setcookie(
+                $key,
+                '',
+                time() - 100000,
+                isset(core::config()->cookies['path']) ? core::config()->cookies['path'] : core::http()->server('subdir'),
+                core::config()->system['domain']
+            );
+        }
 
         /**
          * Get an array containing all the HTTP headers
@@ -91,8 +91,8 @@
          * @return array
          */
         public function get_headers() {
-			return array_values($this->headers);
-		}
+            return array_values($this->headers);
+        }
 
         /**
          * Send all HTTP headers to browser
@@ -101,14 +101,14 @@
          */
         public function send_headers() {
             if (! $this->headers_sent) {
-				$this->headers_sent = true;
-				http_response_code($this->http_response_code);
+                $this->headers_sent = true;
+                http_response_code($this->http_response_code);
                 foreach ($this->headers as $header) {
-					header($header);
-				}
-			}
-			return $this;
-		}
+                    header($header);
+                }
+            }
+            return $this;
+        }
 
         /**
          * Set the output body, or get it
@@ -118,13 +118,13 @@
          * @return string|output_instance
          */
         public function body($str=null) {
-			if ($str === null) {
-				return $this->body;
-			} else {
-				$this->body = (string) $str;
-				return $this;
-			}
-		}
+            if ($str === null) {
+                return $this->body;
+            } else {
+                $this->body = (string) $str;
+                return $this;
+            }
+        }
 
         /**
          * Set the content-type header
@@ -135,28 +135,28 @@
          */
         public function output_type($type=null) {
             if ($type !== null) {
-				switch ($type) {
-					case 'json':
-						$this->output_type = self::JSON;
-						$this->header('Content-type', self::JSON . '; charset="' . core::config()->system['enoding'] . '"');
-						break;
+                switch ($type) {
+                    case 'json':
+                        $this->output_type = self::JSON;
+                        $this->header('Content-type', self::JSON . '; charset="' . core::config()->system['enoding'] . '"');
+                        break;
 
-					case 'xml':
-						$this->output_type = self::XML;
-						$this->header('Content-type', self::XML . '; charset="' . core::config()->system['enoding'] . '"');
-						break;
+                    case 'xml':
+                        $this->output_type = self::XML;
+                        $this->header('Content-type', self::XML . '; charset="' . core::config()->system['enoding'] . '"');
+                        break;
 
-					//case 'html':
-					default:
-						$this->output_type = self::HTML;
-						$this->header('Content-type', self::HTML . '; charset="' . core::config()->system['enoding'] . '"');
-						break;
-				}
-				return $this;
-			} else {
-				return $this->output_type;
-			}
-		}
+                    //case 'html':
+                    default:
+                        $this->output_type = self::HTML;
+                        $this->header('Content-type', self::HTML . '; charset="' . core::config()->system['enoding'] . '"');
+                        break;
+                }
+                return $this;
+            } else {
+                return $this->output_type;
+            }
+        }
 
         /**
          * Redirect the user to a different url on the site
@@ -167,9 +167,9 @@
          * @return output_instance
          */
         public function redirect($url='', $http_code=303) {
-			$this->header('Location', core::http()->server('url') . $url, true, $http_code);
-			return $this;
-		}
+            $this->header('Location', core::http()->server('url') . $url, true, $http_code);
+            return $this;
+        }
 
         /**
          * Display an error to the user
@@ -179,50 +179,50 @@
          */
         public function error($title=null, $message=null) {
 
-			try {
-				//trash anything that was going to be outputted
-				while (ob_get_status() && ob_end_clean()) {
+            try {
+                //trash anything that was going to be outputted
+                while (ob_get_status() && ob_end_clean()) {
 
-				}
-			} catch (Exception $e) {
+                }
+            } catch (Exception $e) {
 
-			}
+            }
 
-			// Reset the page
-			$this->headers 	= [];
-			$this->body 	= null;
+            // Reset the page
+            $this->headers     = [];
+            $this->body     = null;
 
-			if ($this->output_type === self::JSON) {
+            if ($this->output_type === self::JSON) {
 
-				$json = new render_json();
-				$json->status = 'fault';
+                $json = new render_json();
+                $json->status = 'fault';
 
-				if ($title && $message) {
-					$json->message = $title . ' - ' . $message;
-				} else if ($title) {
-					$json->message = $title;
-				} else {
-					$json->message = 'There was a problem generating that page.';
-				}
+                if ($title && $message) {
+                    $json->message = $title . ' - ' . $message;
+                } else if ($title) {
+                    $json->message = $title;
+                } else {
+                    $json->message = 'There was a problem generating that page.';
+                }
 
-				$json->render();
+                $json->render();
 
-			} else {
+            } else {
 
-				try {
-					$this->http_status_code(500);
-					$view 				= new render_view();
-					$view->meta_title 	= 'Error';
-					$view->pre_header	= 'Error';
-					$view->header 		= $title ? $title : 'Server Error';
-					$view->body 		= $message ? $message : 'There was a problem generating that page.';
-					$view->render(core::config()->output['default_error_view']);
+                try {
+                    $this->http_status_code(500);
+                    $view                 = new render_view();
+                    $view->meta_title     = 'Error';
+                    $view->pre_header    = 'Error';
+                    $view->header         = $title ? $title : 'Server Error';
+                    $view->body         = $message ? $message : 'There was a problem generating that page.';
+                    $view->render(core::config()->output['default_error_view']);
 
-				} catch (Exception $e) {
-					$this->body = $message;
-				}
-			}
-		}
+                } catch (Exception $e) {
+                    $this->body = $message;
+                }
+            }
+        }
 
         /**
          * Get or set HTTP status code
@@ -239,4 +239,4 @@
                 return $this;
             }
         }
-	}
+    }

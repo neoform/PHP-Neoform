@@ -1,5 +1,5 @@
 <?php
 
-	class locale_namespace_lib {
+    class locale_namespace_lib {
 
-	}
+    }

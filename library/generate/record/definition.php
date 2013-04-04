@@ -1,6 +1,6 @@
 <?php
 
-	class generate_record_definition extends generate_definition {
+    class generate_record_definition extends generate_definition {
 
         protected function constants() {
 
@@ -15,4 +15,4 @@
             $this->code .= "\t\tconst ENTITY_POOL   = 'entities';\n";
             $this->code .= "\t\tconst CACHE_ENGINE  = 'memcache';\n";
         }
-	}
+    }

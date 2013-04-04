@@ -32,7 +32,7 @@
         // additional subdomain pairs [optional]
 
         // "subdomains": [
-        // 	{ "regular": "api", "secure": "api" }
+        //     { "regular": "api", "secure": "api" }
         // ]
     },
 
@@ -55,8 +55,8 @@
 
         // slave sql database(s) [optional]
         //
-        //	"slave": [
-        //  	{ "dsn": "mysql:dbname=com_keepset;host=127.0.0.1", "user": "root", "password": "" }
+        //    "slave": [
+        //      { "dsn": "mysql:dbname=com_keepset;host=127.0.0.1", "user": "root", "password": "" }
         //  ],
 
         // name any other database connections here:

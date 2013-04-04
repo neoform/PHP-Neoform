@@ -1,5 +1,5 @@
 <email_head>
-	<?php echo $this->site_name; ?> Password Recovery
+    <?php echo $this->site_name; ?> Password Recovery
 </email_head>
 <email_plain>
 A request has been made to reset your password on <?php echo $this->site_name; ?>
@@ -12,17 +12,17 @@ If you actually know your password or did not request this email, please do noth
 </email_plain>
 <email_html>
 <html>
-	<head>
-		<title><?php echo $this->site_name; ?> Password Recovery</title>
-	</head>
-	<body>
-		A request has been made to reset your password on <?php echo $this->site_name; ?>
-		<br /><br />
-		In order to have it changed please click the following link:
-		<br /><br />
-		<?php echo $this->url; ?>
-		<br /><br />
-		If you actually know your password or did not request this email, please do nothing, you will not be emailed again.
-	</body>
+    <head>
+        <title><?php echo $this->site_name; ?> Password Recovery</title>
+    </head>
+    <body>
+        A request has been made to reset your password on <?php echo $this->site_name; ?>
+        <br /><br />
+        In order to have it changed please click the following link:
+        <br /><br />
+        <?php echo $this->url; ?>
+        <br /><br />
+        If you actually know your password or did not request this email, please do nothing, you will not be emailed again.
+    </body>
 </html>
 </email_html>

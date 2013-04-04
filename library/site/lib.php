@@ -1,5 +1,5 @@
 <?php
 
-	class site_lib {
+    class site_lib {
 
-	}
+    }

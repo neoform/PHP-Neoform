@@ -53,8 +53,8 @@
          * @return mixed|record_model
          */
         public function __call($name, $args) {
-			if (isset($this->vars['user_id'])) {
-			    return $this->_model($name, $this->vars['user_id'], $name . '_model');
-			}
-		}
-	}
+            if (isset($this->vars['user_id'])) {
+                return $this->_model($name, $this->vars['user_id'], $name . '_model');
+            }
+        }
+    }

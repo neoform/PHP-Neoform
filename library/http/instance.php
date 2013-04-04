@@ -562,10 +562,10 @@
 
             $timeout = (int) core::config()->session['ref_timeout'];
             if ($rc === null) {
-	            $httphash = isset($this->get['rc']) ? base64_decode($this->get['rc']) : false;
-	        } else {
-	        	$httphash = base64_decode($rc);
-	        }
+                $httphash = isset($this->get['rc']) ? base64_decode($this->get['rc']) : false;
+            } else {
+                $httphash = base64_decode($rc);
+            }
             $timestamp    = substr($httphash, -10);
             $cookiehash   = $this->ref_hash($cookied_code, $timestamp);
             $time         = time();

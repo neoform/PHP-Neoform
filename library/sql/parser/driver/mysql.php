@@ -72,8 +72,8 @@
 
         protected function get_all_tables() {
             $sql = core::sql()->prepare("
-				SHOW TABLES
-			");
+                SHOW TABLES
+            ");
             $sql->execute();
             $tables = [];
             foreach ($sql->fetchAll() as $table) {
@@ -84,8 +84,8 @@
 
         protected function get_table_definition($table_name) {
             $sql = core::sql()->prepare("
-				SHOW CREATE TABLE `" . $table_name . "`
-			");
+                SHOW CREATE TABLE `" . $table_name . "`
+            ");
             $sql->execute();
             $describe = $sql->fetch();
             if (isset($describe['create table'])) {
@@ -189,10 +189,10 @@
         protected function foreign_key($field_info) {
             if (preg_match('/^CONSTRAINT\s+`([a-z0-9\_]+)`\s*FOREIGN\s+KEY\s+\(`([a-z0-9\_]+)`\)\s+REFERENCES\s+`([a-z0-9\_]+)`\s+\(`([a-z0-9\_]+)`\).*?$/i', $field_info, $match)) {
                 return [
-                    'name' 			=> strtolower($match[1]),
-                    'field' 		=> strtolower($match[2]),
-                    'parent_table' 	=> strtolower($match[3]),
-                    'parent_field' 	=> strtolower($match[4]),
+                    'name'             => strtolower($match[1]),
+                    'field'         => strtolower($match[2]),
+                    'parent_table'     => strtolower($match[3]),
+                    'parent_field'     => strtolower($match[4]),
                 ];
             }
 

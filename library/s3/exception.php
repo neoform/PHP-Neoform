@@ -1,3 +1,3 @@
 <?php
 
-	class s3_exception extends exception {}
+    class s3_exception extends exception {}

@@ -1,7 +1,7 @@
 <?php
 
-	core::locale()->set_namespace('main');
+    core::locale()->set_namespace('main');
 
-	$view = new render_view();
+    $view = new render_view();
 
-	$view->render('index');
+    $view->render('index');

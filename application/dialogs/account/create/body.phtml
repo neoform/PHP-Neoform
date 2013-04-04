@@ -1,0 +1,41 @@
+<form name="login" style="margin: 0 auto; display: block;">	
+    <div class="regular-body" style="padding: 0 0 10px 0;">
+    	<div class="padded info" id="message">
+        	Please fill out the following fields in order to create an account	
+    	</div>
+    	<table width="100%">
+    		<tr>
+    			<td width="150" align="right">			
+    				<strong>Email</strong>
+					<div name="email" class="tiny error" style="display: none;"></div>
+    			</td>
+    			<td width="10">&nbsp;</td>
+    			<td>
+    				<input type="text" name="email" style="width: 325px; font-size: 14px; line-height: 18px; padding: 5px 8px;" tabindex="1" />
+    				<span name="email_status" class="tiny"></span>
+    			</td>
+    		</tr>
+    		<tr>
+    			<td width="150" align="right">
+    				<strong>New Password</strong>
+					<div name="password1" class="tiny error" style="display: none;"></div>
+    			</td>
+    			<td width="10">&nbsp;</td>
+    			<td>
+    				<input type="password" name="password1" style="width: 220px; font-size: 14px; line-height: 18px; padding: 5px 8px;" tabindex="2" />
+    			</td>
+    		</tr>
+    		<tr>
+    			<td width="150" align="right">
+    				<strong>Retype Password</strong>
+					<div name="password2" class="tiny error" style="display: none;"></div>
+    			</td>
+    			<td width="10">&nbsp;</td>
+    			<td>
+    				<input type="password" name="password2" style="width: 220px; font-size: 14px; line-height: 18px; padding: 5px 8px;" tabindex="3" />
+    			</td>
+    		</tr>
+    	</table>
+    </div>
+    <input type="submit" style="position: fixed; left: -9999px"/>
+</form>

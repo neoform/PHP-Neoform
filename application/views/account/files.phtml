@@ -1,0 +1,51 @@
+<?php echo $this->inc('account/files/templates/header'); ?>
+
+    <script type="text/javascript" src="/public/js/CoreContext.js"></script>
+    <script type="text/javascript" src="/public/js/ProgressBar.js"></script>
+    <script type="text/javascript" src="/public/js/CoreUploader.js"></script>
+    <script type="text/javascript" src="/public/js/Queue.js"></script>
+    <script type="text/javascript" src="/public/js/FileUploader.js"></script>
+
+    <script type="text/javascript">
+        $(function(){
+            var uploader;
+
+            var _init = function() {
+
+                uploader = FileUploader({
+                    holderDiv: $("div.main")
+                });
+
+                uploader.loadFolder();
+
+                <?php /* foreach ($this->folders as $folder): ?>
+                    uploader.addFolder(<?php
+                        echo json_encode([
+                            'id'          => $folder->id,
+                            'parent_id'   => $folder->parent_id,
+                            'name'        => $folder->name,
+                        ]);
+                    ?>);
+                <?php endforeach; ?>
+
+                <?php foreach ($this->files as $file): ?>
+                    uploader.addFile(<?php
+                        echo json_encode([
+                            'id'          => $file->id,
+                            'label'       => $file->label,
+                            'size'        => $file->size,
+                            'sizeCurrent' => $file->size_current,
+                            'postedOn'    => $file->posted_on,
+                            'md5'         => $file->md5_hash,
+                            'status'      => $file->status,
+                        ]);
+                    ?>);
+                <?php endforeach; */ ?>
+            };
+
+            _init();
+        });
+
+    </script>
+
+<?php echo $this->inc('account/files/templates/footer'); ?>

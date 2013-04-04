@@ -1,0 +1,703 @@
+/**
+* Head
+*/
+.account-files .head {
+    background: #005486;
+    color: #fff;
+    height: 40px;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border-bottom: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10000;
+    -webkit-box-shadow: 0 2px 0 0 rgba(0, 0, 0, .2);
+       -moz-box-shadow: 0 2px 0 0 rgba(0, 0, 0, .2);
+            box-shadow: 0 2px 0 0 rgba(0, 0, 0, .2);
+}
+.account-files .head .logo {
+    display: block;
+    margin: 0;
+    padding: 0;
+    width: 144px;
+    height: 25px;
+    position: absolute;
+    top: 7px;
+    left: 9px;
+    background: url("/public/images/logo.png") no-repeat;
+    cursor: pointer;
+}
+.account-files .head .logo label {
+    top: -9999999px;
+    position: absolute;
+    font-size: 14px;
+    line-height: 18px;
+}
+.account-files .head ul                 { margin: 0; padding: 0; right: 0; top: 0; position: absolute; }
+.account-files .head ul li              { margin: 0; padding: 0; border-left: 1px solid #004476; display: inline-block; }
+.account-files .head ul li:first-child  { border: 0; }
+.account-files .head ul li a            { text-decoration: none; font-size: 12px; line-height: 40px; display: block; color: #fff; background: #005486; padding: 0 8px; margin: 0; }
+.account-files .head ul li a:hover      { text-decoration: none; color: #fff; background: #158bd2; }
+
+/**
+* Context menu
+*/
+.account-files ul.context-menu {
+    z-index: 9999999;
+    position: absolute;
+    display: none;
+    color: #005486;
+    background: #f1f5ff;
+
+    background-image: -moz-linear-gradient(top, #fff, #e5eaf8);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#e5eaf8));
+    background-image: -webkit-linear-gradient(top, #fff, #e5eaf8);
+    background-image: -o-linear-gradient(top, #fff, #e5eaf8);
+    background-image: linear-gradient(to bottom, #fff, #e5eaf8);
+
+    -webkit-user-select: none;
+     -khtml-user-select: none;
+       -moz-user-select: none;
+            user-select: none;
+
+    -webkit-border-radius: 6px;
+	   -moz-border-radius: 6px;
+			border-radius: 6px;
+
+    border: 2px solid #97bfd7;
+    -webkit-box-shadow: inset 0 -2px 0 0 #97bfd7, 1px 1px 5px 0 rgba(0, 0, 0, .5);
+       -moz-box-shadow: inset 0 -2px 0 0 #97bfd7, 1px 1px 5px 0 rgba(0, 0, 0, .5);
+            box-shadow: inset 0 -2px 0 0 #97bfd7, 1px 1px 5px 0 rgba(0, 0, 0, .5);
+}
+    .account-files ul.context-menu li {
+        margin: 0;
+        padding: 6px 9px;
+        display: block;
+        min-width: 140px;
+        font-weight: bold;
+        font-size: 13px;
+        border-top: 1px solid #fff;
+        border-bottom: 1px solid #ebeff9;
+    }
+    .account-files ul.context-menu li:first-child { border-top: 0; }
+    .account-files ul.context-menu li:last-child { border-bottom: 0; }
+    .account-files ul.context-menu li:hover {
+        color: #fff;
+        background: #158bd2;
+        -webkit-text-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+           -moz-text-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+                text-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+        cursor: default;
+    }
+    .account-files ul.context-menu li:active {
+        color: #fff;
+        background: #005486;
+    }
+
+/**
+* Main
+*/
+.account-files .main {
+    position: relative;
+    margin: 100px 0 0 0;
+    width: 100%;
+    font-family: 'Open Sans', sans-serif;
+}
+
+    /**
+    * Sidebar
+    */
+    .account-files .sidebar {
+        display: block;
+        margin: 0;
+        padding: 0;
+        width: 250px;
+        background: #e5e5e5;
+        border-right: 1px #999 solid;
+        -webkit-box-shadow: inset -2px 0 12px 0 rgba(0, 0, 0, .1);
+           -moz-box-shadow: inset -2px 0 12px 0 rgba(0, 0, 0, .1);
+                box-shadow: inset -2px 0 12px 0 rgba(0, 0, 0, .1);
+        color: #333;
+        position: fixed;
+        top: 40px;
+        left: 0;
+        overflow: hidden;
+        height: 900px;
+    }
+        .account-files .sidebar div.sidebar-files {
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            background: #d8d8d8;
+            color: #444;
+            -webkit-text-shadow: 0 1px 1px rgba(0, 0, 0, .3);
+               -moz-text-shadow: 0 1px 1px rgba(0, 0, 0, .3);
+                    text-shadow: 0 1px 1px rgba(0, 0, 0, .3);
+            -webkit-box-shadow: inset 1px 1px 0 0 rgba(255, 255, 255, .45), inset 0 -1px 0 0 rgba(0, 0, 0, .15);
+               -moz-box-shadow: inset 1px 1px 0 0 rgba(255, 255, 255, .45), inset 0 -1px 0 0 rgba(0, 0, 0, .15);
+                    box-shadow: inset 1px 1px 0 0 rgba(255, 255, 255, .45), inset 0 -1px 0 0 rgba(0, 0, 0, .15);
+        }
+        .account-files .sidebar div.sidebar-files:hover {
+            background: #dcdcdc;
+        }
+        .account-files .sidebar div.sidebar-files:active {
+            background: #bbb;
+            -webkit-box-shadow: inset 0 0 12px 0 rgba(0, 0, 0, .3);
+               -moz-box-shadow: inset 0 0 12px 0 rgba(0, 0, 0, .3);
+                    box-shadow: inset 0 0 12px 0 rgba(0, 0, 0, .3);
+        }
+        .account-files .sidebar div.sidebar-files.on {
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            -webkit-text-shadow: 0 1px 2px rgba(0, 0, 0, .65);
+               -moz-text-shadow: 0 1px 2px rgba(0, 0, 0, .65);
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, .65);
+            -webkit-box-shadow: inset 0 0 12px 0 rgba(0, 0, 0, .3);
+               -moz-box-shadow: inset 0 0 12px 0 rgba(0, 0, 0, .3);
+                    box-shadow: inset 0 0 12px 0 rgba(0, 0, 0, .3);
+            background: #158bd2;
+            color: #fff;
+        }
+        .account-files .sidebar div.sidebar-files.on:hover {
+            -webkit-box-shadow: inset 0 0 18px 0 rgba(0, 0, 0, .45);
+               -moz-box-shadow: inset 0 0 18px 0 rgba(0, 0, 0, .45);
+                    box-shadow: inset 0 0 18px 0 rgba(0, 0, 0, .45);
+        }
+
+        .account-files .sidebar ul {
+            margin: 5px 0;
+            padding: 0;
+        }
+
+        .account-files .sidebar ul li {
+            margin: 0;
+            padding: 4px 5px 4px 21px;
+            display: block;
+            background: url('/public/images/arrow.closed.png') 8px 7px no-repeat;
+        }
+
+        .account-files .sidebar ul li:hover {
+            cursor: pointer;
+            background: #ccc url('/public/images/arrow.closed.png') 8px 7px no-repeat;
+        }
+
+    /**
+     * Browser Header
+     */
+    .account-files .browser-header {
+        position: fixed;
+        top: 40px;
+        left: 251px;
+        height: 135px;
+        background: #fff;
+        z-index: 500;
+        padding-top: 2px;
+    }
+
+        /**
+         * Breadcrumb
+         */
+        .account-files .browser-header ul.browser-breadcrumb                 { display: block; margin: 0; padding: 0; background: #eee; border-bottom: 1px solid #ccc; }
+        .account-files .browser-header ul.browser-breadcrumb li              { display: inline-block; border-right: 1px solid #ddd; padding: 0 13px 5px 13px; }
+        .account-files .browser-header ul.browser-breadcrumb li:first-child  {  }
+        .account-files .browser-header ul.browser-breadcrumb li:last-child   { border-right: 0; }
+        .account-files .browser-header ul.browser-breadcrumb li a            { text-decoration: none; color: #333; }
+        .account-files .browser-header ul.browser-breadcrumb li a:hover      { color: #000; cursor: pointer; }
+        .account-files .browser-header ul.browser-breadcrumb li a:active     { color: #000; }
+
+
+        /**
+         * H2
+         */
+        .account-files .browser-header h2 {
+            font-family: 'Open Sans', sans-serif;
+            margin: 15px 10px 5px 10px;
+        }
+
+        /**
+        * Browser Header
+        */
+        .account-files .browser-header .file-header {
+            padding: 4px 10px;
+            border-left: 0;
+            margin: 0;
+            padding: 7px 5px;
+            color: #000;
+            z-index: 1000;
+            background: #ccc;
+            border-top: 1px solid #aaa;
+            border-bottom: 1px solid #aaa;
+        }
+            .account-files .browser-header .file-header td.label        {  }
+            .account-files .browser-header .file-header td.progress     { width: 160px; padding-right: 6px; }
+            .account-files .browser-header .file-header td.hash         { width: 270px; }
+            .account-files .browser-header .file-header td.posted-on    { width: 155px; }
+            .account-files .browser-header .file-header td.updated-on   { width: 155px; }
+            .account-files .browser-header .file-header td.status       { width: 74px; font-weight: normal; }
+            .account-files .browser-header .file-header td.status .complete,
+            .account-files .browser-header .file-header td.status .incomplete,
+            .account-files .browser-header .file-header td.status .failed     {
+                -webkit-border-radius: 3px;
+                   -moz-border-radius: 3px;
+                        border-radius: 3px;
+                padding: 2px 4px;
+                font-size: 10px;
+            }
+            .account-files .browser-header .file-header td.status .complete   {
+                background: #0d9c14;
+                color: #fff;
+            }
+            .account-files .browser-header .file-header td.status .incomplete {
+                background: #e9aa14;
+                color: #fff;
+            }
+            .account-files .browser-header .file-header td.status .failed     {
+                background: #860000;
+                color: #fff;
+            }
+            .account-files .browser-header .file-header td.size               { width: 95px; text-align: right; padding-right: 6px; }
+
+        /**
+        * Toolbar
+        */
+        .account-files .browser-header .toolbar {
+            margin: 0;
+            padding: 7px 9px;
+        }
+            .account-files .browser-header .toolbar button {
+            	-webkit-box-shadow: inset 0px 1px 0px 0px #fff;
+            	   -moz-box-shadow: inset 0px 1px 0px 0px #fff;
+            	        box-shadow: inset 0px 1px 0px 0px #fff;
+            	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
+            	background:-moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
+            	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
+            	background-color:#ededed;
+            	-moz-border-radius:4px;
+            	-webkit-border-radius:4px;
+            	border-radius:4px;
+            	border:1px solid #c9c9c9;
+            	display:inline-block;
+            	color:#777777;
+            	font-size:12px;
+            	font-weight:bold;
+            	padding:5px 15px;
+            	text-decoration:none;
+            	text-shadow:1px 1px 0px #ffffff;
+                margin: 0 6px 0 0;
+            }
+            .account-files .browser-header .toolbar button.right {
+                float: right;
+                margin: 0;
+            }
+            .account-files .browser-header .toolbar button:hover {
+            	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
+            	background:-moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
+            	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
+            	background-color:#ededed;
+            	-webkit-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .05);
+            	   -moz-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .05);
+            	        box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .05);
+    	        cursor: pointer;
+    	        color: #333;
+            }
+            .account-files .browser-header .toolbar button:active {
+            	position: relative;
+            	top: 1px;
+            }
+
+            .account-files .browser-header .toolbar button.error:hover {
+                color: #ab1616;
+                -webkit-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
+            	   -moz-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
+            	        box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
+    	        border:1px solid #cdaaaa;
+            }
+            .account-files .browser-header .toolbar button.good:hover {
+                color: green;
+            }
+
+    /**
+    * Browser
+    */
+    .account-files .browser {
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        top: 94px;
+        left: 251px;
+        cursor: default;
+        width: 1400px;
+        background: #efefef;
+        background: -moz-linear-gradient(top,  #efefef 0%, #ffffff 100%);
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#efefef), color-stop(100%,#ffffff));
+        background: -webkit-linear-gradient(top,  #efefef 0%,#ffffff 100%);
+        background: -o-linear-gradient(top,  #efefef 0%,#ffffff 100%);
+        background: -ms-linear-gradient(top,  #efefef 0%,#ffffff 100%);
+        background: linear-gradient(to bottom,  #efefef 0%,#ffffff 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#efefef', endColorstr='#ffffff',GradientType=0 );
+
+
+    }
+        .account-files .browser div.empty {
+            margin: 1px 0 0 0;
+            padding: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            color: #555;
+            background: #ddd;
+            -webkit-text-shadow: 0 1px 2px rgba(255, 255, 255, .5);
+               -moz-text-shadow: 0 1px 2px rgba(255, 255, 255, .5);
+                    text-shadow: 0 1px 2px rgba(255, 255, 255, .5);
+        }
+
+            .account-files .browser div.empty div.big {
+                font-size: 20px;
+                font-weight: bold;
+                line-height: 24px;
+            }
+
+            .account-files .browser div.empty div.small {
+                font-size: 13px;
+                font-weight: normal;
+                line-height: 17px;
+            }
+
+        .account-files .browser ul {
+            margin: 0;
+            padding: 0;
+            -webkit-user-select: none;
+             -khtml-user-select: none;
+               -moz-user-select: none;
+                    user-select: none;
+            color: #111;
+        }
+
+        .account-files .browser ul li                              { padding: 7px 6px; margin: 0; color: #333; }
+        .account-files .browser ul li:nth-child(odd),
+        .account-files .browser ul li:hover:nth-child(even)       { background: #fff; }
+        .account-files .browser ul li:nth-child(odd)              { background: #f7f7f7; }
+        .account-files .browser ul li:nth-child(even)             { background: #eee; }
+        .account-files .browser ul li.selected:nth-child(even),
+        .account-files .browser ul li.selected:nth-child(odd)     {
+            background: #158bd2; color: #fff; border-bottom: 1px solid #1281c4; padding: 7px 5px 6px 5px;
+
+            -webkit-text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+               -moz-text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+        }
+        .account-files .browser ul li.selected:hover:nth-child(even),
+        .account-files .browser ul li.selected:hover:nth-child(odd)    { background: #189cec; }
+
+        .account-files .browser ul li input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            background: #000;
+            border: 0;
+            padding: 0;
+            margin: 0;
+            display:inline-block;
+        }
+
+        .account-files .browser ul li td.label        { font-weight: bold; background: transparent url("/public/images/file.icon.png") 1px 0 no-repeat; padding: 3px 0 3px 19px; }
+        .account-files .browser ul li td.progress     { width: 160px; padding-right: 6px; }
+        .account-files .browser ul li td.hash         { width: 270px; }
+        .account-files .browser ul li td.posted-on    { width: 155px; }
+        .account-files .browser ul li td.updated-on   { width: 155px; }
+        .account-files .browser ul li td.status       { width: 65px; font-weight: bold; }
+        .account-files .browser ul li td.status .complete,
+        .account-files .browser ul li td.status .incomplete,
+        .account-files .browser ul li td.status .failed     {
+            -webkit-border-radius: 3px;
+               -moz-border-radius: 3px;
+                    border-radius: 3px;
+            padding: 2px 4px;
+            font-size: 10px;
+        }
+        .account-files .browser ul li td.status .complete   {
+            background: #0d9c14;
+            color: #fff;
+        }
+        .account-files .browser ul li td.status .incomplete {
+            background: #e9aa14;
+            color: #fff;
+        }
+        .account-files .browser ul li td.status .failed     {
+            background: #860000;
+            color: #fff;
+        }
+        .account-files .browser ul li td.size               { width: 95px; text-align: right; padding-right: 6px; }
+        .account-files .browser ul li td.label input        {
+            border: 1px solid #158bd2;
+            outline: 0;
+            background: #fff;
+            font-size: 12px;
+            color: #333;
+            padding: 3px 5px;
+            margin: -3px 0;
+            width: 100%;
+            font-weight: bold;
+            -webkit-border-radius: 3px;
+               -moz-border-radius: 3px;
+                    border-radius: 3px;
+        }
+
+        .account-files .browser ul li button.delete {
+            float: right;
+        }
+
+        /**
+        * Button
+        */
+        .account-files .browser ul li button {
+            -webkit-box-shadow: inset 0px 1px 0px 0px #fff;
+            -moz-box-shadow: inset 0px 1px 0px 0px #fff;
+            box-shadow: inset 0px 1px 0px 0px #fff;
+            background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
+            background:-moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
+            filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
+            background-color:#ededed;
+            -moz-border-radius:4px;
+            -webkit-border-radius:4px;
+            border-radius:4px;
+            border:1px solid #aaa;
+            display:inline-block;
+            color:#333;
+            font-size:11px;
+            padding: 2px 10px;
+            text-decoration:none;
+            text-shadow:1px 1px 0px #ffffff;
+        }
+            /**
+            * Hover
+            */
+            .account-files .browser ul li button:hover {
+                background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
+                background:-moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
+                filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
+                background-color:#ededed;
+                -webkit-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .1);
+                -moz-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .1);
+                box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .1);
+                border: 1px solid #999;
+                cursor: pointer;
+                color: #333;
+            }
+
+            /**
+            * Active
+            */
+            .account-files .browser ul li button.account-files .browser ul li button:active {
+                position: relative;
+                top: 1px;
+            }
+
+            /**
+            * Focus
+            */
+            .account-files .browser ul li button:focus {
+                -webkit-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65);
+                -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65);
+                box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65);
+                outline: 0;
+            }
+
+            /**
+            * Focus Hover
+            */
+            .account-files .browser ul li button:hover:focus {
+                -webkit-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .1);
+                -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .1);
+                box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .1);
+            }
+
+            /**
+            * Good
+            */
+            .account-files .browser ul li button.good {
+                color: green;
+            }
+
+            /**
+            * Special
+            */
+            .account-files .browser ul li button.special {
+                color: #864c00;
+            }
+
+            /**
+            * Info
+            */
+            .account-files .browser ul li button.info {
+                color: #005486;
+            }
+
+            /**
+            * Error
+            */
+            .account-files .browser ul li button.error {
+                color: #ba1717;
+            }
+
+            .account-files .browser ul li button.error.strong {
+                -webkit-box-shadow: inset 0px 0 0 0 rgba(0, 0, 0, .3);
+                -moz-box-shadow: inset 0px 0 0 0 rgba(0, 0, 0, .3);
+                box-shadow: inset 0px 0 0 0 rgba(0, 0, 0, .3);
+                color: #fff;
+                text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.45);
+                background-color: #da4f49;
+                background-image: -moz-linear-gradient(top, #ee5f5b, #bd362f);
+                background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ee5f5b), to(#bd362f));
+                background-image: -webkit-linear-gradient(top, #ee5f5b, #bd362f);
+                background-image: -o-linear-gradient(top, #ee5f5b, #bd362f);
+                background-image: linear-gradient(to bottom, #ee5f5b, #bd362f);
+                background-repeat: repeat-x;
+                border-color: #bd362f #bd362f #802420;
+                border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+                filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffee5f5b', endColorstr='#ffbd362f', GradientType=0);
+                filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+            }
+
+            /**
+            * Good Hover
+            */
+            .account-files .browser ul li button.good:hover  {
+                -webkit-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 171, 22, .1);
+                -moz-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 171, 22, .1);
+                box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 171, 22, .1);
+                border:1px solid #7e9f82;
+            }
+
+            /**
+            * Good Focus Hover
+            */
+            .CoreDialog form input[type="submit"].good:focus:hover,
+            .CoreDialog form input[type="button"].good:focus:hover,
+            .CoreDialog form button.good:focus:hover {
+                -webkit-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 171, 22, .1);
+                -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 171, 22, .1);
+                box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 171, 22, .1);
+            }
+
+            /**
+            * Special Hover
+            */
+            .account-files .browser ul li button.special:hover  {
+                -webkit-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 106, 22, .1);
+                -moz-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 106, 22, .1);
+                box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 106, 22, .1);
+                border:1px solid #be9f7b;
+            }
+
+            /**
+            * Special Focus Hover
+            */
+            .account-files .browser ul li button.special:focus:hover  {
+                -webkit-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 106, 22, .1);
+                -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 106, 22, .1);
+                box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 106, 22, .1);
+                border:1px solid #be9f7b;
+            }
+
+            /**
+            * Info Hover
+            */
+            .account-files .browser ul li button.info:hover  {
+                -webkit-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 61, 171, .1);
+                -moz-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 61, 171, .1);
+                box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 61, 171, .1);
+                border:1px solid #8795c0;
+            }
+
+            /**
+            * Info Focus Hover
+            */
+            .account-files .browser ul li button.info:focus:hover  {
+                -webkit-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 61, 171, .1);
+                -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 61, 171, .1);
+                box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 61, 171, .1);
+                border:1px solid #8795c0;
+            }
+
+            /**
+            * Error Hover
+            */
+            .account-files .browser ul li button.error:hover  {
+                -webkit-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
+                -moz-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
+                box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
+                border:1px solid #bc8484;
+            }
+
+            /**
+            * Error Focus Hover
+            */
+            .account-files .browser ul li button.error:focus:hover  {
+                -webkit-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(108, 12, 12, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
+                -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(108, 12, 12, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
+                box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(108, 12, 12, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
+                border:1px solid #bc8484;
+            }
+
+
+
+
+/**
+* Progressbar
+*/
+.account-files .progressbar {
+    background-color: #fff;
+    border-radius: 4px;
+    padding: 2px;
+    margin: 0;
+    position: relative;
+
+    -webkit-box-shadow: 0 0 1px rgba(0, 0, 0, 0.55);
+       -moz-box-shadow: 0 0 1px rgba(0, 0, 0, 0.55);
+            box-shadow: 0 0 1px rgba(0, 0, 0, 0.55);
+
+    background-image: -moz-linear-gradient(top, #f1f1f1, #fff);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#f1f1f1), to(#fff));
+    background-image: -webkit-linear-gradient(top, #f1f1f1, #fff);
+    background-image: -o-linear-gradient(top, #f1f1f1, #fff);
+    background-image: linear-gradient(to bottom, #f1f1f1, #fff);
+}
+    .account-files .progressbar label {
+        top: 3px;
+        left: 0;
+        font-size: 11px;
+        line-height: 11px;
+        position: absolute;
+        color: #333;
+        width: 100%;
+        text-align: center;
+    }
+    .account-files .progressbar div {
+        background-color: #1380c2;
+        background-image: -moz-linear-gradient(top, #1380c2, #1275b0);
+        background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#1380c2), to(#1275b0));
+        background-image: -webkit-linear-gradient(top, #1380c2, #1275b0);
+        background-image: -o-linear-gradient(top, #1380c2, #1275b0);
+        background-image: linear-gradient(to bottom, #1380c2, #1275b0);
+        border-radius: 3px;
+        width: 0;
+        height: 14px;
+        overflow: hidden;
+        position: relative;
+    }
+    .account-files .progressbar div label {
+        top: 1px;
+        left: -3px;
+        width: 100%;
+        text-align: center;
+        color: #fff;
+        display: block;
+    }
+

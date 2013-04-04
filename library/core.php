@@ -1,0 +1,346 @@
+<?php
+
+    /**
+     * Register the start time of the app
+     */
+    define('APP_START_TIME', microtime(1));
+
+    /**
+     * Turn on all error reporting
+     */
+    error_reporting(E_ALL);
+
+    /**
+     * Be literal with file permissions
+     */
+    umask(0);
+
+    /**
+    * Register autoloader
+    */
+    spl_autoload_register(
+        function($name) {
+            require_once(str_replace(['\\', '_'], '/', $name) . '.' . EXT);
+        },
+        true,
+        true
+    );
+
+    /**
+    * Core - first script loaded by main index.php file
+    *        handles init of framework
+    */
+    class core {
+
+        // Singletons
+        protected static $instances = [];
+
+        // Paths to directories used by framework
+        protected static $paths = [];
+
+        // What context was this application run (web/cli)
+        protected static $environment;
+
+        // Globals variables (use as sparingly as possible)
+        protected static $globals = [];
+
+        // Disable these methods
+        final private function __clone() { }
+        final private function __construct(array $args=null) {}
+
+        /**
+         * Singleton access
+         *   eg: core::config('app'); core::sql('slave');
+         *
+         * @access public
+         * @static
+         * @param string|null $type
+         * @param array $args
+         * @return object instance
+         */
+        public static function __callstatic($type, array $args) {
+            $name = count($args) === 1 ? (string) current($args) : '';
+            if (! isset(self::$instances[$type][$name])) {
+                $class = $type . '_factory';
+                self::$instances[$type][$name] = $class::init($args);
+            }
+            return self::$instances[$type][$name];
+        }
+
+        /**
+         * Applications path
+         *
+         * @param $type
+         *
+         * @return string|null
+         * @throws exception
+         */
+        public static function path($type) {
+            if (isset(self::$paths[$type])) {
+                return self::$paths[$type];
+            }
+            throw new exception('Path ' . $type . ' not set');
+        }
+
+        /**
+         * Manually load a file if the autoloader can't do it
+         *
+         * @access public
+         * @static
+         * @param mixed $name
+         * @return void
+         */
+        public static function req($name) {
+            require_once(str_replace(['\\', '_'], '/', strtolower($name)) . '.' . EXT);
+        }
+
+
+        /**
+         * Return the name of the environment
+         *
+         * @access public
+         * @static
+         * @return string
+         */
+        public static function environment() {
+            return self::$environment;
+        }
+
+        /**
+         * Application context
+         *
+         * @access public
+         * @static
+         * @return string
+         */
+        public static function context() {
+            return php_sapi_name() === 'cli' ? 'cli' : 'web';
+        }
+
+        /**
+         * Checks if a singleton is loaded or not
+         *
+         * @access public
+         * @static
+         * @param string $type
+         * @param string|null $name (default: null)
+         * @return boolean
+         */
+        public static function is_loaded($type, $name=null) {
+            return isset(self::$instances[$type][$name]);
+        }
+
+        /**
+         * Distroys a singleton
+         *
+         * @access public
+         * @static
+         * @param string $type
+         * @param string|null $name (default: null)
+         * @return boolean
+         */
+        public static function kill($type, $name=null) {
+            if (isset(self::$instances[$type][$name])) {
+                self::$instances[$type][$name]->kill();
+                self::$instances[$type][$name] = null;
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        /**
+         * Get global variable
+         *
+         * @access public
+         * @static
+         * @param string $k
+         * @return mixed
+         */
+        public static function get($k) {
+            if (isset(self::$globals[$k])) {
+                return self::$globals[$k];
+            }
+        }
+
+        /**
+         * Set global variable
+         *
+         * @access public
+         * @static
+         * @param string $k
+         * @param mixed $v
+         * @return null
+         */
+        public static function set($k, $v) {
+            self::$globals[$k] = $v;
+        }
+
+        /**
+         * Initialize the framework
+         *   sets paths, error handlers, default timezone, and a few constants
+         *
+         * @param array $params
+         *
+         * @throws error_php_exception
+         * @throws exception
+         */
+        public static function init(array $params) {
+
+            if (isset($params['extension'])) {
+                define('EXT', $params['extension']);
+            } else {
+                die("Config Error: PHP file extension not set. core::init([\"extension\" => [...] ]).\n");
+            }
+
+            if (! isset($params['environment']) || ! self::$environment = $params['environment']) {
+                die("Config Error: PHP file extension not set. core::init([\"environment\" => [...] [)\n");
+            }
+
+            if (! isset($params['application']) || ! self::$paths['application'] = realpath($params['application'])) {
+                die("Config Error: PHP file extension not set or is invalid. core::init([\"application\" => [...] ])\n");
+            }
+
+            if (! isset($params['library']) || ! self::$paths['library'] = realpath($params['library'])) {
+                die("Config Error: Library root path not set or is invalid. core::init([\"library\" => [...] ])\n");
+            }
+
+            if (! isset($params['entities']) || ! self::$paths['entities'] = realpath($params['entities'])) {
+                die("Config Error: Entities root path not set or is invalid. core::init([\"entities\" => [...] ])\n");
+            }
+
+            if (! isset($params['logs']) || ! self::$paths['logs'] = realpath($params['logs'])) {
+                die("Config Error: Log dir path not set or is invalid. core::init([\"logs\" => [...] ])\n");
+            }
+
+            if (! isset($params['website']) || ! self::$paths['website'] = realpath($params['website'])) {
+                die("Config Error: Web root path not set or is invalid. core::init([\"website\" => [...] ])\n");
+            }
+
+            if (! isset($params['external']) || ! self::$paths['external'] = realpath($params['external'])) {
+                die("Config Error: External library path not set or is invalid. core::init([\"external\" => [...] ])\n");
+            }
+
+             //tell php where to find stuff
+            set_include_path(
+                self::$paths['entities'] . // Data entities
+                PATH_SEPARATOR .
+                self::$paths['application'] . '/library' . // core library overrides
+                PATH_SEPARATOR .
+                self::$paths['library'] . // core library
+                PATH_SEPARATOR .
+                self::$paths['external'] // external libraries
+            );
+            define('WEB_ROOT', getcwd() . '/'); // Store the current dir as being the web root
+
+            // Standard errors
+            set_error_handler(function($err_number, $err_string, $err_file, $err_line) {
+                if (error_reporting()) {
+                    if (class_exists('error_php_exception')) {
+                        throw new error_php_exception($err_string . ' in ' . $err_file . ':' . $err_line);
+                    } else {
+                        throw new exception($err_string . ' in ' . $err_file . ':' . $err_line);
+                    }
+                }
+            });
+
+            // Unhandled exceptions
+            set_exception_handler(function(Exception $e) {
+                error_lib::log($e);
+            });
+
+            // For fatal errors
+            register_shutdown_function(function() {
+                $error = error_get_last();
+                if ($error !== null) { //only grab error if there is one
+                    $type    = isset($error['type']) ? $error['type'] : null;
+                    $message = isset($error['message']) ? $error['message'] : null;
+                    $file    = isset($error['file']) ? $error['file'] : null;
+                    $line    = isset($error['line']) ? $error['line'] : null;
+
+                    core::log('FATAL ERROR - ' . $message . ' ' . $file . ' (' . $line . ')');
+                    if (core::context() === 'web') {
+                        if (core::is_loaded('http')) {
+                            core::output()->error();
+                            echo core::output()->send_headers()->body();
+                        } else {
+                            header('HTTP/1.1 500 Internal Server Error');
+                            echo 'An unexpected error occured.'."\n";
+                        }
+                    } else if (core::context() === 'cli') {
+                        echo 'FATAL ERROR - ' . $message . ' ' . $file . ' (' . $line . ')'."\n";
+                    }
+                    die;
+                }
+            });
+
+            ini_set('log_errors', 1);
+            ini_set('error_log', self::$paths['logs'] . '/errors.log');
+            ini_set('log_errors_max_len', 0);
+            ini_set('html_errors', 0);
+            ini_set('display_errors', 'Off'); // do not display error(s) in browser - only affects non-fatal errors
+            ini_set('display_startup_errors', 'Off');
+
+            date_default_timezone_set(core::config()->system['timezone']);
+        }
+
+        /**
+         * Save parameters to log file
+         *
+         * @access public
+         * @static
+         * @param [mixed]
+         * @return null
+         */
+        public static function debug() {
+            $args = func_get_args();
+            core::log(count($args) === 1 ? current($args) : $args);
+        }
+
+        /**
+         * Logs message to file, application dies if unable to log.
+         *
+         * @param mixed $msg
+         * @param string $level (default: 'debug')
+         * @param string $file  (default: 'errors')
+         *
+         * @return bool
+         * @throws Exception
+         */
+        public static function log($msg, $level='debug', $file='errors') {
+            try {
+                $log_path = self::$paths['logs'] . '/';
+
+                if (file_exists($log_path) && is_writable($log_path)) {
+                    $file_name = preg_replace('`[^A-Z0-9_\-\.]`isx', '', $file) . '.log';
+                    $log_path .= $file_name;
+
+                    if (! is_string($msg)) {
+                        $msg = print_r($msg, 1);
+                    }
+
+                    $dt = new datetime();
+
+                    if (self::is_loaded('http')) {
+                        $message = $dt->format('Y-m-d H:i:s') . ' ' . core::http()->server('ip') . ' /' . core::http()->server('query') . ' - ' . strtoupper($level) . ': '. $msg . "\n";
+                    } else {
+                        $message = $dt->format('Y-m-d H:i:s') . ' - ' . strtoupper($level) . ': '. $msg . "\n";
+                    }
+
+                    if (file_put_contents($log_path, $message, FILE_APPEND) === false) {
+                        throw new Exception('Failed to write into a file...');
+                    }
+
+                    return true;
+                }
+            } catch (Exception $e) {
+                // This only happens when we have an error within this function.
+            }
+
+            echo 'Could not write to: ' . $log_path;
+            die;
+        }
+    }
+
+
+

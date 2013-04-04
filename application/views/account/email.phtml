@@ -1,0 +1,94 @@
+<?php $this->inc('templates/header'); ?>
+	
+	<script>
+	
+		var page = {
+			
+			"onload": function() {
+				page.form = $("form[name='email']").on("submit", page.submit);
+			},
+			
+			"submit": function(e) {
+			    e.preventDefault();
+			
+				var save_button = $("input[name='change_email']", page.form);
+				save_button.attr('disabled', 'disabled');
+				
+				$(".tiny.error", page.form).css('display', 'none').html('');
+				
+				$.ajax({
+					"url": "/account/email/update?rc=<?php echo core::http()->get_ref(); ?>", 
+					"data": {
+						"email": $("input[name='email']", page.form).val()
+					},
+					"success": function(response) {
+						if (response && response.status === 'good') {
+							alert("Your email address has been updated");
+						} else {
+							if (response && response.message) {
+								var message = response.message;
+							} else {
+								var message = "Your email address could not be updated";
+							}
+							
+							alert(message);
+							
+							if (response && response.errors) {
+								for (var k in response.errors) {
+									page.div.find('.id-error-' + k).html(response.errors[k]).css('display', 'block');
+								}
+							}
+						}
+						save_button.removeAttr('disabled');
+			    	},
+			    	"error": function() {
+			    		save_button.removeAttr('disabled');
+			    	}
+			    });
+			}
+		};
+		
+		$(page.onload);
+	
+	</script>
+	
+	<?php $this->inc('account/templates/sidebar'); ?>
+			
+	<form name="email" style="margin: 0 0 0 200px; display: block; width: 600px;">
+    	<div class="box">
+            <div class="regular-head">Change Email</div>
+            <div class="regular-body">
+				<table>		
+					<tr>
+						<td width="140" align="right">			
+							Current Email
+						</td>
+						<td width="10">&nbsp;</td>
+						<td>
+							<div style="margin: 10px 0;">
+								<strong><?php echo core::auth()->user()->email; ?></strong>
+							</div>
+						</td>
+					</tr>	
+					<tr>
+						<td width="140" align="right">			
+							New Email
+							<div class="id-error-email tiny error" style="display: none;"></div>
+						</td>
+						<td width="10">&nbsp;</td>
+						<td>
+							<input type="text" name="email" style="width: 200px;" value="<?php echo core::auth()->user()->email; ?>" />
+							<span id="email_status" class="tiny"></span>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="regular-foot">
+				<div style="margin: 0 0 0 150px;">
+					<input type="submit" value="Update" class="good" name="change_email" style="font-size: 15px;" />
+				</div>
+			</div>
+		</div>
+	</form>
+			
+<?php $this->inc('templates/footer'); ?>

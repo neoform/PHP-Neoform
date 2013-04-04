@@ -1,0 +1,22 @@
+<div style="position: absolute; top: 10px; left: 5px; width: 190px;">
+	<div class="box">
+        <div class="regular-body">
+        	<?php
+        		$segment1 = core::http()->segment(1);
+        		$segment2 = core::http()->segment(2);
+        	?>
+        	<ul class="top">
+        		<li class="<?php echo $segment2 === 'dashboard' ? ' active' : ''; ?>">
+        			<a href="/account">Home</a>
+        		</li>
+        		<li class="<?php echo $segment2 === 'info' || $segment2 === 'email' || $segment2 === 'password' ? ' active' : ''; ?>">
+        			<a href="/account/files">Files</a>
+        			<ul>
+        				<li<?php echo $segment2 === 'email' ? ' class="active"' : ''; ?>><a href="/account/email">Change Email</a></li>
+        				<li<?php echo $segment2 === 'password' ? ' class="active"' : ''; ?>><a href="/account/password">Change Password</a></li>
+        			</ul>
+        		</li>
+        	</ul>
+    	</div>
+    </div>
+</div>

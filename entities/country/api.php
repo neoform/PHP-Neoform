@@ -1,0 +1,119 @@
+<?php
+
+    class country_api {
+
+        public static function insert(array $info) {
+
+            $input = new input_collection($info);
+
+            self::_validate_insert($input);
+
+            if ($input->is_valid()) {
+                return country_dao::insert([
+                    'name'            => $input->name->val(),
+                    'name_normalized' => $input->name_normalized->val(),
+                    'iso2'            => $input->iso2->val(),
+                    'iso3'            => $input->iso3->val(),
+                ]);
+            }
+            throw $input->exception();
+        }
+
+        public static function update(country_model $country, array $info, $crush=false) {
+
+            $input = new input_collection($info);
+
+            self::_validate_update($country, $input);
+
+            if ($input->is_valid()) {
+                return country_dao::update(
+                    $country,
+                    $input->vals(
+                        [
+                            'name',
+                            'name_normalized',
+                            'iso2',
+                            'iso3',
+                        ],
+                        $crush
+                    )
+                );
+            }
+            throw $input->exception();
+        }
+
+        public static function delete(country_model $country) {
+            return country_dao::delete($country);
+        }
+
+        public static function _validate_insert(input_collection $input) {
+
+            // name
+            $input->name->cast('string')->length(1, 255)->callback(function($name) {
+                $id_arr = country_dao::by_name($name->val());
+                if (is_array($id_arr) && count($id_arr)) {
+                    $name->errors('already in use');
+                }
+            });
+
+            // name_normalized
+            $input->name_normalized->cast('string')->length(1, 255)->callback(function($name_normalized) {
+                $id_arr = country_dao::by_name_normalized($name_normalized->val());
+                if (is_array($id_arr) && count($id_arr)) {
+                    $name_normalized->errors('already in use');
+                }
+            });
+
+            // iso2
+            $input->iso2->cast('string')->length(1, 2)->callback(function($iso2) {
+                $id_arr = country_dao::by_iso2($iso2->val());
+                if (is_array($id_arr) && count($id_arr)) {
+                    $iso2->errors('already in use');
+                }
+            });
+
+            // iso3
+            $input->iso3->cast('string')->length(1, 3)->callback(function($iso3) {
+                $id_arr = country_dao::by_iso3($iso3->val());
+                if (is_array($id_arr) && count($id_arr)) {
+                    $iso3->errors('already in use');
+                }
+            });
+        }
+
+        public static function _validate_update(country_model $country, input_collection $input) {
+
+            // name
+            $input->name->cast('string')->optional()->length(1, 255)->callback(function($name) use ($country) {
+                $id_arr = country_dao::by_name($name->val());
+                if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $country->id) {
+                    $name->errors('already in use');
+                }
+            });
+
+            // name_normalized
+            $input->name_normalized->cast('string')->optional()->length(1, 255)->callback(function($name_normalized) use ($country) {
+                $id_arr = country_dao::by_name_normalized($name_normalized->val());
+                if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $country->id) {
+                    $name_normalized->errors('already in use');
+                }
+            });
+
+            // iso2
+            $input->iso2->cast('string')->optional()->length(1, 2)->callback(function($iso2) use ($country) {
+                $id_arr = country_dao::by_iso2($iso2->val());
+                if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $country->id) {
+                    $iso2->errors('already in use');
+                }
+            });
+
+            // iso3
+            $input->iso3->cast('string')->optional()->length(1, 3)->callback(function($iso3) use ($country) {
+                $id_arr = country_dao::by_iso3($iso3->val());
+                if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $country->id) {
+                    $iso3->errors('already in use');
+                }
+            });
+        }
+
+    }

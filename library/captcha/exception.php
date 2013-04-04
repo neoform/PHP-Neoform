@@ -1,2 +1,2 @@
 <?php
-	class captcha_exception extends Exception {}
+    class captcha_exception extends Exception {}

@@ -1,3 +1,3 @@
 <?php
 
-	class config_exception extends exception {}
+    class config_exception extends exception {}

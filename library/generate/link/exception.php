@@ -1,5 +1,5 @@
 <?php
 
-	class generate_link_exception extends generate_exception {
-	
-	}
+    class generate_link_exception extends generate_exception {
+
+    }

@@ -1,90 +1,90 @@
 <?php $this->inc('templates/header'); ?>
-	
-<script type="text/javascript">	
-	
-	var page = {
-		"onload": function() {
-			page.form = $("form[name='login']").submit(page.verify);
-			$("input[name='email']", page.form).focus();
-		},
-		
-		"verify": function(e) {
-			e.preventDefault();
-		
-			$.ajax({ 
-				"url": "<?php echo core::http()->server('surl'); ?>account/ajax/login/verify?rc=<?php echo core::http()->get_ref(); ?>", 
-				"data": {
-					"email": 	$("input[name='email']", page.form).val(),
-					"password": $("input[name='password']", page.form).val(),
-					"remember": $("input[name='remember']", page.form).attr('checked') ? 1 : 0
-				},
-				"success": function(response) {
-					
-					if (response.status === 'good') {
-						location.href = "/<?php echo htmlspecialchars($this->bounce); ?>";
-						return;
-					} else {
-						if (response.message) {
-							var message = response.message;
-						} else {
-							var message = "There was a problem logging you in.";
-						}
-						
-						alert(message);	
-					}
-		    	}
-		    });
-		}
-	};
-			
-	$(page.onload);
-		
-</script>	
 
-<form name="login" style="margin: 0 auto; width: 600px; display: block;">	
+<script type="text/javascript">
+
+    var page = {
+        "onload": function() {
+            page.form = $("form[name='login']").submit(page.verify);
+            $("input[name='email']", page.form).focus();
+        },
+
+        "verify": function(e) {
+            e.preventDefault();
+
+            $.ajax({
+                "url": "<?php echo core::http()->server('surl'); ?>account/ajax/login/verify?rc=<?php echo core::http()->get_ref(); ?>",
+                "data": {
+                    "email":     $("input[name='email']", page.form).val(),
+                    "password": $("input[name='password']", page.form).val(),
+                    "remember": $("input[name='remember']", page.form).attr('checked') ? 1 : 0
+                },
+                "success": function(response) {
+
+                    if (response.status === 'good') {
+                        location.href = "/<?php echo htmlspecialchars($this->bounce); ?>";
+                        return;
+                    } else {
+                        if (response.message) {
+                            var message = response.message;
+                        } else {
+                            var message = "There was a problem logging you in.";
+                        }
+
+                        alert(message);
+                    }
+                }
+            });
+        }
+    };
+
+    $(page.onload);
+
+</script>
+
+<form name="login" style="margin: 0 auto; width: 600px; display: block;">
     <div class="box">
         <div class="regular-head">Login</div>
         <div class="regular-body">
-        	<table width="100%">
-        		<?php if ($this->message): ?>
-        			<tr>
-        				<td width="90" align="right">			
-        					&nbsp;
-        				</td>
-        				<td width="10">&nbsp;</td>
-        				<td>
-        					<div><?php echo htmlspecialchars($this->message); ?></div>
-        				</td>
-        			</tr>
-        		<?php endif; ?>
-        	
-        		<tr>
-        			<td width="90" align="right">			
-        				Email
-        			</td>
-        			<td width="10">&nbsp;</td>
-        			<td>
-        				<input type="text" name="email" style="width: 375px;" tabindex="1" />
-        			</td>
-        		</tr>
-        		<tr>
-        			<td width="90" align="right">
-        				Password
-        			</td>
-        			<td width="10">&nbsp;</td>
-        			<td>
-        				<input type="password" name="password" style="width: 220px;" tabindex="2" />
-        				&nbsp;
-        				<a href="/account/passwordretreive" class="button">Forgot Your Password?</a>
-        			</td>
-        		</tr>
-        	</table>
+            <table width="100%">
+                <?php if ($this->message): ?>
+                    <tr>
+                        <td width="90" align="right">
+                            &nbsp;
+                        </td>
+                        <td width="10">&nbsp;</td>
+                        <td>
+                            <div><?php echo htmlspecialchars($this->message); ?></div>
+                        </td>
+                    </tr>
+                <?php endif; ?>
+
+                <tr>
+                    <td width="90" align="right">
+                        Email
+                    </td>
+                    <td width="10">&nbsp;</td>
+                    <td>
+                        <input type="text" name="email" style="width: 375px;" tabindex="1" />
+                    </td>
+                </tr>
+                <tr>
+                    <td width="90" align="right">
+                        Password
+                    </td>
+                    <td width="10">&nbsp;</td>
+                    <td>
+                        <input type="password" name="password" style="width: 220px;" tabindex="2" />
+                        &nbsp;
+                        <a href="/account/passwordretreive" class="button">Forgot Your Password?</a>
+                    </td>
+                </tr>
+            </table>
         </div>
         <div class="regular-foot">
-        	<input type="submit" value="Login &raquo;" tabindex="4" style="margin: 3px 0 0 100px;" />
-        	<input type="checkbox" name="remember" id="login_remember" tabindex="3" /> <label for="login_remember">Keep me logged in</label>
-    	</div>
-	</div>
+            <input type="submit" value="Login &raquo;" tabindex="4" style="margin: 3px 0 0 100px;" />
+            <input type="checkbox" name="remember" id="login_remember" tabindex="3" /> <label for="login_remember">Keep me logged in</label>
+        </div>
+    </div>
 </form>
 
 <?php $this->inc('templates/footer'); ?>

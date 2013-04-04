@@ -22,6 +22,6 @@
          * @return bool
          */
         public function allowed($name) {
-			return array_search($name, $this->field('name')) !== false;
-		}
-	}
+            return array_search($name, $this->field('name')) !== false;
+        }
+    }

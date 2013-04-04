@@ -8,13 +8,13 @@
 
         use core_instance;
 
-		protected $session_engine;
-		protected $hash;
+        protected $session_engine;
+        protected $hash;
 
-		public function __construct() {
-			//initialize the session storage engine
-			$this->hash = auth_lib::get_hash_cookie();
-		}
+        public function __construct() {
+            //initialize the session storage engine
+            $this->hash = auth_lib::get_hash_cookie();
+        }
 
         /**
          * Get a flash value by key
@@ -24,8 +24,8 @@
          * @return mixed
          */
         public function get($key) {
-			return core::cache_memcache(core::config()->session['memcache_pool'])->get($this->hash . ':' . $key);
-		}
+            return core::cache_memcache(core::config()->session['memcache_pool'])->get($this->hash . ':' . $key);
+        }
 
         /**
          * Set a value in flash
@@ -37,12 +37,12 @@
          * @return mixed
          */
         public function set($key, $val, $ttl=null) {
-			return core::cache_memcache(core::config()->session['memcache_pool'])->set(
-				$this->hash . ':' . $key,
-				$val,
-				$ttl !== null ? $ttl : (int) core::config()->session['default_flash_lifetime']
-			);
-		}
+            return core::cache_memcache(core::config()->session['memcache_pool'])->set(
+                $this->hash . ':' . $key,
+                $val,
+                $ttl !== null ? $ttl : (int) core::config()->session['default_flash_lifetime']
+            );
+        }
 
         /**
          * Delete a value from flash
@@ -52,6 +52,6 @@
          * @return mixed
          */
         public function del($key) {
-			return core::cache_memcache(core::config()->session['memcache_pool'])->delete($this->hash . ':' . $key);
-		}
-	}
+            return core::cache_memcache(core::config()->session['memcache_pool'])->delete($this->hash . ':' . $key);
+        }
+    }

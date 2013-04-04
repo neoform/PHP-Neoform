@@ -5,19 +5,19 @@
      */
     class generate {
 
-		protected $table;
-		protected $code = '';
-		protected $all 	= false;
+        protected $table;
+        protected $code = '';
+        protected $all  = false;
 
         /**
          * @param sql_parser_table $table
          * @param array            $options
          */
         public function __construct(sql_parser_table $table, array $options = []) {
-			$this->table = $table;
-			$this->all = (bool) in_array('all', $options);
-			$this->code();
-		}
+            $this->table = $table;
+            $this->all = (bool) in_array('all', $options);
+            $this->code();
+        }
 
         /**
          * Get generated code
@@ -25,8 +25,8 @@
          * @return string
          */
         public function get_code() {
-			return $this->code;
-		}
+            return $this->code;
+        }
 
         /**
          * Takes a bunch of names and turns: [a, b, c] and turns it into: 'a, b and c'
@@ -63,4 +63,4 @@
             }
             return $len;
         }
-	}
+    }

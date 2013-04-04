@@ -1,6 +1,6 @@
 <?php
 
-	class http_lib {
+    class http_lib {
 
         /**
          * Checks the http segments, if they don't match the $segment_regex then user is redirected to a 404 page
@@ -12,4 +12,4 @@
                 core::output()->redirect('error/not_found', 301);
             }
         }
-	}
+    }

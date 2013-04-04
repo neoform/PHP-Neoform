@@ -1,5 +1,5 @@
 <?php
 
-	class locale_message_lib {
+    class locale_message_lib {
 
-	}
+    }

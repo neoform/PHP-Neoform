@@ -1,3 +1,3 @@
 <?php
 
-	class email_exception extends exception {}
+    class email_exception extends exception {}

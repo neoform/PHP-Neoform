@@ -1,9 +1,9 @@
 <?php
 
-	class disk_lib {
+    class disk_lib {
 
-		const READ  = 1;
-		const WRITE = 2;
+        const READ  = 1;
+        const WRITE = 2;
 
         /**
          * Read directory (recursively) and return file paths
@@ -14,22 +14,22 @@
          * @return array file paths
          */
         public static function readdir($path, $recursive=false) {
-			$return = [];
-			if ($handle = opendir($path)) {
-				while (($file = readdir($handle)) !== false) {
-					if ($file !== '.' && $file !== '..') {
-						$filepath = $path . '/' . $file;
-						if ($recursive && is_dir($filepath)) {
-							$return[$file] = self::readdir($filepath, $recursive);
-						} else {
-							$return[$file] = (is_readable($filepath) ? self::READ : 0) | (is_writeable($filepath) ? self::WRITE : 0);
-						}
-					}
-				}
-				closedir($handle);
-			}
-			return $return;
-		}
+            $return = [];
+            if ($handle = opendir($path)) {
+                while (($file = readdir($handle)) !== false) {
+                    if ($file !== '.' && $file !== '..') {
+                        $filepath = $path . '/' . $file;
+                        if ($recursive && is_dir($filepath)) {
+                            $return[$file] = self::readdir($filepath, $recursive);
+                        } else {
+                            $return[$file] = (is_readable($filepath) ? self::READ : 0) | (is_writeable($filepath) ? self::WRITE : 0);
+                        }
+                    }
+                }
+                closedir($handle);
+            }
+            return $return;
+        }
 
         /**
          * Put contents into a file, even if the parent directory does not exist, and chowns it to be www-data and 0777
@@ -41,27 +41,27 @@
          */
         public static function file_put_contents($path, $contents) {
 
-			$dir = dirname($path);
+            $dir = dirname($path);
 
-			if (! file_exists($dir)) {
-				try {
-					mkdir($dir, 0777, true);
+            if (! file_exists($dir)) {
+                try {
+                    mkdir($dir, 0777, true);
                     self::www_chown($dir);
                 } catch (exception $e) {
 
-				}
-			}
+                }
+            }
 
-			try {
-				$return = file_put_contents($path, $contents);
+            try {
+                $return = file_put_contents($path, $contents);
                 self::www_chown($path);
                 return $return;
-			} catch (exception $e) {
+            } catch (exception $e) {
 
-			}
+            }
 
-			return false;
-		}
+            return false;
+        }
 
         /**
          * Read a segment of a file
@@ -111,4 +111,4 @@
                 @chgrp($path, 'www-data');
             }
         }
-	}
+    }

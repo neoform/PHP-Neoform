@@ -18,8 +18,8 @@
          * @return bool
          */
         public static function exists($k) {
-			return array_key_exists($k, self::$local);
-		}
+            return array_key_exists($k, self::$local);
+        }
 
         /**
          * Caches a single entry in memory
@@ -31,11 +31,11 @@
          * @return mixed
          */
         public static function single($key, callable $source_func, $args=null) {
-			if (! array_key_exists($key, self::$local)) {
-				self::$local[$key] = $source_func($args);
-			}
-			return self::$local[$key];
-		}
+            if (! array_key_exists($key, self::$local)) {
+                self::$local[$key] = $source_func($args);
+            }
+            return self::$local[$key];
+        }
 
         /**
          * The returned rows from $db_func must have their keys be set to the id of the record
@@ -50,47 +50,47 @@
          */
         public static function multiple(array $rows, callable $key_func, callable $db_func, $args=null) {
 
-			//this function will preserve the order of the ids
-			if (! count($rows)) {
-				return [];
-			}
+            //this function will preserve the order of the ids
+            if (! count($rows)) {
+                return [];
+            }
 
-			//make a list of keys
-			$keys = [];
-			foreach ($rows as $k => $row) {
-				if (is_array($row)) {
-					$keys[$k] = call_user_func_array($key_func, $row);
-				} else {
-					$keys[$k] = $key_func($row);
-				}
-			}
+            //make a list of keys
+            $keys = [];
+            foreach ($rows as $k => $row) {
+                if (is_array($row)) {
+                    $keys[$k] = call_user_func_array($key_func, $row);
+                } else {
+                    $keys[$k] = $key_func($row);
+                }
+            }
 
-			//check local memory
-			$valid_rows = [];
-			foreach ($rows as $k => $row) {
-				$key = $keys[$k];
-				if (array_key_exists($key, self::$local)) {
-					$valid_rows[$k] = self::$local[$key];
-					unset($rows[$k]);
-				}
-			}
+            //check local memory
+            $valid_rows = [];
+            foreach ($rows as $k => $row) {
+                $key = $keys[$k];
+                if (array_key_exists($key, self::$local)) {
+                    $valid_rows[$k] = self::$local[$key];
+                    unset($rows[$k]);
+                }
+            }
 
-			//if not all was pulled from memory
-			if (count($rows)) {
-				$db_rows = $db_func($rows, $args);
-				if (is_array($db_rows) && count($db_rows)) {
-					$valid_rows += $db_rows;
-					foreach ($db_rows as $k => $row) {
-						self::$local[$keys[$k]] = $row;
-					}
-				}
+            //if not all was pulled from memory
+            if (count($rows)) {
+                $db_rows = $db_func($rows, $args);
+                if (is_array($db_rows) && count($db_rows)) {
+                    $valid_rows += $db_rows;
+                    foreach ($db_rows as $k => $row) {
+                        self::$local[$keys[$k]] = $row;
+                    }
+                }
 
-				//if this is not 100% from memory, sort it
-				ksort($valid_rows);
-			}
+                //if this is not 100% from memory, sort it
+                ksort($valid_rows);
+            }
 
-			return $valid_rows;
-		}
+            return $valid_rows;
+        }
 
         /**
          * Delete a record from memory
@@ -98,10 +98,10 @@
          * @param string $key
          */
         public static function delete($key){
-			if (array_key_exists($key, self::$local)) {
-				unset(self::$local[$key]);
-			}
-		}
+            if (array_key_exists($key, self::$local)) {
+                unset(self::$local[$key]);
+            }
+        }
 
         /**
          * Delete multiple records from memory
@@ -109,14 +109,14 @@
          * @param array $keys
          */
         public static function delete_multi(array $keys){
-			if (count($keys)) {
-				foreach ($keys as $key) {
-					if (array_key_exists($key, self::$local)) {
-						unset(self::$local[$key]);
-					}
-				}
-			}
-		}
+            if (count($keys)) {
+                foreach ($keys as $key) {
+                    if (array_key_exists($key, self::$local)) {
+                        unset(self::$local[$key]);
+                    }
+                }
+            }
+        }
 
         /**
          * Get record from memory
@@ -127,12 +127,12 @@
          * @throws cache_memory_exception
          */
         public static function get($k) {
-			if (array_key_exists($k, self::$local)) {
-				return self::$local[$k];
-			} else {
-				throw new cache_memory_exception('Variable does not exist in memory');
-			}
-		}
+            if (array_key_exists($k, self::$local)) {
+                return self::$local[$k];
+            } else {
+                throw new cache_memory_exception('Variable does not exist in memory');
+            }
+        }
 
         /**
          * Set record in memory
@@ -143,8 +143,8 @@
          * @return mixed
          */
         public static function set($k, $v) {
-			return self::$local[$k] = $v;
-		}
+            return self::$local[$k] = $v;
+        }
 
         /**
          * Get multiple records from memory
@@ -154,14 +154,14 @@
          * @return array
          */
         public static function get_multi(array $keys) {
-		    $matches = [];
-		    foreach ($keys as $index => $key) {
-				if (array_key_exists($key, self::$local)) {
-					$matches[$index] = self::$local[$key];
-				}
+            $matches = [];
+            foreach ($keys as $index => $key) {
+                if (array_key_exists($key, self::$local)) {
+                    $matches[$index] = self::$local[$key];
+                }
             }
             return $matches;
-		}
+        }
 
         /**
          * Set multiple records
@@ -183,8 +183,8 @@
          * @return array
          */
         public static function dump() {
-			return self::$local;
-		}
+            return self::$local;
+        }
 
         /**
          * Increment a record's value
@@ -195,11 +195,11 @@
          * @return mixed
          */
         public static function increment($key, $offset=1){
-			if (array_key_exists($key, self::$local)) {
-				self::$local[$key] += $offset;
-				return self::$local[$key];
-			}
-		}
+            if (array_key_exists($key, self::$local)) {
+                self::$local[$key] += $offset;
+                return self::$local[$key];
+            }
+        }
 
         /**
          * Decrement a record's value
@@ -209,10 +209,10 @@
          *
          * @return mixed
          */
-		public static function decrement($key, $offset=1){
-			if (array_key_exists($key, self::$local)) {
-				self::$local[$key] -= $offset;
-				return self::$local[$key];
-			}
-		}
-	}
+        public static function decrement($key, $offset=1){
+            if (array_key_exists($key, self::$local)) {
+                self::$local[$key] -= $offset;
+                return self::$local[$key];
+            }
+        }
+    }

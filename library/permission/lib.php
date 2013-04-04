@@ -1,5 +1,5 @@
 <?php
 
-	class permission_lib {
+    class permission_lib {
 
-	}
+    }

@@ -1,75 +1,75 @@
 <?php
 
-	class locale_dao extends record_dao implements locale_definition {
+    class locale_dao extends record_dao implements locale_definition {
 
-		const BY_ALL = 'by_all';
+        const BY_ALL = 'by_all';
 
-		// READS
+        // READS
 
-		public static function all() {
-			return parent::_all(self::BY_ALL);
-		}
+        public static function all() {
+            return parent::_all(self::BY_ALL);
+        }
 
-		// WRITES
+        // WRITES
 
-		public static function insert(array $info) {
-			$return = parent::_insert($info);
+        public static function insert(array $info) {
+            $return = parent::_insert($info);
 
-			// Delete Cache
-			// BY_ALL
-			parent::_cache_delete(
-				parent::_build_key(self::BY_ALL)
-			);
+            // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
 
-			return $return;
-		}
+            return $return;
+        }
 
-		public static function inserts(array $infos) {
-			$return = parent::_inserts($infos);
+        public static function inserts(array $infos) {
+            $return = parent::_inserts($infos);
 
-			// Delete Cache
-			// BY_ALL
-			parent::_cache_delete(
-				parent::_build_key(self::BY_ALL)
-			);
+            // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
 
-			return $return;
-		}
+            return $return;
+        }
 
-		public static function update(locale_model $locale, array $info) {
-			$updated_model = parent::_update($locale, $info);
+        public static function update(locale_model $locale, array $info) {
+            $updated_model = parent::_update($locale, $info);
 
-			// Delete Cache
-			// BY_ALL
-			parent::_cache_delete(
-				parent::_build_key(self::BY_ALL)
-			);
+            // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
 
-			return $updated_model;
-		}
+            return $updated_model;
+        }
 
-		public static function delete(locale_model $locale) {
-			$return = parent::_delete($locale);
+        public static function delete(locale_model $locale) {
+            $return = parent::_delete($locale);
 
-			// Delete Cache
-			// BY_ALL
-			parent::_cache_delete(
-				parent::_build_key(self::BY_ALL)
-			);
+            // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
 
-			return $return;
-		}
+            return $return;
+        }
 
-		public static function deletes(locale_collection $locales) {
-			$return = parent::_deletes($locales);
+        public static function deletes(locale_collection $locales) {
+            $return = parent::_deletes($locales);
 
-			// Delete Cache
-			// BY_ALL
-			parent::_cache_delete(
-				parent::_build_key(self::BY_ALL)
-			);
+            // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
 
-			return $return;
-		}
+            return $return;
+        }
 
-	}
+    }

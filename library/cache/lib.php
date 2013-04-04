@@ -18,12 +18,12 @@
             $engine = "cache_{$engine}_driver";
 
             // Memory
-			cache_memory_dao::increment($key, $offset);
+            cache_memory_dao::increment($key, $offset);
 
             if ($engine) {
                 $engine::increment($key, $pool, $offset);
             }
-		}
+        }
 
         /**
          * Decrement the value of a cached entry (only works if the value is an int)
@@ -38,12 +38,12 @@
             $engine = "cache_{$engine}_driver";
 
             // Memory
-			cache_memory_dao::decrement($key, $offset);
+            cache_memory_dao::decrement($key, $offset);
 
             if ($engine) {
                 $engine::decrement($key, $pool, $offset);
             }
-		}
+        }
 
         /**
          * Checks cache for an entry, pulls from source $data_func() if not present in cache
@@ -62,29 +62,29 @@
 
             $engine = "cache_{$engine}_driver";
 
-			// Memory
-			if (cache_memory_dao::exists($key)) {
-				return cache_memory_dao::get($key);
-			}
+            // Memory
+            if (cache_memory_dao::exists($key)) {
+                return cache_memory_dao::get($key);
+            }
 
             if ($engine && $data = $engine::get($key, $pool)) {
                 $data = current($data);
             } else {
                 //get the data from it's original source
-				$data = $data_func($args);
-			}
+                $data = $data_func($args);
+            }
 
-			if ($data !== null || $cache_empty_results) {
+            if ($data !== null || $cache_empty_results) {
 
-				//save to memory (always)
-				cache_memory_dao::set($key, $data);
+                //save to memory (always)
+                cache_memory_dao::set($key, $data);
 
                 // cache data to engine
-				$engine::set($key, $pool, $data, $ttl);
-			}
+                $engine::set($key, $pool, $data, $ttl);
+            }
 
-			return $data;
-		}
+            return $data;
+        }
 
         /**
          * Checks cache for an entry, pulls from source $data_func() if not present in cache
@@ -112,37 +112,37 @@
 
             $engine = "cache_{$engine}_driver";
 
-			//this function will preserve the order of the rows
+            //this function will preserve the order of the rows
 
-			if (! count($rows)) {
-				return [];
-			}
-
-			//make a list of keys
-			$key_lookup = [];
-			foreach ($rows as $k => $fields) {
-				$key_lookup[$k] = $key_func($fields);
-			}
-
-			$missing_rows = $key_lookup; // used for writing to cache
-			$matched_rows = $key_lookup; // this results in the array keeping the exact order
-
-			/*
-			 * READS
-			 */
-
-			//MEMORY
-			$found_in_memory = cache_memory_dao::get_multi($missing_rows);
-			if (count($found_in_memory)) {
-    			$matched_rows = $found_in_memory + $matched_rows;
-    			foreach ($found_in_memory as $index => $key) {
-    				unset($missing_rows[$index]);
-    			}
+            if (! count($rows)) {
+                return [];
             }
 
-			if (! count($missing_rows)) {
-			    return $matched_rows;
-			}
+            //make a list of keys
+            $key_lookup = [];
+            foreach ($rows as $k => $fields) {
+                $key_lookup[$k] = $key_func($fields);
+            }
+
+            $missing_rows = $key_lookup; // used for writing to cache
+            $matched_rows = $key_lookup; // this results in the array keeping the exact order
+
+            /*
+             * READS
+             */
+
+            //MEMORY
+            $found_in_memory = cache_memory_dao::get_multi($missing_rows);
+            if (count($found_in_memory)) {
+                $matched_rows = $found_in_memory + $matched_rows;
+                foreach ($found_in_memory as $index => $key) {
+                    unset($missing_rows[$index]);
+                }
+            }
+
+            if (! count($missing_rows)) {
+                return $matched_rows;
+            }
 
             $rows_not_in_memory = $missing_rows;
 
@@ -153,27 +153,27 @@
                 }
             }
 
-			//Get any missing data from the origin
-			if ($missing_rows) {
+            //Get any missing data from the origin
+            if ($missing_rows) {
 
                 // duplicate the array, so we can know what rows need to be stored in cache
                 $rows_not_in_cache = $missing_rows;
 
-				if ($origin_rows = $data_func(array_intersect_key($rows, $missing_rows), $args)) {
+                if ($origin_rows = $data_func(array_intersect_key($rows, $missing_rows), $args)) {
 
-					// crunch the data sets together
-					$matched_rows = $origin_rows + $matched_rows;
+                    // crunch the data sets together
+                    $matched_rows = $origin_rows + $matched_rows;
 
-					foreach (array_keys($origin_rows) as $index) {
-					    unset($missing_rows[$index]);
-					}
-				}
+                    foreach (array_keys($origin_rows) as $index) {
+                        unset($missing_rows[$index]);
+                    }
+                }
 
-				// still missing? doesn't exist then.. null it
-				if (count($missing_rows)) {
-        			foreach (array_keys($missing_rows) as $index) {
-        			    $matched_rows[$index] = null;
-        			}
+                // still missing? doesn't exist then.. null it
+                if (count($missing_rows)) {
+                    foreach (array_keys($missing_rows) as $index) {
+                        $matched_rows[$index] = null;
+                    }
                 }
             } else {
                 $rows_not_in_cache = null;
@@ -207,8 +207,8 @@
                 $engine::set_multi($save_to_cache, $pool, $ttl);
             }
 
-			return $matched_rows;
-		}
+            return $matched_rows;
+        }
 
         /**
          * Delete a cache entry
@@ -252,4 +252,4 @@
                 }
             }
         }
-	}
+    }

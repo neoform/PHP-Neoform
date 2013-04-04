@@ -1,3 +1,3 @@
 <?php
-	
-	class http_exception extends core_exception {}
+
+    class http_exception extends core_exception {}

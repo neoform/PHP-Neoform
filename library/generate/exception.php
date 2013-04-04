@@ -1,12 +1,11 @@
 <?php
 
-	class generate_exception extends generate {
+    class generate_exception extends generate {
 
-		public function code() {
+        public function code() {
 
-			$this->code .= '<?php'."\n\n";
-			$this->code .= "\tclass " . $this->table->name . "_exception extends model_exception {\n\n";
-			$this->code .= "\t}\n";
-		}
-
-	}
+            $this->code .= '<?php'."\n\n";
+            $this->code .= "\tclass " . $this->table->name . "_exception extends model_exception {\n\n";
+            $this->code .= "\t}\n";
+        }
+    }

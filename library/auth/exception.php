@@ -1,5 +1,5 @@
 <?php
 
-	class auth_exception extends model_exception {
+    class auth_exception extends model_exception {
 
-	}
+    }

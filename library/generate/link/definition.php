@@ -1,6 +1,6 @@
 <?php
 
-	class generate_link_definition extends generate_definition {
+    class generate_link_definition extends generate_definition {
 
         protected function constants() {
 
@@ -11,4 +11,4 @@
             $this->code .= "\t\tconst CACHE_ENGINE = 'memcache';\n";
         }
 
-	}
+    }

@@ -17,29 +17,29 @@
     */
     .CoreDialog a.button {
         color: #333;
-    	padding: 7px 14px;
-    	display: inline-block;
-    	font-size: 13px;
-    	vertical-align: middle;
-    	line-height: 17px;
-    	font-weight: bold;
+        padding: 7px 14px;
+        display: inline-block;
+        font-size: 13px;
+        vertical-align: middle;
+        line-height: 17px;
+        font-weight: bold;
     }
         .CoreDialog a.button:hover {
             -webkit-box-shadow: inset 0px 1px 0px 0px #fff;
-        	   -moz-box-shadow: inset 0px 1px 0px 0px #fff;
-        	        box-shadow: inset 0px 1px 0px 0px #fff;
-        	background: -webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
-        	background: -moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
-        	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
-        	text-shadow: 1px 1px 0px #ffffff;
-        	background-color: #ededed;
-        	-webkit-border-radius: 4px;
-        	   -moz-border-radius: 4px;
-        	        border-radius: 4px;
-        	border: 1px solid #c9c9c9;
-        	color: #000;
-        	padding: 6px 13px;
-        	text-decoration: none;
+               -moz-box-shadow: inset 0px 1px 0px 0px #fff;
+                    box-shadow: inset 0px 1px 0px 0px #fff;
+            background: -webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
+            background: -moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
+            text-shadow: 1px 1px 0px #ffffff;
+            background-color: #ededed;
+            -webkit-border-radius: 4px;
+               -moz-border-radius: 4px;
+                    border-radius: 4px;
+            border: 1px solid #c9c9c9;
+            color: #000;
+            padding: 6px 13px;
+            text-decoration: none;
         }
 
         .CoreDialog a.button:active {
@@ -53,24 +53,24 @@
     .CoreDialog form input[type="submit"],
     .CoreDialog form input[type="button"],
     .CoreDialog form button {
-    	-webkit-box-shadow: inset 0px 1px 0px 0px #fff;
-    	   -moz-box-shadow: inset 0px 1px 0px 0px #fff;
-    	        box-shadow: inset 0px 1px 0px 0px #fff;
-    	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
-    	background:-moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
-    	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
-    	background-color:#ededed;
-    	-moz-border-radius:4px;
-    	-webkit-border-radius:4px;
-    	border-radius:4px;
-    	border:1px solid #aaa;
-    	display:inline-block;
-    	color:#333;
-    	font-size:13px;
-    	font-weight:bold;
-    	padding: 5px 20px;
-    	text-decoration:none;
-    	text-shadow:1px 1px 0px #ffffff;
+        -webkit-box-shadow: inset 0px 1px 0px 0px #fff;
+           -moz-box-shadow: inset 0px 1px 0px 0px #fff;
+                box-shadow: inset 0px 1px 0px 0px #fff;
+        background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
+        background:-moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
+        filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
+        background-color:#ededed;
+        -moz-border-radius:4px;
+        -webkit-border-radius:4px;
+        border-radius:4px;
+        border:1px solid #aaa;
+        display:inline-block;
+        color:#333;
+        font-size:13px;
+        font-weight:bold;
+        padding: 5px 20px;
+        text-decoration:none;
+        text-shadow:1px 1px 0px #ffffff;
     }
         /**
         * Hover
@@ -79,13 +79,13 @@
         .CoreDialog form input[type="button"]:hover,
         .CoreDialog form button:hover {
             background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
-        	background:-moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
-        	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
-        	background-color:#ededed;
-        	-webkit-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .1);
-        	   -moz-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .1);
-        	        box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .1);
-	        border: 1px solid #999;
+            background:-moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
+            filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
+            background-color:#ededed;
+            -webkit-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .1);
+               -moz-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .1);
+                    box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .1);
+            border: 1px solid #999;
             cursor: pointer;
             color: #333;
         }
@@ -95,7 +95,7 @@
         */
         .CoreDialog input[type="submit"]:active, .CoreDialog input[type="button"]:active, .CoreDialog button:active {
             position: relative;
-        	top: 1px;
+            top: 1px;
         }
 
         /**
@@ -105,8 +105,8 @@
         .CoreDialog form input[type="button"]:focus,
         .CoreDialog form button:focus {
             -webkit-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65);
-        	   -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65);
-        	        box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65);
+               -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65);
+                    box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65);
             outline: 0;
         }
 
@@ -117,8 +117,8 @@
         .CoreDialog form input[type="button"]:hover:focus,
         .CoreDialog form button:hover:focus {
             -webkit-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .1);
-        	   -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .1);
-        	        box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .1);
+               -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .1);
+                    box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(0, 0, 0, .1);
         }
 
         /**
@@ -185,8 +185,8 @@
         .CoreDialog form input[type="button"].good:hover,
         .CoreDialog form button.good:hover  {
             -webkit-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 171, 22, .1);
-        	   -moz-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 171, 22, .1);
-        	        box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 171, 22, .1);
+               -moz-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 171, 22, .1);
+                    box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 171, 22, .1);
             border:1px solid #7e9f82;
         }
 
@@ -197,8 +197,8 @@
         .CoreDialog form input[type="button"].good:focus:hover,
         .CoreDialog form button.good:focus:hover {
             -webkit-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 171, 22, .1);
-        	   -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 171, 22, .1);
-        	        box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 171, 22, .1);
+               -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 171, 22, .1);
+                    box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 171, 22, .1);
         }
 
         /**
@@ -208,8 +208,8 @@
         .CoreDialog form input[type="button"].special:hover,
         .CoreDialog form button.special:hover  {
             -webkit-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 106, 22, .1);
-        	   -moz-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 106, 22, .1);
-        	        box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 106, 22, .1);
+               -moz-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 106, 22, .1);
+                    box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 106, 22, .1);
             border:1px solid #be9f7b;
         }
 
@@ -220,8 +220,8 @@
         .CoreDialog form input[type="button"].special:focus:hover,
         .CoreDialog form button.special:focus:hover  {
             -webkit-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 106, 22, .1);
-        	   -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 106, 22, .1);
-        	        box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 106, 22, .1);
+               -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 106, 22, .1);
+                    box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 106, 22, .1);
             border:1px solid #be9f7b;
         }
 
@@ -232,8 +232,8 @@
         .CoreDialog form input[type="button"].info:hover,
         .CoreDialog form button.info:hover  {
             -webkit-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 61, 171, .1);
-        	   -moz-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 61, 171, .1);
-        	        box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 61, 171, .1);
+               -moz-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 61, 171, .1);
+                    box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 61, 171, .1);
             border:1px solid #8795c0;
         }
 
@@ -244,8 +244,8 @@
         .CoreDialog form input[type="button"].info:focus:hover,
         .CoreDialog form button.info:focus:hover  {
             -webkit-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 61, 171, .1);
-        	   -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 61, 171, .1);
-        	        box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 61, 171, .1);
+               -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 61, 171, .1);
+                    box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(0, 0, 0, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(22, 61, 171, .1);
             border:1px solid #8795c0;
         }
 
@@ -256,8 +256,8 @@
         .CoreDialog form input[type="button"].error:hover,
         .CoreDialog form button.error:hover  {
             -webkit-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
-        	   -moz-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
-        	        box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
+               -moz-box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
+                    box-shadow: inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
             border:1px solid #bc8484;
         }
 
@@ -277,8 +277,8 @@
         .CoreDialog form input[type="button"].error:focus:hover,
         .CoreDialog form button.error:focus:hover  {
             -webkit-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(108, 12, 12, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
-        	   -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(108, 12, 12, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
-        	        box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(108, 12, 12, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
+               -moz-box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(108, 12, 12, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
+                    box-shadow: inset 0px 1px 0px 0px #fff, 0 0 1px 1px rgba(108, 12, 12, .65), inset 0px 1px 0px 0px #fff, inset 0 0 5px 3px rgba(171, 22, 22, .1);
             border:1px solid #bc8484;
         }
 

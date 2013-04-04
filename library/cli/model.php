@@ -141,7 +141,7 @@
          * @return string
          */
         public static function readline() {
-			return trim(fgets(STDIN));
-		}
+            return trim(fgets(STDIN));
+        }
     }
 

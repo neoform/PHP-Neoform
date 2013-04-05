@@ -46,3 +46,6 @@ Loading a user model
 ```
 $user = new user_model(28); // returns user model 28
 ```
+
+[More info can be found in the wiki.](https://github.com/neoform/phpCore/wiki/Entities)
+

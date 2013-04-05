@@ -45,19 +45,13 @@
         /**
          * City Collection
          *
-         * @param city_collection $city_collection preload collection
-         *
          * @return city_collection
          */
-        public function city_collection(city_collection $city_collection=null) {
+        public function city_collection() {
             if (! array_key_exists('city_collection', $this->_vars)) {
-                if ($city_collection !== null) {
-                    $this->_vars['city_collection'] = $city_collection;
-                } else {
-                    $this->_vars['city_collection'] = new city_collection(
-                        city_dao::by_region($this->vars['id'])
-                    );
-                }
+                $this->_vars['city_collection'] = new city_collection(
+                    city_dao::by_region($this->vars['id'])
+                );
             }
             return $this->_vars['city_collection'];
         }
@@ -65,12 +59,10 @@
         /**
          * Country Model based on 'country_id'
          *
-         * @param country_model $country preload model
-         *
          * @return country_model
          */
-        public function country(country_model $country=null) {
-            return $country !== null ? ($this->_vars['country'] = $country) : $this->_model('country', $this->vars['country_id'], 'country_model');
+        public function country() {
+            return $this->_model('country', $this->vars['country_id'], 'country_model');
         }
 
     }

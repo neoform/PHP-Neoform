@@ -144,4 +144,13 @@
             }
             return $this->_vars[$key];
         }
+
+        /**
+         * This allows the preloading of $this->_vars values
+         * @param string $key
+         * @param mixed  $val
+         */
+        public function _set_var($key, $val) {
+            $this->_vars[$key] = $val;
+        }
     }

@@ -27,23 +27,19 @@
         /**
          * Permission Model based on 'permission_id'
          *
-         * @param permission_model $permission preload model
-         *
          * @return permission_model
          */
-        public function permission(permission_model $permission=null) {
-            return $permission !== null ? ($this->_vars['permission'] = $permission) : $this->_model('permission', $this->vars['permission_id'], 'permission_model');
+        public function permission() {
+            return $this->_model('permission', $this->vars['permission_id'], 'permission_model');
         }
 
         /**
          * User Model based on 'user_id'
          *
-         * @param user_model $user preload model
-         *
          * @return user_model
          */
-        public function user(user_model $user=null) {
-            return $user !== null ? ($this->_vars['user'] = $user) : $this->_model('user', $this->vars['user_id'], 'user_model');
+        public function user() {
+            return $this->_model('user', $this->vars['user_id'], 'user_model');
         }
 
     }

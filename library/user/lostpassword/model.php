@@ -35,12 +35,10 @@
         /**
          * User Model based on 'user_id'
          *
-         * @param user_model $user preload model
-         *
          * @return user_model
          */
-        public function user(user_model $user=null) {
-            return $user !== null ? ($this->_vars['user'] = $user) : $this->_model('user', $this->vars['user_id'], 'user_model');
+        public function user() {
+            return $this->_model('user', $this->vars['user_id'], 'user_model');
         }
 
     }

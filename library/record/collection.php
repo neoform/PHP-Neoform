@@ -246,11 +246,10 @@
                 }
             }
 
-            $model_method = $method_override !== null ? $method_override : $collection_name;
-
             foreach ($this as $key => $model) {
                 if (isset($pks_groups[$key])) {
-                    $model->$model_method(
+                    $model->_set_var(
+                        $method_override !== null ? $method_override : $collection_name,
                         new $collection_name(null, $pks_groups[$key])
                     );
                 }
@@ -305,11 +304,10 @@
                 }
             }
 
-            $model_method = $method_override !== null ? $method_override : $foreign_collection;
-
             foreach ($this as $key => $model) {
                 if (isset($pks_groups[$key])) {
-                    $model->$model_method(
+                    $model->_set_var(
+                        $method_override !== null ? $method_override : $foreign_collection,
                         new $foreign_collection(null, $pks_groups[$key])
                     );
                 }
@@ -342,14 +340,11 @@
             $infos  = $dao_name::by_pks($pks);
             $models = [];
 
-            if ($method_override !== null) {
-                $type = $method_override;
-            }
-
             foreach ($this as $key => $model) {
                 $k = $model->$field;
                 if (isset($infos[$k])) {
-                    $model->$type(
+                    $model->_set_var(
+                        $method_override ?: $entity,
                         $models[$key] = new $model_name(null, $infos[$k])
                     );
                 }

@@ -36,21 +36,14 @@
         /**
          * Region Collection
          *
-         * @param region_collection $region_collection preload collection
-         *
          * @return region_collection
          */
-        public function region_collection(region_collection $region_collection=null) {
+        public function region_collection() {
             if (! array_key_exists('region_collection', $this->_vars)) {
-                if ($region_collection !== null) {
-                    $this->_vars['region_collection'] = $region_collection;
-                } else {
-                    $this->_vars['region_collection'] = new region_collection(
-                        region_dao::by_country($this->vars['id'])
-                    );
-                }
+                 $this->_vars['region_collection'] = new region_collection(
+                    region_dao::by_country($this->vars['id'])
+                );
             }
             return $this->_vars['region_collection'];
         }
-
     }

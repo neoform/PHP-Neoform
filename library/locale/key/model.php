@@ -32,38 +32,30 @@
 
         }
 
-        public function locale_key_message_collection(locale_key_message_collection $locale_key_message_collection=null) {
+        public function locale_key_message_collection() {
             if (! array_key_exists('locale_key_message_collection', $this->_vars)) {
-                if ($locale_key_message_collection !== null) {
-                    $this->_vars['locale_key_message_collection'] = $locale_key_message_collection;
-                } else {
-                    $this->_vars['locale_key_message_collection'] = new locale_key_message_collection(
-                        locale_key_message_dao::by_key($this->vars['id'])
-                    );
-                }
+                $this->_vars['locale_key_message_collection'] = new locale_key_message_collection(
+                    locale_key_message_dao::by_key($this->vars['id'])
+                );
             }
             return $this->_vars['locale_key_message_collection'];
         }
 
-        public function locale_message_collection(locale_message_collection $locale_message_collection=null) {
+        public function locale_message_collection() {
             if (! array_key_exists('locale_message_collection', $this->_vars)) {
-                if ($locale_message_collection !== null) {
-                    $this->_vars['locale_message_collection'] = $locale_message_collection;
-                } else {
-                    $this->_vars['locale_message_collection'] = new locale_message_collection(
-                        locale_message_dao::by_parent($this->vars['id'])
-                    );
-                }
+                $this->_vars['locale_message_collection'] = new locale_message_collection(
+                    locale_message_dao::by_parent($this->vars['id'])
+                );
             }
             return $this->_vars['locale_message_collection'];
         }
 
-        public function locale(locale_model $locale=null) {
-            return $locale !== null ? ($this->_vars['locale'] = $locale) : $this->_model('locale', $this->vars['locale'], 'locale_model');
+        public function locale() {
+            return $this->_model('locale', $this->vars['locale'], 'locale_model');
         }
 
-        public function locale_namespace(locale_namespace_model $locale_namespace=null) {
-            return $locale_namespace !== null ? ($this->_vars['locale_namespace'] = $locale_namespace) : $this->_model('locale_namespace', $this->vars['namespace_id'], 'locale_namespace_model');
+        public function locale_namespace() {
+            return $this->_model('locale_namespace', $this->vars['namespace_id'], 'locale_namespace_model');
         }
 
         public function message($locale) {

@@ -190,13 +190,11 @@
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * " . ($self_reference ? 'Parent ' : '') . ucwords(str_replace('_', ' ', $referenced_field->table->name)) . " Model based on '" . $field->name . "'\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @param " . $referenced_field->table->name . "_model \$" . $referenced_field->table->name . " preload model\n";
-            $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @return " . $referenced_field->table->name . "_model\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic function " . ($self_reference ? 'parent_' : '') . $referenced_field->table->name . "(" . $referenced_field->table->name . "_model $" . $referenced_field->table->name . "=null) {\n";
-            $this->code .= "\t\t\treturn $" . $referenced_field->table->name . " !== null ? (\$this->_vars['" . ($self_reference ? 'parent_' : '') . $referenced_field->table->name . "'] = $" . $referenced_field->table->name . ") : \$this->_model('" . ($self_reference ? 'parent_' : '') . $referenced_field->table->name . "', \$this->vars['" . $field->name . "'], '" . $referenced_field->table->name . "_model');\n";
+            $this->code .= "\t\tpublic function " . ($self_reference ? 'parent_' : '') . $referenced_field->table->name . "() {\n";
+            $this->code .= "\t\t\treturn \$this->_model('" . ($self_reference ? 'parent_' : '') . $referenced_field->table->name . "', \$this->vars['" . $field->name . "'], '" . $referenced_field->table->name . "_model');\n";
             $this->code .= "\t\t}\n\n";
         }
 
@@ -207,21 +205,14 @@
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * " . ($self_reference ? 'Child ' : '') . ucwords(str_replace('_', ' ', $collection_name)) . "\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @param " . $collection_name . " \$" . $collection_name . " preload collection\n";
-            $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @return " . $collection_name . "\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic function " . ($self_reference ? 'child_' : '') . $collection_name . "(" . $collection_name . " $" . $collection_name . "=null) {\n";
+            $this->code .= "\t\tpublic function " . ($self_reference ? 'child_' : '') . $collection_name . "() {\n";
             $this->code .= "\t\t\tif (! array_key_exists('" . ($self_reference ? 'child_' : '') . $collection_name . "', \$this->_vars)) {\n";
-
-            $this->code .= "\t\t\t\tif ($" . $collection_name . " !== null) {\n";
-            $this->code .= "\t\t\t\t\t\$this->_vars['" . ($self_reference ? 'child_' : '') . $collection_name . "'] = $" . $collection_name . ";\n";
-            $this->code .= "\t\t\t\t} else {\n";
-            $this->code .= "\t\t\t\t\t\$this->_vars['" . ($self_reference ? 'child_' : '') . $collection_name . "'] = new " . $collection_name . "(\n";
-            $this->code .= "\t\t\t\t\t\t" . $dao_name . "::by_" . $field->referenced_field->name . "(\$this->vars['" . $referenced_field->name . "'])\n";
-            $this->code .= "\t\t\t\t\t);\n";
-            $this->code .= "\t\t\t\t}\n";
+            $this->code .= "\t\t\t\t\$this->_vars['" . ($self_reference ? 'child_' : '') . $collection_name . "'] = new " . $collection_name . "(\n";
+            $this->code .= "\t\t\t\t\t" . $dao_name . "::by_" . $field->referenced_field->name . "(\$this->vars['" . $referenced_field->name . "'])\n";
+            $this->code .= "\t\t\t\t);\n";
             $this->code .= "\t\t\t}\n";
             $this->code .= "\t\t\treturn \$this->_vars['" . ($self_reference ? 'child_' : '') . $collection_name . "'];\n";
             $this->code .= "\t\t}\n\n";

@@ -32,11 +32,11 @@
 
         }
 
-        public function locale_key(locale_key_model $locale_key=null) {
-            return $locale_key !== null ? ($this->_vars['locale_key'] = $locale_key) : $this->_model('locale_key', $this->vars['key_id'], 'locale_key_model');
+        public function locale_key() {
+            return $this->_model('locale_key', $this->vars['key_id'], 'locale_key_model');
         }
 
-        public function locale(locale_model $locale=null) {
-            return $locale !== null ? ($this->_vars['locale'] = $locale) : $this->_model('locale', $this->vars['locale'], 'locale_model');
+        public function locale() {
+            return $this->_model('locale', $this->vars['locale'], 'locale_model');
         }
     }

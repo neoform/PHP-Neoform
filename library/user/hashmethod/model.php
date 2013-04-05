@@ -30,19 +30,13 @@
         /**
          * User Collection
          *
-         * @param user_collection $user_collection preload collection
-         *
          * @return user_collection
          */
-        public function user_collection(user_collection $user_collection=null) {
+        public function user_collection() {
             if (! array_key_exists('user_collection', $this->_vars)) {
-                if ($user_collection !== null) {
-                    $this->_vars['user_collection'] = $user_collection;
-                } else {
-                    $this->_vars['user_collection'] = new user_collection(
-                        user_dao::by_password_hashmethod($this->vars['id'])
-                    );
-                }
+                $this->_vars['user_collection'] = new user_collection(
+                    user_dao::by_password_hashmethod($this->vars['id'])
+                );
             }
             return $this->_vars['user_collection'];
         }

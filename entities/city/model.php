@@ -48,12 +48,10 @@
         /**
          * Region Model based on 'region_id'
          *
-         * @param region_model $region preload model
-         *
          * @return region_model
          */
-        public function region(region_model $region=null) {
-            return $region !== null ? ($this->_vars['region'] = $region) : $this->_model('region', $this->vars['region_id'], 'region_model');
+        public function region() {
+            return $this->_model('region', $this->vars['region_id'], 'region_model');
         }
 
     }

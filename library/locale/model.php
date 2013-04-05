@@ -25,43 +25,30 @@
 
         }
 
-        public function locale_key_collection(locale_key_collection $locale_key_collection=null) {
+        public function locale_key_collection() {
             if (! array_key_exists('locale_key_collection', $this->_vars)) {
-                if ($locale_key_collection !== null) {
-                    $this->_vars['locale_key_collection'] = $locale_key_collection;
-                } else {
-                    $this->_vars['locale_key_collection'] = new locale_key_collection(
-                        locale_key_dao::by_locale($this->vars['iso2'])
-                    );
-                }
+                $this->_vars['locale_key_collection'] = new locale_key_collection(
+                    locale_key_dao::by_locale($this->vars['iso2'])
+                );
             }
             return $this->_vars['locale_key_collection'];
         }
 
-        public function locale_key_message_collection(locale_key_message_collection $locale_key_message_collection=null) {
+        public function locale_key_message_collection() {
             if (! array_key_exists('locale_key_message_collection', $this->_vars)) {
-                if ($locale_key_message_collection !== null) {
-                    $this->_vars['locale_key_message_collection'] = $locale_key_message_collection;
-                } else {
-                    $this->_vars['locale_key_message_collection'] = new locale_key_message_collection(
-                        locale_key_message_dao::by_locale($this->vars['iso2'])
-                    );
-                }
+                $this->_vars['locale_key_message_collection'] = new locale_key_message_collection(
+                    locale_key_message_dao::by_locale($this->vars['iso2'])
+                );
             }
             return $this->_vars['locale_key_message_collection'];
         }
 
-        public function locale_message_collection(locale_message_collection $locale_message_collection=null) {
+        public function locale_message_collection() {
             if (! array_key_exists('locale_message_collection', $this->_vars)) {
-                if ($locale_message_collection !== null) {
-                    $this->_vars['locale_message_collection'] = $locale_message_collection;
-                } else {
-                    $this->_vars['locale_message_collection'] = new locale_message_collection(
-                        locale_message_dao::by_locale($this->vars['iso2'])
-                    );
-                }
+                $this->_vars['locale_message_collection'] = new locale_message_collection(
+                    locale_message_dao::by_locale($this->vars['iso2'])
+                );
             }
             return $this->_vars['locale_message_collection'];
         }
-
     }

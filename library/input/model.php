@@ -244,7 +244,11 @@
             return $this;
         }
 
-        //if the value is empty(), nullify it.
+        /**
+         * If the value is empty(), nullify it.
+         *
+         * @return input_model
+         */
         public function nullify() {
             if (empty($this->val)) {
                 $this->val = null;
@@ -553,6 +557,15 @@
             return $this;
         }
 
+        /**
+         * Run a PHP filter_var()
+         *
+         * @param      $filter
+         * @param      $error
+         * @param null $options
+         *
+         * @return input_model
+         */
         public function filter($filter, $error, $options=null) {
             if (! $this->error && (! $this->optional || ! $this->is_empty)) {
                 if (! filter_var($this->val, $filter, $options)) {
@@ -562,19 +575,38 @@
             return $this;
         }
 
-        //some standard filters
+        /**
+         * Is it an IP address
+         *
+         * @return input_model
+         */
         public function is_ip() {
             return $this->filter(FILTER_VALIDATE_IP, 'invalid IP address');
         }
 
+        /**
+         * Is it a float
+         *
+         * @return input_model
+         */
         public function is_float() {
             return $this->filter(FILTER_VALIDATE_FLOAT, 'invalid number (float)');
         }
 
+        /**
+         * Is it an integer
+         *
+         * @return input_model
+         */
         public function is_int() {
             return $this->filter(FILTER_VALIDATE_INT, 'invalid integer');
         }
 
+        /**
+         * Is it an email (simple regex)
+         *
+         * @return input_model
+         */
         public function is_email() {
             if (! $this->error && (! $this->optional || ! $this->is_empty)) {
                 if (! preg_match('`^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$`i', $this->val)) {
@@ -584,10 +616,20 @@
             return $this;
         }
 
+        /**
+         * Is it a URL
+         *
+         * @return input_model
+         */
         public function is_url() {
             return $this->filter(FILTER_VALIDATE_URL, 'invalid url');
         }
 
+        /**
+         * Is it numeric
+         *
+         * @return input_model
+         */
         public function is_numeric() {
             if (! $this->error && (! $this->optional || ! $this->is_empty)) {
                 if (! is_numeric($this->val)) {
@@ -597,6 +639,11 @@
             return $this;
         }
 
+        /**
+         * Is it a valid date string
+         *
+         * @return input_model
+         */
         public function is_date() {
             if (! $this->error && (! $this->optional || ! $this->is_empty)) {
                 $date = new DateTime($this->val);
@@ -608,6 +655,11 @@
             return $this;
         }
 
+        /**
+         * Is it a valid datetime string
+         *
+         * @return input_model
+         */
         public function is_datetime() {
             if (! $this->error && (! $this->optional || ! $this->is_empty)) {
                 $date = new DateTime($this->val);

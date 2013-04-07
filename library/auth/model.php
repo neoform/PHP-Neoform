@@ -34,15 +34,6 @@
         }
 
         /**
-         * User Model based on 'user_id'
-         *
-         * @return user_model
-         */
-        public function user() {
-            return $this->_model('user', $this->vars['user_id'], 'user_model');
-        }
-
-        /**
          * Instantiate models based on the user_id
          *
          * @param string $name

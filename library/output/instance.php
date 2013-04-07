@@ -21,7 +21,7 @@
         protected $output_type = self::HTML;
 
         public function __construct() {
-            $this->header('Core', 'v6.1');
+            $this->header('Core', 'v0.1');
             $this->header('cache-control', 'private, max-age=0');
         }
 
@@ -35,7 +35,7 @@
          */
         public function header($type, $val=null) {
             $header = $type . ($val ? ': ' . $val : '');
-            $hash     = md5($header);
+            $hash   = md5($header);
             if (! isset($this->headers[$hash])) {
                 $this->headers[$hash] = $header;
             }
@@ -47,13 +47,13 @@
          *
          * @param string      $key
          * @param string      $val
-         * @param intger|bool $ttl
+         * @param intger|null $ttl
          *
          * @return bool
          */
-        public function cookie_set($key, $val, $ttl=false) {
+        public function cookie_set($key, $val, $ttl=null) {
 
-            if ($ttl === false || ! is_numeric($ttl)) {
+            if ($ttl === null || ! is_numeric($ttl)) {
                 $ttl = time() + core::config()->cookies['ttl'];
             }
 

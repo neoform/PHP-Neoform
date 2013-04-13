@@ -686,7 +686,7 @@
          */
         protected static function _insert(array $info, $replace=false, $return_model = true) {
             $table = static::TABLE;
-            $sql   = core::sql('slave');
+            $sql   = core::sql('master');
 
             switch ($sql->driver()) {
                 case 'mysql':
@@ -985,7 +985,7 @@
 
             $table = static::TABLE;
             $pk    = static::PRIMARY_KEY;
-            $sql   = core::sql('slave');
+            $sql   = core::sql('master');
 
             switch ($sql->driver()) {
                 case 'mysql':
@@ -1071,7 +1071,7 @@
         protected static function _delete(record_model $model) {
             $table = static::TABLE;
             $pk    = static::PRIMARY_KEY;
-            $sql   = core::sql('slave');
+            $sql   = core::sql('master');
 
             switch ($sql->driver()) {
                 case 'mysql':
@@ -1138,7 +1138,7 @@
             $self  = get_called_class();
             $pks   = $collection->field(static::PRIMARY_KEY);
             $table = static::TABLE;
-            $sql   = core::sql('slave');
+            $sql   = core::sql('master');
 
             switch ($sql->driver()) {
                 case 'mysql':
@@ -1147,7 +1147,7 @@
                         $table = "$table[0]`.`$table[1]";
                     }
 
-                    $delete = core::sql('master')->prepare("
+                    $delete = $sql->prepare("
                         DELETE FROM
                             `$table`
                         WHERE
@@ -1162,7 +1162,7 @@
                         $table = "$table[0]\".\"$table[1]";
                     }
 
-                    $delete = core::sql('master')->prepare("
+                    $delete = $sql->prepare("
                         DELETE FROM
                             \"$table\"
                         WHERE

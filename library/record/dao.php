@@ -95,27 +95,53 @@
             $get = function() use ($pk, $self) {
 
                 $table = $self::TABLE;
+                $sql   = core::sql('slave');
 
-                if (strpos($table, '.') !== false) {
-                    $table = explode('.', $table);
-                    $table = "$table[0]`.`$table[1]";
+                switch ($sql->driver()) {
+                    case 'mysql':
+
+                        if (strpos($table, '.') !== false) {
+                            $table = explode('.', $table);
+                            $table = "$table[0]`.`$table[1]";
+                        }
+
+                        $info = $sql->prepare("
+                            SELECT
+                                *
+                            FROM
+                                `$table`
+                            WHERE
+                                `" . $self::PRIMARY_KEY . "` = ?
+                        ");
+                        break;
+
+                    case 'pgsql':
+
+                        if (strpos($table, '.') !== false) {
+                            $table = explode('.', $table);
+                            $table = "$table[0]\".\"$table[1]";
+                        }
+
+                        $info = $sql->prepare("
+                            SELECT
+                                *
+                            FROM
+                                \"$table\"
+                            WHERE
+                                \"" . $self::PRIMARY_KEY . "\" = ?
+                        ");
+                        break;
+
+                    default:
+                       throw new record_exception('Unknown SQL driver');
                 }
-
-                $info = core::sql('slave')->prepare("
-                    SELECT
-                        *
-                    FROM
-                        `$table`
-                    WHERE
-                        `" . $self::PRIMARY_KEY . "` = ?
-                ");
 
                 $info->execute([
                     $pk,
                 ]);
 
                 if (! ($info = $info->fetch())) {
-                    $exception     = $self::ENTITY_NAME . '_exception';
+                    $exception = $self::ENTITY_NAME . '_exception';
                     throw new $exception('That ' . $self::NAME . ' doesn\'t exist');
                 }
 
@@ -137,6 +163,7 @@
          * @static
          * @param array   $pks primary key of a records
          * @return array  cached records data - with preserved key names from $pks.
+         * @throws record_exception
          */
         public static function by_pks(array $pks) {
 
@@ -148,19 +175,44 @@
 
             $get = function(array $pks) use ($self) {
                 $table = $self::TABLE;
-                if (strpos($table, '.') !== false) {
-                    $table = explode('.', $table);
-                    $table = "$table[0]`.`$table[1]";
-                }
+                $sql   = core::sql('slave');
 
-                $infos_rs = core::sql('slave')->prepare("
-                    SELECT
-                        *
-                    FROM
-                        `$table`
-                    WHERE
-                        `" . $self::PRIMARY_KEY . "` IN (" . join(',', array_fill(0, count($pks), '?')) . ")
-                ");
+                switch ($sql->driver()) {
+                    case 'mysql':
+                        if (strpos($table, '.') !== false) {
+                            $table = explode('.', $table);
+                            $table = "$table[0]`.`$table[1]";
+                        }
+
+                        $infos_rs = $sql->prepare("
+                            SELECT
+                                *
+                            FROM
+                                `$table`
+                            WHERE
+                                `" . $self::PRIMARY_KEY . "` IN (" . join(',', array_fill(0, count($pks), '?')) . ")
+                        ");
+                        break;
+
+                    case 'pgsql':
+                        if (strpos($table, '.') !== false) {
+                            $table = explode('.', $table);
+                            $table = "$table[0]\".\"$table[1]";
+                        }
+
+                        $infos_rs = $sql->prepare("
+                            SELECT
+                                *
+                            FROM
+                                \"$table\"
+                            WHERE
+                                \"" . $self::PRIMARY_KEY . "\" IN (" . join(',', array_fill(0, count($pks), '?')) . ")
+                        ");
+                        break;
+
+                    default:
+                        throw new record_exception('Unknown SQL driver');
+                }
 
                 $infos_rs->execute(array_values($pks));
                 $infos = [];
@@ -196,6 +248,7 @@
          * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
          * @param array   $keys           array of table keys and their values being looked up in the table
          * @return array  pks of records from cache
+         * @throws record_exception
          */
         final protected static function _by_fields($cache_key_name, array $keys) {
 
@@ -209,27 +262,57 @@
                     $table = "$table[0]`.`$table[1]";
                 }
 
+                $sql   = core::sql('slave');
                 $where = [];
                 $vals  = [];
 
-                if (count($keys)) {
-                    foreach ($keys as $k => $v) {
-                        if ($v === null) {
-                            $where[] = "`$k` IS NULL";
-                        } else {
-                            $vals[] = $v;
-                            $where[] = "`$k` = ?";
+                switch ($sql->driver()) {
+                    case 'mysql':
+                        if (count($keys)) {
+                            foreach ($keys as $k => $v) {
+                                if ($v === null) {
+                                    $where[] = "`$k` IS NULL";
+                                } else {
+                                    $vals[]  = $v;
+                                    $where[] = "`$k` = ?";
+                                }
+                            }
                         }
-                    }
+
+                        $rs = $sql->prepare("
+                            SELECT
+                                `$pk`
+                            FROM
+                                `$table`
+                            " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
+                        ");
+                        break;
+
+                    case 'pgsql':
+                        if (count($keys)) {
+                            foreach ($keys as $k => $v) {
+                                if ($v === null) {
+                                    $where[] = "\"$k\" IS NULL";
+                                } else {
+                                    $vals[]  = $v;
+                                    $where[] = "\"$k\" = ?";
+                                }
+                            }
+                        }
+
+                        $rs = $sql->prepare("
+                            SELECT
+                                \"$pk\"
+                            FROM
+                                \"$table\"
+                            " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
+                        ");
+                        break;
+
+                    default:
+                        throw new record_exception('Unknown SQL driver');
                 }
 
-                $rs = core::sql('slave')->prepare("
-                    SELECT
-                        `$pk`
-                    FROM
-                        `$table`
-                    " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
-                ");
                 $rs->execute($vals);
 
                 $rs = $rs->fetchAll();
@@ -257,6 +340,7 @@
          * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
          * @param array   $keys           array of table keys and their values being looked up in the table
          * @return array  pks of records from cache
+         * @throws record_exception
          */
         final protected static function _all($cache_key_name, array $keys=null) {
 
@@ -265,40 +349,84 @@
 
             $get = function() use ($keys, $table, $pk) {
 
+                $sql   = core::sql('slave');
                 $where = [];
                 $vals  = [];
-                if ($keys) {
-                    foreach ($keys as $k => $v) {
-                        if (is_array($v) && count($v)) {
-                            foreach ($v as $arr_v) {
-                                $vals[] = $arr_v;
-                            }
-                            $where[] = "`$k` IN(" . join(',', array_fill(0, count($v), '?')) . ")";
-                        } else {
-                            if ($v === null) {
-                                $where[] = "`$k` IS NULL";
-                            } else {
-                                $vals[] = $v;
-                                $where[] = "`$k` = ?";
+
+                switch ($sql->driver()) {
+                    case 'mysql':
+                        if ($keys) {
+                            foreach ($keys as $k => $v) {
+                                if (is_array($v) && count($v)) {
+                                    foreach ($v as $arr_v) {
+                                        $vals[] = $arr_v;
+                                    }
+                                    $where[] = "`$k` IN(" . join(',', array_fill(0, count($v), '?')) . ")";
+                                } else {
+                                    if ($v === null) {
+                                        $where[] = "`$k` IS NULL";
+                                    } else {
+                                        $vals[] = $v;
+                                        $where[] = "`$k` = ?";
+                                    }
+                                }
                             }
                         }
-                    }
-                }
 
-                if (strpos($table, '.') !== false) {
-                    $table = explode('.', $table);
-                    $table = "$table[0]`.`$table[1]";
-                }
+                        if (strpos($table, '.') !== false) {
+                            $table = explode('.', $table);
+                            $table = "$table[0]`.`$table[1]";
+                        }
 
-                $info = core::sql('slave')->prepare("
-                    SELECT
-                        *
-                    FROM
-                        `$table`
-                    " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
-                    ORDER BY
-                        `$pk` ASC
-                ");
+                        $info = $sql->prepare("
+                            SELECT
+                                *
+                            FROM
+                                `$table`
+                            " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
+                            ORDER BY
+                                `$pk` ASC
+                        ");
+                        break;
+
+                    case 'pgsql':
+                        if ($keys) {
+                            foreach ($keys as $k => $v) {
+                                if (is_array($v) && count($v)) {
+                                    foreach ($v as $arr_v) {
+                                        $vals[] = $arr_v;
+                                    }
+                                    $where[] = "\"$k\" IN(" . join(',', array_fill(0, count($v), '?')) . ")";
+                                } else {
+                                    if ($v === null) {
+                                        $where[] = "\"$k\" IS NULL";
+                                    } else {
+                                        $vals[] = $v;
+                                        $where[] = "\"$k\" = ?";
+                                    }
+                                }
+                            }
+                        }
+
+                        if (strpos($table, '.') !== false) {
+                            $table = explode('.', $table);
+                            $table = "$table[0]\".\"$table[1]";
+                        }
+
+                        $info = $sql->prepare("
+                            SELECT
+                                *
+                            FROM
+                                \"$table\"
+                            " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
+                            ORDER BY
+                                `$pk` ASC
+                        ");
+                        break;
+
+                    default:
+                        throw new record_exception('Unknown SQL driver');
+                }
 
                 $info->execute($vals);
 
@@ -327,6 +455,7 @@
          * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
          * @param array   $keys_arr       array of arrays of table keys and their values being looked up in the table - each sub-array must have matching keys
          * @return array  pks of records from cache
+         * @throws record_exception
          */
         final protected static function _by_fields_multi($cache_key_name, array $keys_arr) {
 
@@ -335,42 +464,85 @@
             $pk    = static::PRIMARY_KEY;
 
             $get = function() use ($keys_arr, $table, $pk) {
-                if (strpos($table, '.') !== false) {
-                    $table = explode('.', $table);
-                    $table = "$table[0]`.`$table[1]";
-                }
 
+                $sql            = core::sql('slave');
                 $key_fields     = array_keys(current($keys_arr));
-
                 $reverse_lookup = [];
                 $return         = [];
-                $vals             = [];
-                $where             = [];
+                $vals           = [];
+                $where          = [];
 
-                foreach ($keys_arr as $k => $keys) {
-                    $w = [];
-                    $reverse_lookup[join(':', $keys)] = $k;
-                    $return[$k] = [];
-                    foreach ($keys as $k => $v) {
-                        if ($v === null) {
-                            $w[] = "`$k` IS NULL";
-                        } else {
-                            $vals[] = $v;
-                            $w[] = "`$k` = ?";
+                switch ($sql->driver()) {
+                    case 'mysql':
+
+                        if (strpos($table, '.') !== false) {
+                            $table = explode('.', $table);
+                            $table = "$table[0]`.`$table[1]";
                         }
-                    }
-                    $where[] = '(' . join(" AND ", $w) . ')';
+
+                        foreach ($keys_arr as $k => $keys) {
+                            $w = [];
+                            $reverse_lookup[join(':', $keys)] = $k;
+                            $return[$k] = [];
+                            foreach ($keys as $k => $v) {
+                                if ($v === null) {
+                                    $w[] = "`$k` IS NULL";
+                                } else {
+                                    $vals[] = $v;
+                                    $w[]    = "`$k` = ?";
+                                }
+                            }
+                            $where[] = '(' . join(" AND ", $w) . ')';
+                        }
+
+                        $rs = $sql->prepare("
+                            SELECT
+                                `$pk`,
+                                CONCAT(" . join(", ':', ", $key_fields) . ") `__cache_key__`
+                            FROM
+                                `$table`
+                            WHERE
+                                " . join(' OR ', $where) . "
+                        ");
+                        break;
+
+                    case 'pgsql':
+
+                        if (strpos($table, '.') !== false) {
+                            $table = explode('.', $table);
+                            $table = "$table[0]\".\"$table[1]";
+                        }
+
+                        foreach ($keys_arr as $k => $keys) {
+                            $w = [];
+                            $reverse_lookup[join(':', $keys)] = $k;
+                            $return[$k] = [];
+                            foreach ($keys as $k => $v) {
+                                if ($v === null) {
+                                    $w[] = "\"$k\" IS NULL";
+                                } else {
+                                    $vals[] = $v;
+                                    $w[]    = "\"$k\" = ?";
+                                }
+                            }
+                            $where[] = '(' . join(" AND ", $w) . ')';
+                        }
+
+                        $rs = $sql->prepare("
+                            SELECT
+                                \"$pk\",
+                                CONCAT(" . join(", ':', ", $key_fields) . ") \"__cache_key__\"
+                            FROM
+                                \"$table\"
+                            WHERE
+                                " . join(' OR ', $where) . "
+                        ");
+                        break;
+
+                    default:
+                        throw new record_exception('Unknown SQL driver');
                 }
 
-                $rs = core::sql('slave')->prepare("
-                    SELECT
-                        `$pk`,
-                        CONCAT(" . join(", ':', ", $key_fields) . ") `__cache_key__`
-                    FROM
-                        `$table`
-                    WHERE
-                        " . join(' OR ', $where) . "
-                ");
                 $rs->execute($vals);
 
                 $rows = $rs->fetchAll();
@@ -407,37 +579,77 @@
          * @param array   $select_fields  array of table fields (table columns) to be selected
          * @param array   $keys           array of table keys and their values being looked up in the table
          * @return array  array of records from cache
+         * @throws record_exception
          */
         final protected static function _by_fields_select($cache_key_name, array $select_fields, array $keys) {
 
             $table = static::TABLE;
 
             $get = function() use ($select_fields, $keys, $table) {
-                if (strpos($table, '.') !== false) {
-                    $table = explode('.', $table);
-                    $table = "$table[0]`.`$table[1]";
-                }
 
+                $sql   = core::sql('slave');
                 $where = [];
                 $vals  = [];
-                if (count($keys)) {
-                    foreach ($keys as $k => $v) {
-                        if ($v === null) {
-                            $where[] = "`$k` IS NULL";
-                        } else {
-                            $vals[] = $v;
-                            $where[] = "`$k` = ?";
+
+                switch ($sql->driver()) {
+                    case 'mysql':
+                        if (strpos($table, '.') !== false) {
+                            $table = explode('.', $table);
+                            $table = "$table[0]`.`$table[1]";
                         }
-                    }
+
+                        if (count($keys)) {
+                            foreach ($keys as $k => $v) {
+                                if ($v === null) {
+                                    $where[] = "`$k` IS NULL";
+                                } else {
+                                    $vals[]  = $v;
+                                    $where[] = "`$k` = ?";
+                                }
+                            }
+                        }
+
+                        $rs = core::sql('slave')->prepare("
+                            SELECT
+                                " . join(',', $select_fields) . "
+                            FROM
+                                `$table`
+                            " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
+                        ");
+
+                        break;
+
+                    case 'pgsql':
+                        if (strpos($table, '.') !== false) {
+                            $table = explode('.', $table);
+                            $table = "$table[0]\".\"$table[1]";
+                        }
+
+                        if (count($keys)) {
+                            foreach ($keys as $k => $v) {
+                                if ($v === null) {
+                                    $where[] = "\"$k\" IS NULL";
+                                } else {
+                                    $vals[]  = $v;
+                                    $where[] = "\"$k\" = ?";
+                                }
+                            }
+                        }
+
+                        $rs = core::sql('slave')->prepare("
+                            SELECT
+                                " . join(',', $select_fields) . "
+                            FROM
+                                \"$table\"
+                            " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
+                        ");
+
+                        break;
+
+                    default:
+                        throw new record_exception('Unknown SQL driver');
                 }
 
-                $rs = core::sql('slave')->prepare("
-                    SELECT
-                        " . join(',', $select_fields) . "
-                    FROM
-                        `$table`
-                    " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
-                ");
                 $rs->execute($vals);
 
                 $rs = $rs->fetchAll();
@@ -466,32 +678,62 @@
          *
          * @access protected
          * @static
-         * @param array   $info          an associative array of into to be put into the database
-         * @param boolean $replace       optional - user REPLACE INTO instead of INSERT INTO
-         * @param boolean $return_model  optional - return a model of the new record
+         * @param array   $info         an associative array of into to be put into the database
+         * @param boolean $replace      optional - user REPLACE INTO instead of INSERT INTO
+         * @param boolean $return_model optional - return a model of the new record
          * @return record_model|true if $return_model is set to true, the model created from the info is returned
+         * @throws record_exception
          */
         protected static function _insert(array $info, $replace=false, $return_model = true) {
             $table = static::TABLE;
-            $sql   = core::sql('master');
+            $sql   = core::sql('slave');
 
-            if (strpos($table, '.') !== false) {
-                $table = explode('.', $table);
-                $table = "$table[0]`.`$table[1]";
+            switch ($sql->driver()) {
+                case 'mysql':
+                    if (strpos($table, '.') !== false) {
+                        $table = explode('.', $table);
+                        $table = "$table[0]`.`$table[1]";
+                    }
+
+                    $insert_fields = [];
+                    foreach (array_keys($info) as $key) {
+                        $insert_fields[] = "`$key`";
+                    }
+
+                    $insert = $sql->prepare("
+                        " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO
+                            `$table`
+                            ( " . join(', ', $insert_fields) . " )
+                            VALUES
+                            ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
+                    ");
+
+                    break;
+
+                case 'pgsql':
+                    if (strpos($table, '.') !== false) {
+                        $table = explode('.', $table);
+                        $table = "$table[0]\".\"$table[1]";
+                    }
+                    $insert_fields = [];
+                    foreach (array_keys($info) as $key) {
+                        $insert_fields[] = "\"$key\"";
+                    }
+
+                    $insert = $sql->prepare("
+                        INSERT IGNORE INTO
+                            \"$table\"
+                            ( " . join(', ', $insert_fields) . " )
+                            VALUES
+                            ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
+                    ");
+
+                    break;
+
+                default:
+                    throw new record_exception('Unknown SQL driver');
             }
 
-            $insert_fields = [];
-            foreach (array_keys($info) as $key) {
-                $insert_fields[] = "`$key`";
-            }
-
-            $insert = $sql->prepare("
-                " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO
-                    `$table`
-                    ( " . join(', ', $insert_fields) . " )
-                    VALUES
-                    ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
-            ");
             $insert->execute(array_values($info));
 
             if (static::AUTOINCREMENT) {
@@ -523,16 +765,29 @@
          * @param boolean $replace           optional - user REPLACE INTO instead of INSERT INTO
          * @param boolean $return_collection optional - return a collection of models created
          * @return record_collection|true if $return_collection is true function returns a collection
+         * @throws record_exception
          */
         protected static function _inserts(array $infos, $keys_match = true, $replace=false, $return_collection = true) {
-            $model     = static::ENTITY_NAME . '_model';
             $table  = static::TABLE;
-            $self     = get_called_class();
-            $sql     = core::sql('master');
+            $self   = get_called_class();
+            $sql    = core::sql('master');
+            $driver = $sql->driver();
 
             if (strpos($table, '.') !== false) {
-                $table = explode('.', $table);
-                $table = "$table[0]`.`$table[1]";
+                switch ($driver) {
+                    case 'mysql':
+                        $table = explode('.', $table);
+                        $table = "$table[0]`.`$table[1]";
+                        break;
+
+                    case 'pgsql':
+                        $table = explode('.', $table);
+                        $table = "$table[0]\".\"$table[1]";
+                        break;
+
+                    default:
+                        throw new record_exception('Unknown SQL driver');
+                }
             }
 
             if ($return_collection) {
@@ -542,21 +797,54 @@
 
             if ($keys_match) {
                 $insert_fields = [];
-                foreach (array_keys(current($infos)) as $k) {
-                    $insert_fields[] = "`$k`";
+
+                switch ($driver) {
+                    case 'mysql':
+                        foreach (array_keys(current($infos)) as $k) {
+                            $insert_fields[] = "`$k`";
+                        }
+                        break;
+
+                    case 'pgsql':
+                        foreach (array_keys(current($infos)) as $k) {
+                            $insert_fields[] = "\"$k\"";
+                        }
+                        break;
+
+                    default:
+                        throw new record_exception('Unknown SQL driver');
                 }
 
                 // If the table is auto increment, we cannot lump all inserts into one query
                 // since we need the returned IDs for cache-busting and to return a model
                 if (static::AUTOINCREMENT || $return_collection) {
                     $sql->beginTransaction();
-                    $insert = $sql->prepare("
-                        " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO
-                            `$table`
-                            ( " . join(', ', $insert_fields) . " )
-                            VALUES
-                            ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
-                    ");
+
+                    switch ($driver) {
+                        case 'mysql':
+                            $insert = $sql->prepare("
+                                " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO
+                                    `$table`
+                                    ( " . join(', ', $insert_fields) . " )
+                                    VALUES
+                                    ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
+                            ");
+                            break;
+
+                        case 'pgsql':
+                            $insert = $sql->prepare("
+                                INSERT IGNORE INTO
+                                    \"$table\"
+                                    ( " . join(', ', $insert_fields) . " )
+                                    VALUES
+                                    ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
+                            ");
+                            break;
+
+                        default:
+                            throw new record_exception('Unknown SQL driver');
+                    }
+
                     foreach ($infos as $k => $info) {
                         $insert->execute(array_values($info));
 
@@ -582,13 +870,31 @@
                         $delete_keys[] = "$self:" . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[static::PRIMARY_KEY])) : $info[static::PRIMARY_KEY]);
                     }
 
-                    $inserts = $sql->prepare("
-                        INSERT INTO
-                            `$table`
-                            ( " . implode(', ', $insert_fields) . " )
-                            VALUES
-                            " . join(', ', array_fill(0, count($infos), '( ' . join(',', array_fill(0, count($insert_fields), '?')) . ')')) . "
-                    ");
+                    switch ($driver) {
+                        case 'mysql':
+                            $inserts = $sql->prepare("
+                                INSERT INTO
+                                    `$table`
+                                    ( " . implode(', ', $insert_fields) . " )
+                                    VALUES
+                                    " . join(', ', array_fill(0, count($infos), '( ' . join(',', array_fill(0, count($insert_fields), '?')) . ')')) . "
+                            ");
+                            break;
+
+                        case 'pgsql':
+                            $inserts = $sql->prepare("
+                                INSERT INTO
+                                    \"$table\"
+                                    ( " . implode(', ', $insert_fields) . " )
+                                    VALUES
+                                    " . join(', ', array_fill(0, count($infos), '( ' . join(',', array_fill(0, count($insert_fields), '?')) . ')')) . "
+                            ");
+                            break;
+
+                        default:
+                            throw new record_exception('Unknown SQL driver');
+                    }
+
                     $inserts->execute($insert_vals);
                 }
             } else {
@@ -596,17 +902,40 @@
 
                 foreach ($infos as $k => $info) {
                     $insert_fields = [];
-                    foreach (array_keys($info) as $key) {
-                        $insert_fields[] = "`$key`";
+
+                    switch ($driver) {
+                        case 'mysql':
+                            foreach (array_keys($info) as $key) {
+                                $insert_fields[] = "`$key`";
+                            }
+
+                            $insert = $sql->prepare("
+                                INSERT INTO
+                                    `$table`
+                                    ( " . join(', ', $insert_fields) . " )
+                                    VALUES
+                                    ( " . join(',', array_fill(0, count($info), '?')) . " )
+                            ");
+                            break;
+
+                        case 'pgsql':
+                            foreach (array_keys($info) as $key) {
+                                $insert_fields[] = "\"$key\"";
+                            }
+
+                            $insert = $sql->prepare("
+                                INSERT INTO
+                                    \"$table\"
+                                    ( " . join(', ', $insert_fields) . " )
+                                    VALUES
+                                    ( " . join(',', array_fill(0, count($info), '?')) . " )
+                            ");
+                            break;
+
+                        default:
+                            throw new record_exception('Unknown SQL driver');
                     }
 
-                    $insert = $sql->prepare("
-                        INSERT INTO
-                            `$table`
-                            ( " . join(', ', $insert_fields) . " )
-                            VALUES
-                            ( " . join(',', array_fill(0, count($info), '?')) . " )
-                    ");
                     $insert->execute(array_values($info));
 
                     if (static::AUTOINCREMENT) {
@@ -646,6 +975,7 @@
          * @param array        $info          the new info to be put into the model
          * @param boolean      $return_model  optional - return a model of the new record
          * @return record_model|true if $return_model is true, an updated model is returned
+         * @throws record_exception
          */
         protected static function _update(record_model $model, array $info, $return_model = true) {
 
@@ -655,24 +985,53 @@
 
             $table = static::TABLE;
             $pk    = static::PRIMARY_KEY;
+            $sql   = core::sql('slave');
 
-            if (strpos($table, '.') !== false) {
-                $table = explode('.', $table);
-                $table = "$table[0]`.`$table[1]";
+            switch ($sql->driver()) {
+                case 'mysql':
+                    if (strpos($table, '.') !== false) {
+                        $table = explode('.', $table);
+                        $table = "$table[0]`.`$table[1]";
+                    }
+                    $update_fields = [];
+                    foreach (array_keys($info) as $key) {
+                        $update_fields[] = "`$key` = :$key";
+                    }
+                    $update = $sql->prepare("
+                        UPDATE
+                            `$table`
+                        SET
+                            " . implode(", \n", $update_fields) . "
+                        WHERE
+                            `$pk` = :$pk
+                    ");
+
+                    break;
+
+                case 'pgsql':
+                    if (strpos($table, '.') !== false) {
+                        $table = explode('.', $table);
+                        $table = "$table[0]\".\"$table[1]";
+                    }
+                    $update_fields = [];
+                    foreach (array_keys($info) as $key) {
+                        $update_fields[] = "\"$key\" = :$key";
+                    }
+                    $update = $sql->prepare("
+                        UPDATE
+                            \"$table\"
+                        SET
+                            " . implode(", \n", $update_fields) . "
+                        WHERE
+                            \"$pk\" = :$pk
+                    ");
+
+                    break;
+
+                default:
+                    throw new record_exception('Unknown SQL driver');
             }
 
-            $update_fields = [];
-            foreach (array_keys($info) as $key) {
-                $update_fields[] = "`$key` = :$key";
-            }
-            $update = core::sql('master')->prepare("
-                UPDATE
-                    `$table`
-                SET
-                    " . implode(", \n", $update_fields) . "
-                WHERE
-                    `$pk` = :$pk
-            ");
             $info[$pk] = $model->$pk;
             $update->execute($info);
 
@@ -707,22 +1066,48 @@
          * @static
          * @param record_model $model the model that is to be deleted
          * @return boolean returns true on success
+         * @throws record_exception
          */
         protected static function _delete(record_model $model) {
             $table = static::TABLE;
             $pk    = static::PRIMARY_KEY;
+            $sql   = core::sql('slave');
 
-            if (strpos($table, '.') !== false) {
-                $table = explode('.', $table);
-                $table = "$table[0]`.`$table[1]";
+            switch ($sql->driver()) {
+                case 'mysql':
+                    if (strpos($table, '.') !== false) {
+                        $table = explode('.', $table);
+                        $table = "$table[0]`.`$table[1]";
+                    }
+
+                    $delete = $sql->prepare("
+                        DELETE FROM
+                            `$table`
+                        WHERE
+                            `$pk` = ?
+                    ");
+
+                    break;
+
+                case 'pgsql':
+                    if (strpos($table, '.') !== false) {
+                        $table = explode('.', $table);
+                        $table = "$table[0]\".\"$table[1]";
+                    }
+
+                    $delete = $sql->prepare("
+                        DELETE FROM
+                            \"$table\"
+                        WHERE
+                            \"$pk\" = ?
+                    ");
+
+                    break;
+
+                default:
+                    throw new record_exception('Unknown SQL driver');
             }
 
-            $delete = core::sql('master')->prepare("
-                DELETE FROM
-                    `$table`
-                WHERE
-                    `$pk` = ?
-            ");
             $delete->execute([
                 $model->$pk,
             ]);
@@ -742,6 +1127,7 @@
          * @static
          * @param record_collection $collection the collection of models that is to be deleted
          * @return boolean returns true on success
+         * @throws record_exception
          */
         protected static function _deletes(record_collection $collection) {
 
@@ -752,18 +1138,43 @@
             $self  = get_called_class();
             $pks   = $collection->field(static::PRIMARY_KEY);
             $table = static::TABLE;
+            $sql   = core::sql('slave');
 
-            if (strpos($table, '.') !== false) {
-                $table = explode('.', $table);
-                $table = "$table[0]`.`$table[1]";
+            switch ($sql->driver()) {
+                case 'mysql':
+                    if (strpos($table, '.') !== false) {
+                        $table = explode('.', $table);
+                        $table = "$table[0]`.`$table[1]";
+                    }
+
+                    $delete = core::sql('master')->prepare("
+                        DELETE FROM
+                            `$table`
+                        WHERE
+                            `" . static::PRIMARY_KEY . "` IN (" . join(',', array_fill(0, count($pks), '?')) . ")
+                    ");
+
+                    break;
+
+                case 'pgsql':
+                    if (strpos($table, '.') !== false) {
+                        $table = explode('.', $table);
+                        $table = "$table[0]\".\"$table[1]";
+                    }
+
+                    $delete = core::sql('master')->prepare("
+                        DELETE FROM
+                            \"$table\"
+                        WHERE
+                            \"" . static::PRIMARY_KEY . "\" IN (" . join(',', array_fill(0, count($pks), '?')) . ")
+                    ");
+
+                    break;
+
+                default:
+                    throw new record_exception('Unknown SQL driver');
             }
 
-            $delete = core::sql('master')->prepare("
-                DELETE FROM
-                    `$table`
-                WHERE
-                    `" . static::PRIMARY_KEY . "` IN (" . join(',', array_fill(0, count($pks), '?')) . ")
-            ");
             $delete->execute($pks);
 
             $delete_cache_keys = [];

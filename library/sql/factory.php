@@ -18,11 +18,10 @@
             }
 
             //select a random connection id if there is more than one:
-            $count     = count($config[$name]);
-            $id        = $count > 1 ? mt_rand(0, $count - 1) : 0;
-
-            $dsn     = isset($config[$name][$id]['dsn']) ? $config[$name][$id]['dsn'] : false;
-            $user     = isset($config[$name][$id]['user']) ? $config[$name][$id]['user'] : false;
+            $count = count($config[$name]);
+            $id    = $count > 1 ? mt_rand(0, $count - 1) : 0;
+            $dsn   = isset($config[$name][$id]['dsn']) ? $config[$name][$id]['dsn'] : false;
+            $user  = isset($config[$name][$id]['user']) ? $config[$name][$id]['user'] : false;
 
             if (! $dsn || ! $user) {
                 throw new error_exception('The database connection "' . $name . '" has not been configured properly.');
@@ -32,7 +31,7 @@
 
             try {
                 //return new sql_debug(
-                return new pdo(
+                return new sql_pdo(
                     $dsn,
                     $user,
                     $password,

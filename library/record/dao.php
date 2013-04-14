@@ -113,6 +113,10 @@
                             WHERE
                                 `" . $self::PRIMARY_KEY . "` = ?
                         ");
+
+                        $info->execute([
+                            $pk,
+                        ]);
                         break;
 
                     case 'pgsql':
@@ -130,15 +134,22 @@
                             WHERE
                                 \"" . $self::PRIMARY_KEY . "\" = ?
                         ");
+
+                        // PG handles binary data differently than strings
+                        if ($self::BINARY_PK) {
+                            $info->bindValue(1, $pk, PDO::PARAM_LOB);
+                            $info->execute();
+                        } else {
+                            $info->execute([
+                                $pk,
+                            ]);
+                        }
+
                         break;
 
                     default:
                        throw new record_exception('Unknown SQL driver');
                 }
-
-                $info->execute([
-                    $pk,
-                ]);
 
                 if (! ($info = $info->fetch())) {
                     $exception = $self::ENTITY_NAME . '_exception';
@@ -192,6 +203,8 @@
                             WHERE
                                 `" . $self::PRIMARY_KEY . "` IN (" . join(',', array_fill(0, count($pks), '?')) . ")
                         ");
+                        $infos_rs->execute(array_values($pks));
+
                         break;
 
                     case 'pgsql':
@@ -208,13 +221,23 @@
                             WHERE
                                 \"" . $self::PRIMARY_KEY . "\" IN (" . join(',', array_fill(0, count($pks), '?')) . ")
                         ");
+
+                        // PG handles binary data differently than strings
+                        if ($self::BINARY_PK) {
+                            foreach (array_values($pks) as $i => $pk) {
+                                $infos_rs->bindValue($i + 1, $pk, PDO::PARAM_LOB);
+                            }
+                            $infos_rs->execute();
+                        } else {
+                            $infos_rs->execute();
+                        }
+
                         break;
 
                     default:
                         throw new record_exception('Unknown SQL driver');
                 }
 
-                $infos_rs->execute(array_values($pks));
                 $infos = [];
                 foreach ($infos_rs->fetchAll() as $info) {
                     $k = array_search($info[$self::PRIMARY_KEY], $pks);
@@ -708,6 +731,12 @@
                             ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
                     ");
 
+                    $insert->execute(array_values($info));
+
+                    if (static::AUTOINCREMENT) {
+                        $info[static::PRIMARY_KEY] = $sql->last_insert_id();
+                    }
+
                     break;
 
                 case 'pgsql':
@@ -720,24 +749,33 @@
                         $insert_fields[] = "\"$key\"";
                     }
 
+                    $pk = static::PRIMARY_KEY;
+
                     $insert = $sql->prepare("
-                        INSERT IGNORE INTO
+                        INSERT INTO
                             \"$table\"
                             ( " . join(', ', $insert_fields) . " )
                             VALUES
                             ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
+                            RETURNING \"$pk\"
                     ");
+
+                    sql_pdo::bind_by_casting(
+                        $insert,
+                        static::castings(),
+                        $info
+                    );
+
+                    $insert->execute();
+
+                    if (static::AUTOINCREMENT) {
+                        $info[static::PRIMARY_KEY] = $insert->fetch()[$pk];
+                    }
 
                     break;
 
                 default:
                     throw new record_exception('Unknown SQL driver');
-            }
-
-            $insert->execute(array_values($info));
-
-            if (static::AUTOINCREMENT) {
-                $info[static::PRIMARY_KEY] = $sql->lastInsertId();
             }
 
             //incase a blank record was cached
@@ -819,6 +857,7 @@
                 // since we need the returned IDs for cache-busting and to return a model
                 if (static::AUTOINCREMENT || $return_collection) {
                     $sql->beginTransaction();
+                    $pk = static::PRIMARY_KEY;
 
                     switch ($driver) {
                         case 'mysql':
@@ -829,35 +868,52 @@
                                     VALUES
                                     ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
                             ");
+                            foreach ($infos as $k => $info) {
+                                $insert->execute(array_values($info));
+
+                                if (static::AUTOINCREMENT) {
+                                    $info[static::PRIMARY_KEY] = $sql->last_insert_id();
+                                }
+
+                                if ($return_collection) {
+                                    $models[$k] = new $model(null, $info);
+                                }
+
+                                $delete_keys[] = "$self:" . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[static::PRIMARY_KEY])) : $info[static::PRIMARY_KEY]);
+                            }
+
                             break;
 
                         case 'pgsql':
                             $insert = $sql->prepare("
-                                INSERT IGNORE INTO
+                                INSERT INTO
                                     \"$table\"
                                     ( " . join(', ', $insert_fields) . " )
                                     VALUES
                                     ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
+                                    RETURNING \"$pk\"
                             ");
+
+                            foreach ($infos as $k => $info) {
+                                $insert->execute(array_values($info));
+
+                                if (static::AUTOINCREMENT) {
+                                    $info[static::PRIMARY_KEY] = $insert->fetch()[$pk];
+                                }
+
+                                if ($return_collection) {
+                                    $models[$k] = new $model(null, $info);
+                                }
+
+                                $delete_keys[] = "$self:" . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[static::PRIMARY_KEY])) : $info[static::PRIMARY_KEY]);
+                            }
+
                             break;
 
                         default:
                             throw new record_exception('Unknown SQL driver');
                     }
 
-                    foreach ($infos as $k => $info) {
-                        $insert->execute(array_values($info));
-
-                        if (static::AUTOINCREMENT) {
-                            $info[static::PRIMARY_KEY] = $sql->lastInsertId();
-                        }
-
-                        if ($return_collection) {
-                            $models[$k] = new $model(null, $info);
-                        }
-
-                        $delete_keys[] = "$self:" . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[static::PRIMARY_KEY])) : $info[static::PRIMARY_KEY]);
-                    }
                     $sql->commit();
                 } else {
                     // this might explode if $keys_match was a lie
@@ -939,7 +995,7 @@
                     $insert->execute(array_values($info));
 
                     if (static::AUTOINCREMENT) {
-                        $info[static::PRIMARY_KEY] = $sql->lastInsertId();
+                        $info[static::PRIMARY_KEY] = $sql->last_insert_id();
                     }
 
                     if ($return_collection) {

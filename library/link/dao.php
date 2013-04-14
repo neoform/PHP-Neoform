@@ -341,7 +341,7 @@
                     }
 
                     $insert = core::sql('master')->prepare("
-                        INSERT IGNORE INTO
+                        INSERT INTO
                         \"$table\"
                         ( " . join(', ', $insert_fields) . " )
                         VALUES
@@ -412,7 +412,7 @@
                     }
 
                     $insert = $sql->prepare("
-                        INSERT IGNORE INTO
+                        INSERT INTO
                         \"$table\"
                         ( " . join(', ', $insert_fields) . " )
                         VALUES

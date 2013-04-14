@@ -2,7 +2,7 @@
 
     class error_lib {
 
-        public static function log(exception $e) {
+        public static function log(exception $e, $rethrow=true) {
             try {
 
                 if ($e instanceof error_php_exception) {
@@ -26,8 +26,19 @@
                 }
 
                 core::log($err, 'fatal');
-                throw new error_exception('An unexpected error occured.');
+
+                if ($rethrow) {
+                    throw new error_exception('An unexpected error occured.');
+                }
             } catch (exception $e) {
+                try {
+                    //trash anything that was going to be outputted
+                    while (ob_get_status() && ob_end_clean()) {
+
+                    }
+                } catch (Exception $e) {
+
+                }
                 die('An unexpected error occured.' . "\n");
             }
         }

@@ -14,18 +14,18 @@
             $get = function() use ($locale, $namespace) {
                 $messages = core::sql('slave')->prepare("
                     SELECT
-                        `locale_key`.`body` `k`,
-                        `locale_key_message`.`body` `v`
+                        locale_key.body k,
+                        locale_key_message.body v
                     FROM
-                        `locale_key_message`
+                        locale_key_message
                     INNER JOIN
-                        `locale_key`
+                        locale_key
                     ON
-                        `locale_key`.`id` = `locale_key_message`.`key_id`
+                        locale_key.id = locale_key_message.key_id
                     WHERE
-                        `locale_key_message`.`locale` = ?
+                        locale_key_message.locale = ?
                     AND
-                        `locale_key`.`namespace_id` = ?
+                        locale_key.namespace_id = ?
                 ");
                 $messages->execute([
                     $locale,

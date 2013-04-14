@@ -5,6 +5,16 @@
      */
     class user_date_dao extends record_dao implements user_date_definition {
 
+        public static function castings() {
+            return [
+                'user_id'             => 'int',
+                'created_on'          => 'string',
+                'last_login'          => 'string',
+                'email_verified_on'   => 'string',
+                'password_updated_on' => 'string',
+            ];
+        }
+
         // WRITES
 
         /**

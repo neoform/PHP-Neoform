@@ -14,6 +14,7 @@
             $this->code .= "\tclass " . $this->table->name . "_dao extends record_dao implements " . $this->table->name . "_definition {\n\n";
 
             $this->constants();
+            $this->castings();
 
             if (count($this->table->all_non_pk_indexes) || $this->table->is_tiny() || $this->all) {
                 $this->code .= "\t\t// READS\n\n";

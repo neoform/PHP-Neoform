@@ -116,6 +116,13 @@
                 case 'info':
                     return $this->info;
 
+                case 'pdo_casting':
+                    if ($this->is_binary()) {
+                        return 'binary';
+                    } else {
+                        $this->casting;
+                    }
+
                 default:
                     throw new exception('Unknown field `' . $k . '`');
 

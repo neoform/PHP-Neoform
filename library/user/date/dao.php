@@ -72,7 +72,5 @@
          */
         public static function deletes(user_date_collection $user_date_collection) {
             return parent::_deletes($user_date_collection);
-
         }
-
     }

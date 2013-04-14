@@ -1062,6 +1062,9 @@
                             `$pk` = :$pk
                     ");
 
+                    $info[$pk] = $model->$pk;
+                    $update->execute($info);
+
                     break;
 
                 case 'pgsql':
@@ -1082,14 +1085,22 @@
                             \"$pk\" = :$pk
                     ");
 
+                    $info[$pk] = $model->$pk;
+
+                    sql_pdo::bind_by_casting(
+                        $update,
+                        static::castings(),
+                        $info,
+                        true
+                    );
+
+                    $update->execute($info);
+
                     break;
 
                 default:
                     throw new record_exception('Unknown SQL driver');
             }
-
-            $info[$pk] = $model->$pk;
-            $update->execute($info);
 
             cache_lib::delete(
                 static::CACHE_ENGINE,
@@ -1142,6 +1153,9 @@
                         WHERE
                             `$pk` = ?
                     ");
+                    $delete->execute([
+                        $model->$pk,
+                    ]);
 
                     break;
 
@@ -1158,15 +1172,21 @@
                             \"$pk\" = ?
                     ");
 
+                    // PG handles binary data differently than strings
+                    if (static::BINARY_PK) {
+                        $delete->bindValue(1, $pk, PDO::PARAM_LOB);
+                        $delete->execute();
+                    } else {
+                        $delete->execute([
+                            $model->$pk,
+                        ]);
+                    }
+
                     break;
 
                 default:
                     throw new record_exception('Unknown SQL driver');
             }
-
-            $delete->execute([
-                $model->$pk,
-            ]);
 
             cache_lib::delete(
                 static::CACHE_ENGINE,
@@ -1210,6 +1230,8 @@
                             `" . static::PRIMARY_KEY . "` IN (" . join(',', array_fill(0, count($pks), '?')) . ")
                     ");
 
+                    $delete->execute($pks);
+
                     break;
 
                 case 'pgsql':
@@ -1225,13 +1247,22 @@
                             \"" . static::PRIMARY_KEY . "\" IN (" . join(',', array_fill(0, count($pks), '?')) . ")
                     ");
 
+                    // PG handles binary data differently than strings
+                    if (static::BINARY_PK) {
+                        $i = 0;
+                        foreach ($pks as $pk) {
+                            $delete->bindValue($i++, $pk, PDO::PARAM_LOB);
+                        }
+                        $delete->execute();
+                    } else {
+                        $delete->execute($pks);
+                    }
+
                     break;
 
                 default:
                     throw new record_exception('Unknown SQL driver');
             }
-
-            $delete->execute($pks);
 
             $delete_cache_keys = [];
             foreach ($pks as $pk) {

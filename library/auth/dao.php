@@ -7,6 +7,11 @@
 
         const BY_USER = 'by_user';
 
+        /**
+         * Get the generic castings of the table columns
+         *
+         * @return array
+         */
         public static function castings() {
             return [
                 'hash'       => 'binary',

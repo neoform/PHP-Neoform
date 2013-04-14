@@ -734,7 +734,7 @@
                     $insert->execute(array_values($info));
 
                     if (static::AUTOINCREMENT) {
-                        $info[static::PRIMARY_KEY] = $sql->last_insert_id();
+                        $info[static::PRIMARY_KEY] = $sql->lastInsertId();
                     }
 
                     break;
@@ -872,7 +872,7 @@
                                 $insert->execute(array_values($info));
 
                                 if (static::AUTOINCREMENT) {
-                                    $info[static::PRIMARY_KEY] = $sql->last_insert_id();
+                                    $info[static::PRIMARY_KEY] = $sql->lastInsertId();
                                 }
 
                                 if ($return_collection) {
@@ -995,7 +995,7 @@
                     $insert->execute(array_values($info));
 
                     if (static::AUTOINCREMENT) {
-                        $info[static::PRIMARY_KEY] = $sql->last_insert_id();
+                        $info[static::PRIMARY_KEY] = $sql->lastInsertId();
                     }
 
                     if ($return_collection) {

@@ -12,6 +12,7 @@
             $this->code .= "\tclass " . $this->table->name . "_dao extends link_dao implements " . $this->table->name . "_definition {\n\n";
 
             $this->constants();
+            $this->castings();
 
             $this->code .= "\t\t// READS\n\n";
             $this->selectors();

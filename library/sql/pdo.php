@@ -12,19 +12,6 @@
         }
 
         /**
-         * Get the last inserted autoinc id
-         *
-         * @return integer
-         */
-        public function last_insert_id() {
-            if ($this->driver() === 'pgsql') {
-                $query = $this->query("SELECT LASTVAL()");
-            } else {
-                return (int) $this->lastInsertId();
-            }
-        }
-
-        /**
          * Bind values to a query based on the castings.
          * This is needed because of binary data fields, which need to be specially bound as PDO::PARAM_LOB in Postgres
          *

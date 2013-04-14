@@ -9,12 +9,10 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-
                 $hashmethod      = user_lib::default_hashmethod();
                 $hashmethod_cost = user_lib::default_hashmethod_cost();
-                $salt             = user_lib::generate_salt();
-
-                $hash = user_lib::hash($input->password1->val(), $salt, $hashmethod, $hashmethod_cost);
+                $salt            = user_lib::generate_salt();
+                $hash            = user_lib::hash($input->password1->val(), $salt, $hashmethod, $hashmethod_cost);
 
                 $user = user_dao::insert([
                     'email'               => $input->email->val(),

@@ -68,7 +68,7 @@
                     core::output()->redirect('account/login');
                 }
             } catch (exception $e) {
-                error_lib::log($e);
+                error_lib::log($e, false);
 
                 try {
                     core::output()->error('Unexpected Error', 'There was a problem loading that page');

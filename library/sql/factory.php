@@ -30,18 +30,23 @@
             $password = isset($config[$name][$id]['password']) ? $config[$name][$id]['password'] : '';
 
             try {
+                $options = [
+                    //PDO::ATTR_CASE                 => PDO::CASE_LOWER, // force lower case for all field names
+                    PDO::ATTR_ERRMODE                => PDO::ERRMODE_EXCEPTION, // all errors should be exceptions
+                    PDO::ATTR_DEFAULT_FETCH_MODE     => PDO::FETCH_ASSOC,
+                    //PDO::ATTR_PERSISTENT           => true,
+                ];
+
+                if (isset($config['encoding'])) {
+                    $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES " . $config['encoding'];
+                }
+
                 //return new sql_debug(
                 return new sql_pdo(
                     $dsn,
                     $user,
                     $password,
-                    [
-                        PDO::MYSQL_ATTR_INIT_COMMAND     => "SET NAMES utf8",
-                        PDO::ATTR_CASE                     => PDO::CASE_LOWER, // force lower case for all field names
-                        PDO::ATTR_ERRMODE                 => PDO::ERRMODE_EXCEPTION, // all errors shoud be exceptions
-                        PDO::ATTR_DEFAULT_FETCH_MODE     => PDO::FETCH_ASSOC,
-                        //PDO::ATTR_PERSISTENT             => true,
-                    ]
+                    $options
                 );
             } catch (exception $e) {
                 core::log('Could not connect to database configuration "' . $name . '" -- ' . $e->getMessage(), 'CRITICAL');

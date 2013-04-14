@@ -25,7 +25,7 @@
         }
 
         public function set_namespace($namespace) {
-            $this->nspace = new locale_namespace_model(current(locale_namespace_dao::by_name(
+            $this->nspace = new locale_namespace_model((int) current(locale_namespace_dao::by_name(
                 $namespace
             )));
             $this->_load_translations();

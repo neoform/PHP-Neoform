@@ -7,6 +7,14 @@
 
         const BY_USER = 'by_user';
 
+        public static function castings() {
+            return [
+                'hash'       => 'binary',
+                'user_id'    => 'int',
+                'expires_on' => 'string',
+            ];
+        }
+
         // READS
 
         /**

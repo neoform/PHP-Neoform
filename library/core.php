@@ -253,7 +253,7 @@
             register_shutdown_function(function() {
                 $error = error_get_last();
                 if ($error !== null) { //only grab error if there is one
-                    $type    = isset($error['type']) ? $error['type'] : null;
+                    //$type    = isset($error['type']) ? $error['type'] : null;
                     $message = isset($error['message']) ? $error['message'] : null;
                     $file    = isset($error['file']) ? $error['file'] : null;
                     $line    = isset($error['line']) ? $error['line'] : null;
@@ -281,6 +281,7 @@
             ini_set('display_errors', 'Off'); // do not display error(s) in browser - only affects non-fatal errors
             ini_set('display_startup_errors', 'Off');
 
+            mb_internal_encoding(core::config()->system['enoding']);
             date_default_timezone_set(core::config()->system['timezone']);
         }
 

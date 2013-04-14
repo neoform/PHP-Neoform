@@ -9,6 +9,18 @@
         const BY_STATUS              = 'by_status';
         const BY_EMAIL               = 'by_email';
 
+        public static function castings() {
+            return [
+                'id'                  => 'int',
+                'email'               => 'int',
+                'password_hash'       => 'binary',
+                'password_hashmethod' => 'int',
+                'password_cost'       => 'int',
+                'password_salt'       => 'binary',
+                'status_id'           => 'int',
+            ];
+        }
+
         // READS
 
         /**

@@ -156,6 +156,8 @@
                     throw new $exception('That ' . $self::NAME . ' doesn\'t exist');
                 }
 
+                sql_pdo::unbinary($info);
+
                 return $info;
             };
 
@@ -245,6 +247,8 @@
                         $infos[$k] = $info;
                     }
                 }
+
+                sql_pdo::unbinary($infos);
 
                 return $infos;
             };
@@ -343,6 +347,9 @@
                 foreach ($rs as $row) {
                     $pks[] = $row[$pk];
                 }
+
+                sql_pdo::unbinary($pks);
+
                 return $pks;
             };
 
@@ -457,6 +464,8 @@
                 foreach ($info->fetchAll() as $info) {
                     $infos[$info[$pk]] = $info;
                 }
+
+                sql_pdo::unbinary($infos);
 
                 return $infos;
             };
@@ -575,6 +584,8 @@
                     ][] = $row[$pk];
                 }
 
+                sql_pdo::unbinary($return);
+
                 return $return;
             };
 
@@ -685,6 +696,9 @@
                 } else {
                     $return = $rs;
                 }
+
+                sql_pdo::unbinary($return);
+
                 return $return;
             };
 
@@ -1077,13 +1091,16 @@
                         $update_fields[] = "\"$key\" = :$key";
                     }
                     $update = $sql->prepare("
-                        UPDATE
-                            \"$table\"
-                        SET
-                            " . implode(", \n", $update_fields) . "
-                        WHERE
-                            \"$pk\" = :$pk
+                        UPDATE \"$table\"
+                        SET " . implode(", \n", $update_fields) . "
+                        WHERE \"$pk\" = :$pk
                     ");
+
+                    core::debug(utf8_encode("
+                        UPDATE \"$table\"
+                        SET " . implode(", \n", $update_fields) . "
+                        WHERE \"$pk\" = :$pk
+                    "));
 
                     $info[$pk] = $model->$pk;
 
@@ -1171,11 +1188,11 @@
                         WHERE
                             \"$pk\" = ?
                     ");
-
                     // PG handles binary data differently than strings
                     if (static::BINARY_PK) {
-                        $delete->bindValue(1, $pk, PDO::PARAM_LOB);
+                        $delete->bindValue(1, $model->$pk, PDO::PARAM_LOB);
                         $delete->execute();
+                        core::debug($delete->rowCount(), $model);
                     } else {
                         $delete->execute([
                             $model->$pk,

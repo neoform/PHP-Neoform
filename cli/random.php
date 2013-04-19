@@ -5,13 +5,13 @@
     require_once($root . '/library/core.php');
     core::init([
         'extension' 	=> 'php',
-        'environment' 	=> 'sample',
+        'environment' 	=> 'sling',
 
         'application' 	=> $root . '/application/',
         'library' 		=> $root . '/library/',
         'external' 		=> $root . '/external/',
         'entities' 		=> $root . '/entities/',
-        'logs' 			=> $root . '/../../logs/',
+        'logs' 			=> $root . '/logs/',
         'website'		=> $root . '/www/',
     ]);
 

@@ -26,8 +26,6 @@
             $field1 = $fks[0];
             $field2 = $fks[1];
 
-            //core::debug($field1->table->name . '.' . $field1->name, $field2->table->name . '.' . $field2->name);
-
             $length = max(strlen($field1->name), strlen($field2->name));
 
             $this->code .= "\t\tpublic static function delete_by_" . $field1->referenced_field->table->name . "(" . $field1->referenced_field->table->name . "_model $" . $field1->referenced_field->table->name . ", " . $field2->referenced_field->table->name . "_collection $" . $field2->referenced_field->table->name . "_collection) {\n";

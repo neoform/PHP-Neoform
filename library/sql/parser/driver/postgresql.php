@@ -53,8 +53,6 @@
                     'bool_true'            => self::boolean_true_value(strtolower($field['udt_name'])),
                 ];
             }
-
-            core::debug($info);
         }
 
         public static function field_casting($type, $length) {

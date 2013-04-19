@@ -25,9 +25,9 @@
          * @param array        $vals
          * @param bool         $bind_as_param
          */
-        public static function bind_by_casting(PDOStatement $query, $castings, $vals, $bind_as_param=false) {
+        public static function bind_by_casting(PDOStatement $query, array $castings, array $vals, $bind_as_param=false) {
             if ($bind_as_param) {
-                foreach ($vals as $k => $v) {
+                foreach ($vals as $k => &$v) { // do NOT remove this reference, it will break the bindParam() function
                     switch ($castings[$k]) {
                         case 'int':
                             $query->bindParam($k, $v, PDO::PARAM_INT);
@@ -38,7 +38,7 @@
                             break;
 
                         case 'binary':
-                            $query->bindParam(utf8_encode($k), $v, PDO::PARAM_LOB);
+                            $query->bindParam($k, $v, PDO::PARAM_LOB);
                             break;
 
                         case 'bool':
@@ -50,36 +50,36 @@
                             break;
 
                         default:
-                            $query->bindParam($k, $v, PDO::PARAM_STR);
+                            $query->bindParam($k, $v);
                             break;
                     }
                 }
             } else {
                 $i = 1;
-                foreach ($vals as $k => $v) {
+                foreach ($vals as $k => &$v) { // do NOT remove this reference, it will break the bindParam() function
                     switch ($castings[$k]) {
                         case 'int':
-                            $query->bindValue($i++, $v, PDO::PARAM_INT);
+                            $query->bindParam($i++, $v, PDO::PARAM_INT);
                             break;
 
                         case 'string':
-                            $query->bindValue($i++, $v, PDO::PARAM_STR);
+                            $query->bindParam($i++, $v, PDO::PARAM_STR);
                             break;
 
                         case 'binary':
-                            $query->bindValue($i++, $v, PDO::PARAM_LOB);
+                            $query->bindParam($i++, $v, PDO::PARAM_LOB);
                             break;
 
                         case 'bool':
-                            $query->bindValue($i++, $v, PDO::PARAM_BOOL);
+                            $query->bindParam($i++, $v, PDO::PARAM_BOOL);
                             break;
 
                         case 'null':
-                            $query->bindValue($i++, $v, PDO::PARAM_NULL);
+                            $query->bindParam($i++, $v, PDO::PARAM_NULL);
                             break;
 
                         default:
-                            $query->bindParam($i++, $v, PDO::PARAM_STR);
+                            $query->bindParam($i++, $v);
                             break;
                     }
                 }
@@ -98,6 +98,30 @@
                 }
             } else if (is_resource($mixed)) {
                 $mixed = stream_get_contents($mixed);
+            }
+        }
+
+        /**
+         * Dumps a raw sql query
+         *
+         * @param PDOStatement $query
+         *
+         * @return string
+         * @throws Exception
+         */
+        public static function dump_query(PDOStatement$query) {
+            ob_start();
+
+            $query->debugDumpParams();
+
+            try {
+                $buffer = '';
+                while (ob_get_length()) {
+                    $buffer .= ob_get_clean();
+                }
+                return $buffer;
+            } catch (Exception $e) {
+                throw new Exception('Output buffer error occurred');
             }
         }
     }

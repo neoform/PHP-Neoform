@@ -1068,12 +1068,9 @@
                         $update_fields[] = "`$key` = :$key";
                     }
                     $update = $sql->prepare("
-                        UPDATE
-                            `$table`
-                        SET
-                            " . implode(", \n", $update_fields) . "
-                        WHERE
-                            `$pk` = :$pk
+                        UPDATE `$table`
+                        SET " . implode(", \n", $update_fields) . "
+                        WHERE `$pk` = :$pk
                     ");
 
                     $info[$pk] = $model->$pk;
@@ -1096,22 +1093,15 @@
                         WHERE \"$pk\" = :$pk
                     ");
 
-                    core::debug(utf8_encode("
-                        UPDATE \"$table\"
-                        SET " . implode(", \n", $update_fields) . "
-                        WHERE \"$pk\" = :$pk
-                    "));
-
                     $info[$pk] = $model->$pk;
 
                     sql_pdo::bind_by_casting(
                         $update,
                         static::castings(),
-                        $info,
-                        true
+                        $info
                     );
 
-                    $update->execute($info);
+                    $update->execute();
 
                     break;
 
@@ -1192,7 +1182,6 @@
                     if (static::BINARY_PK) {
                         $delete->bindValue(1, $model->$pk, PDO::PARAM_LOB);
                         $delete->execute();
-                        core::debug($delete->rowCount(), $model);
                     } else {
                         $delete->execute([
                             $model->$pk,

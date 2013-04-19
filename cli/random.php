@@ -5,7 +5,7 @@
     require_once($root . '/library/core.php');
     core::init([
         'extension' 	=> 'php',
-        'environment' 	=> 'sling',
+        'environment' 	=> 'sample',
 
         'application' 	=> $root . '/application/',
         'library' 		=> $root . '/library/',

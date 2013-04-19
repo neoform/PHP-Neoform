@@ -248,7 +248,7 @@
                 }
 
                 if ($engine) {
-                    $engine::delete_multi($key, $pool);
+                    $engine::delete_multi($keys, $pool);
                 }
             }
         }

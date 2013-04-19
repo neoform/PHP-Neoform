@@ -231,7 +231,7 @@
                             }
                             $infos_rs->execute();
                         } else {
-                            $infos_rs->execute();
+                            $infos_rs->execute(array_values($pks));
                         }
 
                         break;

@@ -10,7 +10,6 @@
                     <a href="/account">Home</a>
                 </li>
                 <li class="<?php echo $segment2 === 'info' || $segment2 === 'email' || $segment2 === 'password' ? ' active' : ''; ?>">
-                    <a href="/account/files">Files</a>
                     <ul>
                         <li<?php echo $segment2 === 'email' ? ' class="active"' : ''; ?>><a href="/account/email">Change Email</a></li>
                         <li<?php echo $segment2 === 'password' ? ' class="active"' : ''; ?>><a href="/account/password">Change Password</a></li>

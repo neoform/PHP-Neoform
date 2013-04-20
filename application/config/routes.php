@@ -110,33 +110,6 @@
                             ]),
                         ],
                     ]),
-
-                    // Account Files
-                    'files' => new http_route([
-                        'controller' => '/account/files',
-                        'locale' => [
-                            'en' => 'files',
-                            'fr' => 'fichiers',
-                        ],
-                        'children' => [
-
-                            // Account Files AJAX
-                            'ajax' => new http_route([
-                                'controller' => '/account/files/ajax',
-                                'children'   => [
-
-                                    // Account Files AJAX Folder
-                                    'folder' => new http_route([
-                                        'controller' => '/account/files/ajax/folder',
-                                    ]),
-
-                                    'file' => new http_route([
-                                        'controller' => '/account/files/ajax/file',
-                                    ]),
-                                ],
-                            ]),
-                        ],
-                    ]),
                 ],
             ]),
 

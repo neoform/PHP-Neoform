@@ -90,7 +90,7 @@
          */
         public static function by_pk($pk) {
 
-            $self = get_called_class();
+            $self = static::ENTITY_NAME . '_dao';
 
             $get = function() use ($pk, $self) {
 
@@ -177,7 +177,7 @@
                 return [];
             }
 
-            $self = get_called_class();
+            $self = static::ENTITY_NAME . '_dao';
 
             $get = function(array $pks) use ($self) {
                 $table = $self::TABLE;
@@ -269,7 +269,7 @@
 
             $table = static::TABLE;
             $pk    = static::PRIMARY_KEY;
-            $self  = get_called_class();
+            $self  = static::ENTITY_NAME . '_dao';
 
             $get = function() use ($keys, $table, $pk, $self) {
 
@@ -374,7 +374,7 @@
 
             $pk    = static::PRIMARY_KEY;
             $table = static::TABLE;
-            $self  = get_called_class();
+            $self  = static::ENTITY_NAME . '_dao';
 
             $get = function() use ($keys, $table, $pk, $self) {
 
@@ -500,10 +500,9 @@
          */
         final protected static function _by_fields_multi($cache_key_name, array $keys_arr) {
 
-            $self  = get_called_class();
             $table = static::TABLE;
             $pk    = static::PRIMARY_KEY;
-            $self  = get_called_class();
+            $self  = static::ENTITY_NAME . '_dao';
 
             $get = function() use ($keys_arr, $table, $pk, $self) {
 
@@ -638,7 +637,7 @@
         final protected static function _by_fields_select($cache_key_name, array $select_fields, array $keys) {
 
             $table = static::TABLE;
-            $self  = get_called_class();
+            $self  = static::ENTITY_NAME . '_dao';
 
             $get = function() use ($select_fields, $keys, $table, $self) {
 
@@ -824,7 +823,7 @@
             //incase a blank record was cached
             cache_lib::delete(
                 static::CACHE_ENGINE,
-                get_called_class() . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[static::PRIMARY_KEY])) : $info[static::PRIMARY_KEY]),
+                static::ENTITY_NAME . '_dao:' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[static::PRIMARY_KEY])) : $info[static::PRIMARY_KEY]),
                 static::ENTITY_POOL
             );
 
@@ -850,7 +849,7 @@
          */
         protected static function _inserts(array $infos, $keys_match = true, $replace=false, $return_collection = true) {
             $table  = static::TABLE;
-            $self   = get_called_class();
+            $self   = static::ENTITY_NAME . '_dao';
             $sql    = core::sql('master');
             $driver = $sql->driver();
 
@@ -1140,7 +1139,7 @@
 
             cache_lib::delete(
                 static::CACHE_ENGINE,
-                get_called_class() . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
+                static::ENTITY_NAME . '_dao:' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
                 static::ENTITY_POOL
             );
 
@@ -1148,7 +1147,7 @@
             if (isset($info[$pk])) {
                 cache_lib::delete(
                     static::CACHE_ENGINE,
-                    get_called_class() . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[$pk])) : $info[$pk]),
+                    static::ENTITY_NAME . '_dao:' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[$pk])) : $info[$pk]),
                     static::ENTITY_POOL
                 );
             }
@@ -1225,7 +1224,7 @@
 
             cache_lib::delete(
                 static::CACHE_ENGINE,
-                get_called_class() . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
+                static::ENTITY_NAME . '_dao:' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
                 static::ENTITY_POOL
             );
             return true;
@@ -1246,7 +1245,7 @@
                 return;
             }
 
-            $self  = get_called_class();
+            $self  = static::ENTITY_NAME . '_dao';
             $pks   = $collection->field(static::PRIMARY_KEY);
             $table = static::TABLE;
             $sql   = core::sql('master');

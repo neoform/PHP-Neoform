@@ -7,6 +7,15 @@
         const BY_LOCALE     = 'by_locale';
         const BY_LOCALE_KEY = 'by_locale_key';
 
+        public static function castings() {
+            return [
+                'id'     => 'int',
+                'key_id' => 'int',
+                'body'   => 'string',
+                'locale' => 'string',
+            ];
+        }
+
         // READS
 
         public static function by_body($body) {

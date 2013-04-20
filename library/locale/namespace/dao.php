@@ -4,6 +4,13 @@
 
         const BY_NAME = 'by_name';
 
+        public static function castings() {
+            return [
+                'id'   => 'int',
+                'name' => 'string',
+            ];
+        }
+
         // READS
 
         public static function by_name($name) {

@@ -106,12 +106,9 @@
                         }
 
                         $info = $sql->prepare("
-                            SELECT
-                                *
-                            FROM
-                                `$table`
-                            WHERE
-                                `" . $self::PRIMARY_KEY . "` = ?
+                            SELECT *
+                            FROM `$table`
+                            WHERE `" . $self::PRIMARY_KEY . "` = ?
                         ");
 
                         $info->execute([
@@ -127,12 +124,9 @@
                         }
 
                         $info = $sql->prepare("
-                            SELECT
-                                *
-                            FROM
-                                \"$table\"
-                            WHERE
-                                \"" . $self::PRIMARY_KEY . "\" = ?
+                            SELECT *
+                            FROM \"$table\"
+                            WHERE \"" . $self::PRIMARY_KEY . "\" = ?
                         ");
 
                         $info->bindValue(1, $pk, sql_pdo::pdo_binding($self::castings(), $self::PRIMARY_KEY));
@@ -156,7 +150,7 @@
 
             return cache_lib::single(
                 static::CACHE_ENGINE,
-                "$self:" . self::BY_PK . (static::BINARY_PK ? ':'. md5(base64_encode($pk)) : ":$pk"),
+                "$self:" . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($pk)) : $pk),
                 static::ENTITY_POOL,
                 $get
             );
@@ -191,12 +185,9 @@
                         }
 
                         $infos_rs = $sql->prepare("
-                            SELECT
-                                *
-                            FROM
-                                `$table`
-                            WHERE
-                                `" . $self::PRIMARY_KEY . "` IN (" . join(',', array_fill(0, count($pks), '?')) . ")
+                            SELECT *
+                            FROM `$table`
+                            WHERE `" . $self::PRIMARY_KEY . "` IN (" . join(',', array_fill(0, count($pks), '?')) . ")
                         ");
                         $infos_rs->execute(array_values($pks));
 
@@ -209,12 +200,9 @@
                         }
 
                         $infos_rs = $sql->prepare("
-                            SELECT
-                                *
-                            FROM
-                                \"$table\"
-                            WHERE
-                                \"" . $self::PRIMARY_KEY . "\" IN (" . join(',', array_fill(0, count($pks), '?')) . ")
+                            SELECT *
+                            FROM \"$table\"
+                            WHERE \"" . $self::PRIMARY_KEY . "\" IN (" . join(',', array_fill(0, count($pks), '?')) . ")
                         ");
 
                         foreach (array_values($pks) as $i => $pk) {
@@ -242,7 +230,7 @@
             };
 
             $key = function($pk) use ($self) {
-                return "$self:" . record_dao::BY_PK . ($self::BINARY_PK ? ':'. md5(base64_encode($pk)) : ":$pk");
+                return "$self:{record_dao::BY_PK}:" . ($self::BINARY_PK ? md5(base64_encode($pk)) : $pk);
             };
 
             return cache_lib::multi(
@@ -296,10 +284,8 @@
                         }
 
                         $rs = $sql->prepare("
-                            SELECT
-                                `$pk`
-                            FROM
-                                `$table`
+                            SELECT `$pk`
+                            FROM `$table`
                             " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
                         ");
                         $rs->execute($vals);
@@ -319,10 +305,8 @@
                         }
 
                         $rs = $sql->prepare("
-                            SELECT
-                                \"$pk\"
-                            FROM
-                                \"$table\"
+                            SELECT \"$pk\"
+                            FROM \"$table\"
                             " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
                         ");
 
@@ -353,7 +337,7 @@
 
             return cache_lib::single(
                 static::CACHE_ENGINE,
-                self::_build_key($cache_key_name, $keys),
+                self::_build_key($cache_key_name, $keys, $self),
                 static::ENTITY_POOL,
                 $get
             );
@@ -408,13 +392,10 @@
                         }
 
                         $info = $sql->prepare("
-                            SELECT
-                                *
-                            FROM
-                                `$table`
+                            SELECT *
+                            FROM `$table`
                             " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
-                            ORDER BY
-                                `$pk` ASC
+                            ORDER BY `$pk` ASC
                         ");
 
                         $info->execute($vals);
@@ -446,13 +427,10 @@
                         }
 
                         $info = $sql->prepare("
-                            SELECT
-                                *
-                            FROM
-                                \"$table\"
+                            SELECT *
+                            FROM \"$table\"
                             " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
-                            ORDER BY
-                                \"$pk\" ASC
+                            ORDER BY \"$pk\" ASC
                         ");
 
                         sql_pdo::bind_by_casting(
@@ -481,7 +459,7 @@
 
             return cache_lib::single(
                 static::CACHE_ENGINE,
-                self::_build_key($cache_key_name, []),
+                self::_build_key($cache_key_name, [], $self),
                 static::ENTITY_POOL,
                 $get
             );
@@ -540,10 +518,8 @@
                             SELECT
                                 `$pk`,
                                 CONCAT(" . join(", ':', ", $key_fields) . ") `__cache_key__`
-                            FROM
-                                `$table`
-                            WHERE
-                                " . join(' OR ', $where) . "
+                            FROM `$table`
+                            WHERE " . join(' OR ', $where) . "
                         ");
 
                         $rs->execute($vals);
@@ -576,10 +552,8 @@
                             SELECT
                                 \"$pk\",
                                 CONCAT(" . join(", ':', ", $key_fields) . ") \"__cache_key__\"
-                            FROM
-                                \"$table\"
-                            WHERE
-                                " . join(' OR ', $where) . "
+                            FROM \"$table\"
+                            WHERE " . join(' OR ', $where) . "
                         ");
 
                         sql_pdo::bind_by_casting(
@@ -664,10 +638,8 @@
                         }
 
                         $rs = core::sql('slave')->prepare("
-                            SELECT
-                                " . join(',', $select_fields) . "
-                            FROM
-                                `$table`
+                            SELECT " . join(',', $select_fields) . "
+                            FROM `$table`
                             " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
                         ");
 
@@ -693,10 +665,8 @@
                         }
 
                         $rs = core::sql('slave')->prepare("
-                            SELECT
-                                " . join(',', $select_fields) . "
-                            FROM
-                                \"$table\"
+                            SELECT " . join(',', $select_fields) . "
+                            FROM \"$table\"
                             " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
                         ");
 
@@ -732,7 +702,7 @@
 
             return cache_lib::single(
                 static::CACHE_ENGINE,
-                self::_build_key($cache_key_name, $keys),
+                self::_build_key($cache_key_name, $keys, $self),
                 static::ENTITY_POOL,
                 $get
             );
@@ -791,15 +761,13 @@
                         $insert_fields[] = "\"$key\"";
                     }
 
-                    $pk = static::PRIMARY_KEY;
-
                     $insert = $sql->prepare("
                         INSERT INTO
                             \"$table\"
                             ( " . join(', ', $insert_fields) . " )
                             VALUES
                             ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
-                            RETURNING \"$pk\"
+                            " . (static::AUTOINCREMENT ? "RETURNING \"". static::PRIMARY_KEY . "\"" : '') . "
                     ");
 
                     sql_pdo::bind_by_casting(
@@ -811,7 +779,7 @@
                     $insert->execute();
 
                     if (static::AUTOINCREMENT) {
-                        $info[static::PRIMARY_KEY] = $insert->fetch()[$pk];
+                        $info[static::PRIMARY_KEY] = $insert->fetch()[static::PRIMARY_KEY];
                     }
 
                     break;
@@ -1037,6 +1005,7 @@
                     $insert->execute(array_values($info));
 
                     if (static::AUTOINCREMENT) {
+                        // @todo pgsql version
                         $info[static::PRIMARY_KEY] = $sql->lastInsertId();
                     }
 
@@ -1057,7 +1026,7 @@
             );
 
             if ($return_collection) {
-                $collection    = static::ENTITY_NAME . '_collection';
+                $collection = static::ENTITY_NAME . '_collection';
                 return new $collection(null, $models);
             } else {
                 return true;
@@ -1083,6 +1052,7 @@
 
             $table = static::TABLE;
             $pk    = static::PRIMARY_KEY;
+            $self  = static::ENTITY_NAME . '_dao';
             $sql   = core::sql('master');
 
             switch ($sql->driver()) {
@@ -1139,7 +1109,7 @@
 
             cache_lib::delete(
                 static::CACHE_ENGINE,
-                static::ENTITY_NAME . '_dao:' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
+                "$self:" . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
                 static::ENTITY_POOL
             );
 
@@ -1147,7 +1117,7 @@
             if (isset($info[$pk])) {
                 cache_lib::delete(
                     static::CACHE_ENGINE,
-                    static::ENTITY_NAME . '_dao:' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[$pk])) : $info[$pk]),
+                    "$self:" . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[$pk])) : $info[$pk]),
                     static::ENTITY_POOL
                 );
             }
@@ -1183,10 +1153,8 @@
                     }
 
                     $delete = $sql->prepare("
-                        DELETE FROM
-                            `$table`
-                        WHERE
-                            `$pk` = ?
+                        DELETE FROM `$table`
+                        WHERE `$pk` = ?
                     ");
                     $delete->execute([
                         $model->$pk,
@@ -1201,10 +1169,8 @@
                     }
 
                     $delete = $sql->prepare("
-                        DELETE FROM
-                            \"$table\"
-                        WHERE
-                            \"$pk\" = ?
+                        DELETE FROM \"$table\"
+                        WHERE \"$pk\" = ?
                     ");
                     // PG handles binary data differently than strings
                     if (static::BINARY_PK) {
@@ -1224,7 +1190,7 @@
 
             cache_lib::delete(
                 static::CACHE_ENGINE,
-                static::ENTITY_NAME . '_dao:' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
+                static::ENTITY_NAME . '_dao: ' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
                 static::ENTITY_POOL
             );
             return true;
@@ -1300,7 +1266,7 @@
 
             $delete_cache_keys = [];
             foreach ($pks as $pk) {
-                $delete_cache_keys[] = "$self:" . self::BY_PK . (static::BINARY_PK ? ':' . md5(base64_encode($pk)) : ":$pk");
+                $delete_cache_keys[] = "$self:" . self::BY_PK . ':' . (static::BINARY_PK ? ':' . md5(base64_encode($pk)) : ":$pk");
             }
 
             cache_lib::delete_multi(

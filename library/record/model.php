@@ -29,7 +29,7 @@
                 return;
             }
 
-            $exception = static::ENTITY_NAME . '_exception';
+            $exception = "{static::ENTITY_NAME}_exception";
             throw new $exception('That ' . static::NAME . ' does not exist');
         }
 

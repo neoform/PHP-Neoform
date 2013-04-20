@@ -269,8 +269,9 @@
 
             $table = static::TABLE;
             $pk    = static::PRIMARY_KEY;
+            $self  = get_called_class();
 
-            $get = function() use ($keys, $table, $pk) {
+            $get = function() use ($keys, $table, $pk, $self) {
 
                 if (strpos($table, '.') !== false) {
                     $table = explode('.', $table);
@@ -301,6 +302,8 @@
                                 `$table`
                             " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
                         ");
+                        $rs->execute($vals);
+
                         break;
 
                     case 'pgsql':
@@ -309,8 +312,8 @@
                                 if ($v === null) {
                                     $where[] = "\"$k\" IS NULL";
                                 } else {
-                                    $vals[]  = $v;
-                                    $where[] = "\"$k\" = ?";
+                                    $vals[$k] = $v;
+                                    $where[]  = "\"$k\" = ?";
                                 }
                             }
                         }
@@ -322,13 +325,20 @@
                                 \"$table\"
                             " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
                         ");
+
+                        sql_pdo::bind_by_casting(
+                            $rs,
+                            $self::castings(),
+                            $vals
+                        );
+
+                        $rs->execute();
+
                         break;
 
                     default:
                         throw new record_exception('Unknown SQL driver');
                 }
-
-                $rs->execute($vals);
 
                 $rs = $rs->fetchAll();
                 $pks = [];
@@ -364,8 +374,9 @@
 
             $pk    = static::PRIMARY_KEY;
             $table = static::TABLE;
+            $self  = get_called_class();
 
-            $get = function() use ($keys, $table, $pk) {
+            $get = function() use ($keys, $table, $pk, $self) {
 
                 $sql   = core::sql('slave');
                 $where = [];
@@ -405,6 +416,9 @@
                             ORDER BY
                                 `$pk` ASC
                         ");
+
+                        $info->execute($vals);
+
                         break;
 
                     case 'pgsql':
@@ -419,8 +433,8 @@
                                     if ($v === null) {
                                         $where[] = "\"$k\" IS NULL";
                                     } else {
-                                        $vals[] = $v;
-                                        $where[] = "\"$k\" = ?";
+                                        $vals[$k] = $v;
+                                        $where[]  = "\"$k\" = ?";
                                     }
                                 }
                             }
@@ -440,13 +454,20 @@
                             ORDER BY
                                 \"$pk\" ASC
                         ");
+
+                        sql_pdo::bind_by_casting(
+                            $info,
+                            $self::castings(),
+                            $vals
+                        );
+
+                        $info->execute();
+
                         break;
 
                     default:
                         throw new record_exception('Unknown SQL driver');
                 }
-
-                $info->execute($vals);
 
                 $infos = [];
                 foreach ($info->fetchAll() as $info) {
@@ -482,8 +503,9 @@
             $self  = get_called_class();
             $table = static::TABLE;
             $pk    = static::PRIMARY_KEY;
+            $self  = get_called_class();
 
-            $get = function() use ($keys_arr, $table, $pk) {
+            $get = function() use ($keys_arr, $table, $pk, $self) {
 
                 $sql            = core::sql('slave');
                 $key_fields     = array_keys(current($keys_arr));
@@ -524,6 +546,9 @@
                             WHERE
                                 " . join(' OR ', $where) . "
                         ");
+
+                        $rs->execute($vals);
+
                         break;
 
                     case 'pgsql':
@@ -541,8 +566,8 @@
                                 if ($v === null) {
                                     $w[] = "\"$k\" IS NULL";
                                 } else {
-                                    $vals[] = $v;
-                                    $w[]    = "\"$k\" = ?";
+                                    $vals[$k] = $v;
+                                    $w[]      = "\"$k\" = ?";
                                 }
                             }
                             $where[] = '(' . join(" AND ", $w) . ')';
@@ -557,13 +582,20 @@
                             WHERE
                                 " . join(' OR ', $where) . "
                         ");
+
+                        sql_pdo::bind_by_casting(
+                            $rs,
+                            $self::castings(),
+                            $vals
+                        );
+
+                        $rs->execute();
+
                         break;
 
                     default:
                         throw new record_exception('Unknown SQL driver');
                 }
-
-                $rs->execute($vals);
 
                 $rows = $rs->fetchAll();
                 foreach ($rows as $row) {
@@ -606,8 +638,9 @@
         final protected static function _by_fields_select($cache_key_name, array $select_fields, array $keys) {
 
             $table = static::TABLE;
+            $self  = get_called_class();
 
-            $get = function() use ($select_fields, $keys, $table) {
+            $get = function() use ($select_fields, $keys, $table, $self) {
 
                 $sql   = core::sql('slave');
                 $where = [];
@@ -639,6 +672,8 @@
                             " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
                         ");
 
+                        $rs->execute($vals);
+
                         break;
 
                     case 'pgsql':
@@ -652,8 +687,8 @@
                                 if ($v === null) {
                                     $where[] = "\"$k\" IS NULL";
                                 } else {
-                                    $vals[]  = $v;
-                                    $where[] = "\"$k\" = ?";
+                                    $vals[$k] = $v;
+                                    $where[]  = "\"$k\" = ?";
                                 }
                             }
                         }
@@ -666,13 +701,19 @@
                             " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
                         ");
 
+                        sql_pdo::bind_by_casting(
+                            $rs,
+                            $self::castings(),
+                            $vals
+                        );
+
+                        $rs->execute();
+
                         break;
 
                     default:
                         throw new record_exception('Unknown SQL driver');
                 }
-
-                $rs->execute($vals);
 
                 $rs = $rs->fetchAll();
                 $return = [];

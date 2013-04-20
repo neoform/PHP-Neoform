@@ -135,16 +135,8 @@
                                 \"" . $self::PRIMARY_KEY . "\" = ?
                         ");
 
-                        // PG handles binary data differently than strings
-                        if ($self::BINARY_PK) {
-                            $info->bindValue(1, $pk, PDO::PARAM_LOB);
-                            $info->execute();
-                        } else {
-                            core::debug($pk);
-                            $info->execute([
-                                $pk,
-                            ]);
-                        }
+                        $info->bindValue(1, $pk, sql_pdo::pdo_binding($self::castings(), $self::PRIMARY_KEY));
+                        $info->execute();
 
                         break;
 
@@ -225,15 +217,10 @@
                                 \"" . $self::PRIMARY_KEY . "\" IN (" . join(',', array_fill(0, count($pks), '?')) . ")
                         ");
 
-                        // PG handles binary data differently than strings
-                        if ($self::BINARY_PK) {
-                            foreach (array_values($pks) as $i => $pk) {
-                                $infos_rs->bindValue($i + 1, $pk, PDO::PARAM_LOB);
-                            }
-                            $infos_rs->execute();
-                        } else {
-                            $infos_rs->execute(array_values($pks));
+                        foreach (array_values($pks) as $i => $pk) {
+                            $infos_rs->bindValue($i + 1, $pk, sql_pdo::pdo_binding($self::castings(), $self::PRIMARY_KEY));
                         }
+                        $infos_rs->execute();
 
                         break;
 

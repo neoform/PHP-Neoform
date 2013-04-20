@@ -17,6 +17,37 @@
         }
 
         /**
+         * Fetch the PDO binding
+         *
+         * @param array        $castings
+         * @param string       $name
+         *
+         * @return int PDO param val
+         */
+        public static function pdo_binding(array $castings, $name) {
+           switch ($castings[$name]) {
+                case 'int':
+                    return PDO::PARAM_INT;
+
+                case 'string':
+                    return PDO::PARAM_STR;
+                    break;
+
+                case 'binary':
+                    return PDO::PARAM_LOB;
+                    break;
+
+                case 'bool':
+                    return PDO::PARAM_BOOL;
+                    break;
+
+                case 'null':
+                    return PDO::PARAM_NULL;
+                    break;
+            }
+        }
+
+        /**
          * Bind values to a query based on the castings.
          * This is needed because of binary data fields, which need to be specially bound as PDO::PARAM_LOB in Postgres
          *

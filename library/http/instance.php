@@ -448,12 +448,18 @@
                 }
 
                 //if permissions set, make sure user has matching permissions
-                if ($controller['permission'] && ! core::auth()->user()->permission_collection()->allowed($controller['permission'])) {
+                if ($controller['permission']) {
+                    // if user is logged in
                     if (core::auth()->user_id) {
-                        //access denied
-                        core::output()->redirect('error/access_denied');
-                        return;
+                        // and does not have permission - access denied
+                        if (! core::auth()->user()->permission_collection()->allowed($controller['permission'])) {
+                            core::output()->redirect('error/access_denied');
+                            return;
+                        }
+
+                    // if user is not logged in
                     } else {
+                        // ask them to log in
                         throw new redirect_login_exception($this->server_vars['query'], 'You must be logged in to continue');
                     }
                 }

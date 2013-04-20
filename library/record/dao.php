@@ -140,6 +140,7 @@
                             $info->bindValue(1, $pk, PDO::PARAM_LOB);
                             $info->execute();
                         } else {
+                            core::debug($pk);
                             $info->execute([
                                 $pk,
                             ]);
@@ -450,7 +451,7 @@
                                 \"$table\"
                             " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
                             ORDER BY
-                                `$pk` ASC
+                                \"$pk\" ASC
                         ");
                         break;
 

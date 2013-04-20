@@ -4,6 +4,13 @@
 
         const BY_ALL = 'by_all';
 
+        public static function castings() {
+            return [
+                'iso2' => 'string',
+                'name' => 'string',
+            ];
+        }
+
         // READS
 
         public static function all() {

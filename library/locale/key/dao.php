@@ -7,6 +7,15 @@
         const BY_BODY       = 'by_body';
         const BY_NAMESPACE  = 'by_namespace';
 
+        public static function castings() {
+            return [
+                'id'           => 'int',
+                'body'         => 'string',
+                'locale'       => 'string',
+                'namespace_id' => 'int',
+            ];
+        }
+
         // READS
 
         public static function all() {

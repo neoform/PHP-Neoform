@@ -18,6 +18,15 @@
             }
         }
 
+        /**
+         * Get specific fields from a record, by keys
+         *
+         * @param string $self the name of the DAO
+         * @param array  $select_fields
+         * @param array  $keys
+         *
+         * @return array
+         */
         public static function by_fields($self, array $select_fields, array $keys) {
             $where = [];
             $vals  = [];
@@ -54,6 +63,15 @@
             return $return;
         }
 
+        /**
+         * Get specific fields from multiple records, by keys
+         *
+         * @param string $self the name of the DAO
+         * @param array  $select_fields
+         * @param array  $keys_arr
+         *
+         * @return array
+         */
         public static function by_fields_multi($self, array $select_fields, array $keys_arr) {
             $key_fields     = array_keys(current($keys_arr));
             $reverse_lookup = [];
@@ -101,6 +119,15 @@
             return $return;
         }
 
+        /**
+         * Insert a link
+         *
+         * @param string $self the name of the DAO
+         * @param array  $info
+         * @param bool   $replace
+         *
+         * @return mixed
+         */
         public static function insert($self, array $info, $replace) {
 
             $insert_fields = [];
@@ -119,6 +146,15 @@
             return $insert->execute(array_values($info));
         }
 
+        /**
+         * Insert multiple links
+         *
+         * @param string $self the name of the DAO
+         * @param array  $infos
+         * @param bool   $replace
+         *
+         * @return bool
+         */
         public static function inserts($self, array $infos, $replace) {
             $insert_fields = [];
             $info          = current($infos);
@@ -150,6 +186,15 @@
             }
         }
 
+        /**
+         * Update a set of links
+         *
+         * @param string $self the name of the DAO
+         * @param array  $new_info
+         * @param array  $where
+         *
+         * @return mixed
+         */
         public static function update($self, array $new_info, array $where) {
             $vals          = [];
             $update_fields = [];
@@ -178,6 +223,14 @@
             return $update->execute($vals);
         }
 
+        /**
+         * Delete one or more links
+         *
+         * @param string $self the name of the DAO
+         * @param array  $keys
+         *
+         * @return mixed
+         */
         public static function delete($self, array $keys) {
             $where = [];
             $vals  = [];
@@ -199,6 +252,14 @@
             return $delete->execute($vals);
         }
 
+        /**
+         * Delete sets of links
+         *
+         * @param string $self the name of the DAO
+         * @param array  $keys_arr
+         *
+         * @return mixed
+         */
         public static function deletes($self, array $keys_arr) {
             $vals  = [];
             $where = [];

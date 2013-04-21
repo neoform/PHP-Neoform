@@ -18,6 +18,15 @@
             }
         }
 
+        /**
+         * Get full record by primary key
+         *
+         * @param string     $self the name of the DAO
+         * @param int|string $pk
+         *
+         * @return mixed
+         * @throws record_exception
+         */
         public static function by_pk($self, $pk) {
             $info = core::sql('slave')->prepare("
                 SELECT *
@@ -37,6 +46,14 @@
             return $info;
         }
 
+        /**
+         * Get full records by primary key
+         *
+         * @param string $self the name of the DAO
+         * @param array  $pks
+         *
+         * @return array
+         */
         public static function by_pks($self, array $pks) {
             $infos_rs = core::sql('slave')->prepare("
                 SELECT *
@@ -56,6 +73,15 @@
             return $infos;
         }
 
+        /**
+         * Get all records in the table
+         *
+         * @param string     $self the name of the DAO
+         * @param int|string $pk
+         * @param array      $keys
+         *
+         * @return array
+         */
         public static function all($self, $pk, array $keys=null) {
             $where = [];
             $vals  = [];
@@ -95,6 +121,15 @@
             return $infos;
         }
 
+        /**
+         * Get record primary key by fields
+         *
+         * @param string     $self the name of the DAO
+         * @param array      $keys
+         * @param int|string $pk
+         *
+         * @return array
+         */
         public static function by_fields($self, array $keys, $pk) {
             $where = [];
             $vals  = [];
@@ -126,6 +161,15 @@
             return $pks;
         }
 
+        /**
+         * Get multiple record primary keys by fields
+         *
+         * @param string     $self the name of the DAO
+         * @param array      $keys_arr
+         * @param int|string $pk
+         *
+         * @return array
+         */
         public static function by_fields_multi($self, array $keys_arr, $pk) {
             $sql            = core::sql('slave');
             $key_fields     = array_keys(current($keys_arr));
@@ -169,6 +213,15 @@
             return $return;
         }
 
+        /**
+         * Get specific fields from a record, by keys
+         *
+         * @param string $self
+         * @param array  $select_fields
+         * @param array  $keys
+         *
+         * @return array
+         */
         public static function by_fields_select($self, array $select_fields, array $keys) {
             $where = [];
             $vals  = [];
@@ -206,6 +259,16 @@
             return $return;
         }
 
+        /**
+         * Insert record
+         *
+         * @param string $self the name of the DAO
+         * @param array  $info
+         * @param bool   $autoincrement
+         * @param boo    $replace
+         *
+         * @return array
+         */
         public static function insert($self, array $info, $autoincrement, $replace) {
             $insert_fields = [];
             foreach (array_keys($info) as $key) {
@@ -229,6 +292,17 @@
             return $info;
         }
 
+        /**
+         * Insert multiple records
+         *
+         * @param string $self the name of the DAO
+         * @param array $infos
+         * @param bool  $keys_match
+         * @param bool  $autoincrement
+         * @param bool  $replace
+         *
+         * @return array
+         */
         public static function inserts($self, array $infos, $keys_match, $autoincrement, $replace) {
             $sql = core::sql('master');
 
@@ -308,6 +382,14 @@
             return $infos;
         }
 
+        /**
+         * Update a record
+         *
+         * @param string       $self the name of the DAO
+         * @param int|string   $pk
+         * @param record_model $model
+         * @param array        $info
+         */
         public static function update($self, $pk, record_model $model, array $info) {
             $update_fields = [];
             foreach (array_keys($info) as $key) {
@@ -323,6 +405,13 @@
             $update->execute($info);
         }
 
+        /**
+         * Delete a record
+         *
+         * @param string       $self the name of the DAO
+         * @param int|string   $pk
+         * @param record_model $model
+         */
         public static function delete($self, $pk, record_model $model) {
             $delete = core::sql('master')->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
@@ -333,6 +422,13 @@
             ]);
         }
 
+        /**
+         * Delete multiple records
+         *
+         * @param string            $self the name of the DAO
+         * @param int|string        $pk
+         * @param record_collection $collection
+         */
         public static function deletes($self, $pk, record_collection $collection) {
             $delete = core::sql('master')->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`

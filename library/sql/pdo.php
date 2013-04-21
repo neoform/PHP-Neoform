@@ -31,19 +31,15 @@
 
                 case 'string':
                     return PDO::PARAM_STR;
-                    break;
 
                 case 'binary':
                     return PDO::PARAM_LOB;
-                    break;
 
                 case 'bool':
                     return PDO::PARAM_BOOL;
-                    break;
 
                 case 'null':
                     return PDO::PARAM_NULL;
-                    break;
             }
         }
 

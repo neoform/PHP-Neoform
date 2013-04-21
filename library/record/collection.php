@@ -160,7 +160,7 @@
         /**
          * Sort the collection based on $f (function) or $f field name
          *
-         * @param function|string $f
+         * @param callable|string $f
          * @param string          $order
          *
          * @return record_collection

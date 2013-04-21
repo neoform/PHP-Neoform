@@ -136,7 +136,7 @@
         /**
          * Sort the collection
          *
-         * @param function|string $f
+         * @param callable|string $f
          * @param string $order
          */
         public function sort($f, $order='asc') {

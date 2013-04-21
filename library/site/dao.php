@@ -8,6 +8,13 @@
         const BY_ALL  = 'by_all';
         const BY_NAME = 'by_name';
 
+        public static function castings() {
+            return [
+                'id'   => 'int',
+                'name' => 'string',
+            ];
+        }
+
         /**
          * Caching engines used by this entity
          *

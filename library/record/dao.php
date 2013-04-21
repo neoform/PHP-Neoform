@@ -21,13 +21,26 @@
         const BY_PK = 'by_pk';
 
         /**
+         * Get the record DAO driver name (name derived from db connection type)
+         *
+         * @return string
+         */
+        protected static function driver() {
+            static $driver;
+            if (! $driver) {
+                $driver = 'record_driver_' . core::sql('slave')->driver();
+            }
+            return $driver;
+        }
+
+        /**
          * Get a cached recordset
          *
          * @access protected
          * @static
          * @final
          * @param string   $key       full cache key with namespace - it's recomended that record_dao::_build_key() is used to create this key
-         * @param function $get       closure function that retreieves the recordset from its origin
+         * @param callable $get       closure function that retreieves the recordset from its origin
          * @return array   the cached recordset
          */
         final protected static function _single($key, $get) {
@@ -64,19 +77,19 @@
          * @final
          * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
          * @param array   $params         optional - array of table keys and their values being looked up in the table
-         * @param string  $class          optional - closure function that retreieves the recordset from its origin
+         * @param string  $entity_name    optional - closure function that retreieves the recordset from its origin
          * @return string a cache key that is unqiue to the application
          */
-        final public static function _build_key($cache_key_name, array $params=[], $class=null) {
+        final public static function _build_key($cache_key_name, array $params=[], $entity_name=null) {
             // each key is namespaced with the name of the class
             if (count($params) === 1) {
-                return ($class ? $class : get_called_class()) . ":$cache_key_name:" . md5(base64_encode(current($params)));
+                return ($entity_name ?: static::ENTITY_NAME) . ":$cache_key_name:" . md5(base64_encode(current($params)));
             } else {
                 ksort($params);
                 foreach ($params as & $param) {
                     $param = base64_encode($param);
                 }
-                return ($class ? $class : get_called_class()) . ":$cache_key_name:" . md5(json_encode(array_values($params)));
+                return ($entity_name ?: static::ENTITY_NAME) . ":$cache_key_name:" . md5(json_encode(array_values($params)));
             }
         }
 
@@ -92,67 +105,14 @@
 
             $self = static::ENTITY_NAME . '_dao';
 
-            $get = function() use ($pk, $self) {
-
-                $table = $self::TABLE;
-                $sql   = core::sql('slave');
-
-                switch ($sql->driver()) {
-                    case 'mysql':
-
-                        if (strpos($table, '.') !== false) {
-                            $table = explode('.', $table);
-                            $table = "$table[0]`.`$table[1]";
-                        }
-
-                        $info = $sql->prepare("
-                            SELECT *
-                            FROM `$table`
-                            WHERE `" . $self::PRIMARY_KEY . "` = ?
-                        ");
-
-                        $info->execute([
-                            $pk,
-                        ]);
-                        break;
-
-                    case 'pgsql':
-
-                        if (strpos($table, '.') !== false) {
-                            $table = explode('.', $table);
-                            $table = "$table[0]\".\"$table[1]";
-                        }
-
-                        $info = $sql->prepare("
-                            SELECT *
-                            FROM \"$table\"
-                            WHERE \"" . $self::PRIMARY_KEY . "\" = ?
-                        ");
-
-                        $info->bindValue(1, $pk, sql_pdo::pdo_binding($self::castings(), $self::PRIMARY_KEY));
-                        $info->execute();
-
-                        break;
-
-                    default:
-                       throw new record_exception('Unknown SQL driver');
-                }
-
-                if (! ($info = $info->fetch())) {
-                    $exception = $self::ENTITY_NAME . '_exception';
-                    throw new $exception('That ' . $self::NAME . ' doesn\'t exist');
-                }
-
-                sql_pdo::unbinary($info);
-
-                return $info;
-            };
-
             return cache_lib::single(
                 static::CACHE_ENGINE,
-                "$self:" . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($pk)) : $pk),
+                static::ENTITY_NAME . ":" . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($pk)) : $pk),
                 static::ENTITY_POOL,
-                $get
+                function() use ($pk, $self) {
+                    $driver = $self::driver();
+                    return $driver::by_pk($self, $pk);
+                }
             );
         }
 
@@ -173,173 +133,17 @@
 
             $self = static::ENTITY_NAME . '_dao';
 
-            $get = function(array $pks) use ($self) {
-                $table = $self::TABLE;
-                $sql   = core::sql('slave');
-
-                switch ($sql->driver()) {
-                    case 'mysql':
-                        if (strpos($table, '.') !== false) {
-                            $table = explode('.', $table);
-                            $table = "$table[0]`.`$table[1]";
-                        }
-
-                        $infos_rs = $sql->prepare("
-                            SELECT *
-                            FROM `$table`
-                            WHERE `" . $self::PRIMARY_KEY . "` IN (" . join(',', array_fill(0, count($pks), '?')) . ")
-                        ");
-                        $infos_rs->execute(array_values($pks));
-
-                        break;
-
-                    case 'pgsql':
-                        if (strpos($table, '.') !== false) {
-                            $table = explode('.', $table);
-                            $table = "$table[0]\".\"$table[1]";
-                        }
-
-                        $infos_rs = $sql->prepare("
-                            SELECT *
-                            FROM \"$table\"
-                            WHERE \"" . $self::PRIMARY_KEY . "\" IN (" . join(',', array_fill(0, count($pks), '?')) . ")
-                        ");
-
-                        foreach (array_values($pks) as $i => $pk) {
-                            $infos_rs->bindValue($i + 1, $pk, sql_pdo::pdo_binding($self::castings(), $self::PRIMARY_KEY));
-                        }
-                        $infos_rs->execute();
-
-                        break;
-
-                    default:
-                        throw new record_exception('Unknown SQL driver');
-                }
-
-                $infos = [];
-                foreach ($infos_rs->fetchAll() as $info) {
-                    $k = array_search($info[$self::PRIMARY_KEY], $pks);
-                    if ($k !== false) {
-                        $infos[$k] = $info;
-                    }
-                }
-
-                sql_pdo::unbinary($infos);
-
-                return $infos;
-            };
-
-            $key = function($pk) use ($self) {
-                return "$self:{record_dao::BY_PK}:" . ($self::BINARY_PK ? md5(base64_encode($pk)) : $pk);
-            };
-
             return cache_lib::multi(
                 static::CACHE_ENGINE,
                 $pks,
-                $key,
+                function($pk) use ($self) {
+                    return $self::ENTITY_NAME . ':' . $self::BY_PK . ':' . ($self::BINARY_PK ? md5(base64_encode($pk)) : $pk);
+                },
                 static::ENTITY_POOL,
-                $get
-            );
-        }
-
-        /**
-         * Gets the primary keys of records that match the $keys
-         *
-         * @access protected
-         * @static
-         * @final
-         * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
-         * @param array   $keys           array of table keys and their values being looked up in the table
-         * @return array  pks of records from cache
-         * @throws record_exception
-         */
-        final protected static function _by_fields($cache_key_name, array $keys) {
-
-            $table = static::TABLE;
-            $pk    = static::PRIMARY_KEY;
-            $self  = static::ENTITY_NAME . '_dao';
-
-            $get = function() use ($keys, $table, $pk, $self) {
-
-                if (strpos($table, '.') !== false) {
-                    $table = explode('.', $table);
-                    $table = "$table[0]`.`$table[1]";
+                function(array $pks) use ($self) {
+                    $driver = $self::driver();
+                    return $driver::by_pks($self, $pks);
                 }
-
-                $sql   = core::sql('slave');
-                $where = [];
-                $vals  = [];
-
-                switch ($sql->driver()) {
-                    case 'mysql':
-                        if (count($keys)) {
-                            foreach ($keys as $k => $v) {
-                                if ($v === null) {
-                                    $where[] = "`$k` IS NULL";
-                                } else {
-                                    $vals[]  = $v;
-                                    $where[] = "`$k` = ?";
-                                }
-                            }
-                        }
-
-                        $rs = $sql->prepare("
-                            SELECT `$pk`
-                            FROM `$table`
-                            " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
-                        ");
-                        $rs->execute($vals);
-
-                        break;
-
-                    case 'pgsql':
-                        if (count($keys)) {
-                            foreach ($keys as $k => $v) {
-                                if ($v === null) {
-                                    $where[] = "\"$k\" IS NULL";
-                                } else {
-                                    $vals[$k] = $v;
-                                    $where[]  = "\"$k\" = ?";
-                                }
-                            }
-                        }
-
-                        $rs = $sql->prepare("
-                            SELECT \"$pk\"
-                            FROM \"$table\"
-                            " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
-                        ");
-
-                        sql_pdo::bind_by_casting(
-                            $rs,
-                            $self::castings(),
-                            $vals
-                        );
-
-                        $rs->execute();
-
-                        break;
-
-                    default:
-                        throw new record_exception('Unknown SQL driver');
-                }
-
-                $rs = $rs->fetchAll();
-                $pks = [];
-                foreach ($rs as $row) {
-                    $pks[] = $row[$pk];
-                }
-
-                sql_pdo::unbinary($pks);
-
-                return $pks;
-            };
-
-            return cache_lib::single(
-                static::CACHE_ENGINE,
-                self::_build_key($cache_key_name, $keys, $self),
-                static::ENTITY_POOL,
-                $get
             );
         }
 
@@ -356,112 +160,44 @@
          */
         final protected static function _all($cache_key_name, array $keys=null) {
 
-            $pk    = static::PRIMARY_KEY;
-            $table = static::TABLE;
-            $self  = static::ENTITY_NAME . '_dao';
-
-            $get = function() use ($keys, $table, $pk, $self) {
-
-                $sql   = core::sql('slave');
-                $where = [];
-                $vals  = [];
-
-                switch ($sql->driver()) {
-                    case 'mysql':
-                        if ($keys) {
-                            foreach ($keys as $k => $v) {
-                                if (is_array($v) && count($v)) {
-                                    foreach ($v as $arr_v) {
-                                        $vals[] = $arr_v;
-                                    }
-                                    $where[] = "`$k` IN(" . join(',', array_fill(0, count($v), '?')) . ")";
-                                } else {
-                                    if ($v === null) {
-                                        $where[] = "`$k` IS NULL";
-                                    } else {
-                                        $vals[] = $v;
-                                        $where[] = "`$k` = ?";
-                                    }
-                                }
-                            }
-                        }
-
-                        if (strpos($table, '.') !== false) {
-                            $table = explode('.', $table);
-                            $table = "$table[0]`.`$table[1]";
-                        }
-
-                        $info = $sql->prepare("
-                            SELECT *
-                            FROM `$table`
-                            " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
-                            ORDER BY `$pk` ASC
-                        ");
-
-                        $info->execute($vals);
-
-                        break;
-
-                    case 'pgsql':
-                        if ($keys) {
-                            foreach ($keys as $k => $v) {
-                                if (is_array($v) && count($v)) {
-                                    foreach ($v as $arr_v) {
-                                        $vals[] = $arr_v;
-                                    }
-                                    $where[] = "\"$k\" IN(" . join(',', array_fill(0, count($v), '?')) . ")";
-                                } else {
-                                    if ($v === null) {
-                                        $where[] = "\"$k\" IS NULL";
-                                    } else {
-                                        $vals[$k] = $v;
-                                        $where[]  = "\"$k\" = ?";
-                                    }
-                                }
-                            }
-                        }
-
-                        if (strpos($table, '.') !== false) {
-                            $table = explode('.', $table);
-                            $table = "$table[0]\".\"$table[1]";
-                        }
-
-                        $info = $sql->prepare("
-                            SELECT *
-                            FROM \"$table\"
-                            " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
-                            ORDER BY \"$pk\" ASC
-                        ");
-
-                        sql_pdo::bind_by_casting(
-                            $info,
-                            $self::castings(),
-                            $vals
-                        );
-
-                        $info->execute();
-
-                        break;
-
-                    default:
-                        throw new record_exception('Unknown SQL driver');
-                }
-
-                $infos = [];
-                foreach ($info->fetchAll() as $info) {
-                    $infos[$info[$pk]] = $info;
-                }
-
-                sql_pdo::unbinary($infos);
-
-                return $infos;
-            };
+            $pk   = static::PRIMARY_KEY;
+            $self = static::ENTITY_NAME . '_dao';
 
             return cache_lib::single(
                 static::CACHE_ENGINE,
-                self::_build_key($cache_key_name, [], $self),
+                self::_build_key($cache_key_name, []),
                 static::ENTITY_POOL,
-                $get
+                function() use ($self, $pk, $keys) {
+                    $driver = $self::driver();
+                    return $driver::all($self, $pk, $keys);
+                }
+            );
+        }
+
+        /**
+         * Gets the primary keys of records that match the $keys
+         *
+         * @access protected
+         * @static
+         * @final
+         * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
+         * @param array   $keys           array of table keys and their values being looked up in the table
+         * @return array  pks of records from cache
+         * @throws record_exception
+         */
+        final protected static function _by_fields($cache_key_name, array $keys) {
+
+            $pk   = static::PRIMARY_KEY;
+            $self = static::ENTITY_NAME . '_dao';
+
+            return cache_lib::single(
+                static::CACHE_ENGINE,
+                self::_build_key($cache_key_name, $keys),
+                static::ENTITY_POOL,
+                function() use ($self, $keys, $pk) {
+                    $driver = $self::driver();
+                    return $driver::by_fields($self, $keys, $pk);
+                }
             );
         }
 
@@ -478,120 +214,20 @@
          */
         final protected static function _by_fields_multi($cache_key_name, array $keys_arr) {
 
-            $table = static::TABLE;
-            $pk    = static::PRIMARY_KEY;
-            $self  = static::ENTITY_NAME . '_dao';
-
-            $get = function() use ($keys_arr, $table, $pk, $self) {
-
-                $sql            = core::sql('slave');
-                $key_fields     = array_keys(current($keys_arr));
-                $reverse_lookup = [];
-                $return         = [];
-                $vals           = [];
-                $where          = [];
-
-                switch ($sql->driver()) {
-                    case 'mysql':
-
-                        if (strpos($table, '.') !== false) {
-                            $table = explode('.', $table);
-                            $table = "$table[0]`.`$table[1]";
-                        }
-
-                        foreach ($keys_arr as $k => $keys) {
-                            $w = [];
-                            $reverse_lookup[join(':', $keys)] = $k;
-                            $return[$k] = [];
-                            foreach ($keys as $k => $v) {
-                                if ($v === null) {
-                                    $w[] = "`$k` IS NULL";
-                                } else {
-                                    $vals[] = $v;
-                                    $w[]    = "`$k` = ?";
-                                }
-                            }
-                            $where[] = '(' . join(" AND ", $w) . ')';
-                        }
-
-                        $rs = $sql->prepare("
-                            SELECT
-                                `$pk`,
-                                CONCAT(" . join(", ':', ", $key_fields) . ") `__cache_key__`
-                            FROM `$table`
-                            WHERE " . join(' OR ', $where) . "
-                        ");
-
-                        $rs->execute($vals);
-
-                        break;
-
-                    case 'pgsql':
-
-                        if (strpos($table, '.') !== false) {
-                            $table = explode('.', $table);
-                            $table = "$table[0]\".\"$table[1]";
-                        }
-
-                        foreach ($keys_arr as $k => $keys) {
-                            $w = [];
-                            $reverse_lookup[join(':', $keys)] = $k;
-                            $return[$k] = [];
-                            foreach ($keys as $k => $v) {
-                                if ($v === null) {
-                                    $w[] = "\"$k\" IS NULL";
-                                } else {
-                                    $vals[$k] = $v;
-                                    $w[]      = "\"$k\" = ?";
-                                }
-                            }
-                            $where[] = '(' . join(" AND ", $w) . ')';
-                        }
-
-                        $rs = $sql->prepare("
-                            SELECT
-                                \"$pk\",
-                                CONCAT(" . join(", ':', ", $key_fields) . ") \"__cache_key__\"
-                            FROM \"$table\"
-                            WHERE " . join(' OR ', $where) . "
-                        ");
-
-                        sql_pdo::bind_by_casting(
-                            $rs,
-                            $self::castings(),
-                            $vals
-                        );
-
-                        $rs->execute();
-
-                        break;
-
-                    default:
-                        throw new record_exception('Unknown SQL driver');
-                }
-
-                $rows = $rs->fetchAll();
-                foreach ($rows as $row) {
-                    $return[
-                        $reverse_lookup[$row['__cache_key__']]
-                    ][] = $row[$pk];
-                }
-
-                sql_pdo::unbinary($return);
-
-                return $return;
-            };
-
-            $key = function($fields) use ($cache_key_name, $self) {
-                return record_dao::_build_key($cache_key_name, $fields, $self);
-            };
+            $pk   = static::PRIMARY_KEY;
+            $self = static::ENTITY_NAME . '_dao';
 
             return cache_lib::multi(
                 static::CACHE_ENGINE,
                 $keys_arr,
-                $key,
+                function($fields) use ($cache_key_name) {
+                    return record_dao::_build_key($cache_key_name, $fields);
+                },
                 static::ENTITY_POOL,
-                $get
+                function() use ($self, $keys_arr, $pk) {
+                    $driver = $self::driver();
+                    return $driver::by_fields_multi($self, $keys_arr, $pk);
+                }
             );
         }
 
@@ -610,101 +246,16 @@
          */
         final protected static function _by_fields_select($cache_key_name, array $select_fields, array $keys) {
 
-            $table = static::TABLE;
-            $self  = static::ENTITY_NAME . '_dao';
-
-            $get = function() use ($select_fields, $keys, $table, $self) {
-
-                $sql   = core::sql('slave');
-                $where = [];
-                $vals  = [];
-
-                switch ($sql->driver()) {
-                    case 'mysql':
-                        if (strpos($table, '.') !== false) {
-                            $table = explode('.', $table);
-                            $table = "$table[0]`.`$table[1]";
-                        }
-
-                        if (count($keys)) {
-                            foreach ($keys as $k => $v) {
-                                if ($v === null) {
-                                    $where[] = "`$k` IS NULL";
-                                } else {
-                                    $vals[]  = $v;
-                                    $where[] = "`$k` = ?";
-                                }
-                            }
-                        }
-
-                        $rs = core::sql('slave')->prepare("
-                            SELECT " . join(',', $select_fields) . "
-                            FROM `$table`
-                            " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
-                        ");
-
-                        $rs->execute($vals);
-
-                        break;
-
-                    case 'pgsql':
-                        if (strpos($table, '.') !== false) {
-                            $table = explode('.', $table);
-                            $table = "$table[0]\".\"$table[1]";
-                        }
-
-                        if (count($keys)) {
-                            foreach ($keys as $k => $v) {
-                                if ($v === null) {
-                                    $where[] = "\"$k\" IS NULL";
-                                } else {
-                                    $vals[$k] = $v;
-                                    $where[]  = "\"$k\" = ?";
-                                }
-                            }
-                        }
-
-                        $rs = core::sql('slave')->prepare("
-                            SELECT " . join(',', $select_fields) . "
-                            FROM \"$table\"
-                            " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
-                        ");
-
-                        sql_pdo::bind_by_casting(
-                            $rs,
-                            $self::castings(),
-                            $vals
-                        );
-
-                        $rs->execute();
-
-                        break;
-
-                    default:
-                        throw new record_exception('Unknown SQL driver');
-                }
-
-                $rs = $rs->fetchAll();
-                $return = [];
-                if (count($select_fields) === 1) {
-                    $field = current($select_fields);
-                    foreach ($rs as $row) {
-                        $return[] = $row[$field];
-                    }
-                } else {
-                    $return = $rs;
-                }
-
-                sql_pdo::unbinary($return);
-
-                return $return;
-            };
+            $self = static::ENTITY_NAME . '_dao';
 
             return cache_lib::single(
                 static::CACHE_ENGINE,
-                self::_build_key($cache_key_name, $keys, $self),
+                self::_build_key($cache_key_name, $keys),
                 static::ENTITY_POOL,
-                $get
+                function() use ($self, $select_fields, $keys) {
+                    $driver = $self::driver();
+                    return $driver::by_fields_select($self, $select_fields, $keys);
+                }
             );
         }
 
@@ -720,78 +271,16 @@
          * @throws record_exception
          */
         protected static function _insert(array $info, $replace=false, $return_model = true) {
-            $table = static::TABLE;
-            $sql   = core::sql('master');
 
-            switch ($sql->driver()) {
-                case 'mysql':
-                    if (strpos($table, '.') !== false) {
-                        $table = explode('.', $table);
-                        $table = "$table[0]`.`$table[1]";
-                    }
+            $self = static::ENTITY_NAME . '_dao';
 
-                    $insert_fields = [];
-                    foreach (array_keys($info) as $key) {
-                        $insert_fields[] = "`$key`";
-                    }
+            $driver = self::driver();
+            $info = $driver::insert($self, $info, static::AUTOINCREMENT, $replace);
 
-                    $insert = $sql->prepare("
-                        " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO
-                            `$table`
-                            ( " . join(', ', $insert_fields) . " )
-                            VALUES
-                            ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
-                    ");
-
-                    $insert->execute(array_values($info));
-
-                    if (static::AUTOINCREMENT) {
-                        $info[static::PRIMARY_KEY] = $sql->lastInsertId();
-                    }
-
-                    break;
-
-                case 'pgsql':
-                    if (strpos($table, '.') !== false) {
-                        $table = explode('.', $table);
-                        $table = "$table[0]\".\"$table[1]";
-                    }
-                    $insert_fields = [];
-                    foreach (array_keys($info) as $key) {
-                        $insert_fields[] = "\"$key\"";
-                    }
-
-                    $insert = $sql->prepare("
-                        INSERT INTO
-                            \"$table\"
-                            ( " . join(', ', $insert_fields) . " )
-                            VALUES
-                            ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
-                            " . (static::AUTOINCREMENT ? "RETURNING \"". static::PRIMARY_KEY . "\"" : '') . "
-                    ");
-
-                    sql_pdo::bind_by_casting(
-                        $insert,
-                        static::castings(),
-                        $info
-                    );
-
-                    $insert->execute();
-
-                    if (static::AUTOINCREMENT) {
-                        $info[static::PRIMARY_KEY] = $insert->fetch()[static::PRIMARY_KEY];
-                    }
-
-                    break;
-
-                default:
-                    throw new record_exception('Unknown SQL driver');
-            }
-
-            //incase a blank record was cached
+            // In case a blank record was cached
             cache_lib::delete(
                 static::CACHE_ENGINE,
-                static::ENTITY_NAME . '_dao:' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[static::PRIMARY_KEY])) : $info[static::PRIMARY_KEY]),
+                static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[static::PRIMARY_KEY])) : $info[static::PRIMARY_KEY]),
                 static::ENTITY_POOL
             );
 
@@ -816,27 +305,11 @@
          * @throws record_exception
          */
         protected static function _inserts(array $infos, $keys_match = true, $replace=false, $return_collection = true) {
-            $table  = static::TABLE;
-            $self   = static::ENTITY_NAME . '_dao';
-            $sql    = core::sql('master');
-            $driver = $sql->driver();
 
-            if (strpos($table, '.') !== false) {
-                switch ($driver) {
-                    case 'mysql':
-                        $table = explode('.', $table);
-                        $table = "$table[0]`.`$table[1]";
-                        break;
+            $self = static::ENTITY_NAME . '_dao';
 
-                    case 'pgsql':
-                        $table = explode('.', $table);
-                        $table = "$table[0]\".\"$table[1]";
-                        break;
-
-                    default:
-                        throw new record_exception('Unknown SQL driver');
-                }
-            }
+            $driver = self::driver();
+            $infos  = $driver::inserts($self, $infos, $keys_match, static::AUTOINCREMENT, $replace);
 
             if ($return_collection) {
                 $models = [];
@@ -844,179 +317,25 @@
             $delete_keys = [];
 
             if ($keys_match) {
-                $insert_fields = [];
-
-                switch ($driver) {
-                    case 'mysql':
-                        foreach (array_keys(current($infos)) as $k) {
-                            $insert_fields[] = "`$k`";
-                        }
-                        break;
-
-                    case 'pgsql':
-                        foreach (array_keys(current($infos)) as $k) {
-                            $insert_fields[] = "\"$k\"";
-                        }
-                        break;
-
-                    default:
-                        throw new record_exception('Unknown SQL driver');
-                }
-
-                // If the table is auto increment, we cannot lump all inserts into one query
-                // since we need the returned IDs for cache-busting and to return a model
                 if (static::AUTOINCREMENT || $return_collection) {
-                    $sql->beginTransaction();
-                    $pk = static::PRIMARY_KEY;
-
-                    switch ($driver) {
-                        case 'mysql':
-                            $insert = $sql->prepare("
-                                " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO
-                                    `$table`
-                                    ( " . join(', ', $insert_fields) . " )
-                                    VALUES
-                                    ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
-                            ");
-                            foreach ($infos as $k => $info) {
-                                $insert->execute(array_values($info));
-
-                                if (static::AUTOINCREMENT) {
-                                    $info[static::PRIMARY_KEY] = $sql->lastInsertId();
-                                }
-
-                                if ($return_collection) {
-                                    $models[$k] = new $model(null, $info);
-                                }
-
-                                $delete_keys[] = "$self:" . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[static::PRIMARY_KEY])) : $info[static::PRIMARY_KEY]);
-                            }
-
-                            break;
-
-                        case 'pgsql':
-                            $insert = $sql->prepare("
-                                INSERT INTO
-                                    \"$table\"
-                                    ( " . join(', ', $insert_fields) . " )
-                                    VALUES
-                                    ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
-                                    RETURNING \"$pk\"
-                            ");
-
-                            foreach ($infos as $k => $info) {
-                                $insert->execute(array_values($info));
-
-                                if (static::AUTOINCREMENT) {
-                                    $info[static::PRIMARY_KEY] = $insert->fetch()[$pk];
-                                }
-
-                                if ($return_collection) {
-                                    $models[$k] = new $model(null, $info);
-                                }
-
-                                $delete_keys[] = "$self:" . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[static::PRIMARY_KEY])) : $info[static::PRIMARY_KEY]);
-                            }
-
-                            break;
-
-                        default:
-                            throw new record_exception('Unknown SQL driver');
-                    }
-
-                    $sql->commit();
-                } else {
-                    // this might explode if $keys_match was a lie
-                    $insert_vals = new splFixedArray(count($insert_fields) * count($infos));
-                    $i = 0;
-                    foreach ($infos as $info) {
-                        foreach ($info as $v) {
-                            $insert_vals[$i] = $v;
+                    foreach ($infos as $k => $info) {
+                        if ($return_collection) {
+                            $models[$k] = new $model(null, $info);
                         }
-                        $delete_keys[] = "$self:" . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[static::PRIMARY_KEY])) : $info[static::PRIMARY_KEY]);
+                        $delete_keys[] = static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[static::PRIMARY_KEY])) : $info[static::PRIMARY_KEY]);
                     }
-
-                    switch ($driver) {
-                        case 'mysql':
-                            $inserts = $sql->prepare("
-                                INSERT INTO
-                                    `$table`
-                                    ( " . implode(', ', $insert_fields) . " )
-                                    VALUES
-                                    " . join(', ', array_fill(0, count($infos), '( ' . join(',', array_fill(0, count($insert_fields), '?')) . ')')) . "
-                            ");
-                            break;
-
-                        case 'pgsql':
-                            $inserts = $sql->prepare("
-                                INSERT INTO
-                                    \"$table\"
-                                    ( " . implode(', ', $insert_fields) . " )
-                                    VALUES
-                                    " . join(', ', array_fill(0, count($infos), '( ' . join(',', array_fill(0, count($insert_fields), '?')) . ')')) . "
-                            ");
-                            break;
-
-                        default:
-                            throw new record_exception('Unknown SQL driver');
+                } else {
+                    foreach ($infos as $info) {
+                        $delete_keys[] = static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[static::PRIMARY_KEY])) : $info[static::PRIMARY_KEY]);
                     }
-
-                    $inserts->execute($insert_vals);
                 }
             } else {
-                $sql->beginTransaction();
-
                 foreach ($infos as $k => $info) {
-                    $insert_fields = [];
-
-                    switch ($driver) {
-                        case 'mysql':
-                            foreach (array_keys($info) as $key) {
-                                $insert_fields[] = "`$key`";
-                            }
-
-                            $insert = $sql->prepare("
-                                INSERT INTO
-                                    `$table`
-                                    ( " . join(', ', $insert_fields) . " )
-                                    VALUES
-                                    ( " . join(',', array_fill(0, count($info), '?')) . " )
-                            ");
-                            break;
-
-                        case 'pgsql':
-                            foreach (array_keys($info) as $key) {
-                                $insert_fields[] = "\"$key\"";
-                            }
-
-                            $insert = $sql->prepare("
-                                INSERT INTO
-                                    \"$table\"
-                                    ( " . join(', ', $insert_fields) . " )
-                                    VALUES
-                                    ( " . join(',', array_fill(0, count($info), '?')) . " )
-                            ");
-                            break;
-
-                        default:
-                            throw new record_exception('Unknown SQL driver');
-                    }
-
-                    $insert->execute(array_values($info));
-
-                    if (static::AUTOINCREMENT) {
-                        // @todo pgsql version
-                        $info[static::PRIMARY_KEY] = $sql->lastInsertId();
-                    }
-
                     if ($return_collection) {
                         $models[$k] = new $model(null, $info);
                     }
-
-                    $delete_keys[] = "$self:" . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[static::PRIMARY_KEY])) : $info[static::PRIMARY_KEY]);
+                    $delete_keys[] = static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[static::PRIMARY_KEY])) : $info[static::PRIMARY_KEY]);
                 }
-
-                $sql->commit();
             }
 
             cache_lib::delete_multi(
@@ -1050,66 +369,14 @@
                 return $return_model ? $model : false;
             }
 
-            $table = static::TABLE;
-            $pk    = static::PRIMARY_KEY;
-            $self  = static::ENTITY_NAME . '_dao';
-            $sql   = core::sql('master');
-
-            switch ($sql->driver()) {
-                case 'mysql':
-                    if (strpos($table, '.') !== false) {
-                        $table = explode('.', $table);
-                        $table = "$table[0]`.`$table[1]";
-                    }
-                    $update_fields = [];
-                    foreach (array_keys($info) as $key) {
-                        $update_fields[] = "`$key` = :$key";
-                    }
-                    $update = $sql->prepare("
-                        UPDATE `$table`
-                        SET " . implode(", \n", $update_fields) . "
-                        WHERE `$pk` = :$pk
-                    ");
-
-                    $info[$pk] = $model->$pk;
-                    $update->execute($info);
-
-                    break;
-
-                case 'pgsql':
-                    if (strpos($table, '.') !== false) {
-                        $table = explode('.', $table);
-                        $table = "$table[0]\".\"$table[1]";
-                    }
-                    $update_fields = [];
-                    foreach (array_keys($info) as $key) {
-                        $update_fields[] = "\"$key\" = :$key";
-                    }
-                    $update = $sql->prepare("
-                        UPDATE \"$table\"
-                        SET " . implode(", \n", $update_fields) . "
-                        WHERE \"$pk\" = :$pk
-                    ");
-
-                    $info[$pk] = $model->$pk;
-
-                    sql_pdo::bind_by_casting(
-                        $update,
-                        static::castings(),
-                        $info
-                    );
-
-                    $update->execute();
-
-                    break;
-
-                default:
-                    throw new record_exception('Unknown SQL driver');
-            }
+            $self   = static::ENTITY_NAME . '_dao';
+            $pk     = static::PRIMARY_KEY;
+            $driver = self::driver();
+            $driver::update($self, static::PRIMARY_KEY, $model, $info);
 
             cache_lib::delete(
                 static::CACHE_ENGINE,
-                "$self:" . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
+                static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
                 static::ENTITY_POOL
             );
 
@@ -1117,7 +384,7 @@
             if (isset($info[$pk])) {
                 cache_lib::delete(
                     static::CACHE_ENGINE,
-                    "$self:" . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[$pk])) : $info[$pk]),
+                    static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[$pk])) : $info[$pk]),
                     static::ENTITY_POOL
                 );
             }
@@ -1141,58 +408,17 @@
          * @throws record_exception
          */
         protected static function _delete(record_model $model) {
-            $table = static::TABLE;
-            $pk    = static::PRIMARY_KEY;
-            $sql   = core::sql('master');
-
-            switch ($sql->driver()) {
-                case 'mysql':
-                    if (strpos($table, '.') !== false) {
-                        $table = explode('.', $table);
-                        $table = "$table[0]`.`$table[1]";
-                    }
-
-                    $delete = $sql->prepare("
-                        DELETE FROM `$table`
-                        WHERE `$pk` = ?
-                    ");
-                    $delete->execute([
-                        $model->$pk,
-                    ]);
-
-                    break;
-
-                case 'pgsql':
-                    if (strpos($table, '.') !== false) {
-                        $table = explode('.', $table);
-                        $table = "$table[0]\".\"$table[1]";
-                    }
-
-                    $delete = $sql->prepare("
-                        DELETE FROM \"$table\"
-                        WHERE \"$pk\" = ?
-                    ");
-                    // PG handles binary data differently than strings
-                    if (static::BINARY_PK) {
-                        $delete->bindValue(1, $model->$pk, PDO::PARAM_LOB);
-                        $delete->execute();
-                    } else {
-                        $delete->execute([
-                            $model->$pk,
-                        ]);
-                    }
-
-                    break;
-
-                default:
-                    throw new record_exception('Unknown SQL driver');
-            }
+            $self   = static::ENTITY_NAME . '_dao';
+            $pk     = static::PRIMARY_KEY;
+            $driver = self::driver();
+            $driver::delete($self, $pk, $model);
 
             cache_lib::delete(
                 static::CACHE_ENGINE,
-                static::ENTITY_NAME . '_dao: ' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
+                static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
                 static::ENTITY_POOL
             );
+
             return true;
         }
 
@@ -1211,62 +437,14 @@
                 return;
             }
 
-            $self  = static::ENTITY_NAME . '_dao';
-            $pks   = $collection->field(static::PRIMARY_KEY);
-            $table = static::TABLE;
-            $sql   = core::sql('master');
-
-            switch ($sql->driver()) {
-                case 'mysql':
-                    if (strpos($table, '.') !== false) {
-                        $table = explode('.', $table);
-                        $table = "$table[0]`.`$table[1]";
-                    }
-
-                    $delete = $sql->prepare("
-                        DELETE FROM
-                            `$table`
-                        WHERE
-                            `" . static::PRIMARY_KEY . "` IN (" . join(',', array_fill(0, count($pks), '?')) . ")
-                    ");
-
-                    $delete->execute($pks);
-
-                    break;
-
-                case 'pgsql':
-                    if (strpos($table, '.') !== false) {
-                        $table = explode('.', $table);
-                        $table = "$table[0]\".\"$table[1]";
-                    }
-
-                    $delete = $sql->prepare("
-                        DELETE FROM
-                            \"$table\"
-                        WHERE
-                            \"" . static::PRIMARY_KEY . "\" IN (" . join(',', array_fill(0, count($pks), '?')) . ")
-                    ");
-
-                    // PG handles binary data differently than strings
-                    if (static::BINARY_PK) {
-                        $i = 0;
-                        foreach ($pks as $pk) {
-                            $delete->bindValue($i++, $pk, PDO::PARAM_LOB);
-                        }
-                        $delete->execute();
-                    } else {
-                        $delete->execute($pks);
-                    }
-
-                    break;
-
-                default:
-                    throw new record_exception('Unknown SQL driver');
-            }
+            $self   = static::ENTITY_NAME . '_dao';
+            $pks    = $collection->field(static::PRIMARY_KEY);
+            $driver = self::driver();
+            $driver::deletes($self, static::PRIMARY_KEY, $collection);
 
             $delete_cache_keys = [];
             foreach ($pks as $pk) {
-                $delete_cache_keys[] = "$self:" . self::BY_PK . ':' . (static::BINARY_PK ? ':' . md5(base64_encode($pk)) : ":$pk");
+                $delete_cache_keys[] = static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? ':' . md5(base64_encode($pk)) : ":$pk");
             }
 
             cache_lib::delete_multi(
@@ -1274,6 +452,7 @@
                 $delete_cache_keys,
                 static::ENTITY_POOL
             );
+
             return true;
         }
     }

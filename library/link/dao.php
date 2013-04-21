@@ -15,6 +15,19 @@
     abstract class link_dao {
 
         /**
+         * Get the record DAO driver name (name derived from db connection type)
+         *
+         * @return string
+         */
+        protected static function driver() {
+            static $driver;
+            if (! $driver) {
+                $driver = 'link_driver_' . core::sql('slave')->driver();
+            }
+            return $driver;
+        }
+
+        /**
          * Get a cached link
          *
          * @access protected
@@ -58,17 +71,17 @@
          * @final
          * @param string $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
          * @param array  $params         optional - array of table keys and their values being looked up in the table
-         * @param string $class          optional - closure function that retreieves the recordset from its origin
+         * @param string $entity_name    optional - name of the entity doing the query
          * @return string a cache key that is unqiue to the application
          */
-        final public static function _build_key($cache_key_name, array $params=[], $class=null) {
+        final public static function _build_key($cache_key_name, array $params=[], $entity_name=null) {
             // each key is namespaced with the name of the class
             if (count($params) === 1) {
                 //base64_encode incase the value is binary or something
-                return ($class ? $class : get_called_class()) . ":$cache_key_name:" . md5(base64_encode(current($params)));
+                return ($entity_name ?: static::ENTITY_NAME) . ":$cache_key_name:" . md5(base64_encode(current($params)));
             } else {
                 ksort($params);
-                return ($class ? $class : get_called_class()) . ":$cache_key_name:" . md5(json_encode(array_values($params)));
+                return ($entity_name ?: static::ENTITY_NAME) . ":$cache_key_name:" . md5(json_encode(array_values($params)));
             }
         }
 
@@ -87,89 +100,16 @@
          */
         final protected static function _by_fields($cache_key_name, array $select_fields, array $keys) {
 
-            $table = static::TABLE;
-
-            $get = function() use ($select_fields, $keys, $cache_key_name, $table) {
-
-                $where = [];
-                $vals  = [];
-                $sql   = core::sql('slave');
-
-                switch ($sql->driver()) {
-                    case 'mysql':
-                        if (strpos($table, '.') !== false) {
-                            $table = explode('.', $table);
-                            $table = "$table[0]`.`$table[1]";
-                        }
-
-                        if (count($keys)) {
-                            foreach ($keys as $k => $v) {
-                                if ($v === null) {
-                                    $where[] = "`$k` IS NULL";
-                                } else {
-                                    $vals[]  = $v;
-                                    $where[] = "`$k` = ?";
-                                }
-                            }
-                        }
-
-                        $rs = core::sql('slave')->prepare("
-                            SELECT " . join(',', $select_fields) . "
-                            FROM `$table`
-                            " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
-                        ");
-
-                        break;
-
-                    case 'pgsql':
-                        if (strpos($table, '.') !== false) {
-                            $table = explode('.', $table);
-                            $table = "$table[0]\".\"$table[1]";
-                        }
-
-                        if (count($keys)) {
-                            foreach ($keys as $k => $v) {
-                                if ($v === null) {
-                                    $where[] = "\"$k\" IS NULL";
-                                } else {
-                                    $vals[]  = $v;
-                                    $where[] = "\"$k\" = ?";
-                                }
-                            }
-                        }
-
-                        $rs = core::sql('slave')->prepare("
-                            SELECT " . join(',', $select_fields) . "
-                            FROM \"$table\"
-                            " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
-                        ");
-
-                        break;
-
-                    default:
-                        throw new record_exception('Unknown SQL driver');
-                }
-
-                $rs->execute($vals);
-
-                $rs = $rs->fetchAll();
-                $return = [];
-                if (count($select_fields) === 1) {
-                    $field = current($select_fields);
-                    foreach ($rs as $row) {
-                        $return[] = $row[$field];
-                    }
-                } else {
-                    $return = $rs;
-                }
-                return $return;
-            };
+            $self = static::ENTITY_NAME . '_dao';
 
             return cache_lib::single(
                 static::CACHE_ENGINE,
                 self::_build_key($cache_key_name, $keys),
                 static::ENTITY_POOL,
-                $get
+                function() use ($self, $select_fields, $keys) {
+                    $driver = $self::driver();
+                    return $driver::by_fields($self, $select_fields, $keys);
+                }
             );
         }
 
@@ -187,110 +127,19 @@
          */
         final protected static function _by_fields_multi($cache_key_name, array $select_fields, array $keys_arr) {
 
-            $self  = get_called_class();
-            $table = static::TABLE;
-
-            $get = function() use ($select_fields, $keys_arr, $table) {
-
-                $key_fields     = array_keys(current($keys_arr));
-                $reverse_lookup = [];
-                $return         = [];
-                $vals           = [];
-                $where          = [];
-                $sql            = core::sql('slave');
-
-                switch ($sql->driver()) {
-                    case 'mysql':
-                        if (strpos($table, '.') !== false) {
-                            $table = explode('.', $table);
-                            $table = "$table[0]`.`$table[1]";
-                        }
-                        foreach ($keys_arr as $k => $keys) {
-                            $w = [];
-                            $reverse_lookup[join(':', $keys)] = $k;
-                            $return[$k] = [];
-                            foreach ($keys as $k => $v) {
-                                if ($v === null) {
-                                    $w[] = "`$k` IS NULL";
-                                } else {
-                                    $vals[] = $v;
-                                    $w[] = "`$k` = ?";
-                                }
-                            }
-                            $where[] = '(' . join(" AND ", $w) . ')';
-                        }
-
-                        $rs = $sql->prepare("
-                            SELECT
-                                " . join(',', $select_fields) . ",
-                                CONCAT(" . join(", ':', ", $key_fields) . ") `__cache_key__`
-                            FROM `$table`
-                            WHERE " . join(' OR ', $where) . "
-                        ");
-
-                        break;
-
-                    case 'pgsql':
-                        if (strpos($table, '.') !== false) {
-                            $table = explode('.', $table);
-                            $table = "$table[0]\".\"$table[1]";
-                        }
-                        foreach ($keys_arr as $k => $keys) {
-                            $w = [];
-                            $reverse_lookup[join(':', $keys)] = $k;
-                            $return[$k] = [];
-                            foreach ($keys as $k => $v) {
-                                if ($v === null) {
-                                    $w[] = "\"$k\" IS NULL";
-                                } else {
-                                    $vals[] = $v;
-                                    $w[]    = "\"$k\" = ?";
-                                }
-                            }
-                            $where[] = '(' . join(" AND ", $w) . ')';
-                        }
-
-                        $rs = $sql->prepare("
-                            SELECT
-                                " . join(',', $select_fields) . ",
-                                CONCAT(" . join(", ':', ", $key_fields) . ") \"__cache_key__\"
-                            FROM \"$table\"
-                            WHERE " . join(' OR ', $where) . "
-                        ");
-
-                        break;
-
-                    default:
-                        throw new record_exception('Unknown SQL driver');
-                }
-
-                $rs->execute($vals);
-
-                $rows = $rs->fetchAll();
-                if (count($select_fields) === 1) {
-                    $field = current($select_fields);
-                    foreach ($rows as $row) {
-                        $return[$reverse_lookup[$row['__cache_key__']]][] = $row[$field];
-                    }
-                } else {
-                    foreach ($rows as $row) {
-                        $return[$reverse_lookup[$row['__cache_key__']]][] = $row;
-                    }
-                }
-
-                return $return;
-            };
-
-            $key = function($fields) use ($cache_key_name, $self) {
-                return record_dao::_build_key($cache_key_name, $fields, $self);
-            };
+            $self = static::ENTITY_NAME . '_dao';
 
             return cache_lib::multi(
                 static::CACHE_ENGINE,
                 $keys_arr,
-                $key,
+                function($fields) use ($self, $cache_key_name) {
+                    return record_dao::_build_key($cache_key_name, $fields, $self);
+                },
                 static::ENTITY_POOL,
-                $get
+                function() use ($self, $select_fields, $keys_arr) {
+                    $driver = $self::driver();
+                    return $driver::by_fields_multi($self, $select_fields, $keys_arr);
+                }
             );
         }
 
@@ -305,56 +154,9 @@
          * @throws record_exception
          */
         protected static function _insert(array $info, $replace=false) {
-            $insert_fields = [];
-            $table         = static::TABLE;
-            $sql           = core::sql('slave');
-
-            switch ($sql->driver()) {
-                case 'mysql':
-                    if (strpos($table, '.') !== false) {
-                        $table = explode('.', $table);
-                        $table = "$table[0]`.`$table[1]";
-                    }
-
-                    foreach ($info as $k => $v) {
-                        $insert_fields[] = "`$k`";
-                    }
-
-                    $insert = core::sql('master')->prepare("
-                        " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO
-                        `$table`
-                        ( " . join(', ', $insert_fields) . " )
-                        VALUES
-                        ( " . join(',', array_fill(0, count($info), '?')) . " )
-                    ");
-
-                    break;
-
-                case 'pgsql':
-                    if (strpos($table, '.') !== false) {
-                        $table = explode('.', $table);
-                        $table = "$table[0]\".\"$table[1]";
-                    }
-
-                    foreach ($info as $k => $v) {
-                        $insert_fields[] = "\"$k\"";
-                    }
-
-                    $insert = core::sql('master')->prepare("
-                        INSERT INTO
-                        \"$table\"
-                        ( " . join(', ', $insert_fields) . " )
-                        VALUES
-                        ( " . join(',', array_fill(0, count($info), '?')) . " )
-                    ");
-
-                    break;
-
-                default:
-                    throw new record_exception('Unknown SQL driver');
-            }
-
-            return $insert->execute(array_values($info));
+            $self   = static::ENTITY_NAME . '_dao';
+            $driver = $self::driver();
+            return $driver::insert($self, $info, $replace);
         }
 
         /**
@@ -371,69 +173,10 @@
             if (! count($infos)) {
                 return;
             }
-            $insert_fields = [];
-            $info          = current($infos);
-            $sql           = core::sql('master');
-            $table         = static::TABLE;
 
-            if (count($infos) > 1) {
-                $sql->beginTransaction();
-            }
-
-            switch ($sql->driver()) {
-                case 'mysql':
-                    if (strpos($table, '.') !== false) {
-                        $table = explode('.', $table);
-                        $table = "$table[0]`.`$table[1]";
-                    }
-
-                    foreach ($info as $k => $v) {
-                        $insert_fields[] = "`$k`";
-                    }
-
-                    $insert = $sql->prepare("
-                        " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO
-                        `$table`
-                        ( " . join(', ', $insert_fields) . " )
-                        VALUES
-                        ( " . join(',', array_fill(0, count($info), '?')) . " )
-                    ");
-
-                    break;
-
-                case 'pgsql':
-                    if (strpos($table, '.') !== false) {
-                        $table = explode('.', $table);
-                        $table = "$table[0]\".\"$table[1]";
-                    }
-
-                    foreach ($info as $k => $v) {
-                        $insert_fields[] = "\"$k\"";
-                    }
-
-                    $insert = $sql->prepare("
-                        INSERT INTO
-                        \"$table\"
-                        ( " . join(', ', $insert_fields) . " )
-                        VALUES
-                        ( " . join(',', array_fill(0, count($info), '?')) . " )
-                    ");
-
-                    break;
-
-                default:
-                    throw new record_exception('Unknown SQL driver');
-            }
-
-            foreach ($infos as $info) {
-                $insert->execute(array_values($info));
-            }
-
-            if (count($infos) > 1) {
-                return $sql->commit();
-            } else {
-                return true;
-            }
+            $self   = static::ENTITY_NAME . '_dao';
+            $driver = $self::driver();
+            return $driver::inserts($self, $infos, $replace);
         }
 
         /**
@@ -443,78 +186,14 @@
          * @static
          * @param array $new_info the new info to be put into the model
          * @param array $where    return a model of the new record
-         * @return boolean result of the PDO::execute()
+         * @return boolean|null result of the PDO::execute()
          * @throws record_exception
          */
         protected static function _update(array $new_info, array $where) {
             if (count($new_info)) {
-                $vals          = [];
-                $update_fields = [];
-                $table         = static::TABLE;
-                $sql           = core::sql('master');
-
-                switch ($sql->driver()) {
-                    case 'mysql':
-                        if (strpos($table, '.') !== false) {
-                            $table = explode('.', $table);
-                            $table = "$table[0]`.`$table[1]";
-                        }
-
-                        foreach ($new_info as $key => $val) {
-                            $update_fields[] = "`$key` = ?";
-                            $vals[] = $val;
-                        }
-
-                        $where_fields = [];
-                        foreach ($where as $k => $v) {
-                            if ($v === null) {
-                                $where_fields[] = "`$k` IS NULL";
-                            } else {
-                                $vals[] = $v;
-                                $where_fields[] = "`$k` = ?";
-                            }
-                        }
-
-                        $update = core::sql('master')->prepare("
-                            UPDATE `$table`
-                            SET " . join(", \n", $update_fields) . "
-                            WHERE " . join(" AND \n", $where_fields) . "
-                        ");
-                        break;
-
-                    case 'pgsql':
-                        if (strpos($table, '.') !== false) {
-                            $table = explode('.', $table);
-                            $table = "$table[0]\".\"$table[1]";
-                        }
-
-                        foreach ($new_info as $key => $val) {
-                            $update_fields[] = "\"$key\" = ?";
-                            $vals[] = $val;
-                        }
-
-                        $where_fields = [];
-                        foreach ($where as $k => $v) {
-                            if ($v === null) {
-                                $where_fields[] = "\"$k\" IS NULL";
-                            } else {
-                                $vals[] = $v;
-                                $where_fields[] = "\"$k\" = ?";
-                            }
-                        }
-
-                        $update = core::sql('master')->prepare("
-                            UPDATE \"$table\"
-                            SET " . join(", \n", $update_fields) . "
-                            WHERE " . join(" AND \n", $where_fields) . "
-                        ");
-                        break;
-
-                    default:
-                        throw new record_exception('Unknown SQL driver');
-                }
-
-                return $update->execute($vals);
+                $self   = static::ENTITY_NAME . '_dao';
+                $driver = $self::driver();
+                return $driver::update($self, $new_info, $where);
             }
         }
 
@@ -528,61 +207,9 @@
          * @throws record_exception
          */
         protected static function _delete(array $keys) {
-            $where = [];
-            $vals  = [];
-            $table = static::TABLE;
-            $sql   = core::sql('master');
-
-            switch ($sql->driver()) {
-                case 'mysql':
-                    if (strpos($table, '.') !== false) {
-                        $table = explode('.', $table);
-                        $table = "$table[0]`.`$table[1]";
-                    }
-
-                    foreach ($keys as $k => $v) {
-                        if ($v === null) {
-                            $where[] = "`$k` IS NULL";
-                        } else {
-                            $vals[]  = $v;
-                            $where[] = "`$k` = ?";
-                        }
-                    }
-
-                    $delete = $sql->prepare("
-                        DELETE FROM `$table`
-                        WHERE " . join(" AND ", $where) . "
-                    ");
-
-                    break;
-
-                case 'pgsql':
-                    if (strpos($table, '.') !== false) {
-                        $table = explode('.', $table);
-                        $table = "$table[0]\".\"$table[1]";
-                    }
-
-                    foreach ($keys as $k => $v) {
-                        if ($v === null) {
-                            $where[] = "\"$k\" IS NULL";
-                        } else {
-                            $vals[]  = $v;
-                            $where[] = "\"$k\" = ?";
-                        }
-                    }
-
-                    $delete = $sql->prepare("
-                        DELETE FROM \"$table\"
-                        WHERE " . join(" AND ", $where) . "
-                    ");
-
-                    break;
-
-                default:
-                    throw new record_exception('Unknown SQL driver');
-            }
-
-            return $delete->execute($vals);
+            $self   = static::ENTITY_NAME . '_dao';
+            $driver = $self::driver();
+            return $driver::delete($self, $keys);
         }
 
         /**
@@ -595,69 +222,9 @@
          * @throws record_exception
          */
         protected static function _deletes(array $keys_arr) {
-            $vals  = [];
-            $where = [];
-            $table = static::TABLE;
-            $sql   = core::sql('master');
-
-            switch ($sql->driver()) {
-                case 'mysql':
-                    if (strpos($table, '.') !== false) {
-                        $table = explode('.', $table);
-                        $table = "$table[0]`.`$table[1]";
-                    }
-
-                    foreach ($keys_arr as $keys) {
-                        $w = [];
-                        foreach ($keys as $k => $v) {
-                            if ($v === null) {
-                                $w[] = "`$k` IS NULL";
-                            } else {
-                                $vals[] = $v;
-                                $w[]    = "`$k` = ?";
-                            }
-                        }
-                        $where[] = "(" . join(" AND ", $w) . ")";
-                    }
-
-                    $delete = core::sql('master')->prepare("
-                        DELETE FROM `$table`
-                        WHERE " . join(" OR ", $where) . "
-                    ");
-
-                    break;
-
-                case 'pgsql':
-                    if (strpos($table, '.') !== false) {
-                        $table = explode('.', $table);
-                        $table = "$table[0]\".\"$table[1]";
-                    }
-
-                    foreach ($keys_arr as $keys) {
-                        $w = [];
-                        foreach ($keys as $k => $v) {
-                            if ($v === null) {
-                                $w[] = "\"$k\" IS NULL";
-                            } else {
-                                $vals[] = $v;
-                                $w[]    = "\"$k\" = ?";
-                            }
-                        }
-                        $where[] = "(" . join(" AND ", $w) . ")";
-                    }
-
-                    $delete = core::sql('master')->prepare("
-                        DELETE FROM \"$table\"
-                        WHERE " . join(" OR ", $where) . "
-                    ");
-
-                    break;
-
-                default:
-                    throw new record_exception('Unknown SQL driver');
-            }
-
-            return $delete->execute($vals);
+            $self   = static::ENTITY_NAME . '_dao';
+            $driver = $self::driver();
+            return $driver::deletes($self, $keys_arr);
         }
     }
 

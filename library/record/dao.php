@@ -39,8 +39,8 @@
          * @access protected
          * @static
          * @final
-         * @param string   $key       full cache key with namespace - it's recomended that record_dao::_build_key() is used to create this key
-         * @param callable $get       closure function that retreieves the recordset from its origin
+         * @param string   $key full cache key with namespace - it's recomended that record_dao::_build_key() is used to create this key
+         * @param callable $get closure function that retreieves the recordset from its origin
          * @return array   the cached recordset
          */
         final protected static function _single($key, $get) {
@@ -58,7 +58,7 @@
          * @access protected
          * @static
          * @final
-         * @param string   $key           full cache key with namespace - it's recomended that record_dao::_build_key() is used to create this key
+         * @param string   $key full cache key with namespace - it's recomended that record_dao::_build_key() is used to create this key
          * @return boolean result of the cache being deleted
          */
         final protected static function _cache_delete($key) {
@@ -107,7 +107,7 @@
 
             return cache_lib::single(
                 static::CACHE_ENGINE,
-                static::ENTITY_NAME . ":" . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($pk)) : $pk),
+                static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($pk)) : $pk),
                 static::ENTITY_POOL,
                 function() use ($pk, $self) {
                     $driver = $self::driver();

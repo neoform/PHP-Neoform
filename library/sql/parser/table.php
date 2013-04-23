@@ -107,6 +107,14 @@
                 case 'all_non_pk_index_combinations':
                     $key_combinations = [];
                     foreach (array_merge($this->unique_keys, $this->indexes) as $index) {
+
+                        // Skip useless indexes
+                        foreach ($index as $field) {
+                            if (! $field->is_field_lookupable()) {
+                                continue 2;
+                            }
+                        }
+
                         $previous = [];
                         foreach ($index as $field) {
                             $previous[$field->name] = $field->name_idless;

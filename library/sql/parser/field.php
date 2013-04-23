@@ -252,6 +252,15 @@
         }
 
         /**
+         * Can this field be useful for an equality lookup? (datetimes are an example of a field that is not useful)
+         *
+         * @return bool
+         */
+        public function is_field_lookupable() {
+            return sql_parser::is_field_lookupable($this);
+        }
+
+        /**
          * Is this field part of an index
          *
          * @return bool

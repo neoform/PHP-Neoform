@@ -45,12 +45,18 @@
          *
          * @param array $fields
          * @param bool  $idless
+         * @param bool  $lookupable
          *
          * @return int
          */
-        protected function longest_length(array $fields, $idless=false) {
+        protected function longest_length(array $fields, $idless=false, $lookupable=false) {
             $len = 0;
             foreach ($fields as $field) {
+
+                if ($lookupable && ! $field->is_field_lookupable()) {
+                    continue;
+                }
+
                 if (is_string($field)) {
                     if (strlen($field) > $len) {
                         $len = strlen($field);

@@ -34,13 +34,23 @@
 
         protected function constants() {
 
+            $used_names = [];
+
             $longest_part = $this->table->longest_non_pk_index_combinations();
 
             if ($this->table->is_tiny() || $this->all) {
                 $this->code .= "\t\tconst " . str_pad('BY_ALL', $longest_part + 3) . " = 'by_all';\n";
+                $used_names[] = 'all';
             }
 
             foreach ($this->table->all_non_pk_index_combinations as $keys => $fields) {
+
+                // No duplicates
+                if (in_array(strtolower($keys), $used_names)) {
+                    continue;
+                }
+                $used_names[] = strtolower($keys);
+
                 $this->code .= "\t\tconst " . str_pad('BY_' . strtoupper($keys), $longest_part + 3) . " = 'by_" . strtolower($keys) . "';\n";
             }
 
@@ -48,6 +58,8 @@
         }
 
         protected function selectors() {
+
+            $used_names = [];
 
             foreach ($this->table->all_non_pk_indexes as $index) {
 
@@ -63,8 +75,14 @@
 
                     $fields[] = $field;
                     $vars[]   = '$' . $field->name;
-                    $names[] = $field->name_idless;
-                    $name = join('_', $names);
+                    $names[]  = $field->name_idless;
+                    $name     = join('_', $names);
+
+                    // No duplicates
+                    if (in_array($name, $used_names)) {
+                        continue;
+                    }
+                    $used_names[] = $name;
 
                     // Generate code
                     $this->code .= "\t\t/**\n";
@@ -96,6 +114,12 @@
 
             // Multi - applies only to foreign keys
             foreach ($this->table->foreign_keys as $field) {
+
+                // No duplicates
+                if (in_array($field->name_idless, $used_names)) {
+                    continue;
+                }
+                $used_names[] = $field->name_idless;
 
                 /**
                  * Get multiple sets of folder ids by parent folder
@@ -144,6 +168,8 @@
         }
 
         protected function insert() {
+
+            $used_names = [];
 
             /**
              * Insert Folder record, created from an array of $info
@@ -195,6 +221,12 @@
                         }
                         $name = join('_', $idless);
 
+                        // No duplicates
+                        if (in_array($name, $used_names)) {
+                            continue;
+                        }
+                        $used_names[] = $name;
+
                         $this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
                         $this->code .= "\t\t\tif (" . join(' && ', $issets) . ") {\n";
                         $this->code .= "\t\t\t\tparent::_cache_delete(\n";
@@ -223,6 +255,8 @@
         }
 
         protected function inserts() {
+
+            $used_names = [];
 
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Insert multiple " . ucwords(str_replace('_', ' ', $this->table->name)) . " records, created from an array of arrays of \$info\n";
@@ -267,6 +301,12 @@
                             }
                             $name = join('_', $idless);
 
+                            // No duplicates
+                            if (in_array($name, $used_names)) {
+                                continue;
+                            }
+                            $used_names[] = $name;
+
                             $this->code .= "\t\t\t\t// BY_" . strtoupper($name) . "\n";
                             $this->code .= "\t\t\t\tif (" . join(' && ', $issets) . ") {\n";
                             $this->code .= "\t\t\t\t\tparent::_cache_delete(\n";
@@ -299,6 +339,8 @@
         }
 
         protected function update() {
+
+            $used_names = [];
 
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Updates a " . ucwords(str_replace('_', ' ', $this->table->name)) . " record with new data\n";
@@ -340,6 +382,12 @@
                             $issets[] = "array_key_exists('" . $field->name . "', \$info)";
                             $names[] = $field->name_idless;
                             $name = join('_', $names);
+
+                            // No duplicates
+                            if (in_array($name, $used_names)) {
+                                continue;
+                            }
+                            $used_names[] = $name;
 
                             $this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
                             $this->code .= "\t\t\tif (" . join(' && ', $issets) . ") {\n";
@@ -390,6 +438,8 @@
 
         protected function delete() {
 
+            $used_names = [];
+
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Delete a " . ucwords(str_replace('_', ' ', $this->table->name)) . " record\n";
             $this->code .= "\t\t *\n";
@@ -427,6 +477,12 @@
                             $names[] = $field->name_idless;
                             $name = join('_', $names);
 
+                            // No duplicates
+                            if (in_array($name, $used_names)) {
+                                continue;
+                            }
+                            $used_names[] = $name;
+
                             $this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
                             $this->code .= "\t\t\tparent::_cache_delete(\n";
                             $this->code .= "\t\t\t\tparent::_build_key(\n";
@@ -454,6 +510,8 @@
         }
 
         protected function deletes() {
+
+            $used_names = [];
 
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Delete multiple " . ucwords(str_replace('_', ' ', $this->table->name)) . " records\n";
@@ -492,6 +550,12 @@
                             $fields[] = $field;
                             $names[] = $field->name_idless;
                             $name = join('_', $names);
+
+                            // No duplicates
+                            if (in_array($name, $used_names)) {
+                                continue;
+                            }
+                            $used_names[] = $name;
 
                             $this->code .= "\t\t\t\t// BY_" . strtoupper($name) . "\n";
                             $this->code .= "\t\t\t\tparent::_cache_delete(\n";

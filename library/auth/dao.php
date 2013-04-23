@@ -8,11 +8,11 @@
         const BY_USER = 'by_user';
 
         /**
-         * Get the generic castings of the table columns
+         * Get the generic bindings of the table columns
          *
          * @return array
          */
-        public static function castings() {
+        public static function bindings() {
             return [
                 'hash'       => 'binary',
                 'user_id'    => 'int',

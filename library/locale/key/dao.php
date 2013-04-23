@@ -7,7 +7,7 @@
         const BY_BODY       = 'by_body';
         const BY_NAMESPACE  = 'by_namespace';
 
-        public static function castings() {
+        public static function bindings() {
             return [
                 'id'           => 'int',
                 'body'         => 'string',

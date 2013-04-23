@@ -38,7 +38,7 @@
                 WHERE \"" . $self::PRIMARY_KEY . "\" = ?
             ");
 
-            $info->bindValue(1, $pk, sql_pdo::pdo_binding($self::castings(), $self::PRIMARY_KEY));
+            $info->bindValue(1, $pk, sql_pdo::pdo_binding($self::bindings(), $self::PRIMARY_KEY));
             $info->execute();
 
             if (! ($info = $info->fetch())) {
@@ -67,7 +67,7 @@
                 WHERE \"" . $self::PRIMARY_KEY . "\" IN (" . join(',', array_fill(0, count($pks), '?')) . ")
             ");
 
-            $pdo_binding = sql_pdo::pdo_binding($self::castings(), $self::PRIMARY_KEY);
+            $pdo_binding = sql_pdo::pdo_binding($self::bindings(), $self::PRIMARY_KEY);
             foreach (array_values($pks) as $i => $pk) {
                 $infos_rs->bindValue($i + 1, $pk, $pdo_binding);
             }
@@ -126,7 +126,7 @@
 
             sql_pdo::bind_by_casting(
                 $info,
-                $self::castings(),
+                $self::bindings(),
                 $vals
             );
 
@@ -174,7 +174,7 @@
 
             sql_pdo::bind_by_casting(
                 $rs,
-                $self::castings(),
+                $self::bindings(),
                 $vals
             );
 
@@ -232,7 +232,7 @@
 
             sql_pdo::bind_by_casting(
                 $rs,
-                $self::castings(),
+                $self::bindings(),
                 $vals
             );
 
@@ -282,7 +282,7 @@
 
             sql_pdo::bind_by_casting(
                 $rs,
-                $self::castings(),
+                $self::bindings(),
                 $vals
             );
 
@@ -331,7 +331,7 @@
 
             sql_pdo::bind_by_casting(
                 $insert,
-                $self::castings(),
+                $self::bindings(),
                 $info
             );
 
@@ -384,7 +384,7 @@
 
                         sql_pdo::bind_by_casting(
                             $insert,
-                            $self::castings(),
+                            $self::bindings(),
                             $info
                         );
 
@@ -415,7 +415,7 @@
 
                     sql_pdo::bind_by_casting(
                         $inserts,
-                        $self::castings(),
+                        $self::bindings(),
                         $insert_vals
                     );
 
@@ -445,7 +445,7 @@
 
                     sql_pdo::bind_by_casting(
                         $insert,
-                        $self::castings(),
+                        $self::bindings(),
                         $info
                     );
 
@@ -487,7 +487,7 @@
 
             sql_pdo::bind_by_casting(
                 $update,
-                $self::castings(),
+                $self::bindings(),
                 $info,
                 true
             );
@@ -507,7 +507,7 @@
                 DELETE FROM \"" . self::table($self::TABLE) . "\"
                 WHERE \"$pk\" = ?
             ");
-            $delete->bindValue(1, $model->$pk, sql_pdo::pdo_binding($self::castings(), $self::PRIMARY_KEY));
+            $delete->bindValue(1, $model->$pk, sql_pdo::pdo_binding($self::bindings(), $self::PRIMARY_KEY));
             $delete->execute();
         }
 
@@ -525,7 +525,7 @@
                 WHERE \"$pk\" IN (" . join(',', array_fill(0, count($collection), '?')) . ")
             ");
 
-            $pdo_binding = sql_pdo::pdo_binding($self::castings(), $self::PRIMARY_KEY);
+            $pdo_binding = sql_pdo::pdo_binding($self::bindings(), $self::PRIMARY_KEY);
             $i = 0;
             foreach ($pks as $pk) {
                 $delete->bindValue($i++, $pk, $pdo_binding);

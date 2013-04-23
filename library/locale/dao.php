@@ -4,7 +4,7 @@
 
         const BY_ALL = 'by_all';
 
-        public static function castings() {
+        public static function bindings() {
             return [
                 'iso2' => 'string',
                 'name' => 'string',

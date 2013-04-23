@@ -4,7 +4,7 @@
 
         const BY_NAME = 'by_name';
 
-        public static function castings() {
+        public static function bindings() {
             return [
                 'id'   => 'int',
                 'name' => 'string',

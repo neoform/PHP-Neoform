@@ -3,8 +3,30 @@
     class sql_parser_driver_postgresql extends sql_parser_driver {
 
         public function __construct() {
+            $tables_info = [];
             foreach ($this->get_all_tables() as $table) {
-                $this->get_table_details($table);
+                $table_info                        = $this->get_table_details($table);
+                $tables_info[$table_info['name']]  = $table_info;
+                $this->tables[$table_info['name']] = new sql_parser_table($table_info);
+            }
+
+            // add each table to each of its fields, so a given field can know who it belongs to
+            foreach ($this->tables as $table) {
+                foreach ($table->fields as $field) {
+                    $field->_set_table($table);
+                }
+            }
+
+            // Foreign keys must be done after the table has been parsed (we reference the tables to each other)
+            foreach ($tables_info as $table_name => $table_info) {
+                $table = $this->tables[$table_name];
+                foreach ($table_info['foreign_keys'] as $fk) {
+                    if (isset($this->tables[$fk['parent_table']])) {
+                        $table->fields[$fk['field']]->_set_referenced_field($this->tables[$fk['parent_table']]->fields[$fk['parent_field']]);
+                    } else {
+                        throw new exception('The parent table `' . $fk['parent_table'] . '` was not identified during parsing, is it in this database/schema?');
+                    }
+                }
             }
         }
 
@@ -31,14 +53,17 @@
             ];
 
             $sql = core::sql()->prepare("
-                SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = ? ORDER BY ordinal_position ASC
+                SELECT *
+                FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE table_name = ?
+                ORDER BY ordinal_position ASC
             ");
             $sql->execute([
                 $table,
             ]);
 
             foreach ($sql->fetchAll() as $field) {
-                $info['fields'][] = [
+                $info['fields'][$field['column_name']] = new sql_parser_field([
                     'name'                 => $field['column_name'],
                     'type'                 => strtolower($field['udt_name']),
                     'size'                 => (int) $field['character_maximum_length'] ?: (int) $field['numeric_precision'],
@@ -51,8 +76,124 @@
                     'casting_extended'     => self::field_casting_extended(strtolower($field['udt_name']), (int) $field['character_maximum_length'] ?: (int) $field['numeric_precision']),
                     'binary'               => self::field_is_binary(strtolower($field['udt_name'])),
                     'bool_true'            => self::boolean_true_value(strtolower($field['udt_name'])),
-                ];
+                ]);
+
+                $info['primary_keys'] = self::primary_keys($table);
+                $info['unique_keys']  = self::unique_keys($table);
+                $info['indexes']      = self::indexes($table);
+                $info['foreign_keys'] = self::foreign_keys($table);
             }
+
+            return $info;
+        }
+
+        public static function primary_keys($table) {
+            $sql = core::sql()->prepare("
+                SELECT
+                    pg_attribute.attname
+                FROM
+                    pg_index,
+                    pg_class,
+                    pg_attribute
+                WHERE
+                    pg_class.oid = '" . $table . "'::regclass
+                    AND indrelid = pg_class.oid
+                    AND pg_attribute.attrelid = pg_class.oid
+                    AND pg_attribute.attnum = any(pg_index.indkey)
+                    AND indisprimary
+            ");
+            $sql->execute();
+            $pk = [];
+            foreach ($sql->fetchAll() as $field) {
+                $pk[] = $field['attname'];
+            }
+            return $pk;
+        }
+
+        public static function unique_keys($table) {
+            $sql = core::sql()->prepare("
+                SELECT
+                    tc.constraint_name,
+                    kcu.column_name
+                FROM
+                    information_schema.table_constraints tc
+                JOIN information_schema.key_column_usage kcu
+                ON tc.constraint_name = kcu.constraint_name
+                JOIN information_schema.constraint_column_usage ccu
+                ON ccu.constraint_name = tc.constraint_name
+                WHERE
+                    constraint_type = 'UNIQUE'
+                    AND tc.table_name='" . $table . "'
+                ORDER BY ordinal_position ASC
+            ");
+            $sql->execute();
+            $keys = [];
+            foreach ($sql->fetchAll() as $field) {
+                if (! isset($keys[$field['constraint_name']]) || ! in_array($field['column_name'], $keys[$field['constraint_name']])) {
+                    $keys[$field['constraint_name']][] = $field['column_name'];
+                }
+            }
+            return $keys;
+        }
+
+        public static function indexes($table) {
+            $sql = core::sql()->prepare("
+                SELECT
+                    t.relname table_name,
+                    i.relname index_name,
+                    a.attname column_name
+                FROM
+                    pg_class t,
+                    pg_class i,
+                    pg_index ix,
+                    pg_attribute a
+                WHERE
+                    t.oid = ix.indrelid
+                    AND i.oid = ix.indexrelid
+                    AND a.attrelid = t.oid
+                    AND a.attnum = ANY(ix.indkey)
+                    AND t.relkind = 'r'
+                    AND t.relname LIKE '" . $table . "'
+            ");
+            $sql->execute();
+            $indexes = [];
+            foreach ($sql->fetchAll() as $field) {
+                if (! isset($indexes[$field['index_name']]) || ! in_array($field['column_name'], $indexes[$field['index_name']])) {
+                    $indexes[$field['index_name']][] = $field['column_name'];
+                }
+            }
+            return $indexes;
+        }
+
+        public static function foreign_keys($table) {
+            $sql = core::sql()->prepare("
+                SELECT
+                    tc.constraint_name,
+                    tc.table_name,
+                    kcu.column_name,
+                    ccu.table_name foreign_table_name,
+                    ccu.column_name foreign_column_name
+                FROM
+                    information_schema.table_constraints tc
+                JOIN information_schema.key_column_usage kcu
+                ON tc.constraint_name = kcu.constraint_name
+                JOIN information_schema.constraint_column_usage ccu
+                ON ccu.constraint_name = tc.constraint_name
+                WHERE constraint_type = 'FOREIGN KEY' AND tc.table_name='" . $table . "';
+            ");
+            $sql->execute();
+            $fks = [];
+            foreach ($sql->fetchAll() as $field) {
+                if (! isset($fks[$field['constraint_name']]) || ! in_array($field['constraint_name'], $fks[$field['constraint_name']])) {
+                    $fks[$field['constraint_name']] = [
+                        'name'             => $field['constraint_name'],
+                        'field'            => $field['column_name'],
+                        'parent_table'     => $field['foreign_table_name'],
+                        'parent_field'     => $field['foreign_column_name'],
+                    ];
+                }
+            }
+            return $fks;
         }
 
         public static function field_casting($type, $length) {
@@ -64,7 +205,14 @@
                 case 'double precision':
                 case 'integer':
                 case 'interval':
+                case 'int2':
+                case 'int4':
+                case 'int8':
                     return 'int';
+
+                case 'float4':
+                case 'float8':
+                    return 'float';
 
                 case 'boolean':
                     return 'bool';
@@ -83,7 +231,14 @@
                 case 'double precision':
                 case 'integer':
                 case 'interval':
+                case 'int2':
+                case 'int4':
+                case 'int8':
                     return 'int';
+
+                case 'float4':
+                case 'float8':
+                    return 'float';
 
                 case 'boolean':
                     return 'bool';
@@ -143,5 +298,54 @@
             if (array_key_exists(strtolower($details), self::$enum_values)) {
                 return self::$enum_values[strtolower($details)];
             }
+        }
+
+        /**
+         * Identify driver specific validation for this field
+         *
+         * @param sql_parser_field $field
+         *
+         * @return string
+         */
+        public static function api_type_validation(sql_parser_field $field) {
+            //max sizes
+            switch ((string) $field->type) {
+                case 'bit':
+                    return "->digit(0, 1)";
+
+                case 'smallint':
+                case 'int2':
+                    return "->digit(-32768, 32767)";
+
+                case 'integer':
+                case 'int4':
+                case 'serial':
+                    return "->digit(-2147483648, 2147483647)";
+
+                case 'bigint':
+                case 'int8':
+                case 'bigserial':
+                    return "->digit(-9223372036854775808, 9223372036854775807)";
+
+                case 'varchar':
+                case 'char':
+                    return "->length(1, " . $field->size . ")";
+
+                case 'timestamp':
+                case 'timestampz':
+                case 'datetime':
+                    return "->is_datetime()";
+
+                case 'date':
+                    return "->is_date()";
+
+                case 'enum':
+                    return "->in([" . $field->size . "])";
+            }
+        }
+
+        public static function is_table_tiny(sql_parser_table $table) {
+            // technically there's no such thing as a tiny table in PGSQL since the smallest int size is 16bit...
+            return false;
         }
     }

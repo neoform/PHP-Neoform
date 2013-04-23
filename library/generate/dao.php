@@ -2,15 +2,15 @@
 
     class generate_dao extends generate {
 
-        protected function castings() {
+        protected function bindings() {
 
             $this->code .= "\t\t/**\n";
-            $this->code .= "\t\t * Get the generic castings of the table columns\n";
+            $this->code .= "\t\t * Get the generic bindings of the table columns\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @return array\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function castings() {\n";
+            $this->code .= "\t\tpublic static function bindings() {\n";
             $this->code .= "\t\t\treturn [\n";
             $longest_part = $this->longest_length($this->table->fields);
             foreach ($this->table->fields as $field) {

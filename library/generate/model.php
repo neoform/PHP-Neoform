@@ -121,7 +121,6 @@
             * @deprecated    description
             * @deprec    alias for deprecated
             * @magic    phpdoc.de compatibility
-            * @todo        phpdoc.de compatibility
             * @exception    Javadoc-compatible, use as needed
             * @throws      Javadoc-compatible, use as needed
             * @var        type    a data type for a class variable
@@ -211,7 +210,7 @@
             $this->code .= "\t\tpublic function " . ($self_reference ? 'child_' : '') . $collection_name . "() {\n";
             $this->code .= "\t\t\tif (! array_key_exists('" . ($self_reference ? 'child_' : '') . $collection_name . "', \$this->_vars)) {\n";
             $this->code .= "\t\t\t\t\$this->_vars['" . ($self_reference ? 'child_' : '') . $collection_name . "'] = new " . $collection_name . "(\n";
-            $this->code .= "\t\t\t\t\t" . $dao_name . "::by_" . $field->referenced_field->name . "(\$this->vars['" . $referenced_field->name . "'])\n";
+            $this->code .= "\t\t\t\t\t" . $dao_name . "::by_" . $field->name_idless . "(\$this->vars['" . $referenced_field->name . "'])\n";
             $this->code .= "\t\t\t\t);\n";
             $this->code .= "\t\t\t}\n";
             $this->code .= "\t\t\treturn \$this->_vars['" . ($self_reference ? 'child_' : '') . $collection_name . "'];\n";

@@ -54,8 +54,13 @@
                 $vars         = [];
                 $names        = [];
                 $fields       = [];
-                $longest_part = $this->longest_length($index);
+                $longest_part = $this->longest_length($index, false, true);
                 foreach ($index as $field) {
+
+                    if (! $field->is_field_lookupable()) {
+                        continue;
+                    }
+
                     $fields[] = $field;
                     $vars[]   = '$' . $field->name;
                     $names[] = $field->name_idless;
@@ -177,6 +182,11 @@
                     $fields        = [];
                     $longest_index = 0;
                     foreach ($index as $field) {
+
+                        if (! $field->is_field_lookupable()) {
+                            continue;
+                        }
+
                         $fields[] = $field;
                         $idless[] = $field->name_idless;
                         $issets[] = "array_key_exists('" . $field->name . "', \$info)";
@@ -244,6 +254,11 @@
                         $issets        = [];
                         $longest_index = 0;
                         foreach ($index as $field) {
+
+                            if (! $field->is_field_lookupable()) {
+                                continue;
+                            }
+
                             $fields[] = $field;
                             $idless[] = $field->name_idless;
                             $issets[] = "array_key_exists('" . $field->name . "', \$info)";
@@ -314,8 +329,13 @@
                         $fields       = [];
                         $names        = [];
                         $issets       = [];
-                        $longest_part = $this->longest_length($index);
+                        $longest_part = $this->longest_length($index, false, true);
                         foreach ($index as $field) {
+
+                            if (! $field->is_field_lookupable()) {
+                                continue;
+                            }
+
                             $fields[] = $field;
                             $issets[] = "array_key_exists('" . $field->name . "', \$info)";
                             $names[] = $field->name_idless;
@@ -396,8 +416,13 @@
 
                         $fields       = [];
                         $names        = [];
-                        $longest_part = $this->longest_length($index);
+                        $longest_part = $this->longest_length($index, false, true);
                         foreach ($index as $field) {
+
+                            if (! $field->is_field_lookupable()) {
+                                continue;
+                            }
+
                             $fields[] = $field;
                             $names[] = $field->name_idless;
                             $name = join('_', $names);
@@ -457,8 +482,13 @@
 
                         $fields       = [];
                         $names        = [];
-                        $longest_part = $this->longest_length($index);
+                        $longest_part = $this->longest_length($index, false, true);
                         foreach ($index as $field) {
+
+                            if (! $field->is_field_lookupable()) {
+                                continue;
+                            }
+
                             $fields[] = $field;
                             $names[] = $field->name_idless;
                             $name = join('_', $names);

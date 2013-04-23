@@ -348,4 +348,21 @@
             // technically there's no such thing as a tiny table in PGSQL since the smallest int size is 16bit...
             return false;
         }
+
+        /**
+         * @param sql_parser_field $field
+         *
+         * @return bool
+         */
+        public static function is_field_lookupable(sql_parser_field $field) {
+            switch ((string) $field->type) {
+                case 'timestamp':
+                case 'timestampz':
+                case 'datetime':
+                    return false;
+
+                default:
+                    return true;
+            }
+        }
     }

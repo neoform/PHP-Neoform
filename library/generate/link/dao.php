@@ -39,6 +39,8 @@
 
         protected function selectors() {
 
+            $used_names = [];
+
             foreach ($this->table->all_indexes as $index) {
 
                 $vars         = [];
@@ -49,6 +51,12 @@
                     $names[] = $field->name_idless;
                 }
                 $name = join('_',  $names);
+
+                // No duplicates
+                if (in_array($name, $used_names)) {
+                    continue;
+                }
+                $used_names[] = $name;
 
                 // commenting
                 $select_fields = [];
@@ -109,6 +117,12 @@
             // Multi
             foreach ($this->table->foreign_keys as $foreign_key_field) {
 
+                // No duplicates
+                if (in_array($foreign_key_field->name_idless, $used_names)) {
+                    continue;
+                }
+                $used_names[] = $foreign_key_field->name_idless;
+
                 // comments
                 $selected_fields = [];
                 foreach ($this->table->fields as $field) {
@@ -160,6 +174,8 @@
 
         protected function insert() {
 
+            $used_names = [];
+
             /**
              * Insert Folder link, created from an array of $info
              *
@@ -205,6 +221,12 @@
                     }
                     $name = join('_', $idless);
 
+                    // No duplicates
+                    if (in_array($name, $used_names)) {
+                        continue;
+                    }
+                    $used_names[] = $name;
+
                     $this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
                     $this->code .= "\t\t\tif (" . join(' && ', $issets) . ") {\n";
                     $this->code .= "\t\t\t\tparent::_cache_delete(\n";
@@ -232,6 +254,8 @@
         }
 
         protected function inserts() {
+
+            $used_names = [];
 
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Insert multiple " . ucwords(str_replace('_', ' ', $this->table->name)) . " links, created from an array of arrays of \$info\n";
@@ -272,6 +296,12 @@
                         }
                         $name = join('_', $idless);
 
+                        // No duplicates
+                        if (in_array($name, $used_names)) {
+                            continue;
+                        }
+                        $used_names[] = $name;
+
                         $this->code .= "\t\t\t\t// BY_" . strtoupper($name) . "\n";
                         $this->code .= "\t\t\t\tif (" . join(' && ', $issets) . ") {\n";
                         $this->code .= "\t\t\t\t\tparent::_cache_delete(\n";
@@ -304,6 +334,8 @@
 
         protected function update() {
 
+            $used_names = [];
+
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Update " . ucwords(str_replace('_', ' ', $this->table->name)) . " link records based on \$where inputs\n";
             $this->code .= "\t\t *\n";
@@ -328,6 +360,12 @@
                     $names[]  = $field->name_idless;
                 }
                 $name = join('_',  $names);
+
+                // No duplicates
+                if (in_array($name, $used_names)) {
+                    continue;
+                }
+                $used_names[] = $name;
 
                 $this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
                 $this->code .= "\t\t\tif (" . join(' && ', $issets) . ") {\n";
@@ -381,6 +419,8 @@
 
         protected function delete() {
 
+            $used_names = [];
+
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Delete multiple " . ucwords(str_replace('_', ' ', $this->table->name)) . " link records based on an array of associative arrays\n";
             $this->code .= "\t\t *\n";
@@ -400,6 +440,12 @@
                     $names[] = $field->name_idless;
                 }
                 $name = join('_',  $names);
+
+                // No duplicates
+                if (in_array($name, $used_names)) {
+                    continue;
+                }
+                $used_names[] = $name;
 
                 $longest_part = $this->longest_length($index);
 
@@ -426,6 +472,8 @@
 
         protected function deletes() {
 
+            $used_names = [];
+
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Delete multiple sets of " . ucwords(str_replace('_', ' ', $this->table->name)) . " link records based on an array of associative arrays\n";
             $this->code .= "\t\t *\n";
@@ -442,6 +490,13 @@
 
             $idless = [];
             foreach ($this->table->primary_keys as $field) {
+
+                // No duplicates
+                if (in_array($field->name_idless, $used_names)) {
+                    continue;
+                }
+                $used_names[] = $field->name_idless;
+
                 $idless[] = $field->name_idless;
                 $this->code .= "\t\t\t\t\$unique_" . $field->name . "_arr[(int) \$keys['" . $field->name . "']] = (" . $field->casting . ") \$keys['" . $field->name . "'];\n";
             }

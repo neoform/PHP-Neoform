@@ -88,9 +88,19 @@
             ");
             $sql->execute();
             $describe = $sql->fetch();
-            if (isset($describe['create table'])) {
-                return $describe['create table'];
-            } else if (isset($describe['create view'])) {
+
+            $create_table = $create_view = null;
+            foreach ($describe as $k => $v) {
+                if (strtolower($k) === 'create table') {
+                    $create_table = $v;
+                } else if (strtolower($k) === 'create view') {
+                    $create_view = $v;
+                }
+            }
+
+            if ($create_table) {
+                return $create_table;
+            } else if ($create_view) {
                 // views are of no interest for this...
             } else {
                 throw new exception("Could not find table definition of `" . $table_name . "`");
@@ -189,10 +199,10 @@
         protected function foreign_key($field_info) {
             if (preg_match('/^CONSTRAINT\s+`([a-z0-9\_]+)`\s*FOREIGN\s+KEY\s+\(`([a-z0-9\_]+)`\)\s+REFERENCES\s+`([a-z0-9\_]+)`\s+\(`([a-z0-9\_]+)`\).*?$/i', $field_info, $match)) {
                 return [
-                    'name'             => strtolower($match[1]),
-                    'field'         => strtolower($match[2]),
-                    'parent_table'     => strtolower($match[3]),
-                    'parent_field'     => strtolower($match[4]),
+                    'name'         => strtolower($match[1]),
+                    'field'        => strtolower($match[2]),
+                    'parent_table' => strtolower($match[3]),
+                    'parent_field' => strtolower($match[4]),
                 ];
             }
 

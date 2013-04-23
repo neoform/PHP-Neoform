@@ -7,7 +7,7 @@
         const BY_LOCALE     = 'by_locale';
         const BY_LOCALE_KEY = 'by_locale_key';
 
-        public static function castings() {
+        public static function bindings() {
             return [
                 'id'     => 'int',
                 'key_id' => 'int',

@@ -9,7 +9,7 @@
         const BY_STATUS              = 'by_status';
         const BY_EMAIL               = 'by_email';
 
-        public static function castings() {
+        public static function bindings() {
             return [
                 'id'                  => 'int',
                 'email'               => 'int',

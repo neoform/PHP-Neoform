@@ -120,7 +120,7 @@
                     if ($this->is_binary()) {
                         return 'binary';
                     } else {
-                        $this->casting;
+                        return $this->casting;
                     }
 
                 default:

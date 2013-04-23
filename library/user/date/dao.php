@@ -5,7 +5,7 @@
      */
     class user_date_dao extends record_dao implements user_date_definition {
 
-        public static function castings() {
+        public static function bindings() {
             return [
                 'user_id'             => 'int',
                 'created_on'          => 'string',

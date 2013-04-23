@@ -7,7 +7,7 @@
 
         const BY_USER = 'by_user';
 
-        public static function castings() {
+        public static function bindings() {
             return [
                 'hash'      => 'binary',
                 'user_id'   => 'int',

@@ -19,13 +19,13 @@
         /**
          * Fetch the PDO binding
          *
-         * @param array        $castings
-         * @param string       $name
+         * @param array  $bindings
+         * @param string $name
          *
          * @return int PDO param val
          */
-        public static function pdo_binding(array $castings, $name) {
-           switch ($castings[$name]) {
+        public static function pdo_binding(array $bindings, $name) {
+           switch ($bindings[$name]) {
                 case 'int':
                     return PDO::PARAM_INT;
 
@@ -44,18 +44,18 @@
         }
 
         /**
-         * Bind values to a query based on the castings.
+         * Bind values to a query based on the bindings.
          * This is needed because of binary data fields, which need to be specially bound as PDO::PARAM_LOB in Postgres
          *
          * @param PDOStatement $query
-         * @param array        $castings
+         * @param array        $bindings
          * @param array        $vals
          * @param bool         $bind_as_param
          */
-        public static function bind_by_casting(PDOStatement $query, array $castings, array $vals, $bind_as_param=false) {
+        public static function bind_by_casting(PDOStatement $query, array $bindings, array $vals, $bind_as_param=false) {
             if ($bind_as_param) {
                 foreach ($vals as $k => &$v) { // do NOT remove this reference, it will break the bindParam() function
-                    switch ($castings[$k]) {
+                    switch ($bindings[$k]) {
                         case 'int':
                             $query->bindParam($k, $v, PDO::PARAM_INT);
                             break;
@@ -84,7 +84,7 @@
             } else {
                 $i = 1;
                 foreach ($vals as $k => &$v) { // do NOT remove this reference, it will break the bindParam() function
-                    switch ($castings[$k]) {
+                    switch ($bindings[$k]) {
                         case 'int':
                             $query->bindParam($i++, $v, PDO::PARAM_INT);
                             break;

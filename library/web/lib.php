@@ -27,6 +27,6 @@
                 return $contents;
             }
 
-              throw new web_exception('Server returned HTTP/' . $info['http_code']);
+            throw new web_exception('Server returned HTTP/' . $info['http_code']);
         }
     }

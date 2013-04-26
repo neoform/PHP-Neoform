@@ -9,6 +9,11 @@
         const BY_STATUS              = 'by_status';
         const BY_EMAIL               = 'by_email';
 
+        /**
+         * Get the generic bindings of the table columns
+         *
+         * @return array
+         */
         public static function bindings() {
             return [
                 'id'                  => 'int',

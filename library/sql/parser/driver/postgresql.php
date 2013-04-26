@@ -82,6 +82,46 @@
                 $info['unique_keys']  = self::unique_keys($table);
                 $info['indexes']      = self::indexes($table);
                 $info['foreign_keys'] = self::foreign_keys($table);
+
+                // filter out primary keys from unique keys - duplicate/overlapping indexes can cause problems
+                foreach ($info['unique_keys'] as $k => $fields) {
+                    if (count($info['primary_keys']) === count($fields)) {
+                        $duplicate = true;
+                        $f1 = array_values($info['primary_keys']);
+                        $f2 = array_values($fields);
+                        sort($f1);
+                        sort($f2);
+                        foreach ($f1 as $i => $f) {
+                            if ($f !== $f2[$i]) {
+                                $duplicate = false;
+                            }
+                        }
+
+                        if ($duplicate) {
+                            unset($info['unique_keys'][$k]);
+                        }
+                    }
+                }
+
+                // filter out primary keys from indexes - duplicate/overlapping indexes can cause problems
+                foreach ($info['indexes'] as $k => $fields) {
+                    if (count($info['primary_keys']) === count($fields)) {
+                        $duplicate = true;
+                        $f1 = array_values($info['primary_keys']);
+                        $f2 = array_values($fields);
+                        sort($f1);
+                        sort($f2);
+                        foreach ($f1 as $i => $f) {
+                            if ($f !== $f2[$i]) {
+                                $duplicate = false;
+                            }
+                        }
+
+                        if ($duplicate) {
+                            unset($info['indexes'][$k]);
+                        }
+                    }
+                }
             }
 
             return $info;

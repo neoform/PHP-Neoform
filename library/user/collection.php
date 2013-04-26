@@ -13,7 +13,7 @@
         public function auth_collection() {
             return $this->_preload_one_to_many('auth', 'by_user');
         }
-        
+
         /**
          * Preload the User Date models in this collection
          *
@@ -29,7 +29,7 @@
          * @return user_lostpassword_collection
          */
         public function user_lostpassword_collection() {
-            return $this->_preload_one_to_one('user_lostpassword', 'id');
+            return $this->_preload_one_to_many('user_lostpassword', 'by_user');
         }
 
         /**
@@ -67,5 +67,4 @@
         public function user_status_collection() {
             return $this->_preload_one_to_one('user_status', 'status_id');
         }
-
     }

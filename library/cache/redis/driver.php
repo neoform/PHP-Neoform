@@ -121,6 +121,18 @@
         }
 
         /**
+         * Get all keys matching a query
+         *
+         * @param string $key
+         * @param string $pool
+         *
+         * @return array|null returns null if record does not exist.
+         */
+        public static function get_wildcard($key, $pool) {
+            return self::get($key, $pool);
+        }
+
+        /**
          * Delete a single record
          *
          * @param string $key
@@ -145,5 +157,17 @@
                 reset($keys);
                 return core::cache_redis($pool)->delete($keys);
             }
+        }
+
+        /**
+         * Delete all keys matching a query
+         *
+         * @param string $key
+         * @param string $pool
+         *
+         * @return integer the number of keys deleted
+         */
+        public static function delete_wildcard($key, $pool) {
+            return core::cache_redis($pool)->delete($key);
         }
     }

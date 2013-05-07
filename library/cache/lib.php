@@ -15,12 +15,11 @@
          */
         public static function increment($engine, $key, $pool, $offset=1){
 
-            $engine = "cache_{$engine}_driver";
-
             // Memory
             cache_memory_dao::increment($key, $offset);
 
             if ($engine) {
+                $engine = "cache_{$engine}_driver";
                 $engine::increment($key, $pool, $offset);
             }
         }
@@ -35,12 +34,11 @@
          */
         public static function decrement($engine, $key, $pool, $offset=1) {
 
-            $engine = "cache_{$engine}_driver";
-
             // Memory
             cache_memory_dao::decrement($key, $offset);
 
             if ($engine) {
+                $engine = "cache_{$engine}_driver";
                 $engine::decrement($key, $pool, $offset);
             }
         }
@@ -60,14 +58,15 @@
          */
         public static function single($engine, $key, $pool, callable $data_func, $args=null, $ttl=null, $cache_empty_results=true) {
 
-            $engine = "cache_{$engine}_driver";
+            $engine_driver = "cache_{$engine}_driver";
 
             // Memory
             if (cache_memory_dao::exists($key)) {
                 return cache_memory_dao::get($key);
             }
 
-            if ($engine && $data = $engine::get($key, $pool)) {
+            if ($engine && $data = $engine_driver::get($key, $pool)) {
+
                 $data = current($data);
             } else {
                 //get the data from it's original source
@@ -80,7 +79,9 @@
                 cache_memory_dao::set($key, $data);
 
                 // cache data to engine
-                $engine::set($key, $pool, $data, $ttl);
+                if ($engine) {
+                    $engine_driver::set($key, $pool, $data, $ttl);
+                }
             }
 
             return $data;
@@ -109,8 +110,6 @@
          * @return array of mixed values from $data_func() calls
          */
         public static function multi($engine, array $rows, callable $key_func, $pool, callable $data_func, $args=null, $ttl=null, $cache_empty_results=true) {
-
-            $engine = "cache_{$engine}_driver";
 
             //this function will preserve the order of the rows
 
@@ -147,6 +146,7 @@
             $rows_not_in_memory = $missing_rows;
 
             if ($engine && $missing_rows) {
+                $engine = "cache_{$engine}_driver";
                 foreach ($engine::get_multi($missing_rows, $pool) as $key => $row) {
                     $matched_rows[$key] = $row;
                     unset($missing_rows[$key]);
@@ -219,12 +219,11 @@
          */
         public static function delete($engine, $key, $pool){
 
-            $engine = "cache_{$engine}_driver";
-
             // Memory
             cache_memory_dao::delete($key);
 
             if ($engine) {
+                $engine = "cache_{$engine}_driver";
                 $engine::delete($key, $pool);
             }
         }
@@ -238,8 +237,6 @@
          */
         public static function delete_multi($engine, array $keys, $pool){
 
-            $engine = "cache_{$engine}_driver";
-
             if (count($keys)) {
 
                 // Memory
@@ -248,8 +245,28 @@
                 }
 
                 if ($engine) {
+                    $engine = "cache_{$engine}_driver";
                     $engine::delete_multi($keys, $pool);
                 }
+            }
+        }
+
+        /**
+         * Delete all keys matching a query
+         * NOTE: not all cache drivers support this command (eg, memcached does not allow wildcards)
+         *
+         * @param string $engine
+         * @param string $key
+         * @param string $pool
+         */
+        public static function delete_wildcard($engine, $key, $pool){
+
+            // Memory
+            cache_memory_dao::delete_wildcard($key);
+
+            if ($engine) {
+                $engine = "cache_{$engine}_driver";
+                $engine::delete_wildcard($key, $pool);
             }
         }
     }

@@ -147,6 +147,19 @@
         }
 
         /**
+         * Get all keys matching a query - this is not supported by memcache
+         *
+         * @param string $key
+         * @param string $pool
+         *
+         * @return array|null returns null if record does not exist.
+         * @throws cache_memcache_exception
+         */
+        public static function get_wildcard($key, $pool) {
+            throw new cache_memcache_exception('Wildcard lookups are not supported by memcache');
+        }
+
+        /**
          * Delete a single record
          *
          * @param string $key
@@ -171,5 +184,16 @@
                     $mc->delete($prefix_mc . $key);
                 }
             }
+        }
+
+        /**
+         * Delete all keys matching a query
+         *
+         * @param string $key
+         * @param string $pool
+         * @throws cache_memcache_exception
+         */
+        public static function delete_wildcard($key, $pool) {
+            throw new cache_memcache_exception('Wildcard lookups are not supported by memcache');
         }
     }

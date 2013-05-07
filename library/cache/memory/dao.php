@@ -178,6 +178,22 @@
         }
 
         /**
+         * Get record from memory
+         *
+         * @param string $k key
+         *
+         * @return mixed
+         * @throws cache_memory_exception
+         */
+        public static function get_wildcard($k) {
+            if ($keys_matched = preg_grep($k, array_keys(self::$local))) {
+                return array_intersect_key(self::$local, array_flip($keys_matched));
+            } else {
+                return [];
+            }
+        }
+
+        /**
          * Gets everything in memory
          *
          * @return array
@@ -213,6 +229,20 @@
             if (array_key_exists($key, self::$local)) {
                 self::$local[$key] -= $offset;
                 return self::$local[$key];
+            }
+        }
+
+        /**
+         * Delete records from memory based on wildcard query
+         *
+         * @param string $k key
+         *
+         * @return mixed
+         * @throws cache_memory_exception
+         */
+        public static function delete_wildcard($k) {
+            if ($keys_matched = preg_grep($k, array_keys(self::$local))) {
+                return self::delete_multi($keys_matched);
             }
         }
     }

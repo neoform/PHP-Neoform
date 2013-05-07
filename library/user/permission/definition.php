@@ -9,5 +9,5 @@
         const TABLE        = 'user_permission';
         const ENTITY_NAME  = 'user_permission';
         const ENTITY_POOL  = 'entities';
-        const CACHE_ENGINE = 'memcache';
+        const CACHE_ENGINE = 'redis';
     }

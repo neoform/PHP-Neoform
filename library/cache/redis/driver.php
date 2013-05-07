@@ -50,6 +50,7 @@
             $redis = core::cache_redis($pool);
             $data  = $redis->get($key);
             if ($data === false) {
+                // since false is potentially a valid result being stored in redis, we must check if the key exists
                 return $redis->exists($key) ? [ false, ] : null;
             } else {
                 return [
@@ -79,13 +80,16 @@
          * @return array
          */
         public static function get_multi(array $keys, $pool) {
-            $found_rows = core::cache_redis($pool)->getMultiple($keys);
+            $redis      = core::cache_redis($pool);
+            $found_rows = $redis->getMultiple($keys);
             $results    = [];
             $i          = 0;
 
-            // Redis returns the results in order - if the key doesn't exist, null is returned
+            // Redis returns the results in order - if the key doesn't exist, false is returned - this problematic
+            // since false might be an actual value being stored... therefore we check if the key exists if false is
+            // returned
             foreach (array_keys($keys) as $k) {
-                if ($found_rows[$i] !== null) {
+                if ($found_rows[$i] !== false || $redis->exists($k)) {
                     $results[$k] = $found_rows[$i++];
                 }
             }
@@ -103,7 +107,17 @@
          * @return mixed
          */
         public static function set_multi(array $rows, $pool, $ttl=null) {
-            return core::cache_redis($pool)->msetnx($rows, $ttl);
+
+            // Because redis does not have an msetex command at the moment, we need to iterate over the rows and add
+            // them one by one..  ugh.
+            if ($ttl) {
+                $redis = core::cache_redis($pool);
+                foreach ($rows as $k => $v) {
+                    $redis->set($k, $v, $ttl);
+                }
+            } else {
+                return core::cache_redis($pool)->mset($rows);
+            }
         }
 
         /**

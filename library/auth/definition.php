@@ -12,5 +12,5 @@
         const BINARY_PK     = true;
         const ENTITY_NAME   = 'auth';
         const ENTITY_POOL   = 'entities';
-        const CACHE_ENGINE  = 'memcache';
+        const CACHE_ENGINE  = 'redis';
     }

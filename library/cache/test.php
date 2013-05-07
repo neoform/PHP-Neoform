@@ -4,14 +4,16 @@
 
         public function init() {
 
-            $key  = 'cli:cache_unit_test';
-            $pool = 'entities';
-
-
+            $key    = 'cli:cache_unit_test';
+            $pool   = 'entities';
+            $driver = 'redis';
+            $key_prefix = '';
+            $driver_class = "cache_{$driver}_driver";
+            $driver_core  = "cache_{$driver}";
 
             // Delete cache
-            cache_lib::delete('memcache', $key . ':111', 'entities');
-            cache_lib::delete('memcache', $key . ':222', 'entities');
+            cache_lib::delete($driver, $key . ':111', 'entities');
+            cache_lib::delete($driver, $key . ':222', 'entities');
 
 
 
@@ -19,7 +21,7 @@
             // Pull data for the first time
             $pulled = false;
             $result = cache_lib::single(
-                'memcache',
+                $driver,
                 $key . ':111',
                 $pool,
                 function() use (& $pulled) {
@@ -37,7 +39,7 @@
             // Pull the same data again, this time it should not get from origin, instead from cache
             $pulled = false;
             $result = cache_lib::single(
-                'memcache',
+                $driver,
                 $key . ':111',
                 $pool,
                 function() use (& $pulled) {
@@ -50,7 +52,7 @@
             $this->assert_true($result === "Hey sexy pants", __LINE__);
 
             $this->assert_true(cache_memory_dao::exists($key . ':111'), __LINE__);
-            $this->assert_true(cache_memcache_driver::exists($key . ':111', $pool), __LINE__);
+            $this->assert_true($driver_class::exists($key . ':111', $pool), __LINE__);
 
 
 
@@ -60,7 +62,7 @@
 
             $pulled = 0;
             $result = cache_lib::multi(
-                'memcache',
+                $driver,
                 [
                     3 => 111,
                     9 => 222,
@@ -94,7 +96,7 @@
 
             $pulled = 0;
             $result = cache_lib::multi(
-                'memcache',
+                $driver,
                 [
                     3 => 111,
                     9 => 222,
@@ -115,8 +117,8 @@
 
             $this->assert_true(cache_memory_dao::exists($key . ':111'), __LINE__);
             $this->assert_true(cache_memory_dao::exists($key . ':222'), __LINE__);
-            $this->assert_true(cache_memcache_driver::exists($key . ':111', $pool), __LINE__);
-            $this->assert_true(cache_memcache_driver::exists($key . ':222', $pool), __LINE__);
+            $this->assert_true($driver_class::exists($key . ':111', $pool), __LINE__);
+            $this->assert_true($driver_class::exists($key . ':222', $pool), __LINE__);
 
             $this->assert_true($pulled === 0, __LINE__);
             $this->assert_true(isset($result[3]), __LINE__);
@@ -126,24 +128,24 @@
 
             $this->assert_true(cache_memory_dao::exists($key . ':111'), __LINE__);
             $this->assert_true(cache_memory_dao::exists($key . ':222'), __LINE__);
-            $this->assert_true(cache_memcache_driver::exists($key . ':111', $pool), __LINE__);
-            $this->assert_true(cache_memcache_driver::exists($key . ':222', $pool), __LINE__);
+            $this->assert_true($driver_class::exists($key . ':111', $pool), __LINE__);
+            $this->assert_true($driver_class::exists($key . ':222', $pool), __LINE__);
 
 
 
 
             // Pull multi - same keys, none should get pulled from origin - same as before, but using memory only
-            core::cache_memcache($pool)->delete(cache_memcache_driver::key_prefix() . $key . ':111');
-            core::cache_memcache($pool)->delete(cache_memcache_driver::key_prefix() . $key . ':222');
+            core::$driver_core($pool)->delete($key_prefix . $key . ':111');
+            core::$driver_core($pool)->delete($key_prefix . $key . ':222');
 
             $this->assert_true(cache_memory_dao::exists($key . ':111'), __LINE__);
             $this->assert_true(cache_memory_dao::exists($key . ':222'), __LINE__);
-            $this->assert_true(! cache_memcache_driver::exists($key . ':111', $pool), __LINE__);
-            $this->assert_true(! cache_memcache_driver::exists($key . ':222', $pool), __LINE__);
+            $this->assert_true(! $driver_class::exists($key . ':111', $pool), __LINE__);
+            $this->assert_true(! $driver_class::exists($key . ':222', $pool), __LINE__);
 
             $pulled = 0;
             $result = cache_lib::multi(
-                'memcache',
+                $driver,
                 [
                     3 => 111,
                     9 => 222,

@@ -12,5 +12,5 @@
         const BINARY_PK     = false;
         const ENTITY_NAME   = 'city';
         const ENTITY_POOL   = 'entities';
-        const CACHE_ENGINE  = 'memcache';
+        const CACHE_ENGINE  = 'redis';
     }

@@ -8,5 +8,5 @@
         const BINARY_PK     = false;
         const ENTITY_NAME   = 'locale_key_message';
         const ENTITY_POOL   = 'entities';
-        const CACHE_ENGINE  = 'memcache';
+        const CACHE_ENGINE  = 'redis';
     }

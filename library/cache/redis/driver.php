@@ -10,7 +10,7 @@
          * @param integer $offset
          */
         public static function increment($key, $pool, $offset=1) {
-            core::cache_redis($pool)->increment($key, $offset);
+            core::cache_redis($pool)->incrBy($key, $offset);
         }
 
         /**
@@ -21,7 +21,7 @@
          * @param integer $offset
          */
         public static function decrement($key, $pool, $offset=1) {
-            core::cache_redis($pool)->decrement($key, $offset);
+            core::cache_redis($pool)->incrBy($key, -$offset);
         }
 
         /**
@@ -48,8 +48,10 @@
          */
         public static function get($key, $pool) {
             $redis = core::cache_redis($pool);
-            $data = $redis->get($key);
-            if ($redis->row_found()) {
+            $data  = $redis->get($key);
+            if ($data === false) {
+                return $redis->exists($key) ? [ false, ] : null;
+            } else {
                 return [
                     $data,
                 ];
@@ -65,15 +67,11 @@
          * @return mixed
          */
         public static function set($key, $pool, $data, $ttl=null) {
-            return core::cache_redis($pool)->set(
-                $key,
-                $data,
-                $ttl
-            );
+            return core::cache_redis($pool)->set($key, $data, $ttl);
         }
 
         /**
-         * Fetch multiple rows from redisd
+         * Fetch multiple rows from redis
          *
          * @param array  $keys
          * @param string $pool
@@ -81,27 +79,18 @@
          * @return array
          */
         public static function get_multi(array $keys, $pool) {
+            $found_rows = core::cache_redis($pool)->getMultiple($keys);
+            $results    = [];
+            $i          = 0;
 
-            // @todo this can be cleaned up a bunch
-
-            $mc_keys = [];
-            foreach ($keys as $index => $key) {
-                $mc_keys[$index] = $key;
-            }
-
-            $found_rows = core::cache_redis($pool)->getMulti($mc_keys);
-
-            $matched_rows = [];
-            if ($found_rows && count($found_rows)) {
-                // need to run this backwards, since all the keys have been prefixed with $prefix
-                foreach ($keys as $index => $key) {
-                    if (isset($found_rows[$key])) {
-                        $matched_rows[$index] = $found_rows[$key];
-                    }
+            // Redis returns the results in order - if the key doesn't exist, null is returned
+            foreach (array_keys($keys) as $k) {
+                if ($found_rows[$i] !== null) {
+                    $results[$k] = $found_rows[$i++];
                 }
             }
 
-            return $matched_rows;
+            return $results;
         }
 
         /**
@@ -114,7 +103,7 @@
          * @return mixed
          */
         public static function set_multi(array $rows, $pool, $ttl=null) {
-            return core::cache_redis($pool)->setMulti($rows, $ttl);
+            return core::cache_redis($pool)->msetnx($rows, $ttl);
         }
 
         /**

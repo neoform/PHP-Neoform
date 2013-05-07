@@ -11,27 +11,24 @@
                 throw new cache_redis_exception('Redis server configuration "' . $name . '" does not exist');
             }
 
+            $server = $config['servers'][$name][mt_rand(0, count($config['servers'][$name]) - 1)];
+
             try {
                 $redis = new redis();
 
-                $redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
-                $redis->setOption(Redis::OPT_PREFIX, $config['key_prefix'] . ':');
-
-                if (isset($config['servers'][$name]['host'])) {
-                    $redis->connect(
-                        $config['servers'][$name]['host'],
-                        isset($config['servers'][$name]['port']) ? $config['servers'][$name]['port'] : 6379
-                    );
-                } else if (isset($config['servers'][$name]['socket'])) {
-                    $redis->connect(
-                        $config['servers'][$name]['socket']
-                    );
+                if (isset($server['host'])) {
+                    $redis->connect($server['host'], isset($server['port']) ? $server['port'] : 6379);
+                } else if (isset($server['socket'])) {
+                    $redis->connect($server['socket']);
                 } else {
                     throw new cache_redis_exception('Redis server configuration "' . $name . '" does not contain a host or a socket.');
                 }
 
+                $redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
+                $redis->setOption(Redis::OPT_PREFIX, $config['key_prefix'] . ':');
+
             } catch (RedisException $e) {
-                throw new cache_memcache_exception('Could not create memcached instance "' . $name . ' -- ' . $e->getMessage());
+                throw new cache_redis_exception('Could not create redis instance "' . $name . ' -- ' . $e->getMessage());
             }
 
             return $redis;

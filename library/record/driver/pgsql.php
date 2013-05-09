@@ -89,11 +89,11 @@
         /**
          * Get a list of PKs, with a limit, offset and order by
          *
-         * @param string     $self
-         * @param integer    $limit     max number of PKs to return
-         * @param string     $order_by  field name
-         * @param string     $direction ASC|DESC
-         * @param string     $after_pk  A PK offset to be used (it's more efficient to use PK offsets than an SQL 'OFFSET')
+         * @param string  $self
+         * @param integer $limit     max number of PKs to return
+         * @param string  $order_by  field name
+         * @param string  $direction ASC|DESC
+         * @param string  $after_pk  A PK offset to be used (it's more efficient to use PK offsets than an SQL 'OFFSET')
          *
          * @return array
          */

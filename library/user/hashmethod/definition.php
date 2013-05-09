@@ -13,4 +13,5 @@
         const ENTITY_NAME   = 'user_hashmethod';
         const ENTITY_POOL   = 'entities';
         const CACHE_ENGINE  = 'redis';
+        const USING_LIMIT   = false;
     }

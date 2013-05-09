@@ -13,4 +13,5 @@
         const ENTITY_NAME   = 'user';
         const ENTITY_POOL   = 'entities';
         const CACHE_ENGINE  = 'redis';
+        const USING_LIMIT   = true;
     }

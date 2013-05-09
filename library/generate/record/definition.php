@@ -14,6 +14,7 @@
             $this->code .= "\t\tconst BINARY_PK     = " . ($primary_key->is_binary() ? 'true' : 'false') . ";\n";
             $this->code .= "\t\tconst ENTITY_NAME   = '" . $this->table->name . "';\n";
             $this->code .= "\t\tconst ENTITY_POOL   = 'entities';\n";
-            $this->code .= "\t\tconst CACHE_ENGINE  = 'memcache';\n\n";
+            $this->code .= "\t\tconst CACHE_ENGINE  = 'memcache';\n";
+            $this->code .= "\t\tconst USING_LIMIT   = true;\n\n";
         }
     }

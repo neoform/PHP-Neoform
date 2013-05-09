@@ -74,6 +74,41 @@
         }
 
         /**
+         * Get a list of PKs, with a limit, offset and order by
+         *
+         * @param string     $self
+         * @param integer    $limit     max number of PKs to return
+         * @param string     $order_by  field name
+         * @param string     $direction asc|desc
+         * @param string     $after_pk  A PK offset to be used (it's more efficient to use PK offsets than an SQL 'OFFSET')
+         *
+         * @return array
+         */
+        public static function limit($self, $limit, $order_by, $direction, $after_pk) {
+            $pk = $self::PRIMARY_KEY;
+
+            $rs = core::sql('slave')->prepare("
+                SELECT `$pk`
+                FROM `" . self::table($self::TABLE) . "`
+                " . ($after_pk !== null ? "WHERE `$pk` " . ($direction === 'ASC' ? '>' : '<') . ' ?' : '') . "
+                ORDER BY `$order_by` $direction
+                LIMIT $limit
+            ");
+            if ($after_pk !== null) {
+                $rs->execute($after_pk);
+            } else {
+                $rs->execute();
+            }
+
+            $pks = [];
+            foreach ($rs->fetchAll() as $row) {
+                $pks[] = $row[$pk];
+            }
+
+            return $pks;
+        }
+
+        /**
          * Get all records in the table
          *
          * @param string     $self the name of the DAO
@@ -152,9 +187,8 @@
             ");
             $rs->execute($vals);
 
-            $rs = $rs->fetchAll();
             $pks = [];
-            foreach ($rs as $row) {
+            foreach ($rs->fetchAll() as $row) {
                 $pks[] = $row[$pk];
             }
 
@@ -203,8 +237,7 @@
 
             $rs->execute($vals);
 
-            $rows = $rs->fetchAll();
-            foreach ($rows as $row) {
+            foreach ($rs->fetchAll() as $row) {
                 $return[
                 $reverse_lookup[$row['__cache_key__']]
                 ][] = $row[$pk];
@@ -245,15 +278,14 @@
 
             $rs->execute($vals);
 
-            $rs = $rs->fetchAll();
             $return = [];
             if (count($select_fields) === 1) {
                 $field = current($select_fields);
-                foreach ($rs as $row) {
+                foreach ($rs->fetchAll() as $row) {
                     $return[] = $row[$field];
                 }
             } else {
-                $return = $rs;
+                $return = $rs->fetchAll();
             }
 
             return $return;

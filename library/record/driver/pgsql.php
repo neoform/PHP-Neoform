@@ -87,6 +87,41 @@
         }
 
         /**
+         * Get a list of PKs, with a limit, offset and order by
+         *
+         * @param string     $self
+         * @param integer    $limit     max number of PKs to return
+         * @param string     $order_by  field name
+         * @param string     $direction ASC|DESC
+         * @param string     $after_pk  A PK offset to be used (it's more efficient to use PK offsets than an SQL 'OFFSET')
+         *
+         * @return array
+         */
+        public static function limit($self, $limit, $order_by, $direction, $after_pk) {
+            $pk = $self::PRIMARY_KEY;
+
+            $rs = core::sql('slave')->prepare("
+                SELECT \"$pk\"
+                FROM \"" . self::table($self::TABLE) . "\"
+                " . ($after_pk !== null ? "WHERE \"$pk\" " . ($direction === 'ASC' ? '>' : '<') . ' ?' : '') . "
+                ORDER BY \"$order_by\" $direction
+                LIMIT $limit
+            ");
+            if ($after_pk !== null) {
+                $rs->execute($after_pk);
+            } else {
+                $rs->execute();
+            }
+
+            $pks = [];
+            foreach ($rs->fetchAll() as $row) {
+                $pks[] = $row[$pk];
+            }
+
+            return $pks;
+        }
+
+        /**
          * Get all records in the table
          *
          * @param string     $self the name of the DAO

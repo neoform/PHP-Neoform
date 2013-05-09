@@ -269,4 +269,23 @@
                 $engine::delete_wildcard($key, $pool);
             }
         }
+
+        /**
+         * Delete multiple sets of keys matching a query
+         * NOTE: not all cache drivers support this command (eg, memcached does not allow wildcards)
+         *
+         * @param string $engine
+         * @param array  $keys
+         * @param string $pool
+         */
+        public static function delete_wildcard_multi($engine, array $keys, $pool){
+
+            // Memory
+            cache_memory_dao::delete_wildcard_multi($keys);
+
+            if ($engine) {
+                $engine = "cache_{$engine}_driver";
+                $engine::delete_wildcard_multi($keys, $pool);
+            }
+        }
     }

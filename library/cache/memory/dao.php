@@ -245,4 +245,20 @@
                 return self::delete_multi($keys_matched);
             }
         }
+
+        /**
+         * Delete multiple sets of records from memory based on wildcard query
+         *
+         * @param array $keys keys
+         *
+         * @return mixed
+         * @throws cache_memory_exception
+         */
+        public static function delete_wildcard_multi(array $keys) {
+            foreach ($keys as $key) {
+                if ($keys_matched = preg_grep($key, array_keys(self::$local))) {
+                    self::delete_multi($keys_matched);
+                }
+            }
+        }
     }

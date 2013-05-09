@@ -170,4 +170,16 @@
         public static function delete_wildcard($key, $pool) {
             return core::cache_redis($pool)->delete($key);
         }
+
+        /**
+         * Delete all keys matching multiple queries
+         *
+         * @param array $keys
+         * @param string $pool
+         *
+         * @return integer the number of keys deleted
+         */
+        public static function delete_wildcard_multi(array $keys, $pool) {
+            return core::cache_redis($pool)->delete($keys);
+        }
     }

@@ -168,7 +168,9 @@
          * @return integer the number of keys deleted
          */
         public static function delete_wildcard($key, $pool) {
-            return core::cache_redis($pool)->delete($key);
+            // @todo change this to use an un-ordered set or a list instead
+            $redis = core::cache_redis($pool);
+            return $redis->delete($redis->keys($key));
         }
 
         /**
@@ -180,6 +182,19 @@
          * @return integer the number of keys deleted
          */
         public static function delete_wildcard_multi(array $keys, $pool) {
-            return core::cache_redis($pool)->delete($keys);
+            $redis = core::cache_redis($pool);
+            $ks    = [];
+
+            $key_prefix_length = strlen(core::config()->redis['key_prefix']) + 1;
+
+            foreach ($keys as $key) {
+                foreach ($redis->keys($key) as $k) {
+                    $ks[] = substr($k, $key_prefix_length);
+                }
+            }
+
+            core::debug($ks);
+
+            return $redis->delete($ks);
         }
     }

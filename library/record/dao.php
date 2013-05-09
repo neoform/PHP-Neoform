@@ -527,7 +527,6 @@
          * @param string|array|null $order_by_field
          */
         protected static function _delete_limit_cache($order_by_field=null) {
-
             if (is_array($order_by_field) && $order_by_field) {
                 $keys = [];
                 foreach ($order_by_field as $f) {

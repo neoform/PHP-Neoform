@@ -133,8 +133,8 @@
             //MEMORY
             $found_in_memory = cache_memory_dao::get_multi($missing_rows);
             if (count($found_in_memory)) {
-                $matched_rows = $found_in_memory + $matched_rows;
                 foreach ($found_in_memory as $index => $key) {
+                    $matched_rows[$index] = $key;
                     unset($missing_rows[$index]);
                 }
             }
@@ -160,12 +160,9 @@
                 $rows_not_in_cache = $missing_rows;
 
                 if ($origin_rows = $data_func(array_intersect_key($rows, $missing_rows), $args)) {
-
-                    // crunch the data sets together
-                    $matched_rows = $origin_rows + $matched_rows;
-
-                    foreach (array_keys($origin_rows) as $index) {
-                        unset($missing_rows[$index]);
+                    foreach ($origin_rows as $key => $val) {
+                        $matched_rows[$key] = $val;
+                        unset($missing_rows[$key]);
                     }
                 }
 

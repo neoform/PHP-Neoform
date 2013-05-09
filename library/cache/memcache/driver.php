@@ -196,4 +196,15 @@
         public static function delete_wildcard($key, $pool) {
             throw new cache_memcache_exception('Wildcard lookups are not supported by memcache');
         }
+
+        /**
+         * Delete all keys matching multiple queries
+         *
+         * @param array  $keys
+         * @param string $pool
+         * @throws cache_memcache_exception
+         */
+        public static function delete_wildcard_multi(array $keys, $pool) {
+            throw new cache_memcache_exception('Wildcard lookups are not supported by memcache');
+        }
     }

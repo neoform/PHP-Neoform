@@ -159,4 +159,15 @@
         public static function delete_wildcard($key, $pool) {
             throw new cache_disk_exception('Wildcard lookups are not supported by disk cache');
         }
+
+        /**
+         * Delete all keys matching multiple queries - not supported
+         *
+         * @param array  $keys
+         * @param string $pool
+         * @throws cache_disk_exception
+         */
+        public static function delete_wildcard(array $keys, $pool) {
+            throw new cache_disk_exception('Wildcard lookups are not supported by disk cache');
+        }
     }

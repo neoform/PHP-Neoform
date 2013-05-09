@@ -438,9 +438,7 @@
 
             // Delete LIMIT cache based on the fields that were changed - this might not be all fields, we so don't
             // necessarily need to delete all LIMIT caches.
-            foreach (array_keys($info) as $fields) {
-                self::_delete_limit_cache($fields);
-            }
+            self::_delete_limit_cache(array_keys($info));
 
             if ($return_model) {
                 $updated_model = clone $model;
@@ -514,14 +512,30 @@
         }
 
         /**
-         * @param string|null $order_by_field
+         * Delete LIMIT caches - with optional field limitation
+         *
+         * @param string|array|null $order_by_field
          */
         protected static function _delete_limit_cache($order_by_field=null) {
-            // Kill all cache relating to lists
-            cache_lib::delete_wildcard(
-                static::CACHE_ENGINE,
-                static::ENTITY_NAME . ':' . self::LIMIT . ($order_by_field ? ":$order_by_field" : '') . ':*',
-                static::ENTITY_POOL
-            );
+
+            if (is_array($order_by_field) && $order_by_field) {
+                $keys = [];
+                foreach ($order_by_field as $f) {
+                    $keys[] = static::ENTITY_NAME . ':' . self::LIMIT . ($f ? ":$f" : '') . ':*';
+                }
+
+                cache_lib::delete_wildcard_multi(
+                    static::CACHE_ENGINE,
+                    $keys,
+                    static::ENTITY_POOL
+                );
+
+            } else {
+                cache_lib::delete_wildcard(
+                    static::CACHE_ENGINE,
+                    static::ENTITY_NAME . ':' . self::LIMIT . ($order_by_field ? ":$order_by_field" : '') . ':*',
+                    static::ENTITY_POOL
+                );
+            }
         }
     }

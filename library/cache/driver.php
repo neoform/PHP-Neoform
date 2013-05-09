@@ -15,4 +15,5 @@
         public static function delete($key, $pool);
         public static function delete_multi(array $keys, $pool);
         public static function delete_wildcard($key, $pool);
+        public static function delete_wildcard_multi(array $keys, $pool);
     }

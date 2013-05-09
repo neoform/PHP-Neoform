@@ -167,7 +167,7 @@
          * @param string $pool
          * @throws cache_disk_exception
          */
-        public static function delete_wildcard(array $keys, $pool) {
+        public static function delete_wildcard_multi(array $keys, $pool) {
             throw new cache_disk_exception('Wildcard lookups are not supported by disk cache');
         }
     }

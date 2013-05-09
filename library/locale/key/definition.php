@@ -9,5 +9,6 @@
         const ENTITY_NAME   = 'locale_key';
         const ENTITY_POOL   = 'entities';
         const CACHE_ENGINE  = 'redis';
+        const USING_LIMIT   = true;
     }
 

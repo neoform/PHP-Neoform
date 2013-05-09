@@ -326,7 +326,9 @@
                 static::ENTITY_POOL
             );
 
-            self::_delete_limit_cache();
+            if (static::USING_LIMIT) {
+                self::_delete_limit_cache();
+            }
 
             if ($return_model) {
                 $model = static::ENTITY_NAME . '_model';
@@ -388,7 +390,9 @@
                 static::ENTITY_POOL
             );
 
-            self::_delete_limit_cache();
+            if (static::USING_LIMIT) {
+                self::_delete_limit_cache();
+            }
 
             if ($return_collection) {
                 $collection = static::ENTITY_NAME . '_collection';
@@ -438,7 +442,9 @@
 
             // Delete LIMIT cache based on the fields that were changed - this might not be all fields, we so don't
             // necessarily need to delete all LIMIT caches.
-            self::_delete_limit_cache(array_keys($info));
+            if (static::USING_LIMIT) {
+                self::_delete_limit_cache(array_keys($info));
+            }
 
             if ($return_model) {
                 $updated_model = clone $model;
@@ -470,7 +476,9 @@
                 static::ENTITY_POOL
             );
 
-            self::_delete_limit_cache();
+            if (static::USING_LIMIT) {
+                self::_delete_limit_cache();
+            }
 
             return true;
         }
@@ -506,7 +514,9 @@
                 static::ENTITY_POOL
             );
 
-            self::_delete_limit_cache();
+            if (static::USING_LIMIT) {
+                self::_delete_limit_cache();
+            }
 
             return true;
         }

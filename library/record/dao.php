@@ -161,7 +161,7 @@
          *
          * @return array of PKs
          */
-        public static function _limit($limit, $order_by, $direction, $after_pk=null) {
+        public static function limit($limit, $order_by, $direction, $after_pk=null) {
             $self      = static::ENTITY_NAME . '_dao';
             $direction = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
 
@@ -177,7 +177,6 @@
                 ),
                 static::ENTITY_POOL,
                 function() use ($self, $limit, $order_by, $direction, $after_pk) {
-                    core::debug('source');
                     $driver = $self::driver();
                     return $driver::limit(
                         $self,

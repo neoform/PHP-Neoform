@@ -20,6 +20,9 @@
         // Key name used for primary key lookups
         const BY_PK = 'by_pk';
 
+        // Limit based lookups
+        const LIMIT = 'limit';
+
         /**
          * Get the record DAO driver name (name derived from db connection type)
          *
@@ -143,6 +146,46 @@
                 function(array $pks) use ($self) {
                     $driver = $self::driver();
                     return $driver::by_pks($self, $pks);
+                }
+            );
+        }
+
+        /**
+         * Get a list of PKs, with a limit, offset and order by - this only works with cache drivers that allow
+         * wildcards. Memcache is not one of them.
+         *
+         * @param integer $limit     max number of PKs to return
+         * @param string  $order_by  field name
+         * @param string  $direction ASC|DESC
+         * @param string  $after_pk  A PK offset to be used (it's more efficient to use PK offsets than an SQL 'OFFSET')
+         *
+         * @return array of PKs
+         */
+        public static function _limit($limit, $order_by, $direction, $after_pk=null) {
+            $self      = static::ENTITY_NAME . '_dao';
+            $direction = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
+
+            return cache_lib::single(
+                static::CACHE_ENGINE,
+                self::_build_key(
+                    self::LIMIT . ":$order_by",
+                    [
+                        $limit,
+                        $direction,
+                        $after_pk !== null && static::BINARY_PK ? md5(base64_encode($after_pk)) : $after_pk,
+                    ]
+                ),
+                static::ENTITY_POOL,
+                function() use ($self, $limit, $order_by, $direction, $after_pk) {
+                    core::debug('source');
+                    $driver = $self::driver();
+                    return $driver::limit(
+                        $self,
+                        $limit,
+                        $order_by,
+                        $direction,
+                        $after_pk
+                    );
                 }
             );
         }
@@ -284,6 +327,8 @@
                 static::ENTITY_POOL
             );
 
+            self::_delete_limit_cache();
+
             if ($return_model) {
                 $model = static::ENTITY_NAME . '_model';
                 return new $model(null, $info);
@@ -344,6 +389,8 @@
                 static::ENTITY_POOL
             );
 
+            self::_delete_limit_cache();
+
             if ($return_collection) {
                 $collection = static::ENTITY_NAME . '_collection';
                 return new $collection(null, $models);
@@ -381,12 +428,19 @@
             );
 
             // if the primary key was changed, bust the cache for that new key too
+            // technically the PK should never change though... that kinda defeats the purpose of a record PK...
             if (isset($info[$pk])) {
                 cache_lib::delete(
                     static::CACHE_ENGINE,
                     static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[$pk])) : $info[$pk]),
                     static::ENTITY_POOL
                 );
+            }
+
+            // Delete LIMIT cache based on the fields that were changed - this might not be all fields, we so don't
+            // necessarily need to delete all LIMIT caches.
+            foreach (array_keys($info) as $fields) {
+                self::_delete_limit_cache($fields);
             }
 
             if ($return_model) {
@@ -418,6 +472,8 @@
                 static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
                 static::ENTITY_POOL
             );
+
+            self::_delete_limit_cache();
 
             return true;
         }
@@ -453,6 +509,20 @@
                 static::ENTITY_POOL
             );
 
+            self::_delete_limit_cache();
+
             return true;
+        }
+
+        /**
+         * @param string|null $order_by_field
+         */
+        protected static function _delete_limit_cache($order_by_field=null) {
+            // Kill all cache relating to lists
+            cache_lib::delete_wildcard(
+                static::CACHE_ENGINE,
+                static::ENTITY_NAME . ':' . self::LIMIT . ($order_by_field ? ":$order_by_field" : '') . ':*',
+                static::ENTITY_POOL
+            );
         }
     }

@@ -37,6 +37,19 @@
         }
 
         /**
+         * Create or Append a value to the end of a list/array
+         *
+         * @param string $key
+         * @param string $pool
+         * @param mixed  $value
+         *
+         * @throws cache_apc_exception
+         */
+        public static function list_append($key, $pool, $value) {
+            throw new cache_apc_exception('List commands are not supported by APC');
+        }
+
+        /**
          * Increment the value of a cached entry (only works if the value is an int)
          *
          * @param string  $key
@@ -132,19 +145,6 @@
         }
 
         /**
-         * Get all keys matching a query - this is not supported by memcache
-         *
-         * @param string $key
-         * @param string $pool
-         *
-         * @return array|null returns null if record does not exist.
-         * @throws cache_apc_exception
-         */
-        public static function get_wildcard($key, $pool) {
-            throw new cache_apc_exception('Wildcard lookups are not supported by APC');
-        }
-
-        /**
          * Delete a record from APC
          *
          * @param string $key
@@ -169,27 +169,5 @@
                     $apc->del($prefix . $key);
                 }
             }
-        }
-
-        /**
-         * Delete all keys matching a query
-         *
-         * @param string $key
-         * @param string $pool
-         * @throws cache_apc_exception
-         */
-        public static function delete_wildcard($key, $pool) {
-            throw new cache_apc_exception('Wildcard lookups are not supported by APC');
-        }
-
-        /**
-         * Delete all keys matching multiple queries
-         *
-         * @param array  $keys
-         * @param string $pool
-         * @throws cache_apc_exception
-         */
-        public static function delete_wildcard_multi(array $keys, $pool) {
-            throw new cache_apc_exception('Wildcard lookups are not supported by APC');
         }
     }

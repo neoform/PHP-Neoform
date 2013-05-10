@@ -85,8 +85,11 @@
          */
         final public static function _build_key($cache_key_name, array $params=[], $entity_name=null) {
             // each key is namespaced with the name of the class
-            if (count($params) === 1) {
+            $param_count = count($params);
+            if ($param_count === 1) {
                 return ($entity_name ?: static::ENTITY_NAME) . ":$cache_key_name:" . md5(base64_encode(current($params)));
+            } else if ($param_count === 0) {
+                return ($entity_name ?: static::ENTITY_NAME) . ":$cache_key_name:";
             } else {
                 ksort($params);
                 foreach ($params as & $param) {
@@ -151,8 +154,8 @@
         }
 
         /**
-         * Get a list of PKs, with a limit, offset and order by - this only works with cache drivers that allow
-         * wildcards. Memcache is not one of them.
+         * Get a list of PKs, with a limit, offset and order by - this function should NOT be used with non-persistent
+         * cache engines. If the LIMIT cache key expires, it can cause cache corruption. Eg, do not use memcached with this
          *
          * @param integer $limit     max number of PKs to return
          * @param string  $order_by  field name
@@ -165,18 +168,31 @@
             $self      = static::ENTITY_NAME . '_dao';
             $direction = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
 
+            $cache_key = self::_build_key(
+                self::LIMIT . ":$order_by",
+                [
+                    $limit,
+                    $direction,
+                    $after_pk !== null && static::BINARY_PK ? md5(base64_encode($after_pk)) : $after_pk,
+                ]
+            );
+
             return cache_lib::single(
                 static::CACHE_ENGINE,
-                self::_build_key(
-                    self::LIMIT . ":$order_by",
-                    [
-                        $limit,
-                        $direction,
-                        $after_pk !== null && static::BINARY_PK ? md5(base64_encode($after_pk)) : $after_pk,
-                    ]
-                ),
+                $cache_key,
                 static::ENTITY_POOL,
-                function() use ($self, $limit, $order_by, $direction, $after_pk) {
+                function() use ($self, $cache_key, $limit, $order_by, $direction, $after_pk) {
+
+                    // create a list entry to store all the LIMIT keys - we need to be able to destroy these
+                    // cache entries when something in the list changes
+                    cache_lib::list_append(
+                        $self::CACHE_ENGINE,
+                        $self::_build_key($self::LIMIT . '[]'),
+                        $self::ENTITY_POOL,
+                        $cache_key
+                    );
+
+                    // Pull content from source
                     $driver = $self::driver();
                     return $driver::limit(
                         $self,
@@ -527,24 +543,25 @@
          * @param string|array|null $order_by_field
          */
         protected static function _delete_limit_cache($order_by_field=null) {
-            if (is_array($order_by_field) && $order_by_field) {
-                $keys = [];
-                foreach ($order_by_field as $f) {
-                    $keys[] = static::ENTITY_NAME . ':' . self::LIMIT . ($f ? ":$f" : '') . ':*';
+
+            if ($order_by_field !== null) {
+                if (is_array($order_by_field) && $order_by_field) {
+                    $filter = [];
+                    foreach ($order_by_field as $f) {
+                        $filter[] = static::ENTITY_NAME . ':' . self::LIMIT . ":$f:";
+                    }
+                } else {
+                    $filter = static::ENTITY_NAME . ':' . self::LIMIT . ":$order_by_field:";
                 }
-
-                cache_lib::delete_wildcard_multi(
-                    static::CACHE_ENGINE,
-                    $keys,
-                    static::ENTITY_POOL
-                );
-
             } else {
-                cache_lib::delete_wildcard(
-                    static::CACHE_ENGINE,
-                    static::ENTITY_NAME . ':' . self::LIMIT . ($order_by_field ? ":$order_by_field" : '') . ':*',
-                    static::ENTITY_POOL
-                );
+                $filter = null;
             }
+
+            cache_lib::delete_limit_cache(
+                static::CACHE_ENGINE,
+                static::_build_key(static::LIMIT . '[]'),
+                static::ENTITY_POOL,
+                $filter
+            );
         }
     }

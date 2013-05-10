@@ -37,7 +37,7 @@
         }
 
         /**
-         * Create or Append a value to the end of a list/array
+         * Create a list and/or Add a value to a list
          *
          * @param string $key
          * @param string $pool
@@ -45,43 +45,50 @@
          *
          * @return bool
          */
-        public static function list_append($key, $pool, $value) {
-            if ($return = core::cache_redis($pool)->rPush($key, $value)) {
+        public static function list_add($key, $pool, $value) {
+            if ($return = core::cache_redis($pool)->sAdd($key, $value)) {
                 return $return;
             } else {
                 // if for some reason this key is holding a non-list delete it and create a list (this should never happen)
                 // this is here just for fault tolerance
-                core::cache_redis($pool)->delete($key);
-                return core::cache_redis($pool)->rPush($key, $value);
+                $redis = core::cache_redis($pool);
+                $redis->delete($key);
+                return $redis->sAdd($key, $value);
             }
         }
 
         /**
-         * Get a segment of a list/array
+         * Get all members of a list or get matching members of a list
          *
-         * @param string  $key
-         * @param string  $pool
-         * @param integer $start
-         * @param integer $end
+         * @param string $key
+         * @param string $pool
+         * @param array  $filter list of keys, an intersection is done
          *
          * @return mixed
          */
-        public static function list_range($key, $pool, $start=0, $end=-1) {
-            return core::cache_redis($pool)->lRange($key, $start, $end);
+        public static function list_get($key, $pool, array $filter = null) {
+            if ($filter) {
+                return array_values(array_intersect(core::cache_redis($pool)->sMembers($key), $filter));
+            } else {
+                return core::cache_redis($pool)->sMembers($key);
+            }
         }
 
         /**
-         *
+         * Remove values from a list
          *
          * @param string $key
          * @param string $pool
          * @param array  $remove_keys
          */
         public static function list_remove($key, $pool, array $remove_keys) {
-            // There does not appear to be a 'multi' version of this command. Seems wasteful... :(
+            $redis = core::cache_redis($pool);
             foreach ($remove_keys as $remove_key) {
-                core::cache_redis($pool)->lRemove($key, $remove_key, 0);
+                $redis->sRemove($key, $remove_key);
             }
+
+            // bug in the documentation makes it seem like you can delete multiple keys at the same time. Nope!
+            //call_user_func_array([core::cache_redis($pool), 'sRemove'], array_merge([ $key, ], $remove_keys))
         }
 
         /**

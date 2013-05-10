@@ -39,7 +39,7 @@
         }
 
         /**
-         * Create or Append a value to the end of a list/array
+         * Create a list and/or Add a value to a list
          *
          * @param string $key
          * @param string $pool
@@ -47,7 +47,33 @@
          *
          * @throws cache_disk_exception
          */
-        public static function list_append($key, $pool, $value) {
+        public static function list_add($key, $pool, $value) {
+            throw new cache_disk_exception('List commands are not supported by disk cache');
+        }
+
+        /**
+         * Get all members of a list or get matching members of a list
+         *
+         * @param string $key
+         * @param string $pool
+         * @param array  $filter list of keys, an intersection is done
+         *
+         * @throws cache_disk_exception
+         */
+        public static function list_get($key, $pool, array $filter = null) {
+            throw new cache_disk_exception('List commands are not supported by disk cache');
+        }
+
+        /**
+         * Remove values from a list
+         *
+         * @param string $key
+         * @param string $pool
+         * @param array  $remove_keys
+         *
+         * @throws cache_disk_exception
+         */
+        public static function list_remove($key, $pool, array $remove_keys) {
             throw new cache_disk_exception('List commands are not supported by disk cache');
         }
 

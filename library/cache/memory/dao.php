@@ -22,47 +22,41 @@
         }
 
         /**
-         * Create or Append a value to the end of a list/array
+         * Create a list and/or Add a value to a list
          *
          * @param string $k key
          * @param mixed  $v value
          */
-        public static function list_append($k, $v) {
+        public static function list_add($k, $v) {
             if (isset(self::$local[$k]) && is_array(self::$local[$k])) {
-                self::$local[$k][] = $v;
+                if (array_search($v, self::$local[$k]) === false) {
+                    self::$local[$k][] = $v;
+                }
             } else {
                 self::$local[$k] = [ $v, ];
             }
         }
 
         /**
-         * Get a segment of a list/array
+         * Get all members of a list or get matching members of a list
          *
-         * @param string  $k
-         * @param integer $start
-         * @param integer $end
+         * @param string $k
+         * @param array  $filter list of keys, an intersection is done
          *
-         * @return array
+         * @return mixed|null
          */
-        public static function list_range($k, $start, $end) {
+        public static function list_get($k, array $filter = null) {
             if (isset(self::$local[$k]) && is_array(self::$local[$k])) {
-
-                if ($start < 0) {
-                    $start = 0;
-                }
-
-                if ($end >= 0) {
-                    return array_slice(self::$local[$k], $start, $end - $start);
+                if ($filter) {
+                    return array_values(array_intersect(self::$local[$k], $filter));
                 } else {
-                    return array_slice(self::$local[$k], $start);
+                    return self::$local[$k];
                 }
-            } else {
-                return null;
             }
         }
 
         /**
-         * Remove values from a list/array (searches by value)
+         * Remove values from a list
          *
          * @param string $k
          * @param array $remove_keys
@@ -70,9 +64,6 @@
         public static function list_remove($k, array $remove_keys) {
             if (isset(self::$local[$k]) && is_array(self::$local[$k])) {
                 self::$local[$k] = array_diff(self::$local[$k], $remove_keys);
-
-                core::debug(self::$local[$k]);
-                die;
             }
         }
 

@@ -30,47 +30,50 @@
         /**
          * Get a segment of a list/array
          *
-         * @param string  $engine
-         * @param string  $list_key
-         * @param string  $pool
-         * @param integer $start
-         * @param integer $end
+         * @param string     $engine
+         * @param string     $list_key
+         * @param string     $pool
+         * @param array|null $filter
          *
          * @return mixed|null
          */
-        public static function list_range($engine, $list_key, $pool, $start, $end) {
-            $engine_driver = "cache_{$engine}_driver";
+        public static function list_get($engine, $list_key, $pool, array $filter=null) {
 
             // Memory
-            //if (cache_memory_dao::exists($list_key) && ($arr = cache_memory_dao::list_range($list_key, $start, $end)) !== null) {
+            // This cannot be used until it's properly set up. There are bugs that happen when a new list is created
+            // before checking the cache driver (eg redis) to see if the list exists or not
+
+            //if (cache_memory_dao::exists($list_key) && ($arr = cache_memory_dao::list_get($list_key, $filter)) !== null) {
             //    return $arr;
             //}
 
             if ($engine) {
-                return $engine_driver::list_range($list_key, $pool, $start, $end);
+                $engine_driver = "cache_{$engine}_driver";
+                return $engine_driver::list_get($list_key, $pool, $filter);
             }
         }
 
         /**
-         * Create or Append a value to the end of a list/array
+         * Create a list and/or Add a value to a list
          *
          * @param string $engine
          * @param string $list_key
          * @param string $pool
          * @param mixed  $value
          */
-        public static function list_append($engine, $list_key, $pool, $value) {
+        public static function list_add($engine, $list_key, $pool, $value) {
+
             // Memory
-            //cache_memory_dao::list_append($list_key, $value);
+            //cache_memory_dao::list_add($list_key, $value);
 
             if ($engine) {
                 $engine = "cache_{$engine}_driver";
-                $engine::list_append($list_key, $pool, $value);
+                $engine::list_add($list_key, $pool, $value);
             }
         }
 
         /**
-         * Create or Append a value to the end of a list/array
+         * Remove values from a list
          *
          * @param string $engine
          * @param string $list_key
@@ -78,12 +81,13 @@
          * @param array  $remove_keys
          */
         public static function list_remove($engine, $list_key, $pool, $remove_keys) {
+
             // Memory
             //cache_memory_dao::list_remove($list_key, $remove_keys);
 
             if ($engine) {
-                $engine = "cache_{$engine}_driver";
-                $engine::list_remove($list_key, $pool, $remove_keys);
+                $engine_driver = "cache_{$engine}_driver";
+                $engine_driver::list_remove($list_key, $pool, $remove_keys);
             }
         }
 
@@ -340,12 +344,10 @@
          */
         public static function delete_limit_cache($engine, $list_key, $pool, $filter=null) {
 
-            $keys = self::list_range(
+            $keys = self::list_get(
                 $engine,
                 $list_key,
-                $pool,
-                0,
-                -1
+                $pool
             );
 
             if ($keys) {

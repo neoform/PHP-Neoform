@@ -185,7 +185,7 @@
 
                     // create a list entry to store all the LIMIT keys - we need to be able to destroy these
                     // cache entries when something in the list changes
-                    cache_lib::list_append(
+                    cache_lib::list_add(
                         $self::CACHE_ENGINE,
                         $self::_build_key($self::LIMIT . '[]'),
                         $self::ENTITY_POOL,

@@ -39,6 +39,19 @@
         }
 
         /**
+         * Create or Append a value to the end of a list/array
+         *
+         * @param string $key
+         * @param string $pool
+         * @param mixed  $value
+         *
+         * @throws cache_disk_exception
+         */
+        public static function list_append($key, $pool, $value) {
+            throw new cache_disk_exception('List commands are not supported by disk cache');
+        }
+
+        /**
          * Gets cached data.
          *  if record does exist, an array with a single element, containing the data.
          *  returns null if record does not exist
@@ -110,19 +123,6 @@
         }
 
         /**
-         * Get all keys matching a query - not supported
-         *
-         * @param string $key
-         * @param string $pool
-         *
-         * @return array|null returns null if record does not exist.
-         * @throws cache_disk_exception
-         */
-        public static function get_wildcard($key, $pool) {
-            throw new cache_disk_exception('Wildcard lookups are not supported by disk cache');
-        }
-
-        /**
          * Delete a record from disk
          *
          * @param string $key
@@ -147,27 +147,5 @@
                     );
                 }
             }
-        }
-
-        /**
-         * Delete all keys matching a query - not supported
-         *
-         * @param string $key
-         * @param string $pool
-         * @throws cache_disk_exception
-         */
-        public static function delete_wildcard($key, $pool) {
-            throw new cache_disk_exception('Wildcard lookups are not supported by disk cache');
-        }
-
-        /**
-         * Delete all keys matching multiple queries - not supported
-         *
-         * @param array  $keys
-         * @param string $pool
-         * @throws cache_disk_exception
-         */
-        public static function delete_wildcard_multi(array $keys, $pool) {
-            throw new cache_disk_exception('Wildcard lookups are not supported by disk cache');
         }
     }

@@ -37,6 +37,54 @@
         }
 
         /**
+         * Create or Append a value to the end of a list/array
+         *
+         * @param string $key
+         * @param string $pool
+         * @param mixed  $value
+         *
+         * @return bool
+         */
+        public static function list_append($key, $pool, $value) {
+            if ($return = core::cache_redis($pool)->rPush($key, $value)) {
+                return $return;
+            } else {
+                // if for some reason this key is holding a non-list delete it and create a list (this should never happen)
+                // this is here just for fault tolerance
+                core::cache_redis($pool)->delete($key);
+                return core::cache_redis($pool)->rPush($key, $value);
+            }
+        }
+
+        /**
+         * Get a segment of a list/array
+         *
+         * @param string  $key
+         * @param string  $pool
+         * @param integer $start
+         * @param integer $end
+         *
+         * @return mixed
+         */
+        public static function list_range($key, $pool, $start=0, $end=-1) {
+            return core::cache_redis($pool)->lRange($key, $start, $end);
+        }
+
+        /**
+         *
+         *
+         * @param string $key
+         * @param string $pool
+         * @param array  $remove_keys
+         */
+        public static function list_remove($key, $pool, array $remove_keys) {
+            // There does not appear to be a 'multi' version of this command. Seems wasteful... :(
+            foreach ($remove_keys as $remove_key) {
+                core::cache_redis($pool)->lRemove($key, $remove_key, 0);
+            }
+        }
+
+        /**
          * Gets cached data.
          *  if record does exist, an array with a single element, containing the data.
          *  returns null if record does not exist
@@ -121,18 +169,6 @@
         }
 
         /**
-         * Get all keys matching a query
-         *
-         * @param string $key
-         * @param string $pool
-         *
-         * @return array|null returns null if record does not exist.
-         */
-        public static function get_wildcard($key, $pool) {
-            return self::get($key, $pool);
-        }
-
-        /**
          * Delete a single record
          *
          * @param string $key
@@ -157,44 +193,5 @@
                 reset($keys);
                 return core::cache_redis($pool)->delete($keys);
             }
-        }
-
-        /**
-         * Delete all keys matching a query
-         *
-         * @param string $key
-         * @param string $pool
-         *
-         * @return integer the number of keys deleted
-         */
-        public static function delete_wildcard($key, $pool) {
-            // @todo change this to use an un-ordered set or a list instead
-            $redis = core::cache_redis($pool);
-            return $redis->delete($redis->keys($key));
-        }
-
-        /**
-         * Delete all keys matching multiple queries
-         *
-         * @param array $keys
-         * @param string $pool
-         *
-         * @return integer the number of keys deleted
-         */
-        public static function delete_wildcard_multi(array $keys, $pool) {
-            $redis = core::cache_redis($pool);
-            $ks    = [];
-
-            $key_prefix_length = strlen(core::config()->redis['key_prefix']) + 1;
-
-            foreach ($keys as $key) {
-                foreach ($redis->keys($key) as $k) {
-                    $ks[] = substr($k, $key_prefix_length);
-                }
-            }
-
-            core::debug($ks);
-
-            return $redis->delete($ks);
         }
     }

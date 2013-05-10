@@ -6,6 +6,88 @@
     class cache_lib {
 
         /**
+         * Get a record from cache
+         *
+         * @param string  $engine
+         * @param string  $key
+         * @param string  $pool
+         *
+         * @return mixed|null
+         */
+        public static function get($engine, $key, $pool) {
+            $engine_driver = "cache_{$engine}_driver";
+
+            // Memory
+            if (cache_memory_dao::exists($key)) {
+                return cache_memory_dao::get($key);
+            }
+
+            if ($engine && $data = $engine_driver::get($key, $pool)) {
+                return current($data);
+            }
+        }
+
+        /**
+         * Get a segment of a list/array
+         *
+         * @param string  $engine
+         * @param string  $list_key
+         * @param string  $pool
+         * @param integer $start
+         * @param integer $end
+         *
+         * @return mixed|null
+         */
+        public static function list_range($engine, $list_key, $pool, $start, $end) {
+            $engine_driver = "cache_{$engine}_driver";
+
+            // Memory
+            //if (cache_memory_dao::exists($list_key) && ($arr = cache_memory_dao::list_range($list_key, $start, $end)) !== null) {
+            //    return $arr;
+            //}
+
+            if ($engine) {
+                return $engine_driver::list_range($list_key, $pool, $start, $end);
+            }
+        }
+
+        /**
+         * Create or Append a value to the end of a list/array
+         *
+         * @param string $engine
+         * @param string $list_key
+         * @param string $pool
+         * @param mixed  $value
+         */
+        public static function list_append($engine, $list_key, $pool, $value) {
+            // Memory
+            //cache_memory_dao::list_append($list_key, $value);
+
+            if ($engine) {
+                $engine = "cache_{$engine}_driver";
+                $engine::list_append($list_key, $pool, $value);
+            }
+        }
+
+        /**
+         * Create or Append a value to the end of a list/array
+         *
+         * @param string $engine
+         * @param string $list_key
+         * @param string $pool
+         * @param array  $remove_keys
+         */
+        public static function list_remove($engine, $list_key, $pool, $remove_keys) {
+            // Memory
+            //cache_memory_dao::list_remove($list_key, $remove_keys);
+
+            if ($engine) {
+                $engine = "cache_{$engine}_driver";
+                $engine::list_remove($list_key, $pool, $remove_keys);
+            }
+        }
+
+        /**
          * Increment the value of a cached entry (only works if the value is an int)
          *
          * @param string  $engine
@@ -249,40 +331,78 @@
         }
 
         /**
-         * Delete all keys matching a query
-         * NOTE: not all cache drivers support this command (eg, memcached does not allow wildcards)
+         * Delete all cache entries being stored by an entity limit
          *
-         * @param string $engine
-         * @param string $key
-         * @param string $pool
+         * @param string            $engine
+         * @param string            $list_key
+         * @param string            $pool
+         * @param string|array|null $filter
          */
-        public static function delete_wildcard($engine, $key, $pool){
+        public static function delete_limit_cache($engine, $list_key, $pool, $filter=null) {
 
-            // Memory
-            cache_memory_dao::delete_wildcard($key);
+            $keys = self::list_range(
+                $engine,
+                $list_key,
+                $pool,
+                0,
+                -1
+            );
 
-            if ($engine) {
-                $engine = "cache_{$engine}_driver";
-                $engine::delete_wildcard($key, $pool);
-            }
-        }
+            if ($keys) {
+                if ($filter !== null) {
+                    if (is_array($filter)) {
+                        $keys_matched = [];
 
-        /**
-         * Delete multiple sets of keys matching a query
-         * NOTE: not all cache drivers support this command (eg, memcached does not allow wildcards)
-         *
-         * @param string $engine
-         * @param array  $keys
-         * @param string $pool
-         */
-        public static function delete_wildcard_multi($engine, array $keys, $pool){
+                        foreach ($filter as $f) {
+                            foreach (preg_grep('`' . preg_quote($f) . '.*?`', $keys) as $key) {
+                                $keys_matched[] = $key;
+                            }
+                        }
 
-            // Memory
-            cache_memory_dao::delete_wildcard_multi($keys);
+                        if ($keys_matched) {
+                            self::delete_multi(
+                                $engine,
+                                $keys_matched,
+                                $pool
+                            );
+                        }
+                    } else {
+                        if ($keys_matched = preg_grep('`' . preg_quote($filter) . '\:.*?`', $keys)) {
+                            self::delete_multi(
+                                $engine,
+                                $keys_matched,
+                                $pool
+                            );
+                        }
+                    }
 
-            if ($engine) {
-                $engine = "cache_{$engine}_driver";
-                $engine::delete_wildcard_multi($keys, $pool);
+                    // remove the keys from the list
+                    if ($keys_matched) {
+                        self::list_remove(
+                            $engine,
+                            $list_key,
+                            $pool,
+                            $keys_matched
+                        );
+                    }
+                } else {
+
+                    // remove the keys from the list
+                    self::list_remove(
+                        $engine,
+                        $list_key,
+                        $pool,
+                        $keys
+                    );
+
+                    // Add the list_key to the keys that need to be deleted
+                    $keys[] = $list_key;
+                    self::delete_multi(
+                        $engine,
+                        $keys,
+                        $pool
+                    );
+                }
             }
         }
     }

@@ -22,6 +22,61 @@
         }
 
         /**
+         * Create or Append a value to the end of a list/array
+         *
+         * @param string $k key
+         * @param mixed  $v value
+         */
+        public static function list_append($k, $v) {
+            if (isset(self::$local[$k]) && is_array(self::$local[$k])) {
+                self::$local[$k][] = $v;
+            } else {
+                self::$local[$k] = [ $v, ];
+            }
+        }
+
+        /**
+         * Get a segment of a list/array
+         *
+         * @param string  $k
+         * @param integer $start
+         * @param integer $end
+         *
+         * @return array
+         */
+        public static function list_range($k, $start, $end) {
+            if (isset(self::$local[$k]) && is_array(self::$local[$k])) {
+
+                if ($start < 0) {
+                    $start = 0;
+                }
+
+                if ($end >= 0) {
+                    return array_slice(self::$local[$k], $start, $end - $start);
+                } else {
+                    return array_slice(self::$local[$k], $start);
+                }
+            } else {
+                return null;
+            }
+        }
+
+        /**
+         * Remove values from a list/array (searches by value)
+         *
+         * @param string $k
+         * @param array $remove_keys
+         */
+        public static function list_remove($k, array $remove_keys) {
+            if (isset(self::$local[$k]) && is_array(self::$local[$k])) {
+                self::$local[$k] = array_diff(self::$local[$k], $remove_keys);
+
+                core::debug(self::$local[$k]);
+                die;
+            }
+        }
+
+        /**
          * Caches a single entry in memory
          *
          * @param string   $key
@@ -178,22 +233,6 @@
         }
 
         /**
-         * Get record from memory
-         *
-         * @param string $k key
-         *
-         * @return mixed
-         * @throws cache_memory_exception
-         */
-        public static function get_wildcard($k) {
-            if ($keys_matched = preg_grep($k, array_keys(self::$local))) {
-                return array_intersect_key(self::$local, array_flip($keys_matched));
-            } else {
-                return [];
-            }
-        }
-
-        /**
          * Gets everything in memory
          *
          * @return array
@@ -236,36 +275,6 @@
             if (array_key_exists($key, self::$local)) {
                 self::$local[$key] -= $offset;
                 return self::$local[$key];
-            }
-        }
-
-        /**
-         * Delete records from memory based on wildcard query
-         *
-         * @param string $key
-         *
-         * @return mixed
-         * @throws cache_memory_exception
-         */
-        public static function delete_wildcard($key) {
-            if ($keys_matched = preg_grep('`' . str_replace(['\*', '\?'], ['.*?', '.'], preg_quote($key)) . '`', array_keys(self::$local))) {
-                return self::delete_multi($keys_matched);
-            }
-        }
-
-        /**
-         * Delete multiple sets of records from memory based on wildcard query
-         *
-         * @param array $keys
-         *
-         * @return mixed
-         * @throws cache_memory_exception
-         */
-        public static function delete_wildcard_multi(array $keys) {
-            foreach ($keys as $key) {
-                if ($keys_matched = preg_grep('`' . str_replace(['\*', '\?'], ['.*?', '.'], preg_quote($key)) . '`', array_keys(self::$local))) {
-                    self::delete_multi($keys_matched);
-                }
             }
         }
     }

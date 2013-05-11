@@ -330,7 +330,9 @@
          */
         protected function _preload_one_to_one($entity, $field, $method_override=null) {
 
-            $dao_name = "{$entity}_dao";
+            $dao_name        = "{$entity}_dao";
+            $model_name      = "{$entity}_model";
+            $collection_name = "{$entity}_collection";
 
             $pks = [];
             // we don't want to look up duplicates, just unique values
@@ -349,6 +351,7 @@
                     );
                 }
             }
+
             return new $collection_name(null, $models);
         }
     }

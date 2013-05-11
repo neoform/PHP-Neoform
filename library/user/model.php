@@ -52,57 +52,6 @@
         }
 
         /**
-         * File Collection
-         *
-         * @return file_collection
-         */
-        public function file_collection() {
-            if (! array_key_exists('file_collection', $this->_vars)) {
-                $this->_vars['file_collection'] = new file_collection(
-                    file_dao::by_user($this->vars['id'])
-                );
-            }
-            return $this->_vars['file_collection'];
-        }
-
-        /**
-         * Folder Collection
-         *
-         * @return folder_collection
-         */
-        public function folder_collection() {
-            if (! array_key_exists('folder_collection', $this->_vars)) {
-                $this->_vars['folder_collection'] = new folder_collection(
-                    folder_dao::by_user($this->vars['id'])
-                );
-            }
-            return $this->_vars['folder_collection'];
-        }
-
-        /**
-         * Merchant Model based on 'id'
-         *
-         * @return merchant_model
-         */
-        public function merchant(merchant_model $merchant=null) {
-            return $this->_model('merchant', $this->vars['id'], 'merchant_model');
-        }
-
-        /**
-         * Upload Collection
-         *
-         * @return upload_collection
-         */
-        public function upload_collection() {
-            if (! array_key_exists('upload_collection', $this->_vars)) {
-                $this->_vars['upload_collection'] = new upload_collection(
-                    upload_dao::by_user($this->vars['id'])
-                );
-            }
-            return $this->_vars['upload_collection'];
-        }
-
-        /**
          * User Date Model based on 'id'
          *
          * @return user_date_model

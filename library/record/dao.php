@@ -163,8 +163,15 @@
          * @param string  $after_pk  A PK offset to be used (it's more efficient to use PK offsets than an SQL 'OFFSET')
          *
          * @return array of PKs
+         * @throws record_exception
          */
         public static function limit($limit, $order_by, $direction, $after_pk=null) {
+
+            if (! static::USING_LIMIT && static::CACHE_ENGINE) {
+                $exception = static::ENTITY_NAME . '_exception';
+                throw new $exception('Limit queries are not active in the ' . static::NAME . ' entity definition');
+            }
+
             $self      = static::ENTITY_NAME . '_dao';
             $direction = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
 

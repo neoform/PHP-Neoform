@@ -95,12 +95,12 @@ a        { color: #0048bf; text-decoration: underline; }
 a:active { color: #ba1717; }
 
 div.pages             { margin: 3px 0; }
-ul.pages             { margin: 0; padding: 0; color: #0a3087; font-weight: bold; display: inline; }
-ul.pages li         { list-style-type: none; display: inline-block; margin: 1px 4px; background: #f9f9f9; border: 1px solid #eee; }
-ul.pages li:hover     { background: #f1f5ff; border-color: #e0eaef; }
-ul.pages li a         { text-decoration: none; color: #000; padding: 1px 4px; display: block; }
-ul.pages li a:hover    { color: #2444c4; }
-ul.pages li.active    { background: #e1e5ef; border-color: #d0dadf; padding: 1px 4px; }
+ul.pages              { margin: 0; padding: 0; font-weight: 700; display: inline; }
+ul.pages li           { list-style-type: none; display: inline-block; margin: 0; padding: 4px 6px; }
+ul.pages li:hover     {  }
+ul.pages li a         { text-decoration: none; padding: 1px 4px; display: block; }
+ul.pages li a:hover   { }
+ul.pages li.active    { border-color: #d0dadf; padding: 1px 4px; }
 ul.pages li.empty     { border: 0; background: transparent; padding: 0; color: #555; padding: 1px 4px; }
 
 

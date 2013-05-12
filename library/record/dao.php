@@ -23,6 +23,9 @@
         // Limit based lookups
         const LIMIT = 'limit';
 
+        // Counts
+        const COUNT = 'count';
+
         /**
          * Get the record DAO driver name (name derived from db connection type)
          *
@@ -240,6 +243,26 @@
         }
 
         /**
+         * Get a full count of all records in the table
+         *
+         * @return integer
+         */
+        public static function count() {
+
+            $self = static::ENTITY_NAME . '_dao';
+
+            return cache_lib::single(
+                static::CACHE_ENGINE,
+                static::ENTITY_NAME . ':' . self::COUNT,
+                static::ENTITY_POOL,
+                function() use ($self) {
+                    $driver = $self::driver();
+                    return $driver::count($self);
+                }
+            );
+        }
+
+        /**
          * Gets the primary keys of records that match the $keys
          *
          * @access protected
@@ -353,6 +376,14 @@
                 self::_delete_limit_cache();
             }
 
+            if (static::USING_COUNT) {
+                cache_lib::delete(
+                    static::CACHE_ENGINE,
+                    static::ENTITY_NAME . ':' . self::COUNT,
+                    static::ENTITY_POOL
+                );
+            }
+
             if ($return_model) {
                 $model = static::ENTITY_NAME . '_model';
                 return new $model(null, $info);
@@ -415,6 +446,14 @@
 
             if (static::USING_LIMIT) {
                 self::_delete_limit_cache();
+            }
+
+            if (static::USING_COUNT) {
+                cache_lib::delete(
+                    static::CACHE_ENGINE,
+                    static::ENTITY_NAME . ':' . self::COUNT,
+                    static::ENTITY_POOL
+                );
             }
 
             if ($return_collection) {
@@ -503,6 +542,14 @@
                 self::_delete_limit_cache();
             }
 
+            if (static::USING_COUNT) {
+                cache_lib::delete(
+                    static::CACHE_ENGINE,
+                    static::ENTITY_NAME . ':' . self::COUNT,
+                    static::ENTITY_POOL
+                );
+            }
+
             return true;
         }
 
@@ -539,6 +586,14 @@
 
             if (static::USING_LIMIT) {
                 self::_delete_limit_cache();
+            }
+
+            if (static::USING_COUNT) {
+                cache_lib::delete(
+                    static::CACHE_ENGINE,
+                    static::ENTITY_NAME . ':' . self::COUNT,
+                    static::ENTITY_POOL
+                );
             }
 
             return true;

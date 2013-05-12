@@ -109,6 +109,24 @@
         }
 
         /**
+         * Get full count of rows in a table
+         *
+         * @param string $self
+         *
+         * @return int
+         */
+        public static function count($self) {
+            $rs = core::sql('slave')->prepare("
+                SELECT COUNT(0) `num`
+                FROM `" . self::table($self::TABLE) . "`
+            ");
+            $rs->execute();
+            $count = $rs->fetch();
+
+            return (int) $count['num'];
+        }
+
+        /**
          * Get all records in the table
          *
          * @param string     $self the name of the DAO

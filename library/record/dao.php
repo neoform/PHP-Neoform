@@ -27,16 +27,20 @@
         const COUNT = 'count';
 
         /**
-         * Get the record DAO driver name (name derived from db connection type)
+         * Get the record DAO driver name
          *
          * @return string
          */
         protected static function driver() {
-            static $driver;
-            if (! $driver) {
-                $driver = 'record_driver_' . core::sql('slave')->driver();
+            if (static::SOURCE_ENGINE) {
+                return 'record_driver_' . static::SOURCE_ENGINE;
+            } else {
+                static $driver;
+                if (! $driver) {
+                    $driver = 'record_driver_' . core::sql('slave')->driver();
+                }
+                return $driver;
             }
-            return $driver;
         }
 
         /**

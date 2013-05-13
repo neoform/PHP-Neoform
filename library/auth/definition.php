@@ -13,6 +13,7 @@
         const ENTITY_NAME   = 'auth';
         const ENTITY_POOL   = 'entities';
         const CACHE_ENGINE  = 'redis';
+        const SOURCE_ENGINE = 'redis';
         const USING_LIMIT   = false;
         const USING_COUNT   = false;
     }

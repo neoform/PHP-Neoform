@@ -110,6 +110,32 @@
             return self::_by_fields_multi(self::BY_STATUS, $keys);
         }
 
+        /**
+         * Get a paginated list of user ids
+         *
+         * @param string  $order_by
+         * @param string  $direction
+         * @param integer $offset
+         * @param integer $limit
+         *
+         * @return array
+         */
+        public static function pagination($order_by, $direction, $offset, $limit) {
+            $users = core::sql('slave')->prepare("
+                SELECT id
+                FROM user
+                ORDER BY $order_by $direction
+                LIMIT $limit
+                OFFSET $offset
+            ");
+            $users->execute();
+            $ids = [];
+            foreach ($users->fetchAll() as $user) {
+                $ids[] = $user['id'];
+            }
+            return $ids;
+        }
+
         // WRITES
 
         /**

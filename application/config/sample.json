@@ -137,13 +137,32 @@
 
         //leave black (empty string) if no prefix is needed
         //this prefix is useful if you have multiple instances of the same code on the same memcache pool (maybe prod/dev on one memcache pool)
-        "key_prefix": "loc.loc",
+        "key_prefix": "sample.sample",
 
         "default_pool": "entities",
 
         "pools": {
             "entities": [
                 { "host": "127.0.0.1", "port": 11211, "weight": 1 }
+            ]
+        }
+    },
+
+    "redis": {
+
+        //leave black (empty string) if no prefix is needed
+        //this prefix is useful if you have multiple instances of the same code base
+        "key_prefix": "sample.sample",
+
+        "default_cache_server":    "entities",
+        "default_database_server": "database",
+
+        "servers": {
+            "entities": [
+                { "host": "127.0.0.1", "port": 6379 }
+            ],
+            "database": [
+                { "host": "127.0.0.1", "port": 6379 }
             ]
         }
     },

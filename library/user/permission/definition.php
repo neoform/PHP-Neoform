@@ -5,9 +5,10 @@
      */
     interface user_permission_definition {
 
-        const NAME         = 'user permission link';
-        const TABLE        = 'user_permission';
-        const ENTITY_NAME  = 'user_permission';
-        const ENTITY_POOL  = 'entities';
-        const CACHE_ENGINE = 'redis';
+        const NAME          = 'user permission link';
+        const TABLE         = 'user_permission';
+        const ENTITY_NAME   = 'user_permission';
+        const ENTITY_POOL   = 'entities';
+        const CACHE_ENGINE  = 'redis';
+        const SOURCE_ENGINE = null;
     }

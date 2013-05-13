@@ -1,11 +1,11 @@
 <?php
 
-    class cache_redis_factory implements core_factory {
+    class redis_factory implements core_factory {
 
         public static function init(array $args) {
 
             $config = core::config()->redis;
-            $name   = count($args) ? current($args) : $config['default_cache_server'];
+            $name   = count($args) ? current($args) : null;
 
             if (! isset($config['servers'][$name]) || $config['servers'][$name] === null) {
                 throw new cache_redis_exception('Redis server configuration "' . $name . '" does not exist');

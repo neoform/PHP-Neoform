@@ -50,24 +50,26 @@
             }
 
             $redis = core::redis(self::pool());
-            $infos = $redis->mGet($keys);
+
+            // Redis returns the results in order - if the key doesn't exist, false is returned - this problematic
+            // since false might be an actual value being stored... therefore we check if the key exists if false is
+            // returned
 
             $redis->multi();
-            $exists_lookup = [];
-            foreach (array_keys($keys) as $i => $k) {
-                if ($infos[$i] === false) {
-                    $redis->exists($k);
-                    $exists_lookup[] = $i;
-                }
+            foreach ($keys as $key) {
+                $redis->exists($key);
+                $redis->get($key);
             }
 
-            // Remove any records that don't exist from the array
-            if ($exists_lookup) {
-                foreach ($redis->exec() as $i => $record_exists) {
-                    if (! $record_exists) {
-                        $infos[$exists_lookup[$i]] = null;
-                    }
+            $infos         = [];
+            $redis_results = $redis->exec();
+            $i             = 0;
+            foreach ($keys as $k => $key) {
+                if ($redis_results[$i]) {
+                    $infos[$k] = $redis_results[$i + 1];
                 }
+
+                $i += 2;
             }
 
             return $infos;

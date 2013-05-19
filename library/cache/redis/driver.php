@@ -138,28 +138,27 @@
          * @return array
          */
         public static function get_multi(array $keys, $pool) {
-            $redis   = core::cache_redis($pool);
-            $results = $redis->getMultiple($keys);
+            $redis = core::cache_redis($pool);
 
             // Redis returns the results in order - if the key doesn't exist, false is returned - this problematic
             // since false might be an actual value being stored... therefore we check if the key exists if false is
             // returned
+
             $redis->multi();
-            $exists_lookup = [];
-            foreach (array_keys($keys) as $i => $k) {
-                if ($results[$i] === false) {
-                    $redis->exists($k);
-                    $exists_lookup[] = $i;
-                }
+            foreach ($keys as $key) {
+                $redis->exists($key);
+                $redis->get($key);
             }
 
-            // Remove any records that don't exist from the array
-            if ($exists_lookup) {
-                foreach ($redis->exec() as $i => $record_exists) {
-                    if (! $record_exists) {
-                        unset($results[$exists_lookup[$i]]);
-                    }
+            $results       = [];
+            $redis_results = $redis->exec();
+            $i             = 0;
+            foreach ($keys as $k => $key) {
+                if ($redis_results[$i]) {
+                    $results[$k] = $redis_results[$i + 1];
                 }
+
+                $i += 2;
             }
 
             return $results;

@@ -52,10 +52,21 @@
             $redis = core::redis(self::pool());
             $infos = $redis->mGet($keys);
 
-            foreach ($infos as $k => & $info) {
-                // since false is potentially a valid result being stored in redis, we must check if the key exists
-                if ($info === false && ! $redis->exists($keys[$k])) {
-                    $info = null;
+            $redis->multi();
+            $exists_lookup = [];
+            foreach (array_keys($keys) as $i => $k) {
+                if ($infos[$i] === false) {
+                    $redis->exists($k);
+                    $exists_lookup[] = $i;
+                }
+            }
+
+            // Remove any records that don't exist from the array
+            if ($exists_lookup) {
+                foreach ($redis->exec() as $i => $record_exists) {
+                    if (! $record_exists) {
+                        $infos[$exists_lookup[$i]] = null;
+                    }
                 }
             }
 

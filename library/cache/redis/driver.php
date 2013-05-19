@@ -83,9 +83,12 @@
          */
         public static function list_remove($key, $pool, array $remove_keys) {
             $redis = core::cache_redis($pool);
+            // Batch execute the deletes
+            $redis->multi();
             foreach ($remove_keys as $remove_key) {
                 $redis->sRemove($key, $remove_key);
             }
+            $redis->exec();
 
             // bug in the documentation makes it seem like you can delete multiple keys at the same time. Nope!
             //call_user_func_array([core::cache_redis($pool), 'sRemove'], array_merge([ $key, ], $remove_keys))
@@ -103,15 +106,15 @@
          */
         public static function get($key, $pool) {
             $redis = core::cache_redis($pool);
-            $data  = $redis->get($key);
-            if ($data === false) {
-                // since false is potentially a valid result being stored in redis, we must check if the key exists
-                return $redis->exists($key) ? [ false, ] : null;
-            } else {
-                return [
-                    $data,
-                ];
-            }
+
+            // Batch execute since phpredis returns false if the key doesn't exist on a GET command, which might actually
+            // be the stored value... which is not helpful.
+            $redis->multi();
+            $redis->exists($key);
+            $redis->get($key);
+            $result = $redis->exec();
+
+            return $result[0] === true ? [ $result[1] ] : null;
         }
 
         /**
@@ -135,17 +138,27 @@
          * @return array
          */
         public static function get_multi(array $keys, $pool) {
-            $redis      = core::cache_redis($pool);
-            $found_rows = $redis->getMultiple($keys);
-            $results    = [];
-            $i          = 0;
+            $redis   = core::cache_redis($pool);
+            $results = $redis->getMultiple($keys);
 
             // Redis returns the results in order - if the key doesn't exist, false is returned - this problematic
             // since false might be an actual value being stored... therefore we check if the key exists if false is
             // returned
-            foreach (array_keys($keys) as $k) {
-                if ($found_rows[$i] !== false || $redis->exists($k)) {
-                    $results[$k] = $found_rows[$i++];
+            $redis->multi();
+            $exists_lookup = [];
+            foreach (array_keys($keys) as $i => $k) {
+                if ($results[$i] === false) {
+                    $redis->exists($k);
+                    $exists_lookup[] = $i;
+                }
+            }
+
+            // Remove any records that don't exist from the array
+            if ($exists_lookup) {
+                foreach ($redis->exec() as $i => $record_exists) {
+                    if (! $record_exists) {
+                        unset($results[$exists_lookup[$i]]);
+                    }
                 }
             }
 
@@ -162,14 +175,13 @@
          * @return mixed
          */
         public static function set_multi(array $rows, $pool, $ttl=null) {
-
-            // Because redis does not have an msetex command at the moment, we need to iterate over the rows and add
-            // them one by one..  ugh.
             if ($ttl) {
                 $redis = core::cache_redis($pool);
+                $redis->multi();
                 foreach ($rows as $k => $v) {
                     $redis->set($k, $v, $ttl);
                 }
+                $redis->exec();
             } else {
                 return core::cache_redis($pool)->mset($rows);
             }

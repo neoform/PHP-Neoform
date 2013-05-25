@@ -1,0 +1,131 @@
+<?php $this->inc('admin/templates/header'); ?>
+
+<script>
+    var page = {
+
+        onload: function() {
+            page.div     = $("#page");
+            page.i         = 0;
+
+            // Nav form
+            $(".nav form", page.div).on("submit", function(e) {
+                e.preventDefault();
+            });
+
+            // List forms
+            $(".inside form", page.div).on("submit", function(e) {
+                e.preventDefault();
+            });
+
+            $("button[name='new']", page.div)
+                .on("click", function(){
+
+                });
+        }
+};
+
+$(page.onload);
+
+</script>
+
+<div id="page">
+
+    <h3 class="header"><a href="/admin">Admin</a> / Users</h3>
+
+    <?php $this->inc('admin/templates/sidebar'); ?>
+    <div>
+        <div class="nav">
+            <div class="side">
+                <form>
+                    <button name="new" class="btn"><?php echo htmlspecialchars($this->locale->translate('New User')); ?></button>
+                </form>
+            </div>
+        </div>
+
+        <div class="inside">
+
+            <?php if ($this->users && count($this->users)): ?>
+
+                <div class="counts">
+                    Total Users: <?php echo number_format($this->total); ?>
+                </div>
+
+                <div class="box">
+                    <div class="table-head">
+                        <table width="100%" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td width="100">
+                                    ID
+                                </td>
+                                <td>
+                                    Email
+                                </td>
+                                <td width="100">
+                                    Status
+                                </td>
+                                <td width="160">
+                                    Created On
+                                </td>
+                                <td width="160">
+                                    Last Login
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <form>
+                        <div class="table-body">
+                            <ul id="users">
+                                <?php foreach ($this->users as $user): ?>
+                                    <li>
+                                        <table width="100%" cellspacing="0" cellpadding="0">
+                                            <tr>
+                                                <td width="100">
+                                                    <?php echo $user->id; ?>
+                                                </td>
+                                                <td>
+                                                    <a href="/admin/user/view/id:<?php echo $user->id; ?>"><?php echo htmlspecialchars($user->email); ?></a>
+                                                </td>
+                                                <td width="100">
+                                                    <?php echo htmlspecialchars($user->user_status()->name); ?>
+                                                </td>
+                                                <td width="160">
+                                                    <?php echo $user->user_date() ? $user->user_date()->created_on : '--'; ?>
+                                                </td>
+                                                <td width="160">
+                                                    <?php echo $user->user_date() ? $user->user_date()->last_login : '--'; ?>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    </form>
+                    <div class="table-foot">
+                        Page
+                        <?php
+                            $this->inc(
+                                'templates/pagination',
+                                [
+                                    'url'          => '/admin/user',
+                                    'current_page' => (int) $this->page,
+                                    'page_count'   => $this->total > 1 ? ceil($this->total / $this->per_page) : 1,
+                                    'link_count'   => 5,
+                                    'next'         => true,
+                                ]
+                            );
+                        ?>
+                    </div>
+                </div>
+
+            <?php else: ?>
+
+                <div class="fat big">No users to show</div>
+
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<?php $this->inc('admin/templates/footer'); ?>

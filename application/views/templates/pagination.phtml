@@ -8,12 +8,12 @@
         */
 
         $page_count     = (int) $page_count;
-        $current_page     = (int) $current_page;
+        $current_page   = (int) $current_page;
         $link_count     = (int) $link_count;
 
         if (! isset($next))             { $next = false; }
         if (! isset($prev))             { $prev = false; }
-        if (! isset($max_link_count))     { $max_link_count = false; }
+        if (! isset($max_link_count))   { $max_link_count = false; }
 
         if ($current_page) {
             if (! $page_count) {

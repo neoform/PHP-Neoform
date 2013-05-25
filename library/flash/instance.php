@@ -13,7 +13,7 @@
 
         public function __construct() {
             //initialize the session storage engine
-            $this->hash = auth_lib::get_hash_cookie();
+            $this->hash = base64_encode(auth_lib::get_hash_cookie());
         }
 
         /**
@@ -24,7 +24,7 @@
          * @return mixed
          */
         public function get($key) {
-            return core::cache_memcache(core::config()->session['memcache_pool'])->get($this->hash . ':' . $key);
+            return core::cache_memcache(core::config()->session['memcache_pool'])->get("{$this->hash}:{$key}");
         }
 
         /**
@@ -38,7 +38,7 @@
          */
         public function set($key, $val, $ttl=null) {
             return core::cache_memcache(core::config()->session['memcache_pool'])->set(
-                $this->hash . ':' . $key,
+                "{$this->hash}:{$key}",
                 $val,
                 $ttl !== null ? $ttl : (int) core::config()->session['default_flash_lifetime']
             );
@@ -52,6 +52,6 @@
          * @return mixed
          */
         public function del($key) {
-            return core::cache_memcache(core::config()->session['memcache_pool'])->delete($this->hash . ':' . $key);
+            return core::cache_memcache(core::config()->session['memcache_pool'])->delete("{$this->hash}:{$key}");
         }
     }

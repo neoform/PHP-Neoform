@@ -134,6 +134,10 @@ form textarea {
     font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
 }
 
+    form input[type="checkbox"] {
+        vertical-align: baseline;
+    }
+
     form input[type="text"]:focus,
     form input[type="password"]:focus,
     form textarea:focus {

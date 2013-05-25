@@ -1,0 +1,171 @@
+<?php $this->inc('admin/templates/header'); ?>
+
+<script>
+    var page = {
+
+        onload: function() {
+            page.div     = $("#page");
+            page.i         = 0;
+
+            // Nav form
+            $(".nav form", page.div).on("submit", function(e) {
+                e.preventDefault();
+            });
+
+            // List forms
+            $(".inside form", page.div).on("submit", function(e) {
+                e.preventDefault();
+            });
+
+            $("button[name='new']", page.div)
+                .on("click", function(){
+
+                });
+        }
+    };
+
+    $(page.onload);
+
+</script>
+
+<div id="page">
+
+    <h3 class="header"><a href="/admin">Admin</a> / <a href="/admin/user">Users</a> / <?php echo htmlspecialchars($this->user->email); ?></h3>
+
+    <?php $this->inc('admin/templates/sidebar'); ?>
+    <div>
+        <div class="nav">
+            <div class="side">
+                <form>
+                    <button name="new" class="btn"><?php echo htmlspecialchars($this->locale->translate('New User')); ?></button>
+                </form>
+            </div>
+        </div>
+
+        <div class="inside">
+            <div class="box">
+                <div class="table-head">
+                    <?php echo htmlspecialchars($this->user->email); ?>
+                </div>
+                <form action="/admin/user/ajax/update">
+                    <div class="table-body">
+                        <div style="padding: 10px 0 10px 0;">
+                            <table width="100%">
+                                <tr>
+                                    <td width="175" align="right">Email</td>
+                                    <td width="10"></td>
+                                    <td>
+                                        <input type="text" name="email" value="<?php echo htmlspecialchars($this->user->email); ?>" style="width: 300px;" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="padding: 0 0 10px 0;">
+                            <table width="100%">
+                                <tr>
+                                    <td width="175" align="right">Password</td>
+                                    <td width="10"></td>
+                                    <td>
+                                        <input type="password" name="password" value="" style="width: 300px;" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="padding: 0 0 10px 0;">
+                            <table width="100%">
+                                <tr>
+                                    <td width="175" align="right">Password Salt</td>
+                                    <td width="10"></td>
+                                    <td>
+                                        <input type="text" name="password_salt" value="<?php echo htmlspecialchars($this->user->password_salt); ?>" style="width: 600px;" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="padding: 0 0 10px 0;">
+                            <table width="100%">
+                                <tr>
+                                    <td width="175" align="right">Password Hashmethod</td>
+                                    <td width="10"></td>
+                                    <td>
+                                        <select name="hashmethod">
+                                            <?php foreach ($this->password_hashmethods as $password_hashmethod): ?>
+                                                <?php if ($password_hashmethod->id === $this->user->password_hashmethod): ?>
+                                                    <option value="<?php echo $password_hashmethod->id; ?>" selected="selected"><?php echo htmlspecialchars($password_hashmethod->name); ?></option>
+                                                <?php else: ?>
+                                                    <option value="<?php echo $password_hashmethod->id; ?>"><?php echo htmlspecialchars($password_hashmethod->name); ?></option>
+                                                <?php endif; ?>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div style="padding: 0 0 10px 0;">
+                            <table width="100%">
+                                <tr>
+                                    <td width="175" align="right">Password Cost</td>
+                                    <td width="10"></td>
+                                    <td>
+                                        <input type="text" name="password_cost" value="<?php echo $this->user->password_cost; ?>" style="width: 100px;" />
+                                    </td>
+                                </tr>
+                            </table>
+                       </div>
+                        <div style="padding: 0 0 10px 0;">
+                            <table width="100%">
+                                <tr>
+                                    <td width="175" align="right">Status</td>
+                                    <td width="10"></td>
+                                    <td>
+                                        <select name="status">
+                                            <?php foreach ($this->all_statuses as $status): ?>
+                                                <?php if ($status->id === $this->user->status_id): ?>
+                                                    <option value="<?php echo $status->id; ?>" selected="selected"><?php echo htmlspecialchars(ucwords($status->name)); ?></option>
+                                                <?php else: ?>
+                                                    <option value="<?php echo $status->id; ?>"><?php echo htmlspecialchars(ucwords($status->name)); ?></option>
+                                                <?php endif; ?>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-foot">
+                        <button class="good" style="margin: 0 0 0 177px;">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="inside" style="margin-top: 10px;">
+            <div class="box">
+                <div class="table-head">
+                    Permissions
+                </div>
+                <form action="/admin/user/ajax/update/permissions">
+                    <div class="standard-body">
+                        <div style="padding: 10px;">
+                            <ul>
+                                <?php foreach ($this->all_permissions as $permission): ?>
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" name="permissions[]" value="<?php echo $permission->id; ?>" /> <b><?php echo htmlspecialchars(ucwords($permission->name)); ?></b>
+                                        </label>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="table-foot">
+                        <button class="good">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<?php $this->inc('admin/templates/footer'); ?>

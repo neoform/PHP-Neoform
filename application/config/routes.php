@@ -124,6 +124,29 @@
                 ],
                 'children'   => [
 
+                    // User
+                    'user' => new http_route([
+                        'controller' => '/admin/user',
+                        'locale' => [
+                            'en' => 'user',
+                            'fr' => 'user',
+                        ],
+                        'children'   => [
+                            // User
+                            'view' => new http_route([
+                                'controller' => '/admin/user/view',
+                                'locale' => [
+                                    'en' => 'view',
+                                    'fr' => 'view',
+                                ],
+                            ]),
+                            // Ajax
+                            'ajax' => new http_route([
+                                'controller' => '/admin/user/ajax',
+                            ]),
+                        ],
+                    ]),
+
                     // Locale
                     'locale' => new http_route([
                         'controller' => '/admin/locale',

@@ -81,7 +81,7 @@
         /**
          * Get a model by a given field or fields
          * folder_model::by_md5($hash) will return a folder model.
-         * this is just a shortcut for new folder_model(current(folder_dao::by_md5($hash)));
+         * this is just a shortcut for new folder_model(reset(folder_dao::by_md5($hash)));
          *
          * @param string $name
          * @param array $args

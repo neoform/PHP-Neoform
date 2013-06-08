@@ -94,7 +94,7 @@
             // each key is namespaced with the name of the class
             $param_count = count($params);
             if ($param_count === 1) {
-                return ($entity_name ?: static::ENTITY_NAME) . ":$cache_key_name:" . md5(base64_encode(current($params)));
+                return ($entity_name ?: static::ENTITY_NAME) . ":$cache_key_name:" . md5(base64_encode(reset($params)));
             } else if ($param_count === 0) {
                 return ($entity_name ?: static::ENTITY_NAME) . ":$cache_key_name:";
             } else {

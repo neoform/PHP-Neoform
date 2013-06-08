@@ -254,7 +254,7 @@
          * @return array
          */
         public static function by_fields_multi($self, array $keys_arr, $pk) {
-            $key_fields     = array_keys(current($keys_arr));
+            $key_fields     = array_keys(reset($keys_arr));
             $reverse_lookup = [];
             $return         = [];
             $vals           = [];
@@ -344,7 +344,7 @@
             $rs = $rs->fetchAll();
             $return = [];
             if (count($select_fields) === 1) {
-                $field = current($select_fields);
+                $field = reset($select_fields);
                 foreach ($rs as $row) {
                     $return[] = $row[$field];
                 }
@@ -413,7 +413,7 @@
             if ($keys_match) {
                 $insert_fields = [];
 
-                foreach (array_keys(current($infos)) as $k) {
+                foreach (array_keys(reset($infos)) as $k) {
                     $insert_fields[] = "\"$k\"";
                 }
 

@@ -224,7 +224,7 @@
          */
         public static function by_fields_multi($self, array $keys_arr, $pk) {
             $sql            = core::sql('slave');
-            $key_fields     = array_keys(current($keys_arr));
+            $key_fields     = array_keys(reset($keys_arr));
             $reverse_lookup = [];
             $return         = [];
             $vals           = [];
@@ -298,7 +298,7 @@
 
             $return = [];
             if (count($select_fields) === 1) {
-                $field = current($select_fields);
+                $field = reset($select_fields);
                 foreach ($rs->fetchAll() as $row) {
                     $return[] = $row[$field];
                 }
@@ -359,7 +359,7 @@
             if ($keys_match) {
                 $insert_fields = [];
 
-                foreach (array_keys(current($infos)) as $k) {
+                foreach (array_keys(reset($infos)) as $k) {
                     $insert_fields[] = "`$k`";
                 }
 

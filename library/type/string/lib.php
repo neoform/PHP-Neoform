@@ -276,6 +276,55 @@
 
             return $n;
         }
+
+        /**
+         * Takes two colors and a percentage, then returns a color based on that percent.
+         * Eg: 'ffffff' and '000000' 50% would be half way between those two colors
+         *
+         * @param string|array $color1 either a hex string or an array with RGB values
+         * @param string|array $color2 either a hex string or an array with RGB values
+         * @param integer      $percent 0-100
+         * @param bool         $hex
+         *
+         * @return array|string
+         * @throws exception
+         */
+        public static function color_percent($color1, $color2, $percent, $hex=true) {
+
+            if ($percent > 100 || $percent < 0) {
+                throw new exception('Percentage cannot be less than 0 or greater than 100');
+            }
+
+            $percent /= 100;
+
+            if (is_array($color1)) {
+                list($r1, $g1, $b1) = $color1;
+            } else {
+                $r1 = (int) hexdec(substr($color1, 0, 2));
+                $g1 = (int) hexdec(substr($color1, 2, 2));
+                $b1 = (int) hexdec(substr($color1, 4, 2));
+            }
+
+            if (is_array($color2)) {
+                list($r2, $g2, $b2) = $color2;
+            } else {
+                $r2 = (int) hexdec(substr($color2, 0, 2));
+                $g2 = (int) hexdec(substr($color2, 2, 2));
+                $b2 = (int) hexdec(substr($color2, 4, 2));
+            }
+
+            if ($hex) {
+                return str_pad(dechex($r1 > $r2 ? abs(($r1 - $r2) * $percent - $r1) : ($r2 - $r1) * $percent), 2, '0')
+                       . str_pad(dechex($g1 > $g2 ? abs(($g1 - $g2) * $percent - $g1) : ($g2 - $g1) * $percent), 2, '0')
+                       . str_pad(dechex($b1 > $b2 ? abs(($b1 - $b2) * $percent - $b1) : ($b2 - $b1) * $percent), 2, '0');
+            } else {
+                return [
+                    $r1 > $r2 ? abs(($r1 - $r2) * $percent - $r1) : ($r2 - $r1) * $percent,
+                    $g1 > $g2 ? abs(($g1 - $g2) * $percent - $g1) : ($g2 - $g1) * $percent,
+                    $b1 > $b2 ? abs(($b1 - $b2) * $percent - $b1) : ($b2 - $b1) * $percent,
+                ];
+            }
+        }
     }
 
 

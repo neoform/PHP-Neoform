@@ -96,10 +96,12 @@
                 case 'all_index_combinations':
                     $key_combinations = [];
                     foreach (array_merge([ $this->primary_keys, ], $this->unique_keys, $this->indexes) as $index) {
-                        $previous = [];
+                        $previous        = [];
+                        $previous_fields = [];
                         foreach ($index as $field) {
-                            $previous[$field->name] = $field->name_idless;
-                            $key_combinations[join('_', $previous)] = $previous;
+                            $previous[$field->name]                 = $field->name_idless;
+                            $previous_fields[            ]          = $field;
+                            $key_combinations[join('_', $previous)] = $previous_fields;
                         }
                     }
                     return $key_combinations;

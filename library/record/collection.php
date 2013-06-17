@@ -283,7 +283,7 @@
             $pks        = [];
 
             // make a flat array of all keys, removing dupes along the way.
-            foreach ($pks_groups as $k => $pks_group) {
+            foreach ($pks_groups as $pks_group) {
                 foreach ($pks_group as $pk) {
                     $pks[$pk] = $pk;
                 }

@@ -1,0 +1,183 @@
+{
+    "system": {
+        "site_name": "Sample Website",
+
+        "site_id": 1,
+
+        // manually set the timezone [required]
+        "timezone": "America/Montreal",
+
+        // page output encoding [required]
+        "enoding": "utf-8",
+
+        // locales [required]
+        "locale" : {
+
+            // default locale
+            "default": "en",
+
+            // allowed locales
+            "allowed": [ "en", "fr", "es", "it" ]
+        },
+
+        // default site domain [required]
+        "domain": "city17.ca",
+
+        // https settings [required]
+        "https": { "regular": false, "secure": false },
+
+        // default subdomain [required]
+        "subdomain_default": { "regular": "phpcore", "secure": "phpcore" }
+
+        // additional subdomain pairs [optional]
+
+        // "subdomains": [
+        //     { "regular": "api", "secure": "api" }
+        // ]
+    },
+
+    "sql": {
+
+        // the connection name that is use when all else fails to [required]
+        "fallback_connection": "master",
+
+        // all connections are randomly picked from the arrays. each name must be formatted like this: name[] = { connection: info };
+
+        // master sql database(s) [required]
+        "master": [
+            {
+                // "dsn": "pgsql:host=127.0.0.1;dbname=DBNAME_HERE",
+                "dsn": "mysql:dbname=core;host=127.0.0.1",
+                "user": "root",
+                "password": ""
+            }
+        ]
+
+        // slave sql database(s) [optional]
+        //
+        //    "slave": [
+        //      { "dsn": "mysql:dbname=com_keepset;host=127.0.0.1", "user": "root", "password": "" }
+        //  ],
+
+        // name any other database connections here:
+        // connections are picked randomly from the array
+        //
+        // "example_connection": [
+        //      { "dsn": "mysql:dbname=testdb1;host=127.0.0.1", "user": "testuser1", "password": "testpassword" }
+        //  ];
+    },
+
+    "auth": {
+
+        // the normal auth session lifespan [3 months in seconds] [required]
+        "normal_auth_lifetime": "3M",
+
+        // the long auth session lifespan  [1 year in seconds] [required]
+        "long_auth_lifetime": "1Y",
+
+        // how long can the password salt be
+        "max_salt_length": 40,
+
+        // default password hash method
+        "default_hash_method_id": 1,
+
+        // default user account status
+        "default_user_account_status_id": 1,
+
+        // default user account status
+        "default_hash_method_cost": 10,
+
+        // authentication cookie name [required]
+        "cookie": "cc",
+
+        // Which site does this user account belong to
+        "site": "main"
+    },
+
+    "cookies": {
+
+        // 4 years in seconds [required]
+        "ttl": 126227704,
+
+        // cookie path [optional]
+        //"path": "/",
+
+        // only allow cookies to be read via https [required]
+        "secure": false,
+
+        // only allow cookies to be read by http and no javascript
+        "httponly": true
+    },
+
+    "session": {
+
+        // lifetime of a non-authenticated session
+        "default_lifetime": 3600,
+
+        // lifetime of a non-authenticated session
+        "default_flash_lifetime": 3600,
+
+        // how long before a ref code is considered expired
+        "ref_timeout": 3600,
+
+        // random string to make the ref code more random - you can change this, but it will
+        // kill all sessions (forms that are being filled out).
+        "ref_secret": "AAABBBCCCDDDEEEFFF12345678901234567890123456789012345678901234567890",
+
+        "memcache_pool": "entities"
+    },
+
+    "output": {
+
+        // When showing core::output()->error() what view is used
+        "default_error_view": "error"
+    },
+
+    "memcache": {
+
+        //leave black (empty string) if no prefix is needed
+        //this prefix is useful if you have multiple instances of the same code on the same memcache pool (maybe prod/dev on one memcache pool)
+        "key_prefix": "sample.sample",
+
+        "default_pool": "entities",
+
+        "pools": {
+            "entities": [
+                { "host": "127.0.0.1", "port": 11211, "weight": 1 }
+            ]
+        }
+    },
+
+    "redis": {
+
+        //leave black (empty string) if no prefix is needed
+        //this prefix is useful if you have multiple instances of the same code base
+        "key_prefix": "sample.sample",
+
+        "default_cache_server":    "entities",
+        "default_database_server": "database",
+
+        "servers": {
+            "entities": [
+                { "host": "127.0.0.1", "port": 6379 }
+            ],
+            "database": [
+                { "host": "127.0.0.1", "port": 6379 }
+            ]
+        }
+    },
+
+    "apc": {
+
+        "key_prefix": "cc.cc"
+    },
+
+    "email": {
+
+        // random string used to give users a hash (based on their user info) that they can disable their
+        // email notifications
+        "unsubscribe_secret": "AAABBBCCCDDDEEEFFF12345678901234567890123456789012345678901234567890"
+
+    }
+}
+

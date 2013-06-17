@@ -242,6 +242,10 @@
                 case 'timestamp':
                     return 'datetime';
 
+                case 'binary':
+                case 'varbinary':
+                    return 'binary';
+
                 case 'enum':
                     if (array_key_exists(strtolower($details), self::$enum_values)) {
                         return 'bool';
@@ -276,6 +280,10 @@
                 case 'decimal':
                 case 'numeric':
                     return 'float';
+
+                case 'binary':
+                case 'varbinary':
+                    return 'binary';
 
                 default:
                     return 'string';

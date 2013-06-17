@@ -41,6 +41,25 @@
         }
 
         /**
+         * Get Acl Resource ids by an array of names
+         *
+         * @param array $names
+         *
+         * @return array of arrays of Acl Resource ids
+         */
+        public static function by_name_multi(array $names) {
+            $keys_arr = [];
+            foreach ($names as $k => $name) {
+                $keys_arr[$k] = [ 'name' => (string) $name, ];
+            }
+
+            return self::_by_fields_multi(
+                self::BY_NAME,
+                $keys_arr
+            );
+        }
+
+        /**
          * Get Acl Resource ids by parent
          *
          * @param int $parent_id

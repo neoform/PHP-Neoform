@@ -2,15 +2,6 @@
 
     class user_acl_role_lib {
 
-        const CACHE_ENGINE = '';
-        const ENTITY_POOL  = '';
-
-        public static function roles_have_resources_key(array $role_ids, array $resources) {
-            sort($role_ids);
-            sort($resources);
-            return __CLASS__ . ':' . __METHOD__ . ':' . md5(join(':', $role_ids)) . ':' . md5(join(':', $resources));
-        }
-
         /**
          * Checks if a collection of roles has access to the necessary resources
          *

@@ -41,21 +41,13 @@
 
             $used_names = [];
 
-            foreach ($this->table->all_indexes as $index) {
-
-                $vars         = [];
-                $names        = [];
-                $longest_part = $this->longest_length($index);
-                foreach ($index as $field) {
-                    $vars[]  = '$' . $field->name;
-                    $names[] = $field->name_idless;
-                }
-                $name = join('_',  $names);
+            foreach ($this->table->all_index_combinations as $name => $index) {
 
                 // No duplicates
                 if (in_array($name, $used_names)) {
                     continue;
                 }
+
                 $used_names[] = $name;
 
                 // commenting
@@ -63,8 +55,8 @@
                 $where_fields  = [];
                 $params        = [];
                 foreach ($this->table->fields as $field) {
-                    // if there is only 1 where key don't select that key for the result set.
-                    if (count($index) !== 1 || $field !== current($index)) {
+                    // if there is only 1 "where" key don't select that key for the result set.
+                    if (count($index) !== 1 || $field !== reset($index)) {
                         $select_fields[] = $field->name;
                     }
                 }
@@ -74,8 +66,6 @@
                     $params[]       = " * @param " . $field->casting . ($field->allows_null() ? '|null' : '') . " \$" . $field->name;
                 }
 
-                reset($index);
-
                 $this->code .= "\t\t/**\n";
                 $this->code .= "\t\t * Get " . self::ander($select_fields) . " by " . self::ander($where_fields) . "\n";
                 $this->code .= "\t\t *\n";
@@ -83,10 +73,15 @@
                 $this->code .= "\t\t *\n";
                 $this->code .= "\t\t * @return array result set containing " . self::ander($select_fields) . "\n";
                 $this->code .= "\t\t */\n";
-
                 // end commenting
 
-                $this->code .= "\t\tpublic static function by_" . $name . "(" . join(', ', $vars) . ") {\n";
+                $function_params         = [];
+                $longest_part = $this->longest_length($index);
+                foreach ($index as $field) {
+                    $function_params[] = '$' . $field->name;
+                }
+
+                $this->code .= "\t\tpublic static function by_" . $name . "(" . join(', ', $function_params) . ") {\n";
                 $this->code .= "\t\t\treturn self::_by_fields(\n";
                 $this->code .= "\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
 
@@ -94,7 +89,7 @@
                 $this->code .= "\t\t\t\t[\n";
                 foreach ($this->table->fields as $field) {
                     // if there is only 1 where key don't select that key for the result set.
-                    if (count($index) !== 1 || $field !== current($index)) {
+                    if (count($index) !== 1 || $field !== reset($index)) {
                         $this->code .= "\t\t\t\t\t'" . $field->name . "',\n";
                     }
                 }
@@ -194,7 +189,7 @@
 
             $this->code .= "\t\tpublic static function insert(array \$info) {\n";
 
-            if ($this->table->is_tiny() || count($this->table->all_indexes) || $this->all) {
+            if ($this->table->is_tiny() || count($this->table->all_index_combinations) || $this->all) {
                 $this->code .= "\t\t\t\$return = parent::_insert(\$info);\n\n";
                 $this->code .= "\t\t\t// Delete Cache\n";
 
@@ -206,20 +201,17 @@
                     $this->code .= "\t\t\t);\n\n";
                 }
 
-                foreach ($this->table->all_indexes as $index) {
-                    $idless        = [];
+                foreach ($this->table->all_index_combinations as $name => $index) {
                     $issets        = [];
                     $fields        = [];
                     $longest_index = 0;
                     foreach ($index as $field) {
                         $fields[] = $field;
-                        $idless[] = $field->name_idless;
                         $issets[] = "array_key_exists('" . $field->name . "', \$info)";
                         if (strlen($field->name) > $longest_index) {
                             $longest_index = strlen($field->name);
                         }
                     }
-                    $name = join('_', $idless);
 
                     // No duplicates
                     if (in_array($name, $used_names)) {
@@ -267,7 +259,7 @@
 
             $this->code .= "\t\tpublic static function inserts(array \$infos) {\n";
 
-            if ($this->table->is_tiny() || count($this->table->all_indexes) || $this->all) {
+            if ($this->table->is_tiny() || count($this->table->all_index_combinations) || $this->all) {
                 $this->code .= "\t\t\t\$return = parent::_inserts(\$infos);\n\n";
                 $this->code .= "\t\t\t// Delete Cache\n";
 
@@ -278,23 +270,20 @@
                     $this->code .= "\t\t\t);\n\n";
                 }
 
-                if (count($this->table->all_indexes)) {
+                if (count($this->table->all_index_combinations)) {
                     $this->code .= "\t\t\tforeach (\$infos as \$info) {\n";
 
-                    foreach ($this->table->all_indexes as $index) {
+                    foreach ($this->table->all_index_combinations as $name => $index) {
                         $fields        = [];
-                        $idless        = [];
                         $issets        = [];
                         $longest_index = 0;
                         foreach ($index as $field) {
                             $fields[] = $field;
-                            $idless[] = $field->name_idless;
                             $issets[] = "array_key_exists('" . $field->name . "', \$info)";
                             if (strlen($field->name) > $longest_index) {
                                 $longest_index = strlen($field->name);
                             }
                         }
-                        $name = join('_', $idless);
 
                         // No duplicates
                         if (in_array($name, $used_names)) {
@@ -349,17 +338,14 @@
             $this->code .= "\t\t\t\$return = parent::_update(\$new_info, \$where);\n\n";
             $this->code .= "\t\t\t// Delete Cache\n";
 
-            foreach ($this->table->all_indexes as $index) {
+            foreach ($this->table->all_index_combinations as $name => $index) {
 
                 // $new_info
                 $issets       = [];
-                $names        = [];
                 $longest_part = $this->longest_length($index);
                 foreach ($index as $field) {
                     $issets[] = "array_key_exists('" . $field->name . "', \$new_info)";
-                    $names[]  = $field->name_idless;
                 }
-                $name = join('_',  $names);
 
                 // No duplicates
                 if (in_array($name, $used_names)) {
@@ -433,13 +419,7 @@
             $this->code .= "\t\t\t\$return = parent::_delete(\$keys);\n\n";
             $this->code .= "\t\t\t// Delete Cache\n";
 
-            foreach ($this->table->all_indexes as $index) {
-
-                $names  = [];
-                foreach ($index as $field) {
-                    $names[] = $field->name_idless;
-                }
-                $name = join('_',  $names);
+            foreach ($this->table->all_index_combinations as $name => $index) {
 
                 // No duplicates
                 if (in_array($name, $used_names)) {
@@ -486,6 +466,9 @@
             $this->code .= "\t\t\t\$return = parent::_deletes(\$keys_arr);\n\n";
 
             $this->code .= "\t\t\t// PRIMARY KEYS\n";
+            foreach ($this->table->primary_keys as $field) {
+                $this->code .= "\t\t\t\$unique_" . $field->name . "_arr = [];\n";
+            }
             $this->code .= "\t\t\tforeach (\$keys_arr as \$keys) {\n";
 
             $idless = [];

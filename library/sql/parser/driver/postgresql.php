@@ -257,6 +257,9 @@
                 case 'boolean':
                     return 'bool';
 
+                case 'bytea':
+                    return 'binary';
+
                 default:
                     return 'string';
             }
@@ -282,6 +285,9 @@
 
                 case 'boolean':
                     return 'bool';
+
+                case 'bytea':
+                    return 'binary';
 
                 case 'money':
                 case 'decimal':

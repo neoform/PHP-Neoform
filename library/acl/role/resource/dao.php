@@ -84,6 +84,54 @@
             );
         }
 
+        /**
+         * Get multiple sets of acl_resource_id by acl_role_id
+         *
+         * @param acl_role_collection $acl_role_collection
+         *
+         * @return array of result sets containing acl_resource_id
+         */
+        public static function by_acl_role_multi(acl_role_collection $acl_role_collection) {
+            $keys = [];
+            foreach ($acl_role_collection as $k => $acl_role) {
+                $keys[$k] = [
+                    'acl_role_id' => (int) $acl_role->id,
+                ];
+            }
+
+            return self::_by_fields_multi(
+                self::BY_ACL_ROLE,
+                [
+                    'acl_resource_id',
+                ],
+                $keys
+            );
+        }
+
+        /**
+         * Get multiple sets of acl_role_id by acl_resource_id
+         *
+         * @param acl_resource_collection $acl_resource_collection
+         *
+         * @return array of result sets containing acl_role_id
+         */
+        public static function by_acl_resource_multi(acl_resource_collection $acl_resource_collection) {
+            $keys = [];
+            foreach ($acl_resource_collection as $k => $acl_resource) {
+                $keys[$k] = [
+                    'acl_resource_id' => (int) $acl_resource->id,
+                ];
+            }
+
+            return self::_by_fields_multi(
+                self::BY_ACL_RESOURCE,
+                [
+                    'acl_role_id',
+                ],
+                $keys
+            );
+        }
+
         // WRITES
 
         /**

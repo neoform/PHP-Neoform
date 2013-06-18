@@ -84,6 +84,54 @@
             );
         }
 
+        /**
+         * Get multiple sets of user_id by acl_group_id
+         *
+         * @param acl_group_collection $acl_group_collection
+         *
+         * @return array of result sets containing user_id
+         */
+        public static function by_acl_group_multi(acl_group_collection $acl_group_collection) {
+            $keys = [];
+            foreach ($acl_group_collection as $k => $acl_group) {
+                $keys[$k] = [
+                    'acl_group_id' => (int) $acl_group->id,
+                ];
+            }
+
+            return self::_by_fields_multi(
+                self::BY_ACL_GROUP,
+                [
+                    'user_id',
+                ],
+                $keys
+            );
+        }
+
+        /**
+         * Get multiple sets of acl_group_id by user_id
+         *
+         * @param user_collection $user_collection
+         *
+         * @return array of result sets containing acl_group_id
+         */
+        public static function by_user_multi(user_collection $user_collection) {
+            $keys = [];
+            foreach ($user_collection as $k => $user) {
+                $keys[$k] = [
+                    'user_id' => (int) $user->id,
+                ];
+            }
+
+            return self::_by_fields_multi(
+                self::BY_USER,
+                [
+                    'acl_group_id',
+                ],
+                $keys
+            );
+        }
+
         // WRITES
 
         /**

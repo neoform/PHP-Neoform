@@ -84,6 +84,54 @@
             );
         }
 
+        /**
+         * Get multiple sets of acl_role_id by acl_group_id
+         *
+         * @param acl_group_collection $acl_group_collection
+         *
+         * @return array of result sets containing acl_role_id
+         */
+        public static function by_acl_group_multi(acl_group_collection $acl_group_collection) {
+            $keys = [];
+            foreach ($acl_group_collection as $k => $acl_group) {
+                $keys[$k] = [
+                    'acl_group_id' => (int) $acl_group->id,
+                ];
+            }
+
+            return self::_by_fields_multi(
+                self::BY_ACL_GROUP,
+                [
+                    'acl_role_id',
+                ],
+                $keys
+            );
+        }
+
+        /**
+         * Get multiple sets of acl_group_id by acl_role_id
+         *
+         * @param acl_role_collection $acl_role_collection
+         *
+         * @return array of result sets containing acl_group_id
+         */
+        public static function by_acl_role_multi(acl_role_collection $acl_role_collection) {
+            $keys = [];
+            foreach ($acl_role_collection as $k => $acl_role) {
+                $keys[$k] = [
+                    'acl_role_id' => (int) $acl_role->id,
+                ];
+            }
+
+            return self::_by_fields_multi(
+                self::BY_ACL_ROLE,
+                [
+                    'acl_group_id',
+                ],
+                $keys
+            );
+        }
+
         // WRITES
 
         /**

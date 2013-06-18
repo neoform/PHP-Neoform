@@ -42,7 +42,7 @@
             $this->_type = strtolower($type);
 
             $headers['MIME-Version'] = '1.0';
-            $headers['Content-type'] = 'text/' . $this->_type . '; charset=UTF-8';
+            $headers['Content-type'] = 'text/' . $this->_type . '; charset=utf-8';
 
             $headers['From'] = $sender && trim($sender) ? $sender : $this->_default_sender;
 

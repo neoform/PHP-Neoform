@@ -188,7 +188,7 @@
          * @param array        $rows                Rows to look up in cache
          * @param callable     $key_func            generates the cache key based on data from $rows
          * @param string       $pool                Which caching pool to use
-         * @param callable     $data_func           Source data function
+         * @param callable     $data_func           Source data function(array $keys [, array $args])
          * @param mixed|null   $args                args to pass to the $data_func
          * @param integer|null $ttl                 How long to cache
          * @param bool         $cache_empty_results cache empty results (eg, null|false) if that is what $data_func() returns

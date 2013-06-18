@@ -136,7 +136,7 @@
                     return record_dao::_build_key($cache_key_name, $fields, $self);
                 },
                 static::ENTITY_POOL,
-                function() use ($self, $select_fields, $keys_arr) {
+                function($keys_arr) use ($self, $select_fields) {
                     $driver = $self::driver();
                     return $driver::by_fields_multi($self, $select_fields, $keys_arr);
                 }

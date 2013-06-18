@@ -312,11 +312,11 @@
             return cache_lib::multi(
                 static::CACHE_ENGINE,
                 $keys_arr,
-                function($fields) use ($cache_key_name) {
-                    return record_dao::_build_key($cache_key_name, $fields);
+                function($fields) use ($self, $cache_key_name) {
+                    return record_dao::_build_key($cache_key_name, $fields, $self);
                 },
                 static::ENTITY_POOL,
-                function() use ($self, $keys_arr, $pk) {
+                function($keys_arr) use ($self, $pk) {
                     $driver = $self::driver();
                     return $driver::by_fields_multi($self, $keys_arr, $pk);
                 }

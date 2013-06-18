@@ -89,14 +89,14 @@
 
             if($this->text_body != "") {
                 $this->body .= "--" . $body_boundary . "\n";
-                $this->body .= "Content-Type: text/plain; charset=ISO-8859-1; format=flowed\n";
+                $this->body .= "Content-Type: text/plain; charset=utf-8; format=flowed\n";
                 $this->body .= "Content-Transfer-Encoding: 7bit\n\n";
                 $this->body .= $this->text_body."\n\n";
             }
 
             if($this->html_body!="") {
                 $this->body .= $body_boundary . "\n";
-                $this->body .= "Content-Type: text/html; charset=ISO-8859-1\n";
+                $this->body .= "Content-Type: text/html; charset=utf-8\n";
                 $this->body .= "Content-Transfer-Encoding: 7bit\n\n";
                 $this->body .= $this->html_body."\n\n";
             }

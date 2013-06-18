@@ -113,10 +113,10 @@
             foreach ($this->table->foreign_keys as $foreign_key_field) {
 
                 // No duplicates
-                if (in_array($foreign_key_field->name_idless, $used_names)) {
+                if (in_array($foreign_key_field->name_idless . '_multi', $used_names)) {
                     continue;
                 }
-                $used_names[] = $foreign_key_field->name_idless;
+                $used_names[] = $foreign_key_field->name_idless . '_multi';
 
                 // comments
                 $selected_fields = [];

@@ -8,12 +8,18 @@
         const BY_ALL  = 'by_all';
         const BY_NAME = 'by_name';
 
+        /**
+         * Get the generic bindings of the table columns
+         *
+         * @return array
+         */
         public static function bindings() {
             return [
                 'id'   => 'int',
                 'name' => 'string',
             ];
         }
+
 
         // READS
 
@@ -30,6 +36,24 @@
                 [
                     'name' => (string) $name,
                 ]
+            );
+        }
+
+        /**
+         * Get User Status ids by an array of names
+         *
+         * @param array $names an array containing names
+         *
+         * @return array of arrays of User Status ids
+         */
+        public static function by_name_multi(array $names) {
+            $keys_arr = [];
+            foreach ($names as $k => $name) {
+                $keys_arr[$k] = [ 'name' => (string) $name, ];
+            }
+            return self::_by_fields_multi(
+                self::BY_NAME,
+                $keys_arr
             );
         }
 
@@ -103,7 +127,6 @@
                         )
                     );
                 }
-
             }
 
             return $return;
@@ -205,7 +228,6 @@
                         ]
                     )
                 );
-
             }
 
             return $return;

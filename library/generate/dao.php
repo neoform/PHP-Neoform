@@ -18,6 +18,6 @@
             }
             $this->code .= "\t\t\t];\n";
             $this->code .= "\t\t}\n";
-            $this->code .= "\n\n";
+            $this->code .= "\n";
         }
     }

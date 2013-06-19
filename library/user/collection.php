@@ -42,6 +42,15 @@
         }
 
         /**
+         * Preload the Acl Group models in this collection
+         *
+         * @return acl_group_collection
+         */
+        public function acl_group_collection() {
+            return $this->_preload_many_to_many('acl_group_user', 'by_user', 'acl_group');
+        }
+
+        /**
          * Preload the Site models in this collection
          *
          * @return site_collection

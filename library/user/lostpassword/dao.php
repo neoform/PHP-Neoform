@@ -7,6 +7,11 @@
 
         const BY_USER = 'by_user';
 
+        /**
+         * Get the generic bindings of the table columns
+         *
+         * @return array
+         */
         public static function bindings() {
             return [
                 'hash'      => 'binary',

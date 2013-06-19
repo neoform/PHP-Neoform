@@ -6,15 +6,15 @@
          * Checks if a collection of roles has access to the necessary resources
          *
          * @param acl_role_collection $roles
-         * @param array               $resources
+         * @param array               $resource_names
          *
          * @return bool
          * @throws user_acl_role_exception
          */
-        public static function roles_have_resources(acl_role_collection $roles, array $resources) {
+        public static function roles_have_resources(acl_role_collection $roles, array $resource_names) {
 
             // No resources needed? You may proceed.
-            if (! $resources) {
+            if (! $resource_names) {
                 return true;
             }
 
@@ -31,14 +31,14 @@
                 return false;
             }
 
-            foreach (acl_resource_dao::by_name_multi($resources) as $k => $resource_ids) {
+            foreach (acl_resource_dao::by_name_multi($resource_names) as $k => $resource_ids) {
                 if ($resource_id = current($resource_ids)) {
                     // Don't have access to this resource? Sorry...
                     if (! in_array($resource_id, $role_resource_ids)) {
                         return false;
                     }
                 } else {
-                    throw new user_acl_role_exception('Resource "' . $resources[$k] . '" does not exist');
+                    throw new user_acl_role_exception('Resource "' . $resource_names[$k] . '" does not exist');
                 }
             }
 

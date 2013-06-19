@@ -150,6 +150,7 @@
                     // Locale
                     'locale' => new http_route([
                         'controller' => '/admin/locale',
+                        'permission' => 'locale',
                         'locale' => [
                             'en' => 'locale',
                             'fr' => 'locale',

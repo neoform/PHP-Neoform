@@ -110,6 +110,6 @@
 
             $this->code .= "\t\tpublic function " . $referenced_field->referenced_field->table->name . "_collection() {\n";
             $this->code .= "\t\t\treturn \$this->_preload_many_to_many('" . $field->table->name . "', 'by_" . $field->name_idless . "', '" . $referenced_field->referenced_field->table->name . "');\n";
-             $this->code .= "\t\t}\n\n";
+            $this->code .= "\t\t}\n\n";
         }
     }

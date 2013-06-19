@@ -160,15 +160,8 @@
 
                     // if the referencing field is part of a 2-key unique key, it's a many-to-many
                     if ($referencing_field->is_link_index()) {
-                        $other_key = $referencing_field->get_other_link_index_field();
-
                         // the many to many becomes one to many since this is a model and not a collection
-                        $this->one_to_many(
-                            $other_key->table->name . '_collection',
-                            $referencing_field->table->name . '_dao',
-                            $referencing_field,
-                            $referencing_field->referenced_field
-                        );
+                        $this->many_to_many($referencing_field);
                     }
                 }
             }
@@ -214,6 +207,28 @@
             $this->code .= "\t\t\t\t);\n";
             $this->code .= "\t\t\t}\n";
             $this->code .= "\t\t\treturn \$this->_vars['" . ($self_reference ? 'child_' : '') . $collection_name . "'];\n";
+            $this->code .= "\t\t}\n\n";
+        }
+
+        protected function many_to_many(sql_parser_field $field) {
+
+            $referenced_field = $field->get_other_link_index_field();
+
+            $self_reference = $field->table === $this->table;
+
+            $this->code .= "\t\t/**\n";
+            $this->code .= "\t\t * " . ($self_reference ? 'Child ' : '') . ucwords(str_replace('_', ' ', $referenced_field->referenced_field->table->name)) . " Collection\n";
+            $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @return " . $referenced_field->referenced_field->table->name . "_collection\n";
+            $this->code .= "\t\t */\n";
+
+            $this->code .= "\t\tpublic function " . ($self_reference ? 'child_' : '') . $referenced_field->referenced_field->table->name . "_collection() {\n";
+            $this->code .= "\t\t\tif (! array_key_exists('" . ($self_reference ? 'child_' : '') . $referenced_field->referenced_field->table->name . "_collection', \$this->_vars)) {\n";
+            $this->code .= "\t\t\t\t\$this->_vars['" . ($self_reference ? 'child_' : '') . $referenced_field->referenced_field->table->name . "_collection'] = new " . $referenced_field->referenced_field->table->name . "_collection(\n";
+            $this->code .= "\t\t\t\t\t" . $field->table->name . "_dao::by_" . $field->name_idless . "(\$this->vars['" . $field->referenced_field->name . "'])\n";
+            $this->code .= "\t\t\t\t);\n";
+            $this->code .= "\t\t\t}\n";
+            $this->code .= "\t\t\treturn \$this->_vars['" . ($self_reference ? 'child_' : '') . $referenced_field->referenced_field->table->name . "_collection'];\n";
             $this->code .= "\t\t}\n\n";
         }
     }

@@ -447,12 +447,13 @@
                     break;
                 }
 
-                //if permissions set, make sure user has matching permissions
+                // If permissions set, make sure user has matching permissions
                 if ($controller['permission']) {
                     // if user is logged in
                     if (core::auth()->user_id) {
                         // and does not have permission - access denied
-                        if (! core::auth()->user()->permission_collection()->allowed($controller['permission'])) {
+                        // if (! core::auth()->user()->permission_collection()->allowed($controller['permission'])) {
+                        if (! core::auth()->user()->has_permission([ $controller['permission'], ])) {
                             core::output()->redirect('error/access_denied');
                             return;
                         }

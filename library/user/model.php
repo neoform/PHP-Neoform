@@ -38,6 +38,17 @@
         }
 
         /**
+         * Checks if this user has the required ACL roles to access a list of resources (array of resource names)
+         *
+         * @param array $resource_names
+         *
+         * @return bool
+         */
+        public function has_permission(array $resource_names) {
+            return user_acl_role_lib::roles_have_resources($this->acl_role_collection(), $resource_names);
+        }
+
+        /**
          * Auth Collection
          *
          * @return auth_collection
@@ -84,31 +95,31 @@
         }
 
         /**
-         * User Acl Role Collection
+         * Acl Role Collection
          *
-         * @return user_acl_role_collection
+         * @return acl_role_collection
          */
-        public function user_acl_role_collection() {
-            if (! array_key_exists('user_acl_role_collection', $this->_vars)) {
-                $this->_vars['user_acl_role_collection'] = new user_acl_role_collection(
+        public function acl_role_collection() {
+            if (! array_key_exists('acl_role_collection', $this->_vars)) {
+                $this->_vars['acl_role_collection'] = new acl_role_collection(
                     user_acl_role_dao::by_user($this->vars['id'])
                 );
             }
-            return $this->_vars['user_acl_role_collection'];
+            return $this->_vars['acl_role_collection'];
         }
 
         /**
-         * Acl Group User Collection
+         * Acl Group Collection
          *
-         * @return acl_group_user_collection
+         * @return acl_group_collection
          */
-        public function acl_group_user_collection() {
-            if (! array_key_exists('acl_group_user_collection', $this->_vars)) {
-                $this->_vars['acl_group_user_collection'] = new acl_group_user_collection(
+        public function acl_group_collection() {
+            if (! array_key_exists('acl_group_collection', $this->_vars)) {
+                $this->_vars['acl_group_collection'] = new acl_group_collection(
                     acl_group_user_dao::by_user($this->vars['id'])
                 );
             }
-            return $this->_vars['acl_group_user_collection'];
+            return $this->_vars['acl_group_collection'];
         }
 
         /**

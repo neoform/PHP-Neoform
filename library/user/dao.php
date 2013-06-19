@@ -111,6 +111,24 @@
         }
 
         /**
+         * Get User ids by an array of emails
+         *
+         * @param array $emails an array containing emails
+         *
+         * @return array of arrays of User ids
+         */
+        public static function by_email_multi(array $emails) {
+            $keys_arr = [];
+            foreach ($emails as $k => $email) {
+                $keys_arr[$k] = [ 'email' => (string) $email, ];
+            }
+            return self::_by_fields_multi(
+                self::BY_EMAIL,
+                $keys_arr
+            );
+        }
+
+        /**
          * Get a paginated list of user ids
          *
          * @param string  $order_by

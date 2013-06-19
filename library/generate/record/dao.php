@@ -216,8 +216,6 @@
                 }
             }
 
-
-
             // if the primary key is a tinyint then add an all() method
             if ($this->table->is_tiny() || $this->all) {
 

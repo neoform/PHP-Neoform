@@ -5,6 +5,11 @@
      */
     class user_date_dao extends record_dao implements user_date_definition {
 
+        /**
+         * Get the generic bindings of the table columns
+         *
+         * @return array
+         */
         public static function bindings() {
             return [
                 'user_id'             => 'int',

@@ -453,7 +453,7 @@
                     if (core::auth()->user_id) {
                         // and does not have permission - access denied
                         // if (! core::auth()->user()->permission_collection()->allowed($controller['permission'])) {
-                        if (! core::auth()->user()->has_permission([ $controller['permission'], ])) {
+                        if (! core::auth()->user()->has_permission($controller['permission'])) {
                             core::output()->redirect('error/access_denied');
                             return;
                         }

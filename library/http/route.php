@@ -22,7 +22,7 @@
         /**
          * Permission that is required to access this controller
          *
-         * @var null|string
+         * @var null|string|array
          */
         protected $permission;
 
@@ -48,7 +48,7 @@
         public function __construct(array $info) {
             $this->controller_path = isset($info['controller']) ? (string) $info['controller'] : '';
             $this->secure          = isset($info['secure']) ? (bool) $info['secure'] : false;
-            $this->permission      = isset($info['permission']) ? strtolower($info['permission']) : null;
+            $this->permission      = isset($info['permission']) ? $info['permission'] : null;
             $this->locale          = isset($info['locale']) && is_array($info['locale']) && count($info['locale']) ? $info['locale'] : null;
             $this->children        = isset($info['children']) && is_array($info['children']) && count($info['children']) ? $info['children'] : null;
         }
@@ -104,7 +104,7 @@
 
             return [
                 'secure'          => $this->secure,
-                'permission'      => $this->permission,
+                'permission'      => $this->permission ? (is_array($this->permission) ? $this->permission : [ $this->permission ]) : null,
                 'controller_path' => $this->controller_path,
                 'children'        => count($children) ? $children: null,
             ];

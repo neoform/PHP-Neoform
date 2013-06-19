@@ -127,6 +127,7 @@
                     // User
                     'user' => new http_route([
                         'controller' => '/admin/user',
+                        'permission' => 'user',
                         'locale' => [
                             'en' => 'user',
                             'fr' => 'user',
@@ -135,6 +136,7 @@
                             // User
                             'view' => new http_route([
                                 'controller' => '/admin/user/view',
+                                'permission' => 'user view',
                                 'locale' => [
                                     'en' => 'view',
                                     'fr' => 'view',

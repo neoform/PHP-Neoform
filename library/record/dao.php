@@ -63,20 +63,49 @@
         }
 
         /**
+         * Start batched query pipeline
+         */
+        final protected static function cache_batch_start() {
+            cache_lib::pipeline_start(
+                static::CACHE_ENGINE,
+               static::ENTITY_POOL
+            );
+        }
+
+        /**
+         * Execute batched cache queries
+         *
+         * @return mixed result from batch execution
+         */
+        final protected static function cache_batch_execute() {
+            return cache_lib::pipeline_execute(
+                static::CACHE_ENGINE,
+                static::ENTITY_POOL
+            );
+        }
+
+        /**
          * Delete a cached record
          *
          * @access protected
          * @static
          * @final
-         * @param string   $key full cache key with namespace - it's recomended that record_dao::_build_key() is used to create this key
-         * @return boolean result of the cache being deleted
+         * @param string|array $key full cache key with namespace - it's recomended that record_dao::_build_key() is used to create this key
          */
         final protected static function _cache_delete($key) {
-            return cache_lib::delete(
-                static::CACHE_ENGINE,
-                $key,
-                static::ENTITY_POOL
-            );
+            if (is_array($key)) {
+                cache_lib::delete_multi(
+                    static::CACHE_ENGINE,
+                    $key,
+                    static::ENTITY_POOL
+                );
+            } else {
+                cache_lib::delete(
+                    static::CACHE_ENGINE,
+                    $key,
+                    static::ENTITY_POOL
+                );
+            }
         }
 
         /**
@@ -362,12 +391,17 @@
          * @return record_model|true if $return_model is set to true, the model created from the info is returned
          * @throws record_exception
          */
-        protected static function _insert(array $info, $replace=false, $return_model = true) {
-
-            $self = static::ENTITY_NAME . '_dao';
+        protected static function _insert(array $info, $replace = false, $return_model = true) {
 
             $driver = self::driver();
-            $info = $driver::insert($self, $info, static::AUTOINCREMENT, $replace);
+            $info = $driver::insert(
+                static::ENTITY_NAME . '_dao',
+                $info,
+                static::AUTOINCREMENT,
+                $replace
+            );
+
+            self::cache_batch_start();
 
             // In case a blank record was cached
             cache_lib::delete(
@@ -376,16 +410,18 @@
                 static::ENTITY_POOL
             );
 
-            if (static::USING_LIMIT) {
-                self::_delete_limit_cache();
-            }
-
             if (static::USING_COUNT) {
                 cache_lib::delete(
                     static::CACHE_ENGINE,
                     static::ENTITY_NAME . ':' . self::COUNT,
                     static::ENTITY_POOL
                 );
+            }
+
+            self::cache_batch_execute();
+
+            if (static::USING_LIMIT) {
+                self::_delete_limit_cache();
             }
 
             if ($return_model) {
@@ -408,12 +444,16 @@
          * @return record_collection|true if $return_collection is true function returns a collection
          * @throws record_exception
          */
-        protected static function _inserts(array $infos, $keys_match = true, $replace=false, $return_collection = true) {
-
-            $self = static::ENTITY_NAME . '_dao';
+        protected static function _inserts(array $infos, $keys_match = true, $replace = false, $return_collection = true) {
 
             $driver = self::driver();
-            $infos  = $driver::inserts($self, $infos, $keys_match, static::AUTOINCREMENT, $replace);
+            $infos  = $driver::inserts(
+                static::ENTITY_NAME . '_dao',
+                $infos,
+                $keys_match,
+                static::AUTOINCREMENT,
+                $replace
+            );
 
             if ($return_collection) {
                 $models = [];
@@ -442,15 +482,13 @@
                 }
             }
 
+            self::cache_batch_start();
+
             cache_lib::delete_multi(
                 static::CACHE_ENGINE,
                 $delete_keys,
                 static::ENTITY_POOL
             );
-
-            if (static::USING_LIMIT) {
-                self::_delete_limit_cache();
-            }
 
             if (static::USING_COUNT) {
                 cache_lib::delete(
@@ -458,6 +496,12 @@
                     static::ENTITY_NAME . ':' . self::COUNT,
                     static::ENTITY_POOL
                 );
+            }
+
+            self::cache_batch_execute();
+
+            if (static::USING_LIMIT) {
+                self::_delete_limit_cache();
             }
 
             if ($return_collection) {
@@ -490,6 +534,8 @@
             $driver = self::driver();
             $driver::update($self, static::PRIMARY_KEY, $model, $info);
 
+            self::cache_batch_start();
+
             cache_lib::delete(
                 static::CACHE_ENGINE,
                 static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
@@ -505,6 +551,8 @@
                     static::ENTITY_POOL
                 );
             }
+
+            self::cache_batch_execute();
 
             // Delete LIMIT cache based on the fields that were changed - this might not be all fields, we so don't
             // necessarily need to delete all LIMIT caches.
@@ -536,15 +584,13 @@
             $driver = self::driver();
             $driver::delete($self, $pk, $model);
 
+            self::cache_batch_start();
+
             cache_lib::delete(
                 static::CACHE_ENGINE,
                 static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
                 static::ENTITY_POOL
             );
-
-            if (static::USING_LIMIT) {
-                self::_delete_limit_cache();
-            }
 
             if (static::USING_COUNT) {
                 cache_lib::delete(
@@ -552,6 +598,12 @@
                     static::ENTITY_NAME . ':' . self::COUNT,
                     static::ENTITY_POOL
                 );
+            }
+
+            self::cache_batch_execute();
+
+            if (static::USING_LIMIT) {
+                self::_delete_limit_cache();
             }
 
             return true;
@@ -582,15 +634,13 @@
                 $delete_cache_keys[] = static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? ':' . md5(base64_encode($pk)) : ":$pk");
             }
 
+            self::cache_batch_start();
+
             cache_lib::delete_multi(
                 static::CACHE_ENGINE,
                 $delete_cache_keys,
                 static::ENTITY_POOL
             );
-
-            if (static::USING_LIMIT) {
-                self::_delete_limit_cache();
-            }
 
             if (static::USING_COUNT) {
                 cache_lib::delete(
@@ -598,6 +648,12 @@
                     static::ENTITY_NAME . ':' . self::COUNT,
                     static::ENTITY_POOL
                 );
+            }
+
+            self::cache_batch_execute();
+
+            if (static::USING_LIMIT) {
+                self::_delete_limit_cache();
             }
 
             return true;

@@ -142,14 +142,14 @@
             $users = core::sql('slave')->prepare("
                 SELECT id
                 FROM user
-                ORDER BY $order_by $direction
-                LIMIT $limit
-                OFFSET $offset
+                ORDER BY {$order_by} {$direction}
+                LIMIT {$limit}
+                OFFSET {$offset}
             ");
             $users->execute();
             $ids = [];
             foreach ($users->fetchAll() as $user) {
-                $ids[] = $user['id'];
+                $ids[] = (int) $user['id'];
             }
             return $ids;
         }
@@ -164,7 +164,12 @@
          * @return user_model
          */
         public static function insert(array $info) {
+
+            // Insert record
             $return = parent::_insert($info);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_PASSWORD_HASHMETHOD
@@ -203,6 +208,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -214,7 +222,12 @@
          * @return user_collection
          */
         public static function inserts(array $infos) {
+
+            // Insert records
             $return = parent::_inserts($infos);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             foreach ($infos as $info) {
@@ -256,6 +269,9 @@
 
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -269,7 +285,12 @@
          * @return user_model updated model
          */
         public static function update(user_model $user, array $info) {
+
+            // Update records
             $updated_model = parent::_update($user, $info);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_PASSWORD_HASHMETHOD
@@ -332,6 +353,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $updated_model;
         }
 
@@ -343,7 +367,12 @@
          * @return bool
          */
         public static function delete(user_model $user) {
+
+            // Delete record
             $return = parent::_delete($user);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_PASSWORD_HASHMETHOD
@@ -376,6 +405,9 @@
                 )
             );
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -387,7 +419,12 @@
          * @return bool
          */
         public static function deletes(user_collection $user_collection) {
+
+            // Delete records
             $return = parent::_deletes($user_collection);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             foreach ($user_collection as $user) {
@@ -421,6 +458,9 @@
                     )
                 );
             }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
 
             return $return;
         }

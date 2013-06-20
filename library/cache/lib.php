@@ -6,11 +6,35 @@
     class cache_lib {
 
         /**
+         * Activate a pipelined (batch) query
+         *
+         * @param string $engine
+         * @param string $pool
+         */
+        public static function pipeline_start($engine, $pool) {
+            $engine_driver = "cache_{$engine}_driver";
+            $engine_driver::pipeline_start($pool);
+        }
+
+        /**
+         * Execute pipelined (batch) queries and return result
+         *
+         * @param string $engine
+         * @param string $pool
+         *
+         * @return mixed result of batch operation
+         */
+        public static function pipeline_execute($engine, $pool) {
+            $engine_driver = "cache_{$engine}_driver";
+            return $engine_driver::pipeline_execute($pool);
+        }
+
+        /**
          * Get a record from cache
          *
-         * @param string  $engine
-         * @param string  $key
-         * @param string  $pool
+         * @param string $engine
+         * @param string $key
+         * @param string $pool
          *
          * @return mixed|null
          */
@@ -351,6 +375,9 @@
             );
 
             if ($keys) {
+
+                self::pipeline_start($engine, $pool);
+
                 if ($filter !== null) {
                     if (is_array($filter)) {
                         $keys_matched = [];
@@ -405,6 +432,8 @@
                         $pool
                     );
                 }
+
+                self::pipeline_execute($engine, $pool);
             }
         }
     }

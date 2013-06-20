@@ -3,6 +3,26 @@
     class cache_redis_driver implements cache_driver {
 
         /**
+         * Activate a pipelined (batch) query
+         *
+         * @param string $pool
+         */
+        public static function pipeline_start($pool) {
+            core::cache_redis($pool)->multi();
+        }
+
+        /**
+         * Execute pipelined (batch) queries and return result
+         *
+         * @param string $pool
+         *
+         * @return array result of batch operation
+         */
+        public static function pipeline_execute($pool) {
+            return core::cache_redis($pool)->exec();
+        }
+
+        /**
          * Increment the value of a cached entry (only works if the value is an int)
          *
          * @param string  $key

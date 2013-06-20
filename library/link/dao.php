@@ -47,6 +47,28 @@
         }
 
         /**
+         * Start batched query pipeline
+         */
+        final protected static function cache_batch_start() {
+            cache_lib::pipeline_start(
+                static::CACHE_ENGINE,
+                static::ENTITY_POOL
+            );
+        }
+
+        /**
+         * Execute batched cache queries
+         *
+         * @return mixed result from batch execution
+         */
+        final protected static function cache_batch_execute() {
+            return cache_lib::pipeline_execute(
+                static::CACHE_ENGINE,
+                static::ENTITY_POOL
+            );
+        }
+
+        /**
          * Delete a cached record
          *
          * @access protected

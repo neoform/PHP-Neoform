@@ -75,7 +75,7 @@
                 $this->code .= "\t\t */\n";
                 // end commenting
 
-                $function_params         = [];
+                $function_params = [];
                 $longest_part = $this->longest_length($index);
                 foreach ($index as $field) {
                     $function_params[] = '$' . $field->name;
@@ -127,7 +127,7 @@
                 }
 
                 $this->code .= "\t\t/**\n";
-                $this->code .= "\t\t * Get multiple sets of " . self::ander($selected_fields) . " by " . $foreign_key_field->name . "\n";
+                $this->code .= "\t\t * Get multiple sets of " . self::ander($selected_fields) . " by a collection of " . $foreign_key_field->referenced_field->table->name . "s\n";
                 $this->code .= "\t\t *\n";
                 $this->code .= "\t\t * @param " . $foreign_key_field->referenced_field->table->name . "_collection \$" . $foreign_key_field->referenced_field->table->name . "_collection\n";
                 $this->code .= "\t\t *\n";
@@ -143,14 +143,14 @@
                 $this->code .= "\t\t\t\t\$keys[\$k] = [\n";
                 if ($foreign_key_field->allows_null()) {
                     $this->code .= "\t\t\t\t\t'" . $foreign_key_field->name . "' => $" . $foreign_key_field->referenced_field->table->name . "->" . $foreign_key_field->referenced_field->name . " === null ? null : (" . $foreign_key_field->referenced_field->casting . ") $" . $foreign_key_field->referenced_field->table->name . "->" . $foreign_key_field->referenced_field->name . ",\n";
-                   } else {
-                       $this->code .= "\t\t\t\t\t'" . $foreign_key_field->name . "' => (" . $foreign_key_field->referenced_field->casting . ") $" . $foreign_key_field->referenced_field->table->name . "->" . $foreign_key_field->referenced_field->name . ",\n";
+                } else {
+                    $this->code .= "\t\t\t\t\t'" . $foreign_key_field->name . "' => (" . $foreign_key_field->referenced_field->casting . ") $" . $foreign_key_field->referenced_field->table->name . "->" . $foreign_key_field->referenced_field->name . ",\n";
                 }
                 $this->code .= "\t\t\t\t];\n";
                 $this->code .= "\t\t\t}\n\n";
 
                 $this->code .= "\t\t\treturn self::_by_fields_multi(\n";
-                $this->code .= "\t\t\t\tself::BY_" . strtoupper($foreign_key_field->referenced_field->table->name) . ",\n";
+                $this->code .= "\t\t\t\tself::BY_" . strtoupper($foreign_key_field->name_idless) . ",\n";
 
                 // fields selected
                 $this->code .= "\t\t\t\t[\n";
@@ -187,10 +187,16 @@
             $this->code .= "\t\t * @return boolean\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function insert(array \$info) {\n";
+            $this->code .= "\t\tpublic static function insert(array \$info) {\n\n";
 
             if ($this->table->is_tiny() || count($this->table->all_index_combinations) || $this->all) {
+
+                $this->code .= "\t\t\t// Insert link\n";
                 $this->code .= "\t\t\t\$return = parent::_insert(\$info);\n\n";
+
+                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
+                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
+
                 $this->code .= "\t\t\t// Delete Cache\n";
 
                 // ALL
@@ -238,6 +244,9 @@
                     $this->code .= "\t\t\t}\n\n";
                 }
 
+                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
+                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
+
                 $this->code .= "\t\t\treturn \$return;\n";
             } else {
                 $this->code .= "\t\t\treturn parent::_insert(\$info);\n";
@@ -257,10 +266,16 @@
             $this->code .= "\t\t * @return boolean\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function inserts(array \$infos) {\n";
+            $this->code .= "\t\tpublic static function inserts(array \$infos) {\n\n";
 
             if ($this->table->is_tiny() || count($this->table->all_index_combinations) || $this->all) {
+
+                $this->code .= "\t\t\t// Insert links\n";
                 $this->code .= "\t\t\t\$return = parent::_inserts(\$infos);\n\n";
+
+                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
+                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
+
                 $this->code .= "\t\t\t// Delete Cache\n";
 
                 if ($this->table->is_tiny() || $this->all) {
@@ -314,6 +329,9 @@
                     $this->code .= "\t\t\t}\n\n";
                 }
 
+                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
+                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
+
                 $this->code .= "\t\t\treturn \$return;\n";
             } else {
                 $this->code .= "\t\t\treturn parent::_inserts(\$infos);\n";
@@ -334,8 +352,14 @@
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function update(array \$new_info, array \$where) {\n";
+            $this->code .= "\t\tpublic static function update(array \$new_info, array \$where) {\n\n";
+
+            $this->code .= "\t\t\t// Update link\n";
             $this->code .= "\t\t\t\$return = parent::_update(\$new_info, \$where);\n\n";
+
+            $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
+            $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
+
             $this->code .= "\t\t\t// Delete Cache\n";
 
             foreach ($this->table->all_index_combinations as $name => $index) {
@@ -398,6 +422,9 @@
                 $this->code .= "\t\t\t}\n\n";
             }
 
+            $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
+            $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
+
             $this->code .= "\t\t\treturn \$return;\n";
             $this->code .= "\t\t}\n\n";
 
@@ -415,8 +442,14 @@
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function delete(array \$keys) {\n";
+            $this->code .= "\t\tpublic static function delete(array \$keys) {\n\n";
+
+            $this->code .= "\t\t\t// Delete link\n";
             $this->code .= "\t\t\t\$return = parent::_delete(\$keys);\n\n";
+
+            $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
+            $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
+
             $this->code .= "\t\t\t// Delete Cache\n";
 
             foreach ($this->table->all_index_combinations as $name => $index) {
@@ -446,6 +479,9 @@
                 $this->code .= "\t\t\t);\n\n";
             }
 
+            $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
+            $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
+
             $this->code .= "\t\t\treturn \$return;\n";
             $this->code .= "\t\t}\n\n";
         }
@@ -462,8 +498,13 @@
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function deletes(array \$keys_arr) {\n";
+            $this->code .= "\t\tpublic static function deletes(array \$keys_arr) {\n\n";
+
+            $this->code .= "\t\t\t// Delete links\n";
             $this->code .= "\t\t\t\$return = parent::_deletes(\$keys_arr);\n\n";
+
+            $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
+            $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
 
             $this->code .= "\t\t\t// PRIMARY KEYS\n";
             foreach ($this->table->primary_keys as $field) {
@@ -516,6 +557,9 @@
                 $this->code .= "\t\t\t\t);\n";
                 $this->code .= "\t\t\t}\n\n";
             }
+
+            $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
+            $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
 
             $this->code .= "\t\t\treturn \$return;\n";
             $this->code .= "\t\t}\n";

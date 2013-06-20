@@ -251,11 +251,16 @@
             $this->code .= "\t\t * @return " . $this->table->name . "_model\n";
             $this->code .= "\t\t */\n";
 
-
-            $this->code .= "\t\tpublic static function insert(array \$info) {\n";
+            $this->code .= "\t\tpublic static function insert(array \$info) {\n\n";
 
             if ($this->table->is_tiny() || count($this->table->all_non_pk_indexes) || $this->all) {
+
+                $this->code .= "\t\t\t// Insert record\n";
                 $this->code .= "\t\t\t\$return = parent::_insert(\$info);\n\n";
+
+                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
+                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
+
                 $this->code .= "\t\t\t// Delete Cache\n";
 
                 // ALL
@@ -311,10 +316,17 @@
                     }
                 }
 
+                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
+                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
+
                 $this->code .= "\t\t\treturn \$return;\n";
+
             } else {
-                $this->code .= "\t\t\treturn parent::_insert(\$info);\n";
+
+                $this->code .= "\t\t\t// Insert record\n";
+                $this->code .= "\t\t\treturn parent::_insert(\$info);\n\n";
             }
+
             $this->code .= "\t\t}\n\n";
         }
 
@@ -330,10 +342,16 @@
             $this->code .= "\t\t * @return " . $this->table->name . "_collection\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function inserts(array \$infos) {\n";
+            $this->code .= "\t\tpublic static function inserts(array \$infos) {\n\n";
 
             if ($this->table->is_tiny() || count($this->table->all_non_pk_indexes) || $this->all) {
+
+                $this->code .= "\t\t\t// Insert records\n";
                 $this->code .= "\t\t\t\$return = parent::_inserts(\$infos);\n\n";
+
+                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
+                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
+
                 $this->code .= "\t\t\t// Delete Cache\n";
 
                 if ($this->table->is_tiny() || $this->all) {
@@ -395,10 +413,17 @@
                     $this->code .= "\t\t\t}\n\n";
                 }
 
+                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
+                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
+
                 $this->code .= "\t\t\treturn \$return;\n";
+
             } else {
-                $this->code .= "\t\t\treturn parent::_inserts(\$infos);\n";
+
+                $this->code .= "\t\t\t// Insert record\n";
+                $this->code .= "\t\t\treturn parent::_inserts(\$infos);\n\n";
             }
+
             $this->code .= "\t\t}\n\n";
         }
 
@@ -416,10 +441,16 @@
             $this->code .= "\t\t * @return " . $this->table->name . "_model updated model\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function update(" . $this->table->name . "_model $" . $this->table->name . ", array \$info) {\n";
+            $this->code .= "\t\tpublic static function update(" . $this->table->name . "_model $" . $this->table->name . ", array \$info) {\n\n";
 
             if ($this->table->is_tiny() || $this->table->all_non_pk_indexes || $this->all) {
+
+                $this->code .= "\t\t\t// Update record\n";
                 $this->code .= "\t\t\t\$updated_model = parent::_update($" . $this->table->name . ", \$info);\n\n";
+
+                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
+                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
+
                 $this->code .= "\t\t\t// Delete Cache\n";
 
                 if ($this->table->is_tiny() || $this->all) {
@@ -493,10 +524,17 @@
                     }
                 }
 
+                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
+                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
+
                 $this->code .= "\t\t\treturn \$updated_model;\n";
+
             } else {
-                $this->code .= "\t\t\treturn parent::_update($" . $this->table->name . ", \$info);\n";
+
+                $this->code .= "\t\t\t// Update record\n";
+                $this->code .= "\t\t\treturn parent::_update($" . $this->table->name . ", \$info);\n\n";
             }
+
             $this->code .= "\t\t}\n\n";
         }
 
@@ -512,10 +550,16 @@
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function delete(" . $this->table->name . "_model $" . $this->table->name . ") {\n";
+            $this->code .= "\t\tpublic static function delete(" . $this->table->name . "_model $" . $this->table->name . ") {\n\n";
 
             if ($this->table->is_tiny() || $this->table->all_non_pk_indexes || $this->all) {
+
+                $this->code .= "\t\t\t// Delete record\n";
                 $this->code .= "\t\t\t\$return = parent::_delete($" . $this->table->name . ");\n\n";
+
+                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
+                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
+
                 $this->code .= "\t\t\t// Delete Cache\n";
 
                 if ($this->table->is_tiny() || $this->all) {
@@ -566,10 +610,16 @@
                     }
                 }
 
+                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
+                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
+
                 $this->code .= "\t\t\treturn \$return;\n";
+
             } else {
-                $this->code .= "\t\t\treturn parent::_delete($" . $this->table->name . ");\n";
+                $this->code .= "\t\t\t// Delete record\n";
+                $this->code .= "\t\t\treturn parent::_delete($" . $this->table->name . ");\n\n";
             }
+
             $this->code .= "\t\t}\n\n";
         }
 
@@ -585,9 +635,16 @@
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function deletes(" . $this->table->name . "_collection $" . $this->table->name . "_collection) {\n";
+            $this->code .= "\t\tpublic static function deletes(" . $this->table->name . "_collection $" . $this->table->name . "_collection) {\n\n";
+
             if ($this->table->is_tiny() || $this->table->all_non_pk_indexes || $this->all) {
+
+                $this->code .= "\t\t\t// Delete records\n";
                 $this->code .= "\t\t\t\$return = parent::_deletes($" . $this->table->name . "_collection);\n\n";
+
+                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
+                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
+
                 $this->code .= "\t\t\t// Delete Cache\n";
 
                 if ($this->table->is_tiny() || $this->all) {
@@ -643,9 +700,15 @@
                     $this->code .= "\t\t\t}\n\n";
                 }
 
+                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
+                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
+
                 $this->code .= "\t\t\treturn \$return;\n";
+
             } else {
-                $this->code .= "\t\t\treturn parent::_deletes($" . $this->table->name . "_collection);\n";
+
+                $this->code .= "\t\t\t// Delete records\n";
+                $this->code .= "\t\t\treturn parent::_deletes($" . $this->table->name . "_collection);\n\n";
             }
 
             $this->code .= "\t\t}\n";

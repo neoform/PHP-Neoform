@@ -20,6 +20,24 @@
         }
 
         /**
+         * Activate a pipelined (batch) query - this doesn't do anything, so ignore
+         *
+         * @param string $pool
+         */
+        public static function pipeline_start($pool) {
+
+        }
+
+        /**
+         * Execute pipelined (batch) queries and return result - this doesn't do anything, so ignore
+         *
+         * @param string $pool
+         */
+        public static function pipeline_execute($pool) {
+
+        }
+
+        /**
          * Checks to see if a record exists
          *
          * @param string $key

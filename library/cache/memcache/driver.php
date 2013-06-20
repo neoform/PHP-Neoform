@@ -21,6 +21,24 @@
         }
 
         /**
+         * Activate a pipelined (batch) query - this doesn't exist in memcache, so ignore
+         *
+         * @param string $pool
+         */
+        public static function pipeline_start($pool) {
+
+        }
+
+        /**
+         * Execute pipelined (batch) queries and return result - this doesn't exist in memcache, so ignore
+         *
+         * @param string $pool
+         */
+        public static function pipeline_execute($pool) {
+
+        }
+
+        /**
          * Increment the value of a cached entry (only works if the value is an int)
          *
          * @param string  $key

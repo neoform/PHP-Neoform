@@ -182,7 +182,7 @@
          *
          * @param array $params
          *
-         * @throws error_php_exception
+         * @throws ErrorException
          * @throws exception
          */
         public static function init(array $params) {
@@ -236,11 +236,7 @@
             // Standard errors
             set_error_handler(function($err_number, $err_string, $err_file, $err_line) {
                 if (error_reporting()) {
-                    if (class_exists('error_php_exception')) {
-                        throw new error_php_exception($err_string . ' in ' . $err_file . ':' . $err_line);
-                    } else {
-                        throw new exception($err_string . ' in ' . $err_file . ':' . $err_line);
-                    }
+                    throw new ErrorException($err_string, $err_number, 0, $err_file, $err_line);
                 }
             });
 

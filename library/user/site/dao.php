@@ -9,6 +9,18 @@
         const BY_SITE_USER = 'by_site_user';
         const BY_USER      = 'by_user';
 
+        /**
+         * Get the generic bindings of the table columns
+         *
+         * @return array
+         */
+        public static function bindings() {
+            return [
+                'user_id' => 'int',
+                'site_id' => 'int',
+            ];
+        }
+
         // READS
 
         /**
@@ -72,30 +84,6 @@
         }
 
         /**
-         * Get multiple sets of user_id by site_id
-         *
-         * @param site_collection $site_collection
-         *
-         * @return array of result sets containing user_id
-         */
-        public static function by_site_multi(site_collection $site_collection) {
-            $keys = [];
-            foreach ($site_collection as $k => $site) {
-                $keys[$k] = [
-                    'site_id' => (int) $site->id,
-                ];
-            }
-
-            return self::_by_fields_multi(
-                self::BY_SITE,
-                [
-                    'user_id',
-                ],
-                $keys
-            );
-        }
-
-        /**
          * Get multiple sets of site_id by user_id
          *
          * @param user_collection $user_collection
@@ -119,6 +107,30 @@
             );
         }
 
+        /**
+         * Get multiple sets of user_id by site_id
+         *
+         * @param site_collection $site_collection
+         *
+         * @return array of result sets containing user_id
+         */
+        public static function by_site_multi(site_collection $site_collection) {
+            $keys = [];
+            foreach ($site_collection as $k => $site) {
+                $keys[$k] = [
+                    'site_id' => (int) $site->id,
+                ];
+            }
+
+            return self::_by_fields_multi(
+                self::BY_SITE,
+                [
+                    'user_id',
+                ],
+                $keys
+            );
+        }
+
         // WRITES
 
         /**
@@ -129,7 +141,12 @@
          * @return boolean
          */
         public static function insert(array $info) {
+
+            // Insert link
             $return = parent::_insert($info);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_SITE
@@ -169,6 +186,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -180,7 +200,12 @@
          * @return boolean
          */
         public static function inserts(array $infos) {
+
+            // Insert links
             $return = parent::_inserts($infos);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             foreach ($infos as $info) {
@@ -222,6 +247,9 @@
                 }
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -234,7 +262,12 @@
          * @return bool
          */
         public static function update(array $new_info, array $where) {
+
+            // Update link
             $return = parent::_update($new_info, $where);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_SITE
@@ -305,6 +338,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -316,7 +352,12 @@
          * @return bool
          */
         public static function delete(array $keys) {
+
+            // Delete link
             $return = parent::_delete($keys);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_SITE
@@ -328,6 +369,7 @@
                     ]
                 )
             );
+
             // BY_SITE_USER
             parent::_cache_delete(
                 parent::_build_key(
@@ -338,6 +380,7 @@
                     ]
                 )
             );
+
             // BY_USER
             parent::_cache_delete(
                 parent::_build_key(
@@ -347,6 +390,10 @@
                     ]
                 )
             );
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -358,9 +405,16 @@
          * @return bool
          */
         public static function deletes(array $keys_arr) {
+
+            // Delete links
             $return = parent::_deletes($keys_arr);
 
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
+
             // PRIMARY KEYS
+            $unique_site_id_arr = [];
+            $unique_user_id_arr = [];
             foreach ($keys_arr as $keys) {
                 $unique_site_id_arr[(int) $keys['site_id']] = (int) $keys['site_id'];
                 $unique_user_id_arr[(int) $keys['user_id']] = (int) $keys['user_id'];
@@ -388,6 +442,7 @@
                     )
                 );
             }
+
             // BY_USER
             foreach ($unique_user_id_arr as $user_id) {
                 parent::_cache_delete(
@@ -399,6 +454,10 @@
                     )
                 );
             }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
     }

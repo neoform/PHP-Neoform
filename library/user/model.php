@@ -81,20 +81,6 @@
         }
 
         /**
-         * Permission Collection
-         *
-         * @return permission_collection
-         */
-        public function permission_collection() {
-            if (! array_key_exists('permission_collection', $this->_vars)) {
-                $this->_vars['permission_collection'] = new permission_collection(
-                    user_permission_dao::by_user($this->vars['id'])
-                );
-            }
-            return $this->_vars['permission_collection'];
-        }
-
-        /**
          * Acl Role Collection
          *
          * @return acl_role_collection

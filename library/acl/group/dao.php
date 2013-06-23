@@ -19,7 +19,6 @@
             ];
         }
 
-
         // READS
 
         /**
@@ -38,6 +37,24 @@
             );
         }
 
+        /**
+         * Get Acl Group ids by an array of names
+         *
+         * @param array $names an array containing names
+         *
+         * @return array of arrays of Acl Group ids
+         */
+        public static function by_name_multi(array $names) {
+            $keys_arr = [];
+            foreach ($names as $k => $name) {
+                $keys_arr[$k] = [ 'name' => (string) $name, ];
+            }
+            return self::_by_fields_multi(
+                self::BY_NAME,
+                $keys_arr
+            );
+        }
+
         // WRITES
 
         /**
@@ -48,7 +65,12 @@
          * @return acl_group_model
          */
         public static function insert(array $info) {
+
+            // Insert record
             $return = parent::_insert($info);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_NAME
@@ -63,6 +85,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -74,7 +99,12 @@
          * @return acl_group_collection
          */
         public static function inserts(array $infos) {
+
+            // Insert records
             $return = parent::_inserts($infos);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             foreach ($infos as $info) {
@@ -91,6 +121,9 @@
                 }
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -104,7 +137,12 @@
          * @return acl_group_model updated model
          */
         public static function update(acl_group_model $acl_group, array $info) {
+
+            // Update record
             $updated_model = parent::_update($acl_group, $info);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_NAME
@@ -127,6 +165,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $updated_model;
         }
 
@@ -138,7 +179,12 @@
          * @return bool
          */
         public static function delete(acl_group_model $acl_group) {
+
+            // Delete record
             $return = parent::_delete($acl_group);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_NAME
@@ -151,6 +197,9 @@
                 )
             );
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -162,7 +211,12 @@
          * @return bool
          */
         public static function deletes(acl_group_collection $acl_group_collection) {
+
+            // Delete records
             $return = parent::_deletes($acl_group_collection);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             foreach ($acl_group_collection as $acl_group) {
@@ -176,6 +230,9 @@
                     )
                 );
             }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
 
             return $return;
         }

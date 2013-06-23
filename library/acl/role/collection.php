@@ -29,6 +29,6 @@
          * @return user_collection
          */
         public function user_collection() {
-            return $this->_preload_many_to_many('user_acl_role', 'by_role', 'user');
+            return $this->_preload_many_to_many('user_acl_role', 'by_acl_role', 'user');
         }
     }

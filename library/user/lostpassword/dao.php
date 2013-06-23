@@ -14,7 +14,7 @@
          */
         public static function bindings() {
             return [
-                'hash'      => 'binary',
+                'hash'      => 'string',
                 'user_id'   => 'int',
                 'posted_on' => 'string',
             ];
@@ -55,6 +55,24 @@
             return self::_by_fields_multi(self::BY_USER, $keys);
         }
 
+        /**
+         * Get User Lostpassword hashs by an array of posted_ons
+         *
+         * @param array $posted_ons an array containing posted_ons
+         *
+         * @return array of arrays of User Lostpassword hashs
+         */
+        public static function by_posted_on_multi(array $posted_ons) {
+            $keys_arr = [];
+            foreach ($posted_ons as $k => $posted_on) {
+                $keys_arr[$k] = [ 'posted_on' => (string) $posted_on, ];
+            }
+            return self::_by_fields_multi(
+                self::BY_POSTED_ON,
+                $keys_arr
+            );
+        }
+
         // WRITES
 
         /**
@@ -65,7 +83,12 @@
          * @return user_lostpassword_model
          */
         public static function insert(array $info) {
+
+            // Insert record
             $return = parent::_insert($info);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_USER
@@ -80,6 +103,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -91,7 +117,12 @@
          * @return user_lostpassword_collection
          */
         public static function inserts(array $infos) {
+
+            // Insert records
             $return = parent::_inserts($infos);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             foreach ($infos as $info) {
@@ -106,8 +137,10 @@
                         )
                     );
                 }
-
             }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
 
             return $return;
         }
@@ -122,7 +155,12 @@
          * @return user_lostpassword_model updated model
          */
         public static function update(user_lostpassword_model $user_lostpassword, array $info) {
+
+            // Update record
             $updated_model = parent::_update($user_lostpassword, $info);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_USER
@@ -145,6 +183,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $updated_model;
         }
 
@@ -156,7 +197,12 @@
          * @return bool
          */
         public static function delete(user_lostpassword_model $user_lostpassword) {
+
+            // Delete record
             $return = parent::_delete($user_lostpassword);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_USER
@@ -169,6 +215,9 @@
                 )
             );
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -180,7 +229,12 @@
          * @return bool
          */
         public static function deletes(user_lostpassword_collection $user_lostpassword_collection) {
+
+            // Delete records
             $return = parent::_deletes($user_lostpassword_collection);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             foreach ($user_lostpassword_collection as $user_lostpassword) {
@@ -193,8 +247,10 @@
                         ]
                     )
                 );
-
             }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
 
             return $return;
         }

@@ -43,17 +43,17 @@
         }
 
         /**
-         * Acl Role Resource Collection
+         * Acl Role Collection
          *
-         * @return acl_role_resource_collection
+         * @return acl_role_collection
          */
-        public function acl_role_resource_collection() {
-            if (! array_key_exists('acl_role_resource_collection', $this->_vars)) {
-                $this->_vars['acl_role_resource_collection'] = new acl_role_resource_collection(
+        public function acl_role_collection() {
+            if (! array_key_exists('acl_role_collection', $this->_vars)) {
+                $this->_vars['acl_role_collection'] = new acl_role_collection(
                     acl_role_resource_dao::by_acl_resource($this->vars['id'])
                 );
             }
-            return $this->_vars['acl_role_resource_collection'];
+            return $this->_vars['acl_role_collection'];
         }
 
         /**

@@ -75,7 +75,12 @@
          * @return user_hashmethod_model
          */
         public static function insert(array $info) {
+
+            // Insert record
             $return = parent::_insert($info);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ALL
@@ -95,6 +100,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -106,7 +114,12 @@
          * @return user_hashmethod_collection
          */
         public static function inserts(array $infos) {
+
+            // Insert records
             $return = parent::_inserts($infos);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ALL
@@ -126,8 +139,10 @@
                         )
                     );
                 }
-
             }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
 
             return $return;
         }
@@ -142,7 +157,12 @@
          * @return user_hashmethod_model updated model
          */
         public static function update(user_hashmethod_model $user_hashmethod, array $info) {
+
+            // Update record
             $updated_model = parent::_update($user_hashmethod, $info);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ALL
@@ -170,6 +190,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $updated_model;
         }
 
@@ -181,7 +204,12 @@
          * @return bool
          */
         public static function delete(user_hashmethod_model $user_hashmethod) {
+
+            // Delete record
             $return = parent::_delete($user_hashmethod);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ALL
@@ -199,6 +227,9 @@
                 )
             );
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -210,7 +241,12 @@
          * @return bool
          */
         public static function deletes(user_hashmethod_collection $user_hashmethod_collection) {
+
+            // Delete records
             $return = parent::_deletes($user_hashmethod_collection);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ALL
@@ -228,8 +264,10 @@
                         ]
                     )
                 );
-
             }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
 
             return $return;
         }

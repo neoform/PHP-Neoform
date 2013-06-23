@@ -164,7 +164,7 @@
                 $field_names  = [];
                 foreach ($index as $index_field) {
 
-                    if (! $field->is_field_lookupable()) {
+                    if (! $index_field->is_field_lookupable()) {
                         continue;
                     }
 

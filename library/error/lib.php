@@ -4,25 +4,15 @@
 
         public static function log(exception $e, $rethrow=true) {
             try {
-
-                if ($e instanceof error_php_exception) {
-                    $traces = $e->getTrace();
-                    array_shift($traces);
-                    $err = $e->getMessage() . "\nStack Trace:\n";
-                    foreach ($traces as $trace) {
-                        $err .= (isset($trace['file']) ? $trace['file'] : 'Unknownfile') . ':' . (isset($trace['line']) ? $trace['line'] : '0') . ': ' . (isset($trace['function']) ? $trace['function'] : 'unknownFunction') . "(" . (isset($trace['args']) ? join(', ', self::args($trace['args'])) : '') . ")\n";
-                    }
-                } else {
-                    $err = $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\nStack Trace:\n";
-                    foreach ($e->getTrace() as $trace) {
-                        $args = [];
-                        if (isset($trace['args']) && is_array($trace['args'])) {
-                            foreach ($trace['args'] as $arg) {
-                                $args[] = is_array($arg) ? '[]' : (is_object($arg) ? '[object]' : $arg);
-                            }
+                $err = $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\nStack Trace:\n";
+                foreach ($e->getTrace() as $trace) {
+                    $args = [];
+                    if (isset($trace['args']) && is_array($trace['args'])) {
+                        foreach ($trace['args'] as $arg) {
+                            $args[] = is_array($arg) ? '[]' : (is_object($arg) ? '[object]' : $arg);
                         }
-                        $err .= (isset($trace['file']) ? $trace['file'] : 'Unknownfile') . ':' . (isset($trace['line']) ? $trace['line'] : '0') . ': ' . (isset($trace['function']) ? $trace['function'] : 'unknownFunction') . "(" . join(', ', $args) . ")\n";
                     }
+                    $err .= (isset($trace['file']) ? $trace['file'] : 'Unknownfile') . ':' . (isset($trace['line']) ? $trace['line'] : '0') . ': ' . (isset($trace['function']) ? $trace['function'] : 'unknownFunction') . "(" . join(', ', $args) . ")\n";
                 }
 
                 core::log($err, 'fatal');

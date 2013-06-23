@@ -136,7 +136,7 @@
 
                 // end comments
 
-                $this->code .= "\t\tpublic static function by_" . $foreign_key_field->referenced_field->table->name . "_multi(" . $foreign_key_field->referenced_field->table->name . "_collection $" . $foreign_key_field->referenced_field->table->name . "_collection) {\n";
+                $this->code .= "\t\tpublic static function by_" . $foreign_key_field->name_idless . "_multi(" . $foreign_key_field->referenced_field->table->name . "_collection $" . $foreign_key_field->referenced_field->table->name . "_collection) {\n";
 
                 $this->code .= "\t\t\t\$keys = [];\n";
                 $this->code .= "\t\t\tforeach ($" . $foreign_key_field->referenced_field->table->name . "_collection as \$k => $" . $foreign_key_field->referenced_field->table->name . ") {\n";

@@ -27,44 +27,44 @@
         }
 
         /**
-         * Acl Group Role Collection
+         * Acl Group Collection
          *
-         * @return acl_group_role_collection
+         * @return acl_group_collection
          */
-        public function acl_group_role_collection() {
-            if (! array_key_exists('acl_group_role_collection', $this->_vars)) {
-                $this->_vars['acl_group_role_collection'] = new acl_group_role_collection(
+        public function acl_group_collection() {
+            if (! array_key_exists('acl_group_collection', $this->_vars)) {
+                $this->_vars['acl_group_collection'] = new acl_group_collection(
                     acl_group_role_dao::by_acl_role($this->vars['id'])
                 );
             }
-            return $this->_vars['acl_group_role_collection'];
+            return $this->_vars['acl_group_collection'];
         }
 
         /**
-         * Acl Role Resource Collection
+         * Acl Resource Collection
          *
-         * @return acl_role_resource_collection
+         * @return acl_resource_collection
          */
-        public function acl_role_resource_collection() {
-            if (! array_key_exists('acl_role_resource_collection', $this->_vars)) {
-                $this->_vars['acl_role_resource_collection'] = new acl_role_resource_collection(
+        public function acl_resource_collection() {
+            if (! array_key_exists('acl_resource_collection', $this->_vars)) {
+                $this->_vars['acl_resource_collection'] = new acl_resource_collection(
                     acl_role_resource_dao::by_acl_role($this->vars['id'])
                 );
             }
-            return $this->_vars['acl_role_resource_collection'];
+            return $this->_vars['acl_resource_collection'];
         }
 
         /**
-         * User Acl Role Collection
+         * User Collection
          *
-         * @return user_acl_role_collection
+         * @return user_collection
          */
-        public function user_acl_role_collection() {
-            if (! array_key_exists('user_acl_role_collection', $this->_vars)) {
-                $this->_vars['user_acl_role_collection'] = new user_acl_role_collection(
-                    user_acl_role_dao::by_role($this->vars['id'])
+        public function user_collection() {
+            if (! array_key_exists('user_collection', $this->_vars)) {
+                $this->_vars['user_collection'] = new user_collection(
+                    user_acl_role_dao::by_acl_role($this->vars['id'])
                 );
             }
-            return $this->_vars['user_acl_role_collection'];
+            return $this->_vars['user_collection'];
         }
     }

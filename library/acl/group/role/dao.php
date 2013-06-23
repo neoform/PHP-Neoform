@@ -21,7 +21,6 @@
             ];
         }
 
-
         // READS
 
         /**
@@ -85,7 +84,7 @@
         }
 
         /**
-         * Get multiple sets of acl_role_id by acl_group_id
+         * Get multiple sets of acl_role_id by a collection of acl_groups
          *
          * @param acl_group_collection $acl_group_collection
          *
@@ -109,7 +108,7 @@
         }
 
         /**
-         * Get multiple sets of acl_group_id by acl_role_id
+         * Get multiple sets of acl_group_id by a collection of acl_roles
          *
          * @param acl_role_collection $acl_role_collection
          *
@@ -142,7 +141,12 @@
          * @return boolean
          */
         public static function insert(array $info) {
+
+            // Insert link
             $return = parent::_insert($info);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ACL_GROUP
@@ -182,6 +186,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -193,7 +200,12 @@
          * @return boolean
          */
         public static function inserts(array $infos) {
+
+            // Insert links
             $return = parent::_inserts($infos);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             foreach ($infos as $info) {
@@ -235,6 +247,9 @@
                 }
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -247,7 +262,12 @@
          * @return bool
          */
         public static function update(array $new_info, array $where) {
+
+            // Update link
             $return = parent::_update($new_info, $where);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ACL_GROUP
@@ -318,6 +338,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -329,7 +352,12 @@
          * @return bool
          */
         public static function delete(array $keys) {
+
+            // Delete link
             $return = parent::_delete($keys);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ACL_GROUP
@@ -363,6 +391,9 @@
                 )
             );
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -374,7 +405,12 @@
          * @return bool
          */
         public static function deletes(array $keys_arr) {
+
+            // Delete links
             $return = parent::_deletes($keys_arr);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // PRIMARY KEYS
             $unique_acl_group_id_arr = [];
@@ -418,6 +454,9 @@
                     )
                 );
             }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
 
             return $return;
         }

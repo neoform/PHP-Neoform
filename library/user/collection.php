@@ -33,12 +33,12 @@
         }
 
         /**
-         * Preload the Permission models in this collection
+         * Preload the Acl Role models in this collection
          *
-         * @return permission_collection
+         * @return acl_role_collection
          */
-        public function permission_collection() {
-            return $this->_preload_many_to_many('user_permission', 'by_user', 'permission');
+        public function acl_role_collection() {
+            return $this->_preload_many_to_many('user_acl_role', 'by_user', 'acl_role');
         }
 
         /**

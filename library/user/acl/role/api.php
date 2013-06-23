@@ -10,8 +10,8 @@
 
             if ($input->is_valid()) {
                 return user_acl_role_dao::insert([
-                    'user_id' => $input->user_id->val(),
-                    'role_id' => $input->role_id->val(),
+                    'user_id'     => $input->user_id->val(),
+                    'acl_role_id' => $input->acl_role_id->val(),
                 ]);
             }
             throw $input->exception();
@@ -21,8 +21,8 @@
             $keys = [];
             foreach ($acl_role_collection as $acl_role) {
                 $keys[] = [
-                    'user_id' => (int) $user->id,
-                    'role_id' => (int) $acl_role->id,
+                    'user_id'     => (int) $user->id,
+                    'acl_role_id' => (int) $acl_role->id,
                 ];
             }
             return user_acl_role_dao::deletes($keys);
@@ -32,8 +32,8 @@
             $keys = [];
             foreach ($user_collection as $user) {
                 $keys[] = [
-                    'role_id' => (int) $acl_role->id,
-                    'user_id' => (int) $user->id,
+                    'acl_role_id' => (int) $acl_role->id,
+                    'user_id'     => (int) $user->id,
                 ];
             }
             return user_acl_role_dao::deletes($keys);
@@ -50,12 +50,12 @@
                 }
             });
 
-            // role_id
-            $input->role_id->cast('int')->digit(0, 4294967295)->callback(function($role_id){
+            // acl_role_id
+            $input->acl_role_id->cast('int')->digit(0, 4294967295)->callback(function($acl_role_id){
                 try {
-                    $role_id->data('model', new acl_role_model($role_id->val()));
+                    $acl_role_id->data('model', new acl_role_model($acl_role_id->val()));
                 } catch (acl_role_exception $e) {
-                    $role_id->errors($e->getMessage());
+                    $acl_role_id->errors($e->getMessage());
                 }
             });
         }

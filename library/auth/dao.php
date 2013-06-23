@@ -65,6 +65,8 @@
          * @return auth_model
          */
         public static function insert(array $info) {
+
+            // Insert record
             $return = parent::_insert($info);
 
             // Delete Cache
@@ -91,7 +93,12 @@
          * @return auth_collection
          */
         public static function inserts(array $infos) {
+
+            // Insert records
             $return = parent::_inserts($infos);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             foreach ($infos as $info) {
@@ -106,8 +113,10 @@
                         )
                     );
                 }
-
             }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
 
             return $return;
         }
@@ -122,11 +131,17 @@
          * @return auth_model updated model
          */
         public static function update(auth_model $auth, array $info) {
+
+            // Update record
             $updated_model = parent::_update($auth, $info);
 
             // Delete Cache
             // BY_USER
             if (array_key_exists('user_id', $info)) {
+
+                // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+                parent::cache_batch_start();
+
                 parent::_cache_delete(
                     parent::_build_key(
                         self::BY_USER,
@@ -143,6 +158,9 @@
                         ]
                     )
                 );
+
+                // Execute pipelined cache deletion queries (if supported by cache engine)
+                parent::cache_batch_execute();
             }
 
             return $updated_model;
@@ -156,6 +174,8 @@
          * @return bool
          */
         public static function delete(auth_model $auth) {
+
+            // Delete record
             $return = parent::_delete($auth);
 
             // Delete Cache
@@ -180,7 +200,12 @@
          * @return bool
          */
         public static function deletes(auth_collection $auth_collection) {
+
+            // Delete records
             $return = parent::_deletes($auth_collection);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             foreach ($auth_collection as $auth) {
@@ -193,8 +218,10 @@
                         ]
                     )
                 );
-
             }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
 
             return $return;
         }

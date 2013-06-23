@@ -5,6 +5,7 @@
      */
     class acl_resource_dao extends record_dao implements acl_resource_definition {
 
+        const BY_ALL    = 'by_all';
         const BY_NAME   = 'by_name';
         const BY_PARENT = 'by_parent';
 
@@ -40,25 +41,6 @@
         }
 
         /**
-         * Get Acl Resource ids by an array of names
-         *
-         * @param array $names
-         *
-         * @return array of arrays of Acl Resource ids
-         */
-        public static function by_name_multi(array $names) {
-            $keys_arr = [];
-            foreach ($names as $k => $name) {
-                $keys_arr[$k] = [ 'name' => (string) $name, ];
-            }
-
-            return self::_by_fields_multi(
-                self::BY_NAME,
-                $keys_arr
-            );
-        }
-
-        /**
          * Get Acl Resource ids by parent
          *
          * @param int $parent_id
@@ -74,6 +56,50 @@
             );
         }
 
+        /**
+         * Get multiple sets of Acl Resource ids by acl_resource
+         *
+         * @param acl_resource_collection $acl_resource_collection
+         *
+         * @return array of arrays containing Acl Resource ids
+         */
+        public static function by_parent_multi(acl_resource_collection $acl_resource_collection) {
+            $keys = [];
+            foreach ($acl_resource_collection as $k => $acl_resource) {
+                $keys[$k] = [
+                    'parent_id' => $acl_resource->id === null ? null : (int) $acl_resource->id,
+                ];
+            }
+            return self::_by_fields_multi(self::BY_PARENT, $keys);
+        }
+
+        /**
+         * Get Acl Resource ids by an array of names
+         *
+         * @param array $names an array containing names
+         *
+         * @return array of arrays of Acl Resource ids
+         */
+        public static function by_name_multi(array $names) {
+            $keys_arr = [];
+            foreach ($names as $k => $name) {
+                $keys_arr[$k] = [ 'name' => (string) $name, ];
+            }
+            return self::_by_fields_multi(
+                self::BY_NAME,
+                $keys_arr
+            );
+        }
+
+        /**
+         * Get all data for all Acl Resource records
+         *
+         * @return array containing all Acl Resource records
+         */
+        public static function all() {
+            return parent::_all(self::BY_ALL);
+        }
+
         // WRITES
 
         /**
@@ -84,9 +110,19 @@
          * @return acl_resource_model
          */
         public static function insert(array $info) {
+
+            // Insert record
             $return = parent::_insert($info);
 
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
+
             // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
+
             // BY_NAME
             if (array_key_exists('name', $info)) {
                 parent::_cache_delete(
@@ -111,6 +147,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -122,9 +161,19 @@
          * @return acl_resource_collection
          */
         public static function inserts(array $infos) {
+
+            // Insert records
             $return = parent::_inserts($infos);
 
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
+
             // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
+
             foreach ($infos as $info) {
                 // BY_NAME
                 if (array_key_exists('name', $info)) {
@@ -151,6 +200,9 @@
                 }
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -164,9 +216,19 @@
          * @return acl_resource_model updated model
          */
         public static function update(acl_resource_model $acl_resource, array $info) {
+
+            // Update record
             $updated_model = parent::_update($acl_resource, $info);
 
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
+
             // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
+
             // BY_NAME
             if (array_key_exists('name', $info)) {
                 parent::_cache_delete(
@@ -207,6 +269,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $updated_model;
         }
 
@@ -218,9 +283,19 @@
          * @return bool
          */
         public static function delete(acl_resource_model $acl_resource) {
+
+            // Delete record
             $return = parent::_delete($acl_resource);
 
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
+
             // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
+
             // BY_NAME
             parent::_cache_delete(
                 parent::_build_key(
@@ -241,6 +316,9 @@
                 )
             );
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -252,9 +330,19 @@
          * @return bool
          */
         public static function deletes(acl_resource_collection $acl_resource_collection) {
+
+            // Delete records
             $return = parent::_deletes($acl_resource_collection);
 
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
+
             // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
+
             foreach ($acl_resource_collection as $acl_resource) {
                 // BY_NAME
                 parent::_cache_delete(
@@ -276,6 +364,9 @@
                     )
                 );
             }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
 
             return $return;
         }

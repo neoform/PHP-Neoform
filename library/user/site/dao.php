@@ -84,18 +84,28 @@
         }
 
         /**
-         * Get multiple sets of site_id by user_id
+         * Get multiple sets of site_id by a collection of users
          *
-         * @param user_collection $user_collection
+         * @param user_collection|array $user_list
          *
          * @return array of result sets containing site_id
          */
-        public static function by_user_multi(user_collection $user_collection) {
+        public static function by_user_multi($user_list) {
             $keys = [];
-            foreach ($user_collection as $k => $user) {
-                $keys[$k] = [
-                    'user_id' => (int) $user->id,
-                ];
+            if ($user_list instanceof user_collection) {
+                foreach ($user_list as $k => $user) {
+                    $keys[$k] = [
+                        'user_id' => (int) $user->id,
+                    ];
+                }
+
+            } else {
+                foreach ($user_list as $k => $user) {
+                    $keys[$k] = [
+                        'user_id' => (int) $user,
+                    ];
+                }
+
             }
 
             return self::_by_fields_multi(
@@ -108,18 +118,28 @@
         }
 
         /**
-         * Get multiple sets of user_id by site_id
+         * Get multiple sets of user_id by a collection of sites
          *
-         * @param site_collection $site_collection
+         * @param site_collection|array $site_list
          *
          * @return array of result sets containing user_id
          */
-        public static function by_site_multi(site_collection $site_collection) {
+        public static function by_site_multi($site_list) {
             $keys = [];
-            foreach ($site_collection as $k => $site) {
-                $keys[$k] = [
-                    'site_id' => (int) $site->id,
-                ];
+            if ($site_list instanceof site_collection) {
+                foreach ($site_list as $k => $site) {
+                    $keys[$k] = [
+                        'site_id' => (int) $site->id,
+                    ];
+                }
+
+            } else {
+                foreach ($site_list as $k => $site) {
+                    $keys[$k] = [
+                        'site_id' => (int) $site,
+                    ];
+                }
+
             }
 
             return self::_by_fields_multi(

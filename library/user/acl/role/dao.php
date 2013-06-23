@@ -86,16 +86,26 @@
         /**
          * Get multiple sets of acl_role_id by a collection of users
          *
-         * @param user_collection $user_collection
+         * @param user_collection|array $user_list
          *
          * @return array of result sets containing acl_role_id
          */
-        public static function by_user_multi(user_collection $user_collection) {
+        public static function by_user_multi($user_list) {
             $keys = [];
-            foreach ($user_collection as $k => $user) {
-                $keys[$k] = [
-                    'user_id' => (int) $user->id,
-                ];
+            if ($user_list instanceof user_collection) {
+                foreach ($user_list as $k => $user) {
+                    $keys[$k] = [
+                        'user_id' => (int) $user->id,
+                    ];
+                }
+
+            } else {
+                foreach ($user_list as $k => $user) {
+                    $keys[$k] = [
+                        'user_id' => (int) $user,
+                    ];
+                }
+
             }
 
             return self::_by_fields_multi(
@@ -110,16 +120,26 @@
         /**
          * Get multiple sets of user_id by a collection of acl_roles
          *
-         * @param acl_role_collection $acl_role_collection
+         * @param acl_role_collection|array $acl_role_list
          *
          * @return array of result sets containing user_id
          */
-        public static function by_acl_role_multi(acl_role_collection $acl_role_collection) {
+        public static function by_acl_role_multi($acl_role_list) {
             $keys = [];
-            foreach ($acl_role_collection as $k => $acl_role) {
-                $keys[$k] = [
-                    'acl_role_id' => (int) $acl_role->id,
-                ];
+            if ($acl_role_list instanceof acl_role_collection) {
+                foreach ($acl_role_list as $k => $acl_role) {
+                    $keys[$k] = [
+                        'acl_role_id' => (int) $acl_role->id,
+                    ];
+                }
+
+            } else {
+                foreach ($acl_role_list as $k => $acl_role) {
+                    $keys[$k] = [
+                        'acl_role_id' => (int) $acl_role,
+                    ];
+                }
+
             }
 
             return self::_by_fields_multi(

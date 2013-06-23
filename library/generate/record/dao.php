@@ -125,7 +125,7 @@
                 /**
                  * Get multiple sets of folder ids by parent folder
                  *
-                 * @param folder_collection $folder_collection
+                 * @param folder_collection|array $folder_list
                  *
                  * @return array of arrays containing
                  */
@@ -133,28 +133,45 @@
                 $this->code .= "\t\t/**\n";
                 $this->code .= "\t\t * Get multiple sets of " . ucwords(str_replace('_', ' ', $this->table->name)) . " " . $this->table->primary_key->name . "s by " . $field->referenced_field->table->name . "\n";
                 $this->code .= "\t\t *\n";
-                $this->code .= "\t\t * @param " . $field->referenced_field->table->name . "_collection $" . $field->referenced_field->table->name . "_collection\n";
+                $this->code .= "\t\t * @param " . $field->referenced_field->table->name . "_collection|array $" . $field->referenced_field->table->name . "_list\n";
                 $this->code .= "\t\t *\n";
                 $this->code .= "\t\t * @return array of arrays containing " . ucwords(str_replace('_', ' ', $this->table->name)) . " " . $this->table->primary_key->name . "s\n";
                 $this->code .= "\t\t */\n";
 
-                $this->code .= "\t\tpublic static function by_" . $field->name_idless . "_multi(" . $field->referenced_field->table->name . "_collection $" . $field->referenced_field->table->name . "_collection) {\n";
+                $this->code .= "\t\tpublic static function by_" . $field->name_idless . "_multi($" . $field->referenced_field->table->name . "_list) {\n";
                 $this->code .= "\t\t\t\$keys = [];\n";
-                $this->code .= "\t\t\tforeach ($" . $field->referenced_field->table->name . "_collection as \$k => $" . $field->referenced_field->table->name . ") {\n";
-                $this->code .= "\t\t\t\t\$keys[\$k] = [\n";
+
+                $this->code .= "\t\t\tif (\$" . $field->referenced_field->table->name . "_list instanceof " . $field->referenced_field->table->name . "_collection) {\n";
+
+                $this->code .= "\t\t\t\tforeach ($" . $field->referenced_field->table->name . "_list as \$k => $" . $field->referenced_field->table->name . ") {\n";
+                $this->code .= "\t\t\t\t\t\$keys[\$k] = [\n";
                 if ($field->allows_null()) {
-                    $this->code .= "\t\t\t\t\t'" . $field->name . "' => $" . $field->referenced_field->table->name . "->" . $field->referenced_field->name . " === null ? null : (" . $field->casting . ") $" . $field->referenced_field->table->name . "->" . $field->referenced_field->name . ",\n";
-                   } else {
-                       $this->code .= "\t\t\t\t\t'" . $field->name . "' => (" . $field->casting . ") $" . $field->referenced_field->table->name . "->" . $field->referenced_field->name . ",\n";
+                    $this->code .= "\t\t\t\t\t\t'" . $field->name . "' => $" . $field->referenced_field->table->name . "->" . $field->referenced_field->name . " === null ? null : (" . $field->casting . ") $" . $field->referenced_field->table->name . "->" . $field->referenced_field->name . ",\n";
+                } else {
+                    $this->code .= "\t\t\t\t\t\t'" . $field->name . "' => (" . $field->casting . ") $" . $field->referenced_field->table->name . "->" . $field->referenced_field->name . ",\n";
                 }
-                $this->code .= "\t\t\t\t];\n";
+                $this->code .= "\t\t\t\t\t];\n";
+                $this->code .= "\t\t\t\t}\n";
+
+                $this->code .= "\t\t\t} else {\n";
+
+                $this->code .= "\t\t\t\tforeach ($" . $field->referenced_field->table->name . "_list as \$k => $" . $field->referenced_field->table->name . ") {\n";
+                $this->code .= "\t\t\t\t\t\$keys[\$k] = [\n";
+                if ($field->allows_null()) {
+                    $this->code .= "\t\t\t\t\t\t'" . $field->name . "' => $" . $field->referenced_field->table->name . " === null ? null : (" . $field->casting . ") $" . $field->referenced_field->table->name . ",\n";
+                } else {
+                    $this->code .= "\t\t\t\t\t\t'" . $field->name . "' => (" . $field->casting . ") $" . $field->referenced_field->table->name . ",\n";
+                }
+                $this->code .= "\t\t\t\t\t];\n";
+                $this->code .= "\t\t\t\t}\n";
+
                 $this->code .= "\t\t\t}\n";
+
                 $this->code .= "\t\t\treturn self::_by_fields_multi(self::BY_" . strtoupper($field->name_idless) . ", \$keys);\n";
                 $this->code .= "\t\t}\n\n";
             }
 
             // Multi lookups on all other indexes that are not foreign keys
-
 
             foreach ($this->table->all_non_pk_indexes as $index) {
 
@@ -182,20 +199,20 @@
 
                     // Generate code
                     $this->code .= "\t\t/**\n";
-                    $this->code .= "\t\t * Get " . ucwords(str_replace('_', ' ', $this->table->name)) . " " . $this->table->primary_key->name . "s by an array of " . self::ander($names) . "s\n";
+                    $this->code .= "\t\t * Get " . ucwords(str_replace('_', ' ', $this->table->name)) . " " . $this->table->primary_key->name . "_arr by an array of " . self::ander($names) . "s\n";
                     $this->code .= "\t\t *\n";
                     if (count($field_names) === 1) {
-                        $this->code .= "\t\t * @param array \$" . $name . "s an array containing " . self::ander($field_names) . "\n";
+                        $this->code .= "\t\t * @param array \$" . $name . "_arr an array containing " . self::ander($field_names) . "\n";
                     } else {
-                        $this->code .= "\t\t * @param array \$" . $name . "s an array of arrays containing " . self::ander($field_names) . "\n";
+                        $this->code .= "\t\t * @param array \$" . $name . "_arr an array of arrays containing " . self::ander($field_names) . "\n";
                     }
                     $this->code .= "\t\t *\n";
                     $this->code .= "\t\t * @return array of arrays of " . ucwords(str_replace('_', ' ', $this->table->name)) . " " . $this->table->primary_key->name . "s\n";
                     $this->code .= "\t\t */\n";
 
-                    $this->code .= "\t\tpublic static function by_" . $name . "_multi(array $" . $name . "s) {\n";
+                    $this->code .= "\t\tpublic static function by_" . $name . "_multi(array $" . $name . "_arr) {\n";
                     $this->code .= "\t\t\t\$keys_arr = [];\n";
-                    $this->code .= "\t\t\tforeach (\$" . $name . "s as \$k => \$" . $name . ") {\n";
+                    $this->code .= "\t\t\tforeach (\$" . $name . "_arr as \$k => \$" . $name . ") {\n";
                     if (count($fields) === 1) {
                         $this->code .= "\t\t\t\t\$keys_arr[\$k] = [ '" . $index_field->name . "' => (" . $index_field->casting . ") \$" . $index_field->name . ", ];\n";
                     } else {

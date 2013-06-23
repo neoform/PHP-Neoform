@@ -5,6 +5,7 @@
      */
     class acl_role_dao extends record_dao implements acl_role_definition {
 
+        const BY_ALL  = 'by_all';
         const BY_NAME = 'by_name';
 
         /**
@@ -38,21 +39,30 @@
         }
 
         /**
-         * Get Acl Role ids by an array of names
+         * Get Acl Role id_arr by an array of names
          *
-         * @param array $names an array containing names
+         * @param array $name_arr an array containing names
          *
          * @return array of arrays of Acl Role ids
          */
-        public static function by_name_multi(array $names) {
+        public static function by_name_multi(array $name_arr) {
             $keys_arr = [];
-            foreach ($names as $k => $name) {
+            foreach ($name_arr as $k => $name) {
                 $keys_arr[$k] = [ 'name' => (string) $name, ];
             }
             return self::_by_fields_multi(
                 self::BY_NAME,
                 $keys_arr
             );
+        }
+
+        /**
+         * Get all data for all Acl Role records
+         *
+         * @return array containing all Acl Role records
+         */
+        public static function all() {
+            return parent::_all(self::BY_ALL);
         }
 
         // WRITES
@@ -73,6 +83,11 @@
             parent::cache_batch_start();
 
             // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
+
             // BY_NAME
             if (array_key_exists('name', $info)) {
                 parent::_cache_delete(
@@ -107,6 +122,11 @@
             parent::cache_batch_start();
 
             // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
+
             foreach ($infos as $info) {
                 // BY_NAME
                 if (array_key_exists('name', $info)) {
@@ -145,6 +165,11 @@
             parent::cache_batch_start();
 
             // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
+
             // BY_NAME
             if (array_key_exists('name', $info)) {
                 parent::_cache_delete(
@@ -187,6 +212,11 @@
             parent::cache_batch_start();
 
             // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
+
             // BY_NAME
             parent::_cache_delete(
                 parent::_build_key(
@@ -219,6 +249,11 @@
             parent::cache_batch_start();
 
             // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
+
             foreach ($acl_role_collection as $acl_role) {
                 // BY_NAME
                 parent::_cache_delete(

@@ -86,16 +86,26 @@
         /**
          * Get multiple sets of user_id by a collection of acl_groups
          *
-         * @param acl_group_collection $acl_group_collection
+         * @param acl_group_collection|array $acl_group_list
          *
          * @return array of result sets containing user_id
          */
-        public static function by_acl_group_multi(acl_group_collection $acl_group_collection) {
+        public static function by_acl_group_multi($acl_group_list) {
             $keys = [];
-            foreach ($acl_group_collection as $k => $acl_group) {
-                $keys[$k] = [
-                    'acl_group_id' => (int) $acl_group->id,
-                ];
+            if ($acl_group_list instanceof acl_group_collection) {
+                foreach ($acl_group_list as $k => $acl_group) {
+                    $keys[$k] = [
+                        'acl_group_id' => (int) $acl_group->id,
+                    ];
+                }
+
+            } else {
+                foreach ($acl_group_list as $k => $acl_group) {
+                    $keys[$k] = [
+                        'acl_group_id' => (int) $acl_group,
+                    ];
+                }
+
             }
 
             return self::_by_fields_multi(
@@ -110,16 +120,26 @@
         /**
          * Get multiple sets of acl_group_id by a collection of users
          *
-         * @param user_collection $user_collection
+         * @param user_collection|array $user_list
          *
          * @return array of result sets containing acl_group_id
          */
-        public static function by_user_multi(user_collection $user_collection) {
+        public static function by_user_multi($user_list) {
             $keys = [];
-            foreach ($user_collection as $k => $user) {
-                $keys[$k] = [
-                    'user_id' => (int) $user->id,
-                ];
+            if ($user_list instanceof user_collection) {
+                foreach ($user_list as $k => $user) {
+                    $keys[$k] = [
+                        'user_id' => (int) $user->id,
+                    ];
+                }
+
+            } else {
+                foreach ($user_list as $k => $user) {
+                    $keys[$k] = [
+                        'user_id' => (int) $user,
+                    ];
+                }
+
             }
 
             return self::_by_fields_multi(

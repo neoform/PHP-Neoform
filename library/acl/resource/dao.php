@@ -59,30 +59,38 @@
         /**
          * Get multiple sets of Acl Resource ids by acl_resource
          *
-         * @param acl_resource_collection $acl_resource_collection
+         * @param acl_resource_collection|array $acl_resource_list
          *
          * @return array of arrays containing Acl Resource ids
          */
-        public static function by_parent_multi(acl_resource_collection $acl_resource_collection) {
+        public static function by_parent_multi($acl_resource_list) {
             $keys = [];
-            foreach ($acl_resource_collection as $k => $acl_resource) {
-                $keys[$k] = [
-                    'parent_id' => $acl_resource->id === null ? null : (int) $acl_resource->id,
-                ];
+            if ($acl_resource_list instanceof acl_resource_collection) {
+                foreach ($acl_resource_list as $k => $acl_resource) {
+                    $keys[$k] = [
+                        'parent_id' => $acl_resource->id === null ? null : (int) $acl_resource->id,
+                    ];
+                }
+            } else {
+                foreach ($acl_resource_list as $k => $acl_resource) {
+                    $keys[$k] = [
+                        'parent_id' => $acl_resource === null ? null : (int) $acl_resource,
+                    ];
+                }
             }
             return self::_by_fields_multi(self::BY_PARENT, $keys);
         }
 
         /**
-         * Get Acl Resource ids by an array of names
+         * Get Acl Resource id_arr by an array of names
          *
-         * @param array $names an array containing names
+         * @param array $name_arr an array containing names
          *
          * @return array of arrays of Acl Resource ids
          */
-        public static function by_name_multi(array $names) {
+        public static function by_name_multi(array $name_arr) {
             $keys_arr = [];
-            foreach ($names as $k => $name) {
+            foreach ($name_arr as $k => $name) {
                 $keys_arr[$k] = [ 'name' => (string) $name, ];
             }
             return self::_by_fields_multi(

@@ -5,9 +5,9 @@
      */
     class user_dao extends record_dao implements user_definition {
 
+        const BY_EMAIL               = 'by_email';
         const BY_PASSWORD_HASHMETHOD = 'by_password_hashmethod';
         const BY_STATUS              = 'by_status';
-        const BY_EMAIL               = 'by_email';
 
         /**
          * Get the generic bindings of the table columns
@@ -17,7 +17,7 @@
         public static function bindings() {
             return [
                 'id'                  => 'int',
-                'email'               => 'int',
+                'email'               => 'string',
                 'password_hash'       => 'binary',
                 'password_hashmethod' => 'int',
                 'password_cost'       => 'int',
@@ -27,6 +27,22 @@
         }
 
         // READS
+
+        /**
+         * Get User ids by email
+         *
+         * @param string $email
+         *
+         * @return array of User ids
+         */
+        public static function by_email($email) {
+            return self::_by_fields(
+                self::BY_EMAIL,
+                [
+                    'email' => (string) $email,
+                ]
+            );
+        }
 
         /**
          * Get User ids by password_hashmethod
@@ -61,34 +77,26 @@
         }
 
         /**
-         * Get User ids by email
-         *
-         * @param string $email
-         *
-         * @return array of User ids
-         */
-        public static function by_email($email) {
-            return self::_by_fields(
-                self::BY_EMAIL,
-                [
-                    'email' => (string) $email,
-                ]
-            );
-        }
-
-        /**
          * Get multiple sets of User ids by user_hashmethod
          *
-         * @param user_hashmethod_collection $user_hashmethod_collection
+         * @param user_hashmethod_collection|array $user_hashmethod_list
          *
          * @return array of arrays containing User ids
          */
-        public static function by_password_hashmethod_multi(user_hashmethod_collection $user_hashmethod_collection) {
+        public static function by_password_hashmethod_multi($user_hashmethod_list) {
             $keys = [];
-            foreach ($user_hashmethod_collection as $k => $user_hashmethod) {
-                $keys[$k] = [
-                    'password_hashmethod' => (int) $user_hashmethod->id,
-                ];
+            if ($user_hashmethod_list instanceof user_hashmethod_collection) {
+                foreach ($user_hashmethod_list as $k => $user_hashmethod) {
+                    $keys[$k] = [
+                        'password_hashmethod' => (int) $user_hashmethod->id,
+                    ];
+                }
+            } else {
+                foreach ($user_hashmethod_list as $k => $user_hashmethod) {
+                    $keys[$k] = [
+                        'password_hashmethod' => (int) $user_hashmethod,
+                    ];
+                }
             }
             return self::_by_fields_multi(self::BY_PASSWORD_HASHMETHOD, $keys);
         }
@@ -96,30 +104,38 @@
         /**
          * Get multiple sets of User ids by user_status
          *
-         * @param user_status_collection $user_status_collection
+         * @param user_status_collection|array $user_status_list
          *
          * @return array of arrays containing User ids
          */
-        public static function by_status_multi(user_status_collection $user_status_collection) {
+        public static function by_status_multi($user_status_list) {
             $keys = [];
-            foreach ($user_status_collection as $k => $user_status) {
-                $keys[$k] = [
-                    'status_id' => (int) $user_status->id,
-                ];
+            if ($user_status_list instanceof user_status_collection) {
+                foreach ($user_status_list as $k => $user_status) {
+                    $keys[$k] = [
+                        'status_id' => (int) $user_status->id,
+                    ];
+                }
+            } else {
+                foreach ($user_status_list as $k => $user_status) {
+                    $keys[$k] = [
+                        'status_id' => (int) $user_status,
+                    ];
+                }
             }
             return self::_by_fields_multi(self::BY_STATUS, $keys);
         }
 
         /**
-         * Get User ids by an array of emails
+         * Get User id_arr by an array of emails
          *
-         * @param array $emails an array containing emails
+         * @param array $email_arr an array containing emails
          *
          * @return array of arrays of User ids
          */
-        public static function by_email_multi(array $emails) {
+        public static function by_email_multi(array $email_arr) {
             $keys_arr = [];
-            foreach ($emails as $k => $email) {
+            foreach ($email_arr as $k => $email) {
                 $keys_arr[$k] = [ 'email' => (string) $email, ];
             }
             return self::_by_fields_multi(
@@ -172,6 +188,18 @@
             parent::cache_batch_start();
 
             // Delete Cache
+            // BY_EMAIL
+            if (array_key_exists('email', $info)) {
+                parent::_cache_delete(
+                    parent::_build_key(
+                        self::BY_EMAIL,
+                        [
+                            'email' => (string) $info['email'],
+                        ]
+                    )
+                );
+            }
+
             // BY_PASSWORD_HASHMETHOD
             if (array_key_exists('password_hashmethod', $info)) {
                 parent::_cache_delete(
@@ -191,18 +219,6 @@
                         self::BY_STATUS,
                         [
                             'status_id' => (int) $info['status_id'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_EMAIL
-            if (array_key_exists('email', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_EMAIL,
-                        [
-                            'email' => (string) $info['email'],
                         ]
                     )
                 );
@@ -231,6 +247,18 @@
 
             // Delete Cache
             foreach ($infos as $info) {
+                // BY_EMAIL
+                if (array_key_exists('email', $info)) {
+                    parent::_cache_delete(
+                        parent::_build_key(
+                            self::BY_EMAIL,
+                            [
+                                'email' => (string) $info['email'],
+                            ]
+                        )
+                    );
+                }
+
                 // BY_PASSWORD_HASHMETHOD
                 if (array_key_exists('password_hashmethod', $info)) {
                     parent::_cache_delete(
@@ -254,19 +282,6 @@
                         )
                     );
                 }
-
-                // BY_EMAIL
-                if (array_key_exists('email', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_EMAIL,
-                            [
-                                'email' => (string) $info['email'],
-                            ]
-                        )
-                    );
-                }
-
             }
 
             // Execute pipelined cache deletion queries (if supported by cache engine)
@@ -286,13 +301,33 @@
          */
         public static function update(user_model $user, array $info) {
 
-            // Update records
+            // Update record
             $updated_model = parent::_update($user, $info);
 
             // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
             parent::cache_batch_start();
 
             // Delete Cache
+            // BY_EMAIL
+            if (array_key_exists('email', $info)) {
+                parent::_cache_delete(
+                    parent::_build_key(
+                        self::BY_EMAIL,
+                        [
+                            'email' => (string) $user->email,
+                        ]
+                    )
+                );
+                parent::_cache_delete(
+                    parent::_build_key(
+                        self::BY_EMAIL,
+                        [
+                            'email' => (string) $info['email'],
+                        ]
+                    )
+                );
+            }
+
             // BY_PASSWORD_HASHMETHOD
             if (array_key_exists('password_hashmethod', $info)) {
                 parent::_cache_delete(
@@ -333,26 +368,6 @@
                 );
             }
 
-            // BY_EMAIL
-            if (array_key_exists('email', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_EMAIL,
-                        [
-                            'email' => (string) $user->email,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_EMAIL,
-                        [
-                            'email' => (string) $info['email'],
-                        ]
-                    )
-                );
-            }
-
             // Execute pipelined cache deletion queries (if supported by cache engine)
             parent::cache_batch_execute();
 
@@ -375,6 +390,16 @@
             parent::cache_batch_start();
 
             // Delete Cache
+            // BY_EMAIL
+            parent::_cache_delete(
+                parent::_build_key(
+                    self::BY_EMAIL,
+                    [
+                        'email' => (string) $user->email,
+                    ]
+                )
+            );
+
             // BY_PASSWORD_HASHMETHOD
             parent::_cache_delete(
                 parent::_build_key(
@@ -391,16 +416,6 @@
                     self::BY_STATUS,
                     [
                         'status_id' => (int) $user->status_id,
-                    ]
-                )
-            );
-
-            // BY_EMAIL
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_EMAIL,
-                    [
-                        'email' => (string) $user->email,
                     ]
                 )
             );
@@ -428,6 +443,16 @@
 
             // Delete Cache
             foreach ($user_collection as $user) {
+                // BY_EMAIL
+                parent::_cache_delete(
+                    parent::_build_key(
+                        self::BY_EMAIL,
+                        [
+                            'email' => (string) $user->email,
+                        ]
+                    )
+                );
+
                 // BY_PASSWORD_HASHMETHOD
                 parent::_cache_delete(
                     parent::_build_key(
@@ -444,16 +469,6 @@
                         self::BY_STATUS,
                         [
                             'status_id' => (int) $user->status_id,
-                        ]
-                    )
-                );
-
-                // BY_EMAIL
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_EMAIL,
-                        [
-                            'email' => (string) $user->email,
                         ]
                     )
                 );

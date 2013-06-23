@@ -129,24 +129,41 @@
                 $this->code .= "\t\t/**\n";
                 $this->code .= "\t\t * Get multiple sets of " . self::ander($selected_fields) . " by a collection of " . $foreign_key_field->referenced_field->table->name . "s\n";
                 $this->code .= "\t\t *\n";
-                $this->code .= "\t\t * @param " . $foreign_key_field->referenced_field->table->name . "_collection \$" . $foreign_key_field->referenced_field->table->name . "_collection\n";
+                $this->code .= "\t\t * @param " . $foreign_key_field->referenced_field->table->name . "_collection|array \$" . $foreign_key_field->referenced_field->table->name . "_list\n";
                 $this->code .= "\t\t *\n";
                 $this->code .= "\t\t * @return array of result sets containing " . self::ander($selected_fields) . "\n";
                 $this->code .= "\t\t */\n";
 
                 // end comments
 
-                $this->code .= "\t\tpublic static function by_" . $foreign_key_field->name_idless . "_multi(" . $foreign_key_field->referenced_field->table->name . "_collection $" . $foreign_key_field->referenced_field->table->name . "_collection) {\n";
+                $this->code .= "\t\tpublic static function by_" . $foreign_key_field->name_idless . "_multi($" . $foreign_key_field->referenced_field->table->name . "_list) {\n";
 
                 $this->code .= "\t\t\t\$keys = [];\n";
-                $this->code .= "\t\t\tforeach ($" . $foreign_key_field->referenced_field->table->name . "_collection as \$k => $" . $foreign_key_field->referenced_field->table->name . ") {\n";
-                $this->code .= "\t\t\t\t\$keys[\$k] = [\n";
+
+                $this->code .= "\t\t\tif (\$" . $foreign_key_field->referenced_field->table->name . "_list instanceof " . $foreign_key_field->referenced_field->table->name . "_collection) {\n";
+
+                $this->code .= "\t\t\t\tforeach ($" . $foreign_key_field->referenced_field->table->name . "_list as \$k => $" . $foreign_key_field->referenced_field->table->name . ") {\n";
+                $this->code .= "\t\t\t\t\t\$keys[\$k] = [\n";
                 if ($foreign_key_field->allows_null()) {
-                    $this->code .= "\t\t\t\t\t'" . $foreign_key_field->name . "' => $" . $foreign_key_field->referenced_field->table->name . "->" . $foreign_key_field->referenced_field->name . " === null ? null : (" . $foreign_key_field->referenced_field->casting . ") $" . $foreign_key_field->referenced_field->table->name . "->" . $foreign_key_field->referenced_field->name . ",\n";
+                    $this->code .= "\t\t\t\t\t\t'" . $foreign_key_field->name . "' => $" . $foreign_key_field->referenced_field->table->name . "->" . $foreign_key_field->referenced_field->name . " === null ? null : (" . $foreign_key_field->referenced_field->casting . ") $" . $foreign_key_field->referenced_field->table->name . "->" . $foreign_key_field->referenced_field->name . ",\n";
                 } else {
-                    $this->code .= "\t\t\t\t\t'" . $foreign_key_field->name . "' => (" . $foreign_key_field->referenced_field->casting . ") $" . $foreign_key_field->referenced_field->table->name . "->" . $foreign_key_field->referenced_field->name . ",\n";
+                    $this->code .= "\t\t\t\t\t\t'" . $foreign_key_field->name . "' => (" . $foreign_key_field->referenced_field->casting . ") $" . $foreign_key_field->referenced_field->table->name . "->" . $foreign_key_field->referenced_field->name . ",\n";
                 }
-                $this->code .= "\t\t\t\t];\n";
+                $this->code .= "\t\t\t\t\t];\n";
+                $this->code .= "\t\t\t\t}\n\n";
+
+                $this->code .= "\t\t\t} else {\n";
+
+                $this->code .= "\t\t\t\tforeach ($" . $foreign_key_field->referenced_field->table->name . "_list as \$k => $" . $foreign_key_field->referenced_field->table->name . ") {\n";
+                $this->code .= "\t\t\t\t\t\$keys[\$k] = [\n";
+                if ($foreign_key_field->allows_null()) {
+                    $this->code .= "\t\t\t\t\t\t'" . $foreign_key_field->name . "' => $" . $foreign_key_field->referenced_field->table->name . " === null ? null : (" . $foreign_key_field->referenced_field->casting . ") $" . $foreign_key_field->referenced_field->table->name . ",\n";
+                } else {
+                    $this->code .= "\t\t\t\t\t\t'" . $foreign_key_field->name . "' => (" . $foreign_key_field->referenced_field->casting . ") $" . $foreign_key_field->referenced_field->table->name . ",\n";
+                }
+                $this->code .= "\t\t\t\t\t];\n";
+                $this->code .= "\t\t\t\t}\n\n";
+
                 $this->code .= "\t\t\t}\n\n";
 
                 $this->code .= "\t\t\treturn self::_by_fields_multi(\n";

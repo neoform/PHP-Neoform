@@ -63,7 +63,7 @@
             // Collect all resources these roles have access to
             if (! isset($this->_vars['role_resource_ids'])) {
                 $this->_vars['role_resource_ids'] = [];
-                foreach (acl_role_resource_dao::by_acl_role_multi_array($this->_vars['role_ids']) as $ids) {
+                foreach (acl_role_resource_dao::by_acl_role_multi($this->_vars['role_ids']) as $ids) {
                     if ($ids) {
                         foreach ($ids as $role_resource_id) {
                             $this->_vars['role_resource_ids'][(int) $role_resource_id] = 1;

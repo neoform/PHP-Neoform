@@ -9,7 +9,6 @@
         } catch (input_exception $e) {
 
         }
-    } else {
-        $json->redirect = true;
     }
+
     core::output()->redirect();

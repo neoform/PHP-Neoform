@@ -86,40 +86,26 @@
         /**
          * Get multiple sets of acl_resource_id by a collection of acl_roles
          *
-         * @param acl_role_collection $acl_role_collection
+         * @param acl_role_collection|array $acl_role_list
          *
          * @return array of result sets containing acl_resource_id
          */
-        public static function by_acl_role_multi(acl_role_collection $acl_role_collection) {
+        public static function by_acl_role_multi($acl_role_list) {
             $keys = [];
-            foreach ($acl_role_collection as $k => $acl_role) {
-                $keys[$k] = [
-                    'acl_role_id' => (int) $acl_role->id,
-                ];
-            }
+            if ($acl_role_list instanceof acl_role_collection) {
+                foreach ($acl_role_list as $k => $acl_role) {
+                    $keys[$k] = [
+                        'acl_role_id' => (int) $acl_role->id,
+                    ];
+                }
 
-            return self::_by_fields_multi(
-                self::BY_ACL_ROLE,
-                [
-                    'acl_resource_id',
-                ],
-                $keys
-            );
-        }
+            } else {
+                foreach ($acl_role_list as $k => $acl_role) {
+                    $keys[$k] = [
+                        'acl_role_id' => (int) $acl_role,
+                    ];
+                }
 
-        /**
-         * Get multiple sets of acl_resource_id by a collection of acl_roles
-         *
-         * @param array $acl_role_ids
-         *
-         * @return array of result sets containing acl_resource_id
-         */
-        public static function by_acl_role_multi_array(array $acl_role_ids) {
-            $keys = [];
-            foreach ($acl_role_ids as $k => $acl_role_id) {
-                $keys[$k] = [
-                    'acl_role_id' => (int) $acl_role_id,
-                ];
             }
 
             return self::_by_fields_multi(
@@ -134,16 +120,26 @@
         /**
          * Get multiple sets of acl_role_id by a collection of acl_resources
          *
-         * @param acl_resource_collection $acl_resource_collection
+         * @param acl_resource_collection|array $acl_resource_list
          *
          * @return array of result sets containing acl_role_id
          */
-        public static function by_acl_resource_multi(acl_resource_collection $acl_resource_collection) {
+        public static function by_acl_resource_multi($acl_resource_list) {
             $keys = [];
-            foreach ($acl_resource_collection as $k => $acl_resource) {
-                $keys[$k] = [
-                    'acl_resource_id' => (int) $acl_resource->id,
-                ];
+            if ($acl_resource_list instanceof acl_resource_collection) {
+                foreach ($acl_resource_list as $k => $acl_resource) {
+                    $keys[$k] = [
+                        'acl_resource_id' => (int) $acl_resource->id,
+                    ];
+                }
+
+            } else {
+                foreach ($acl_resource_list as $k => $acl_resource) {
+                    $keys[$k] = [
+                        'acl_resource_id' => (int) $acl_resource,
+                    ];
+                }
+
             }
 
             return self::_by_fields_multi(

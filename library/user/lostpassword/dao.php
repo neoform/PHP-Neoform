@@ -41,36 +41,26 @@
         /**
          * Get multiple sets of User Lostpassword hashs by user
          *
-         * @param user_collection $user_collection
+         * @param user_collection|array $user_list
          *
          * @return array of arrays containing User Lostpassword hashs
          */
-        public static function by_user_multi(user_collection $user_collection) {
+        public static function by_user_multi($user_list) {
             $keys = [];
-            foreach ($user_collection as $k => $user) {
-                $keys[$k] = [
-                    'user_id' => (int) $user->id,
-                ];
+            if ($user_list instanceof user_collection) {
+                foreach ($user_list as $k => $user) {
+                    $keys[$k] = [
+                        'user_id' => (int) $user->id,
+                    ];
+                }
+            } else {
+                foreach ($user_list as $k => $user) {
+                    $keys[$k] = [
+                        'user_id' => (int) $user,
+                    ];
+                }
             }
             return self::_by_fields_multi(self::BY_USER, $keys);
-        }
-
-        /**
-         * Get User Lostpassword hashs by an array of posted_ons
-         *
-         * @param array $posted_ons an array containing posted_ons
-         *
-         * @return array of arrays of User Lostpassword hashs
-         */
-        public static function by_posted_on_multi(array $posted_ons) {
-            $keys_arr = [];
-            foreach ($posted_ons as $k => $posted_on) {
-                $keys_arr[$k] = [ 'posted_on' => (string) $posted_on, ];
-            }
-            return self::_by_fields_multi(
-                self::BY_POSTED_ON,
-                $keys_arr
-            );
         }
 
         // WRITES

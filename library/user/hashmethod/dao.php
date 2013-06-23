@@ -39,15 +39,15 @@
         }
 
         /**
-         * Get User Hashmethod ids by an array of names
+         * Get User Hashmethod id_arr by an array of names
          *
-         * @param array $names an array containing names
+         * @param array $name_arr an array containing names
          *
          * @return array of arrays of User Hashmethod ids
          */
-        public static function by_name_multi(array $names) {
+        public static function by_name_multi(array $name_arr) {
             $keys_arr = [];
-            foreach ($names as $k => $name) {
+            foreach ($name_arr as $k => $name) {
                 $keys_arr[$k] = [ 'name' => (string) $name, ];
             }
             return self::_by_fields_multi(

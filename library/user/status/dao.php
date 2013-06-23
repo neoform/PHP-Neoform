@@ -20,7 +20,6 @@
             ];
         }
 
-
         // READS
 
         /**
@@ -40,15 +39,15 @@
         }
 
         /**
-         * Get User Status ids by an array of names
+         * Get User Status id_arr by an array of names
          *
-         * @param array $names an array containing names
+         * @param array $name_arr an array containing names
          *
          * @return array of arrays of User Status ids
          */
-        public static function by_name_multi(array $names) {
+        public static function by_name_multi(array $name_arr) {
             $keys_arr = [];
-            foreach ($names as $k => $name) {
+            foreach ($name_arr as $k => $name) {
                 $keys_arr[$k] = [ 'name' => (string) $name, ];
             }
             return self::_by_fields_multi(
@@ -76,7 +75,12 @@
          * @return user_status_model
          */
         public static function insert(array $info) {
+
+            // Insert record
             $return = parent::_insert($info);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ALL
@@ -96,6 +100,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -107,7 +114,12 @@
          * @return user_status_collection
          */
         public static function inserts(array $infos) {
+
+            // Insert records
             $return = parent::_inserts($infos);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ALL
@@ -129,6 +141,9 @@
                 }
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -142,7 +157,12 @@
          * @return user_status_model updated model
          */
         public static function update(user_status_model $user_status, array $info) {
+
+            // Update record
             $updated_model = parent::_update($user_status, $info);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ALL
@@ -170,6 +190,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $updated_model;
         }
 
@@ -181,7 +204,12 @@
          * @return bool
          */
         public static function delete(user_status_model $user_status) {
+
+            // Delete record
             $return = parent::_delete($user_status);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ALL
@@ -199,6 +227,9 @@
                 )
             );
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -210,7 +241,12 @@
          * @return bool
          */
         public static function deletes(user_status_collection $user_status_collection) {
+
+            // Delete records
             $return = parent::_deletes($user_status_collection);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ALL
@@ -229,6 +265,9 @@
                     )
                 );
             }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
 
             return $return;
         }

@@ -52,7 +52,6 @@
             }
 
             if (! isset($this->_vars['role_ids'])) {
-                core::debug('role_ids');
                 $this->_vars['role_ids'] = array_unique(user_acl_role_dao::by_user($this->vars['id']));
             }
 

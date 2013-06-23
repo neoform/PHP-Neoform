@@ -52,7 +52,21 @@
             }
 
             if (! isset($this->_vars['role_ids'])) {
-                $this->_vars['role_ids'] = array_unique(user_acl_role_dao::by_user($this->vars['id']));
+
+                // Get user's roles
+                $role_ids = user_acl_role_dao::by_user($this->vars['id']);
+
+                // Get user's groups
+                if ($group_ids = acl_group_user_dao::by_user($this->vars['id'])) {
+                    // Get those group's roles
+                    foreach (acl_group_role_dao::by_acl_group_multi($group_ids) as $group_role_ids) {
+                        foreach ($group_role_ids as $group_role_id) {
+                            $role_ids[] = $group_role_id;
+                        }
+                    }
+                }
+
+                $this->_vars['role_ids'] = array_unique($role_ids);
             }
 
             // Don't have any roles? You clearly don't have access.

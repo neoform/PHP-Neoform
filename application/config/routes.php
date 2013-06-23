@@ -117,7 +117,7 @@
             'admin' => new http_route([
                 'controller' => '/admin',
                 'secure'     => true,
-                'permission' => 'admin',
+                'resources' => 'admin',
                 'locale' => [
                     'en' => 'admin',
                     'fr' => 'admin',
@@ -127,7 +127,7 @@
                     // User
                     'user' => new http_route([
                         'controller' => '/admin/user',
-                        'permission' => 'user',
+                        'resources' => 'user',
                         'locale' => [
                             'en' => 'user',
                             'fr' => 'user',
@@ -136,7 +136,7 @@
                             // User
                             'view' => new http_route([
                                 'controller' => '/admin/user/view',
-                                'permission' => 'user view',
+                                'resources' => 'user view',
                                 'locale' => [
                                     'en' => 'view',
                                     'fr' => 'view',
@@ -152,7 +152,7 @@
                     // Locale
                     'locale' => new http_route([
                         'controller' => '/admin/locale',
-                        'permission' => 'locale',
+                        'resources' => 'locale',
                         'locale' => [
                             'en' => 'locale',
                             'fr' => 'locale',

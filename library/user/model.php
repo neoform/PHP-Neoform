@@ -40,12 +40,52 @@
         /**
          * Checks if this user has the required ACL roles to access a list of resources (array of resource names)
          *
-         * @param array $resource_names
+         * @param array $resource_ids
          *
          * @return bool
          */
-        public function has_permission(array $resource_names) {
-            return user_acl_role_lib::roles_have_resources($this->acl_role_collection(), $resource_names);
+        public function has_access(array $resource_ids) {
+
+            // No resources needed? You may proceed.
+            if (! $resource_ids) {
+                return true;
+            }
+
+            if (! isset($this->_vars['role_ids'])) {
+                core::debug('role_ids');
+                $this->_vars['role_ids'] = array_unique(user_acl_role_dao::by_user($this->vars['id']));
+            }
+
+            // Don't have any roles? You clearly don't have access.
+            if (! $this->_vars['role_ids']) {
+                return false;
+            }
+
+            // Collect all resources these roles have access to
+            if (! isset($this->_vars['role_resource_ids'])) {
+                $this->_vars['role_resource_ids'] = [];
+                foreach (acl_role_resource_dao::by_acl_role_multi_array($this->_vars['role_ids']) as $ids) {
+                    if ($ids) {
+                        foreach ($ids as $role_resource_id) {
+                            $this->_vars['role_resource_ids'][(int) $role_resource_id] = 1;
+                        }
+                    }
+                }
+            }
+
+            // No resources in your roles? (that's weird) You may not continue.
+            if (! $this->_vars['role_resource_ids']) {
+                return false;
+            }
+
+            foreach ($resource_ids as $resource_id) {
+                if (! isset($this->_vars['role_resource_ids'][(int) $resource_id])) {
+                    return false;
+                }
+            }
+
+            // Everything looks good, you have access.
+            return true;
         }
 
         /**

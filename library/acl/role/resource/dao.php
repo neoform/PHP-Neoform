@@ -108,6 +108,30 @@
         }
 
         /**
+         * Get multiple sets of acl_resource_id by a collection of acl_roles
+         *
+         * @param array $acl_role_ids
+         *
+         * @return array of result sets containing acl_resource_id
+         */
+        public static function by_acl_role_multi_array(array $acl_role_ids) {
+            $keys = [];
+            foreach ($acl_role_ids as $k => $acl_role_id) {
+                $keys[$k] = [
+                    'acl_role_id' => (int) $acl_role_id,
+                ];
+            }
+
+            return self::_by_fields_multi(
+                self::BY_ACL_ROLE,
+                [
+                    'acl_resource_id',
+                ],
+                $keys
+            );
+        }
+
+        /**
          * Get multiple sets of acl_role_id by a collection of acl_resources
          *
          * @param acl_resource_collection $acl_resource_collection

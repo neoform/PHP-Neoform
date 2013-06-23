@@ -20,11 +20,11 @@
         protected $secure;
 
         /**
-         * Permission that is required to access this controller
+         * Resource that is required to access this controller
          *
          * @var null|string|array
          */
-        protected $permission;
+        protected $resource;
 
         /**
          * Locale information for the route
@@ -48,7 +48,7 @@
         public function __construct(array $info) {
             $this->controller_path = isset($info['controller']) ? (string) $info['controller'] : '';
             $this->secure          = isset($info['secure']) ? (bool) $info['secure'] : false;
-            $this->permission      = isset($info['permission']) ? $info['permission'] : null;
+            $this->resource        = isset($info['resources']) ? $info['resources'] : null;
             $this->locale          = isset($info['locale']) && is_array($info['locale']) && count($info['locale']) ? $info['locale'] : null;
             $this->children        = isset($info['children']) && is_array($info['children']) && count($info['children']) ? $info['children'] : null;
         }
@@ -92,6 +92,7 @@
          * @param string $locale
          *
          * @return array
+         * @throws acl_resource_exception
          */
         public function _controllers($locale) {
 
@@ -102,11 +103,25 @@
                 }
             }
 
+            $resource_ids = [];
+            if ($this->resource) {
+                $resources = is_array($this->resource) ? $this->resource : [ $this->resource ];
+                foreach (acl_resource_dao::by_name_multi($resources) as $resource_id) {
+                    if ($resource_id = (int) current($resource_id)) {
+                        $resource_ids[$resource_id] = $resource_id;
+                    } else {
+                        throw new acl_resource_exception(
+                            'Resource' . (count($resources) > 1 ? 's' : '') . ' "' . join(", ", $resources) . '" do' . (count($resources) > 1 ? 'es' : '') . ' not exist'
+                        );
+                    }
+                }
+            }
+
             return [
                 'secure'          => $this->secure,
-                'permission'      => $this->permission ? (is_array($this->permission) ? $this->permission : [ $this->permission ]) : null,
+                'resource_ids'    => array_values($resource_ids),
                 'controller_path' => $this->controller_path,
-                'children'        => count($children) ? $children: null,
+                'children'        => count($children) ? $children : null,
             ];
         }
     }

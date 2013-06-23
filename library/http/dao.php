@@ -10,7 +10,7 @@
         /**
          * Relative path of routes config cache
          */
-        const ROUTES_CACHE_DIR_PATH    = '/cache/routes/';
+        const ROUTES_CACHE_DIR_PATH = '/cache/routes/';
 
         /**
          * Get current routing information from cache, if cache doesn't exist, generate it.

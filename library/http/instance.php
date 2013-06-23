@@ -59,7 +59,7 @@
             // set the default locale
             core::locale()->set($config['locale']['default']);
 
-            // MAKE SURE REQUIRED VARIABLES ARE SET
+            // Make sure require variables are set
             $subdomains = isset($config['subdomains']) && is_array($config['subdomains']) ? $config['subdomains'] : [];
 
             //strip off any GET elements
@@ -69,7 +69,7 @@
                 }
             }
 
-            $this->segments = explode('/', $router_path);
+            $this->segments    = explode('/', $router_path);
             $this->segments[0] = '/';
 
             $segment_count = count($this->segments);
@@ -113,24 +113,24 @@
                 $this->segments = array_values($this->segments);
             }
 
-            //site's current subdirectory (if set)
+            // Site's current subdirectory (if set)
             $subdir = isset($this->server['SCRIPT_NAME']) ? dirname($this->server['SCRIPT_NAME']) : '';
             $subdir = strlen($subdir) > 1 ? $subdir.'/' : '/';
 
-            //domain/subdomain
+            // Domain/subdomain
             $domain    = isset($this->server['SERVER_NAME']) ? strtolower($this->server['SERVER_NAME']) : '';
             $subdomain = '';
 
-            //the period count in the site's domain
+            // The period count in the site's domain
             $real_domain_segment_count = substr_count($this->config['domain'], '.') + 1; // +1 because the period count is 1 less than the segment count
 
-            //since we're not sure what the domain is, pull everything after the second dot (right to left) and make that the current subdomain
+            // Since we're not sure what the domain is, pull everything after the second dot (right to left) and make that the current subdomain
             if (strpos($domain, '.') !== false) {
                 $domain_segments       = explode('.', $domain);
                 $domain_segments_count = count($domain_segments);
 
                 if ($domain_segments_count > $real_domain_segment_count) {
-                    //sub2.sub1.domain.com
+                    // sub2.sub1.domain.com
                     $subdomain = implode('.', array_splice($domain_segments, 0, $domain_segments_count - 2));
                     $domain    = implode('.', $domain_segments);
                 }
@@ -138,7 +138,7 @@
 
             $https = isset($this->server['HTTPS']) && $this->server['HTTPS'] == 'on';
 
-            //check if subdomain is valid (in the config)
+            // Check if subdomain is valid (in the config)
             if ($subdomain && count($subdomains)) {
                 foreach ($subdomains as $subdomain_pair) {
                     if ($subdomain_pair['regular'] == $subdomain || $subdomain_pair['secure'] == $subdomain) {
@@ -180,7 +180,7 @@
                 $surl = $dsurl;
             }
 
-            //query
+            // Query
             $query = isset($this->server['REQUEST_URI']) ? $this->server['REQUEST_URI'] : '';
 
             if ($query) {
@@ -201,12 +201,12 @@
                 'agent'             => isset($this->server['HTTP_USER_AGENT']) ? $this->server['HTTP_USER_AGENT'] : null,
                 'ip'                => isset($this->server['REMOTE_ADDR']) ? $this->server['REMOTE_ADDR'] : null,
                 'method'            => isset($this->server['REQUEST_METHOD']) ? $this->server['REQUEST_METHOD'] : null,
-                'url'               => $rurl,  //url
-                'rurl'              => $rurl,  //regular url
-                'surl'              => $surl,  //secure url
-                'durl'              => $drurl, //default url
-                'drurl'             => $drurl, //defualt regular url
-                'dsurl'             => $dsurl, //defualt secure url
+                'url'               => $rurl,  // URL
+                'rurl'              => $rurl,  // Regular URL
+                'surl'              => $surl,  // Secure URL
+                'durl'              => $drurl, // Default URL
+                'drurl'             => $drurl, // Defualt regular URL
+                'dsurl'             => $dsurl, // Defualt secure URL
                 'subdir'            => $subdir,
                 'referer'           => isset($this->server['HTTP_REFERER']) ? $this->server['HTTP_REFERER'] : null,
             ];
@@ -419,7 +419,7 @@
          * @throws redirect_login_exception
          */
         public function execute() {
-            //only run this once
+            // Only run this once
             if ($this->executed) {
                 return;
             }
@@ -438,7 +438,7 @@
             //
             foreach ($this->segments as $struct) {
 
-                //add up the segments as we go along "/first/second/third" etc..
+                // Add up the segments as we go along "/first/second/third" etc..
                 if ($struct === '/') {
                     $controller = $controllers;
                 } else if (isset($controller[$struct])) {
@@ -448,19 +448,18 @@
                 }
 
                 // If permissions set, make sure user has matching permissions
-                if ($controller['permission']) {
-                    // if user is logged in
+                if ($controller['resource_ids']) {
+                    // If user is logged in
                     if (core::auth()->user_id) {
-                        // and does not have permission - access denied
-                        // if (! core::auth()->user()->permission_collection()->allowed($controller['permission'])) {
-                        if (! core::auth()->user()->has_permission($controller['permission'])) {
+                        // And does not have permission - access denied
+                        if (! core::auth()->user()->has_access($controller['resource_ids'])) {
                             core::output()->redirect('error/access_denied');
                             return;
                         }
 
-                    // if user is not logged in
+                    // If user is not logged in
                     } else {
-                        // ask them to log in
+                        // Ask them to log in
                         throw new redirect_login_exception($this->server_vars['query'], 'You must be logged in to continue');
                     }
                 }
@@ -478,7 +477,7 @@
                 $controller = & $controller['children'];
             }
 
-            //remove it from the global namespace
+            // Remove it from the global namespace
             unset($controllers_map);
 
             //
@@ -486,9 +485,9 @@
             //
             $redirect_needed = false;
 
-            //requested structure is 'secure'
+            // Requested structure is 'secure'
             if ($controller_secure) {
-                //set the url
+                // Set the url
                 $this->server_vars['url'] = $this->server_vars['surl'];
 
                 if ( ($this->config['https']['secure'] && ! $this->server_vars['https']) || (! $this->config['https']['secure'] && $this->server_vars['https']) ) {
@@ -499,7 +498,7 @@
                     $redirect_needed = true;
                 }
 
-            //requested controller is 'regular'
+            // Requested controller is 'regular'
             } else {
                 //set the url
                 $this->server_vars['url'] = $this->server_vars['rurl'];
@@ -513,27 +512,27 @@
                 }
             }
 
-            //if the domain name requested does not match the settings, redirect.
+            // If the domain name requested does not match the settings, redirect.
             if ($this->config['domain'] != $this->server_vars['domain']) {
                 $redirect_needed = true;
             }
 
-            //if a redirect is needed because incorrect protocol or subdomain is being used..
+            // If a redirect is needed because incorrect protocol or subdomain is being used..
             if ($redirect_needed) {
                 core::output()->redirect($this->server_vars['query']);
                 return;
             } else {
 
-                //clean the path of naughtiness
+                // Clean the path of naughtiness
                 if (strpos($controller_path, '..') !== false) {
                     $controller_path = str_replace('..', '', $controller_path);
                 }
 
-                //load the controller
+                // Load the controller
                 if (file_exists(core::path('application') . '/controllers' . $controller_path . '.' . EXT)) {
                     $controller_path = '/controllers' . $controller_path . '.' . EXT;
 
-                //if page does not exist, 404 erorr page
+                // If page does not exist, 404 erorr page
                 } else {
                     core::log('Controller missing: ' . $controller_path . '.' . EXT, 'fatal');
                     core::output()->redirect('error/not_found', 301);
@@ -577,7 +576,7 @@
             $cookiehash   = $this->ref_hash($cookied_code, $timestamp);
             $time         = time();
 
-            //make sure the code matches the user's cookie
+            // Make sure the code matches the user's cookie
             if (
                 ! $httphash
                 || ! $cookiehash
@@ -587,7 +586,7 @@
             }
 
             try {
-                //make sure the referal domain matches this site
+                // Make sure the referal domain matches this site
                 $referer = trim($this->server('referer'));
                 if ($referer) {
                     $url    = parse_url($referer);
@@ -603,7 +602,7 @@
                 $good = false;
             }
 
-            //ref code expires if not used for too long..
+            // Ref code expires if not used for too long..
             if ($good && ($timestamp > $time + $timeout || $timestamp < $time - $timeout)) {
                 $good = false;
                 if ($output_error) {
@@ -631,7 +630,7 @@
                     $cookied_code = auth_lib::create_hash_cookie();
                 }
 
-                //append a timestamp so we can have the ref code expire
+                // Append a timestamp so we can have the ref code expire
                 $time = time();
 
                 $this->ref_code_cache = rawurlencode(base64_encode($this->ref_hash($cookied_code, $time)));

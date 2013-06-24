@@ -1,4 +1,4 @@
-function() {
+
     var messageEl = $("div#message", elements.body);
     var originalMessage = messageEl.text();
     var self = this;
@@ -57,5 +57,3 @@ function() {
         self.done();
         self.showUrl("/account/ajax/dialog/lostpassword");
     });
-
-}

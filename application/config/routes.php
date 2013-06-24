@@ -118,29 +118,17 @@
                 'controller' => '/admin',
                 'secure'     => true,
                 'resources' => 'admin',
-                'locale' => [
-                    'en' => 'admin',
-                    'fr' => 'admin',
-                ],
                 'children'   => [
 
                     // User
-                    'user' => new http_route([
+                    'users' => new http_route([
                         'controller' => '/admin/user',
                         'resources' => 'user',
-                        'locale' => [
-                            'en' => 'user',
-                            'fr' => 'user',
-                        ],
                         'children'   => [
-                            // User
+                            // View
                             'view' => new http_route([
                                 'controller' => '/admin/user/view',
                                 'resources' => 'user view',
-                                'locale' => [
-                                    'en' => 'view',
-                                    'fr' => 'view',
-                                ],
                             ]),
                             // Ajax
                             'ajax' => new http_route([
@@ -149,23 +137,69 @@
                         ],
                     ]),
 
+                    // Groups
+                    'groups' => new http_route([
+                        'controller' => '/admin/group',
+                        //'resources' => 'group',
+                        'children' => [
+                            // View
+                            'view' => new http_route([
+                                'controller' => '/admin/group/view',
+                                //'resources' => 'group view',
+                            ]),
+                            // Ajax
+                            'ajax' => new http_route([
+                                'controller' => '/admin/group/ajax',
+                            ]),
+                        ],
+                    ]),
+
+                    // ACL
+                    'acl' => new http_route([
+                        'controller' => '/admin/acl',
+                        //'resources' => 'acl',
+                        'children' => [
+
+                            // Roles
+                            'roles' => new http_route([
+                                'controller' => '/admin/acl/role',
+                                //'resources' => 'acl role',
+                                'children' => [
+                                    // Ajax
+                                    'ajax' => new http_route([
+                                        'controller' => '/admin/acl/role/ajax',
+                                    ]),
+                                ],
+                            ]),
+
+                            // Resources
+                            'resources' => new http_route([
+                                'controller' => '/admin/acl/resource',
+                                //'resources' => 'acl resource',
+                                'children' => [
+                                    // Ajax
+                                    'ajax' => new http_route([
+                                        'controller' => '/admin/acl/resource/ajax',
+                                    ]),
+                                ],
+                            ]),
+
+                            // Ajax
+                            'ajax' => new http_route([
+                                'controller' => '/admin/group/ajax',
+                            ]),
+                        ],
+                    ]),
+
                     // Locale
                     'locale' => new http_route([
                         'controller' => '/admin/locale',
                         'resources' => 'locale',
-                        'locale' => [
-                            'en' => 'locale',
-                            'fr' => 'locale',
-                        ],
                         'children' => [
 
                             // Messages
                             'messages' => new http_route([
                                 'controller' => '/admin/locale/messages',
-                                'locale' => [
-                                    'en' => 'messages',
-                                    'fr' => 'messages',
-                                ],
                                 'children' => [
 
                                     // Ajax

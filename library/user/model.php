@@ -39,6 +39,8 @@
 
         /**
          * Checks if this user has the required ACL roles to access a list of resources (array of resource names)
+         * This function does 4 cache calls (once, the first time its loaded), then the resources are cached.
+         * Calling this multiple times will not be resource intensive.
          *
          * @param array $resource_ids
          *
@@ -51,6 +53,44 @@
                 return true;
             }
 
+            // Don't have any roles? You clearly don't have access.
+            if (! ($role_ids = $this->role_ids())) {
+                return false;
+            }
+
+            // No resources in your roles? (that's weird) You may not continue.
+            if (! ($role_resource_ids = $this->role_resource_ids($role_ids))) {
+                return false;
+            }
+
+            // Check if the resources provided exist in this user's resources, if any are missing, access denied
+            foreach ($resource_ids as $resource_id) {
+                if (! in_array((int) $resource_id, $role_resource_ids, true)) {
+                    return false;
+                }
+            }
+
+            // Everything looks good, you have access.
+            return true;
+        }
+
+        /**
+         * This is not a particularly efficient function - it should not be used excessively
+         *
+         * @param string $resource_name
+         *
+         * @return bool
+         */
+        public function has_resource($resource_name) {
+            return in_array($resource_name, $this->acl_resource_collection()->field('name'));
+        }
+
+        /**
+         * Gets an array of role ids this user has
+         *
+         * @return array ids
+         */
+        public function role_ids() {
             if (! isset($this->_vars['role_ids'])) {
 
                 // Get user's roles
@@ -69,36 +109,37 @@
                 $this->_vars['role_ids'] = array_unique($role_ids);
             }
 
-            // Don't have any roles? You clearly don't have access.
-            if (! $this->_vars['role_ids']) {
-                return false;
-            }
+            return $this->_vars['role_ids'];
+        }
 
+        /**
+         * Returns a list of resource IDs this user has access to
+         *
+         * @param array $role_ids
+         *
+         * @return array
+         */
+        public function role_resource_ids(array $role_ids = null) {
             // Collect all resources these roles have access to
             if (! isset($this->_vars['role_resource_ids'])) {
-                $this->_vars['role_resource_ids'] = [];
-                foreach (acl_role_resource_dao::by_acl_role_multi($this->_vars['role_ids']) as $ids) {
+
+                if ($role_ids === null) {
+                    $role_ids = $this->role_ids();
+                }
+
+                $role_resource_ids = [];
+                foreach (acl_role_resource_dao::by_acl_role_multi($role_ids) as $ids) {
                     if ($ids) {
                         foreach ($ids as $role_resource_id) {
-                            $this->_vars['role_resource_ids'][(int) $role_resource_id] = 1;
+                            $role_resource_ids[] = (int) $role_resource_id;
                         }
                     }
                 }
+
+                $this->_vars['role_resource_ids'] = array_unique($role_resource_ids);
             }
 
-            // No resources in your roles? (that's weird) You may not continue.
-            if (! $this->_vars['role_resource_ids']) {
-                return false;
-            }
-
-            foreach ($resource_ids as $resource_id) {
-                if (! isset($this->_vars['role_resource_ids'][(int) $resource_id])) {
-                    return false;
-                }
-            }
-
-            // Everything looks good, you have access.
-            return true;
+            return $this->_vars['role_resource_ids'];
         }
 
         /**
@@ -131,6 +172,19 @@
          */
         public function user_lostpassword() {
             return $this->_model('user_lostpassword', $this->vars['id'], 'user_lostpassword_model');
+        }
+
+        /**
+         * Acl Resource Collection
+         *
+         * @return acl_resource_collection
+         */
+        public function acl_resource_collection() {
+            if (! array_key_exists('acl_resource_collection', $this->_vars)) {
+                $this->_vars['acl_resource_collection'] = new acl_resource_collection($this->role_resource_ids());
+            }
+
+            return $this->_vars['acl_resource_collection'];
         }
 
         /**

@@ -8,7 +8,7 @@
         "timezone": "America/Montreal",
 
         // page output encoding [required]
-        "enoding": "utf-8",
+        "encoding": "utf-8",
 
         // locales [required]
         "locale" : {
@@ -60,7 +60,10 @@
                 "user": "root",
                 "password": ""
             }
-        ]
+        ],
+
+        // SQL charset (encoding)
+        "encoding": "utf8"
 
         // slave sql database(s) [optional]
         //

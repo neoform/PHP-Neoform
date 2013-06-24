@@ -17,7 +17,6 @@
                             $input->key_id->val()
                         ))
                     );
-
                     $locale_key_message = locale_key_message_dao::update(
                         $message,
                         array(

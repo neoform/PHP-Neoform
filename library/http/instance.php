@@ -86,15 +86,8 @@
                     unset($this->segments[$key]);
                     $unsetted = true;
                 } else {
-
-                    if ($key === 1) {
-                        // set the default locale
-                        core::locale()->set($config['locale']['default']);
-                    }
-
                     //check for variables in the segments
                     $location = strpos($val, ':');
-
                     if ($location !== false) {
                         $k = substr($val, 0, $location);
                         $v = substr($val, $location + 1);

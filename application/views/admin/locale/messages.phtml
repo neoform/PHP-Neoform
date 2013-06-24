@@ -4,8 +4,8 @@
         var page = {
 
             onload: function() {
-                page.div     = $("#page");
-                page.i         = 0;
+                page.div = $("#page");
+                page.i   = 0;
 
                 // Nav form
                 $(".nav form", page.div).on("submit", function(e) {
@@ -36,7 +36,10 @@
                                 {
                                     "label": "Save",
                                     "action": function() {
-                                        page.create($("input[name='key']", this.elements.form).val(), 1); //default main namespace "1"
+                                        page.create(
+                                            $("input[name='key']", this.elements.form).val(),
+                                            1  //default main namespace "1"
+                                        );
                                     },
                                     "cssClass": "good"
                                 }
@@ -47,7 +50,7 @@
                 $("ul.list li", page.div).on("click", page.activateEdit);
 
                 page.translations = <?php echo json_encode($this->translations); ?>;
-                page.locales      = <?php echo json_encode($this->locales, JSON_UNESCAPED_UNICODE); ?>;
+                page.locales      = <?php echo json_encode($this->locales); ?>;
 
                 for (var id in page.translations) {
                     page.addRow(id);
@@ -149,7 +152,7 @@
                                             })
                                             .append(
                                                 $("<button/>")
-                                                    .html("Delete")
+                                                    .html("<?php echo htmlspecialchars($this->locale->translate('Delete')); ?>")
                                                     .addClass("error")
                                                     .on("click", function() {
                                                         page.del(
@@ -195,9 +198,9 @@
                 Core.ajax({
                     url: "/admin/locale/messages/ajax/update",
                     data: {
-                        "key_id":     id,
-                        "locale":     locale,
-                        "body":     body
+                        "key_id": id,
+                        "locale": locale,
+                        "body":   body
                     },
                     success: function(response) {
                         if (response.status === 'good') {
@@ -269,7 +272,7 @@
 
     <div id="page">
 
-        <h3 class="header"><a href="/admin">Admin</a> / <a href="/admin/locale">Locale</a> / Translations</h3>
+        <h3 class="header"><a href="<?php $this->locale->route('/admin'); ?>">Admin</a> / <a href="<?php $this->locale->route('/admin/locale'); ?>">Locale</a> / Translations</h3>
 
         <?php $this->inc('admin/templates/sidebar'); ?>
         <div>
@@ -291,13 +294,13 @@
                             <table width="100%" cellspacing="0" cellpadding="0">
                                 <tr>
                                     <td>
-                                        Key
+                                        <?php echo htmlspecialchars($this->locale->translate('Key')); ?>
                                     </td>
                                     <td width="30">
                                         &nbsp;
                                     </td>
                                     <td width="50%">
-                                        Translation
+                                        <?php echo htmlspecialchars($this->locale->translate('Translation')); ?>
                                     </td>
                                     <td width="100">
                                         &nbsp;

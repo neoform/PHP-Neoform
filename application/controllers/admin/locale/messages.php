@@ -11,14 +11,14 @@
     $translations = [];
     foreach ($keys as $key) {
         $translations[$key->id] = [
-            'key'      => htmlspecialchars($key->body),
+            'key'      => htmlspecialchars(utf8_encode($key->body)),
             'messages' => [],
         ];
 
         foreach (locale_dao::all() as $locale) {
             if ($locale['iso2'] !== $key->locale) {
                 try {
-                    $translations[$key->id]['messages'][$locale['iso2']] = htmlspecialchars($key->message($locale['iso2'])->body);
+                    $translations[$key->id]['messages'][$locale['iso2']] = htmlspecialchars(utf8_encode($key->message($locale['iso2'])->body));
                 } catch (exception $e) {
                     $translations[$key->id]['messages'][$locale['iso2']] = '';
                 }
@@ -26,12 +26,7 @@
         }
     }
 
-    $locales = [];
-    foreach (locale_dao::all() as $locale) {
-        $locales[$locale['iso2']] = $locale;
-    }
-
-    $view->locales      = $locales;
+    $view->locales      = array_map('utf8_encode', array_column(locale_dao::all(), 'name', 'iso2'));
     $view->translations = $translations;
 
     $view->render('admin/locale/messages');

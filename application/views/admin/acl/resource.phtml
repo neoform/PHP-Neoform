@@ -1,0 +1,158 @@
+<?php $this->inc('admin/templates/header'); ?>
+
+<script>
+    var page = {
+
+        onload: function() {
+            page.div     = $("#page");
+            page.i         = 0;
+
+            // Nav form
+            $(".nav form", page.div).on("submit", function(e) {
+                e.preventDefault();
+            });
+
+            // List forms
+            $(".inside form", page.div).on("submit", function(e) {
+                e.preventDefault();
+            });
+
+            $("button[name='new']", page.div)
+                .on("click", function(){
+                    CoreDialog.prompt(
+                        "",
+                        "New Resource",
+                        [
+                            {
+                                "type": "text",
+                                "label": "Resource name",
+                                "name": "name",
+                                "css": {
+                                    "width": "300px"
+                                }
+                            }
+                        ],
+                        [
+                            {
+                                "label": "Save",
+                                "action": function() {
+                                    Core.ajax({
+                                        "url": "/admin/acl/resources/ajax/insert",
+                                        "data": {
+                                            "name": $("input[name='name']", this.elements.form).val()
+                                        },
+                                        "success": function(response) {
+                                            if (response.status === "good") {
+                                                location.href = location.href;
+                                            } else {
+                                                CoreDialog.alert("A resource with that name already exists");
+                                            }
+                                        }
+                                    });
+
+                                },
+                                "cssClass": "good"
+                            }
+                        ]
+                    );
+                });
+        }
+    };
+
+    $(page.onload);
+
+</script>
+
+<div id="page">
+
+    <h3 class="header"><a href="/admin">Admin</a> / ACL / Resources</h3>
+
+    <?php $this->inc('admin/templates/sidebar'); ?>
+    <div>
+        <div class="nav">
+            <div class="side">
+                <form>
+                    <button name="new" class="btn"><?php echo htmlspecialchars($this->locale->translate('New Resource')); ?></button>
+                </form>
+            </div>
+        </div>
+
+        <div class="inside">
+
+            <?php if ($this->resources): ?>
+
+                <div class="counts">
+                    Total Resources: <?php echo number_format($this->total); ?>
+                </div>
+
+                <div class="box">
+                    <div class="table-head">
+                        <table width="100%" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td width="100">
+                                    ID
+                                </td>
+                                <td width="250">
+                                    Name
+                                </td>
+                                <td>
+                                    Roles
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <form>
+                        <div class="table-body">
+                            <ul id="resources">
+                                <?php foreach ($this->resources as $resource): ?>
+                                    <li>
+                                        <table width="100%" cellspacing="0" cellpadding="0">
+                                            <tr>
+                                                <td width="100">
+                                                    <?php echo $resource->id; ?>
+                                                </td>
+                                                <td width="250">
+                                                    <b><?php echo htmlspecialchars($resource->name); ?></b>
+                                                </td>
+                                                <td>
+                                                    <ul>
+                                                        <?php foreach ($resource->acl_role_collection() as $role): ?>
+                                                            <li><a href="/admin/acl/roles/view/id:<?php echo $role->id; ?>"><?php echo htmlspecialchars($role->name); ?></a></li>
+                                                        <?php endforeach; ?>
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    </form>
+                    <div class="table-foot">
+                        Page
+                        <?php
+                            $this->inc(
+                                'templates/pagination',
+                                [
+                                    'url'          => '/admin/acl/resources',
+                                    'current_page' => (int) $this->page,
+                                    'page_count'   => $this->total > 1 ? ceil($this->total / $this->per_page) : 1,
+                                    'link_count'   => 5,
+                                    'next'         => true,
+                                ]
+                            );
+                        ?>
+                    </div>
+                </div>
+
+            <?php else: ?>
+
+                <div class="fat big">No resource to show</div>
+
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<?php $this->inc('admin/templates/footer'); ?>

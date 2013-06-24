@@ -56,9 +56,6 @@
             $this->config  = $config;
             $this->cookies = $cookies;
 
-            // set the default locale
-            core::locale()->set($config['locale']['default']);
-
             // Make sure require variables are set
             $subdomains = isset($config['subdomains']) && is_array($config['subdomains']) ? $config['subdomains'] : [];
 
@@ -89,6 +86,11 @@
                     unset($this->segments[$key]);
                     $unsetted = true;
                 } else {
+
+                    if ($key === 1) {
+                        // set the default locale
+                        core::locale()->set($config['locale']['default']);
+                    }
 
                     //check for variables in the segments
                     $location = strpos($val, ':');
@@ -529,12 +531,12 @@
                 }
 
                 // Load the controller
-                if (file_exists(core::path('application') . '/controllers' . $controller_path . '.' . EXT)) {
-                    $controller_path = '/controllers' . $controller_path . '.' . EXT;
+                if (file_exists(core::path('application') . "/controllers{$controller_path}." . EXT)) {
+                    $controller_path = "/controllers{$controller_path}." . EXT;
 
                 // If page does not exist, 404 erorr page
                 } else {
-                    core::log('Controller missing: ' . $controller_path . '.' . EXT, 'fatal');
+                    core::log("Controller missing: {$controller_path}." . EXT, 'fatal');
                     core::output()->redirect('error/not_found', 301);
                     return;
                 }

@@ -3,7 +3,6 @@
     /**
     * Locale Model
     *
-    * @exception locale_exception
     * @var string $iso2
     * @var string $name
     */
@@ -22,9 +21,13 @@
                         return $this->vars[$k];
                 }
             }
-
         }
 
+        /**
+         * Locale Key Collection
+         *
+         * @return locale_key_collection
+         */
         public function locale_key_collection() {
             if (! array_key_exists('locale_key_collection', $this->_vars)) {
                 $this->_vars['locale_key_collection'] = new locale_key_collection(
@@ -34,6 +37,11 @@
             return $this->_vars['locale_key_collection'];
         }
 
+        /**
+         * Locale Key Message Collection
+         *
+         * @return locale_key_message_collection
+         */
         public function locale_key_message_collection() {
             if (! array_key_exists('locale_key_message_collection', $this->_vars)) {
                 $this->_vars['locale_key_message_collection'] = new locale_key_message_collection(
@@ -43,12 +51,17 @@
             return $this->_vars['locale_key_message_collection'];
         }
 
-        public function locale_message_collection() {
-            if (! array_key_exists('locale_message_collection', $this->_vars)) {
-                $this->_vars['locale_message_collection'] = new locale_message_collection(
-                    locale_message_dao::by_locale($this->vars['iso2'])
+        /**
+         * Locale Key Collection 2
+         *
+         * @return locale_key_collection
+         */
+        public function locale_key_collection2() {
+            if (! array_key_exists('locale_key_collection2', $this->_vars)) {
+                $this->_vars['locale_key_collection2'] = new locale_key_collection(
+                    locale_key_message_dao::by_locale($this->vars['iso2'])
                 );
             }
-            return $this->_vars['locale_message_collection'];
+            return $this->_vars['locale_key_collection2'];
         }
     }

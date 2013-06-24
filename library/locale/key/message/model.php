@@ -3,7 +3,6 @@
     /**
     * Locale Key Message Model
     *
-    * @exception locale_key_message_exception
     * @var int $id
     * @var int $key_id
     * @var string $body
@@ -29,13 +28,22 @@
                         return $this->vars[$k];
                 }
             }
-
         }
 
+        /**
+         * Locale Key Model based on 'key_id'
+         *
+         * @return locale_key_model
+         */
         public function locale_key() {
             return $this->_model('locale_key', $this->vars['key_id'], 'locale_key_model');
         }
 
+        /**
+         * Locale Model based on 'locale'
+         *
+         * @return locale_model
+         */
         public function locale() {
             return $this->_model('locale', $this->vars['locale'], 'locale_model');
         }

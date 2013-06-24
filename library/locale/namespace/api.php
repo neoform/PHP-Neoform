@@ -9,10 +9,10 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return locale_namespace_dao::insert(array(
+                return locale_namespace_dao::insert([
                     'id'   => $input->id->val(),
                     'name' => $input->name->val(),
-                ));
+                ]);
             }
             throw $input->exception();
         }
@@ -27,10 +27,10 @@
                 return locale_namespace_dao::update(
                     $locale_namespace,
                     $input->vals(
-                        array(
+                        [
                             'id',
                             'name',
-                        ),
+                        ],
                         $crush
                     )
                 );
@@ -45,7 +45,12 @@
         public static function _validate_insert(input_collection $input) {
 
             // id
-            $input->id->cast('int')->digit(0, 4294967295);
+            $input->id->cast('int')->digit(0, 4294967295)->callback(function($id) {
+                $id_arr = locale_namespace_dao::by_id($id->val());
+                if (is_array($id_arr) && count($id_arr)) {
+                    $id->errors('already in use');
+                }
+            });
 
             // name
             $input->name->cast('string')->length(1, 255)->callback(function($name) {
@@ -59,7 +64,12 @@
         public static function _validate_update(locale_namespace_model $locale_namespace, input_collection $input) {
 
             // id
-            $input->id->cast('int')->optional()->digit(0, 4294967295);
+            $input->id->cast('int')->optional()->digit(0, 4294967295)->callback(function($id) use ($locale_namespace) {
+                $id_arr = locale_namespace_dao::by_id($id->val());
+                if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $locale_namespace->id) {
+                    $id->errors('already in use');
+                }
+            });
 
             // name
             $input->name->cast('string')->optional()->length(1, 255)->callback(function($name) use ($locale_namespace) {
@@ -69,5 +79,4 @@
                 }
             });
         }
-
     }

@@ -4,69 +4,192 @@
 
         use core_instance;
 
-        protected $current;
-        protected $nspace;
+        /**
+         * @var bool is the locale translation system active
+         */
+        protected $active = false;
+
+        /**
+         * @var array all iso2's allowed
+         */
+        protected $all_iso2;
+
+        /**
+         * @var string locale iso2
+         */
+        protected $default_iso2;
+
+        /**
+         * @var string locale iso2
+         */
+        protected $current_iso2;
+
+        /**
+         * @var integer
+         */
+        protected $namespace_id;
+
+        /**
+         * @var array id translation (name to id)
+         */
+        protected $namespace_ids = [];
+
+        /**
+         * @var array translations
+         */
         protected $messages;
+
+        /**
+         * @var string base URL used to identify this locale
+         */
         protected $struct;
+
+        /**
+         * @var array translated URL structs
+         */
         protected $routes;
 
+        /**
+         * @param array $config
+         */
+        public function __construct(array $config) {
+            $this->active       = (bool) $config['active'];
+            $this->current_iso2 = $this->default_iso2 = (string) $config['default'];
+            $this->all_iso2     = array_merge([], $config['allowed']);
+        }
+
+        /**
+         * Get current locale iso2
+         *
+         * @return mixed
+         */
         public function get() {
-            return $this->current;
+            return $this->current_iso2;
         }
 
+        /**
+         * All available locales
+         *
+         * @return array
+         */
         public function all() {
-            return array_merge([], core::config()->system['locale']['allowed']);
+            return $this->all_iso2;
         }
 
-        public function set($locale) {
-            $this->current = $locale;
-            $this->struct  = $locale === core::config()->system['locale']['default'] ? '' : '/' . $locale;
-            $this->_load_translations();
+        /**
+         * Set the current locale
+         *
+         * @param $iso2
+         */
+        public function set($iso2) {
+
+            if (! $this->active) {
+                return;
+            }
+
+            $this->current_iso2 = $iso2;
+            $this->struct       = $iso2 === $this->default_iso2 ? '' : "/{$iso2}";
         }
 
-        public function set_namespace($namespace) {
-            $this->nspace = new locale_namespace_model((int) current(locale_namespace_dao::by_name(
-                $namespace
-            )));
-            $this->_load_translations();
+        /**
+         * Set the current namespace by name
+         *
+         * @param string $namespace_name
+         */
+        public function set_namespace($namespace_name) {
+
+            if (! $this->active) {
+                return;
+            }
+
+            if (! isset($this->namespace_ids[$namespace_name])) {
+                $this->namespace_ids[$namespace_name] = (int) current(locale_namespace_dao::by_name(
+                    $namespace_name
+                ));
+            }
+
+            $this->namespace_id = $this->namespace_ids[$namespace_name];
+
+            if (! isset($this->messages[$this->namespace_id])) {
+                $this->_load_translations($this->namespace_id);
+            }
         }
 
-        public function get_namespace() {
-            return $this->nspace;
-        }
-
+        /**
+         * Load/set the route translations
+         *
+         * @param array $routes
+         */
         public function set_routes(array $routes) {
             $this->routes = $routes;
         }
 
-        public function translate($key, $namespace=null) {
+        /**
+         * Translate a single key with an optional namespace
+         *
+         * @param string      $key
+         * @param string|null $namespace_name
+         *
+         * @return string
+         */
+        public function translate($key, $namespace_name=null) {
+
+            if (! $this->active) {
+                return $key;
+            }
 
             $crc32 = crc32($key); // crc32 makes the keys in the array smaller (saves on memory)
 
-            if ($namespace === null) {
-                if ($this->nspace && isset($this->messages[$this->nspace->name][$crc32])) {
-                    return $this->messages[$this->nspace->name][$crc32];
+            if ($namespace_name === null) {
+                if ($this->namespace_id && isset($this->messages[$this->namespace_id][$crc32])) {
+                    return $this->messages[$this->namespace_id][$crc32];
                 }
             } else {
-                $this->_load_translations(); // incase it was not yet loaded (this only adds a bit of overhead)
-                if (isset($this->messages[$namespace][$crc32])) {
-                    return $this->messages[$namespace][$crc32];
+
+                // Look up the namespace id by name - incase we don't know it yet
+                if (isset($this->namespace_ids[$namespace_name])) {
+                    $namespace_id = $this->namespace_ids[$namespace_name];
+                } else {
+                    $namespace_id = $this->namespace_ids[$namespace_name] = (int) current(locale_namespace_dao::by_name(
+                        $namespace_name
+                    ));
+                }
+
+                // Check if we have this translation dictionary loaded
+                if (! isset($this->messages[$namespace_id])) {
+                    $this->_load_translations($namespace_id);
+                }
+
+                // Return the translation if we have it
+                if (isset($this->messages[$namespace_id][$crc32])) {
+                    return $this->messages[$namespace_id][$crc32];
                 }
             }
 
             return $key;
         }
 
+        /**
+         * Translate a route
+         *
+         * @param string $route
+         *
+         * @return string
+         */
         public function route($route) {
             return $this->struct . (isset($this->routes[$route]) ? $this->routes[$route] : $route);
         }
 
-        protected function _load_translations() {
-            // load up the locale translations
-            if ($this->nspace && ! isset($this->messages[$this->nspace->name]) && $this->current) {
-                $this->messages[$this->nspace->name] = locale_lib::by_locale_namespace(
-                    $this->current,
-                    $this->nspace
+        /**
+         * Load translations
+         *
+         * @param integer $namespace_id
+         */
+        protected function _load_translations($namespace_id) {
+            if ($this->current_iso2) {
+                $this->messages[$namespace_id] = locale_lib::by_locale_namespace(
+                    $this->current_iso2,
+                    $namespace_id
                 );
             }
         }

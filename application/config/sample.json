@@ -13,11 +13,20 @@
         // locales [required]
         "locale" : {
 
+            // locale translations active
+            "active": true,
+
             // default locale
             "default": "en",
 
             // allowed locales
-            "allowed": [ "en", "fr", "es", "it" ]
+            "allowed": [ "en", "fr", "es", "it" ],
+
+            // which cache engine should be used to store compiled translation dictionaries
+            "cache_engine": "redis",
+
+            // which cache pool should translations use to store compiled translation dictionaries
+            "cache_pool": "entities"
         },
 
         // default site domain [required]
@@ -154,7 +163,7 @@
         //this prefix is useful if you have multiple instances of the same code base
         "key_prefix": "sample.sample",
 
-        "default_cache_server":    "entities",
+        "default_cache_pool":      "entities",
         "default_database_server": "database",
 
         "servers": {

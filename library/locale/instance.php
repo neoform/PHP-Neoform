@@ -53,9 +53,9 @@
          * @param array $config
          */
         public function __construct(array $config) {
-            $this->active       = (bool) $config['active'];
-            $this->current_iso2 = $this->default_iso2 = (string) $config['default'];
-            $this->all_iso2     = array_merge([], $config['allowed']);
+            $this->active   = (bool) $config['active'];
+            $this->all_iso2 = array_merge([], $config['allowed']);
+            $this->set((string) $config['default']);
         }
 
         /**
@@ -134,7 +134,8 @@
          */
         public function translate($key, $namespace_name=null) {
 
-            if (! $this->active) {
+            // If locale is either not active, or the current locale is the default one, no translation happens
+            if (! $this->active || $this->default_iso2 === $this->current_iso2) {
                 return $key;
             }
 

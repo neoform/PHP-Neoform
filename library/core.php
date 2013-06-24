@@ -277,7 +277,7 @@
             ini_set('display_errors', 'Off'); // do not display error(s) in browser - only affects non-fatal errors
             ini_set('display_startup_errors', 'Off');
 
-            mb_internal_encoding(core::config()->system['enoding']);
+            mb_internal_encoding(core::config()->system['encoding']);
             date_default_timezone_set(core::config()->system['timezone']);
         }
 

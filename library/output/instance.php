@@ -138,18 +138,18 @@
                 switch ($type) {
                     case 'json':
                         $this->output_type = self::JSON;
-                        $this->header('Content-type', self::JSON . '; charset="' . core::config()->system['enoding'] . '"');
+                        $this->header('Content-type', self::JSON . '; charset="' . core::config()->system['encoding'] . '"');
                         break;
 
                     case 'xml':
                         $this->output_type = self::XML;
-                        $this->header('Content-type', self::XML . '; charset="' . core::config()->system['enoding'] . '"');
+                        $this->header('Content-type', self::XML . '; charset="' . core::config()->system['encoding'] . '"');
                         break;
 
                     //case 'html':
                     default:
                         $this->output_type = self::HTML;
-                        $this->header('Content-type', self::HTML . '; charset="' . core::config()->system['enoding'] . '"');
+                        $this->header('Content-type', self::HTML . '; charset="' . core::config()->system['encoding'] . '"');
                         break;
                 }
                 return $this;

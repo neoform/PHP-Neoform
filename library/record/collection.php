@@ -217,8 +217,8 @@
         protected function _preload_one_to_many($entity, $by_function, $method_override=null) {
 
             $collection_name  = "{$entity}_collection";
-            $dao_name         = "$entity}_dao";
-            $by_function      .= '_multi';
+            $dao_name         = "{$entity}_dao";
+            $by_function     .= '_multi';
 
             // Get the ids for those
             $pks_groups = $dao_name::$by_function($this);

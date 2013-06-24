@@ -44,7 +44,7 @@ $(page.onload);
 
         <div class="inside">
 
-            <?php if ($this->users && count($this->users)): ?>
+            <?php if ($this->users): ?>
 
                 <div class="counts">
                     Total Users: <?php echo number_format($this->total); ?>
@@ -84,7 +84,7 @@ $(page.onload);
                                                     <?php echo $user->id; ?>
                                                 </td>
                                                 <td>
-                                                    <a href="/admin/user/view/id:<?php echo $user->id; ?>"><?php echo htmlspecialchars($user->email); ?></a>
+                                                    <a href="/admin/users/view/id:<?php echo $user->id; ?>"><?php echo htmlspecialchars($user->email); ?></a>
                                                 </td>
                                                 <td width="100">
                                                     <?php echo htmlspecialchars($user->user_status()->name); ?>
@@ -108,7 +108,7 @@ $(page.onload);
                             $this->inc(
                                 'templates/pagination',
                                 [
-                                    'url'          => '/admin/user',
+                                    'url'          => '/admin/users',
                                     'current_page' => (int) $this->page,
                                     'page_count'   => $this->total > 1 ? ceil($this->total / $this->per_page) : 1,
                                     'link_count'   => 5,

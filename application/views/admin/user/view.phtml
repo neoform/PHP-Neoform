@@ -30,7 +30,7 @@
 
 <div id="page">
 
-    <h3 class="header"><a href="/admin">Admin</a> / <a href="/admin/user">Users</a> / <?php echo htmlspecialchars($this->user->email); ?></h3>
+    <h3 class="header"><a href="/admin">Admin</a> / <a href="/admin/users">Users</a> / <?php echo htmlspecialchars($this->user->email); ?></h3>
 
     <?php $this->inc('admin/templates/sidebar'); ?>
     <div>
@@ -47,7 +47,7 @@
                 <div class="table-head">
                     <?php echo htmlspecialchars($this->user->email); ?>
                 </div>
-                <form action="/admin/user/ajax/update">
+                <form action="/admin/users/ajax/update">
                     <div class="table-body">
                         <div style="padding: 10px 0 10px 0;">
                             <table width="100%">
@@ -142,18 +142,48 @@
         <div class="inside" style="margin-top: 10px;">
             <div class="box">
                 <div class="table-head">
-                    Permissions
+                    User Groups
                 </div>
-                <form action="/admin/user/ajax/update/permissions">
+                <form action="/admin/users/ajax/update/groups">
                     <div class="standard-body">
                         <div style="padding: 10px;">
                             <ul>
-                                <?php foreach ($this->all_permissions as $permission): ?>
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="permissions[]" value="<?php echo $permission->id; ?>" /> <b><?php echo htmlspecialchars(ucwords($permission->name)); ?></b>
-                                        </label>
-                                    </li>
+                                <?php foreach ($this->all_groups as $group): ?>
+                                <li>
+                                    <label>
+                                        <input type="checkbox" name="group[]" value="<?php echo $group->id; ?>" />
+                                        <b><?php echo htmlspecialchars($group->name); ?></b>
+                                        (<?php echo join(', ', $group->acl_role_collection()->acl_resource_collection()->field('name')); ?>)
+                                    </label>
+                                </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="table-foot">
+                        <button class="good">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="inside" style="margin-top: 10px;">
+            <div class="box">
+                <div class="table-head">
+                    User Roles
+                </div>
+                <form action="/admin/users/ajax/update/roles">
+                    <div class="standard-body">
+                        <div style="padding: 10px;">
+                            <ul>
+                                <?php foreach ($this->all_roles as $role): ?>
+                                <li>
+                                    <label>
+                                        <input type="checkbox" name="role[]" value="<?php echo $role->id; ?>" />
+                                        <b><?php echo htmlspecialchars($role->name); ?></b>
+                                        (<?php echo join(', ', $role->acl_resource_collection()->field('name')); ?>)
+                                    </label>
+                                </li>
                                 <?php endforeach; ?>
                             </ul>
                         </div>

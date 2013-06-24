@@ -21,26 +21,25 @@
                     $locale_key_message = locale_key_message_dao::update(
                         $message,
                         array(
-                            'key_id'     => $input->key_id->val(),
-                            'body'         => $input->body->val(),
-                            'locale'     => $input->locale->val(),
+                            'key_id' => $input->key_id->val(),
+                            'body'   => $input->body->val(),
+                            'locale' => $input->locale->val(),
                         )
                     );
                 } catch (locale_key_message_exception $e) {
 
                     $locale_key_message = locale_key_message_dao::insert(array(
-                        'key_id'     => $input->key_id->val(),
-                        'body'         => $input->body->val(),
-                        'locale'     => $input->locale->val(),
+                        'key_id' => $input->key_id->val(),
+                        'body'   => $input->body->val(),
+                        'locale' => $input->locale->val(),
                     ));
 
                     $message = null;
                 }
 
-                // Not sure why i hard coded namespace_id: 1 here...
                 locale_lib::flush_by_locale_namespace(
                     $locale_key_message->locale,
-                    new locale_namespace_model(1)
+                    $locale_key_message->locale_key()->locale_namespace()
                 );
 
                 return $message;

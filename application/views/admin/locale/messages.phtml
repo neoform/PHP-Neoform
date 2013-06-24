@@ -47,7 +47,7 @@
                 $("ul.list li", page.div).on("click", page.activateEdit);
 
                 page.translations = <?php echo json_encode($this->translations); ?>;
-                page.locales      = <?php echo json_encode($this->locales); ?>;
+                page.locales      = <?php echo json_encode($this->locales, JSON_UNESCAPED_UNICODE); ?>;
 
                 for (var id in page.translations) {
                     page.addRow(id);
@@ -72,7 +72,7 @@
                                             "font-size": "11px",
                                             "font-weight": "bold"
                                         })
-                                        .html(page.locales[locale].name)
+                                        .html(page.locales[locale])
                                 )
                                 .append(
                                     $("<div/>")
@@ -241,8 +241,6 @@
             activateEdit: function(e) {
                 var tdKey         = $("td.key", this);
                 var tdMessage     = $("td.message", this);
-
-
             }
         };
 

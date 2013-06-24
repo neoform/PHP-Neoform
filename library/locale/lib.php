@@ -2,16 +2,32 @@
 
     class locale_lib {
 
-        public static function name($iso2) {
-            return locale_dao::info($iso2)['name'];
-        }
-
+        /**
+         * @param string  $locale
+         * @param integer $namespace_id
+         *
+         * @return string
+         */
         public static function by_locale_namespace_key($locale, $namespace_id) {
-            return 'locale_lib:by_locale_namespace:' . $locale . ($namespace_id ? ':' . $namespace_id : '');
+            return "locale_lib:by_locale_namespace:{$locale}" . ($namespace_id ? ":{$namespace_id}" : '');
         }
 
-        public static function by_locale_namespace($locale, locale_namespace_model $namespace) {
-            $get = function() use ($locale, $namespace) {
+        /**
+         * Get translation dictionary by iso2 and namespace
+         *
+         * @param string  $locale_iso2
+         * @param integer $namespace_id
+         *
+         * @return array
+         */
+        public static function by_locale_namespace($locale_iso2, $namespace_id) {
+            static $config;
+
+            if (! $config) {
+                $config = core::config()->system['locale'];
+            }
+
+            $get = function() use ($locale_iso2, $namespace_id) {
                 $messages = core::sql('slave')->prepare("
                     SELECT
                         locale_key.body k,
@@ -28,8 +44,8 @@
                         locale_key.namespace_id = ?
                 ");
                 $messages->execute([
-                    $locale,
-                    $namespace->id,
+                    $locale_iso2,
+                    (int) $namespace_id,
                 ]);
 
                 $arr = [];
@@ -41,18 +57,27 @@
             };
 
             return cache_lib::single(
-                'memcache',
-                self::by_locale_namespace_key($locale, $namespace->id),
-                'entities',
+                $config['cache_engine'],
+                self::by_locale_namespace_key($locale_iso2, $namespace_id),
+                $config['cache_pool'],
                 $get
             );
         }
 
-        public static function flush_by_locale_namespace($locale, locale_namespace_model $namespace) {
-            return cache_lib::delete(
-                'memcache',
-                self::by_locale_namespace_key($locale, $namespace->id),
-                'entities'
+        /**
+         * Delete cached translation dictionary
+         *
+         * @param string $locale_iso2
+         * @param locale_namespace_model $namespace
+         */
+        public static function flush_by_locale_namespace($locale_iso2, locale_namespace_model $namespace) {
+
+            $config = core::config()->system['locale'];
+
+            cache_lib::delete(
+                $config['cache_engine'],
+                self::by_locale_namespace_key($locale_iso2, $namespace->id),
+                $config['cache_pool']
             );
         }
     }

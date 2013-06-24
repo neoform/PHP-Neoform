@@ -5,6 +5,7 @@
      */
     class acl_group_dao extends record_dao implements acl_group_definition {
 
+        const BY_ALL  = 'by_all';
         const BY_NAME = 'by_name';
 
         /**
@@ -55,6 +56,15 @@
             );
         }
 
+        /**
+         * Get all data for all Acl Group records
+         *
+         * @return array containing all Acl Group records
+         */
+        public static function all() {
+            return parent::_all(self::BY_ALL);
+        }
+
         // WRITES
 
         /**
@@ -73,6 +83,11 @@
             parent::cache_batch_start();
 
             // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
+
             // BY_NAME
             if (array_key_exists('name', $info)) {
                 parent::_cache_delete(
@@ -107,6 +122,11 @@
             parent::cache_batch_start();
 
             // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
+
             foreach ($infos as $info) {
                 // BY_NAME
                 if (array_key_exists('name', $info)) {
@@ -145,6 +165,11 @@
             parent::cache_batch_start();
 
             // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
+
             // BY_NAME
             if (array_key_exists('name', $info)) {
                 parent::_cache_delete(
@@ -187,6 +212,11 @@
             parent::cache_batch_start();
 
             // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
+
             // BY_NAME
             parent::_cache_delete(
                 parent::_build_key(
@@ -219,6 +249,11 @@
             parent::cache_batch_start();
 
             // Delete Cache
+            // BY_ALL
+            parent::_cache_delete(
+                parent::_build_key(self::BY_ALL)
+            );
+
             foreach ($acl_group_collection as $acl_group) {
                 // BY_NAME
                 parent::_cache_delete(

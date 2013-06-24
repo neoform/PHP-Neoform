@@ -40,9 +40,13 @@
             case 'lib':
             case 'model':
                 $class = 'generate_' . $table_info->table_type() . '_' . $entity;
-                $code = new $class($table_info, $options);
+                $code  = new $class($table_info, $options);
 
-                $path = __DIR__ . '/' . str_replace('_', '/', $table . '_' . $entity . '.php');
+                if (in_array('--install', $options)) {
+                    $path = core::path('library') . '/' . str_replace('_', '/', $table . '_' . $entity . '.php');
+                } else {
+                    $path = __DIR__ . '/' . str_replace('_', '/', $table . '_' . $entity . '.php');
+                }
 
                 if (! disk_lib::file_put_contents($path, str_replace("\t", "    ", $code->get_code()))) {
                     echo cli_model::color_text("ERROR", 'red', true) . ' WRITING TO ' . $path . "\n";
@@ -55,9 +59,13 @@
             case 'all':
                 foreach (['definition', 'dao', 'model', 'collection', 'lib', 'api', 'exception'] as $entity) {
                     $class = 'generate_' . $table_info->table_type() . '_' . $entity;
-                    $code = new $class($table_info, $options);
+                    $code  = new $class($table_info, $options);
 
-                    $path = __DIR__ . '/' . str_replace('_', '/', $table . '_' . $entity . '.php');
+                    if (in_array('--install', $options)) {
+                        $path = core::path('library') . '/' . str_replace('_', '/', $table . '_' . $entity . '.php');
+                    } else {
+                        $path = __DIR__ . '/' . str_replace('_', '/', $table . '_' . $entity . '.php');
+                    }
 
                     if (! disk_lib::file_put_contents($path, str_replace("\t", "    ", $code->get_code()))) {
                         echo cli_model::color_text("ERROR", 'red', true) . ' WRITING TO ' . $path . "\n";

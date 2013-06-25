@@ -2,6 +2,7 @@
 Core = (function(){
 
     var self = {},
+        locale,
         ref;
 
     self.ready = function() {
@@ -15,17 +16,18 @@ Core = (function(){
             }
         });
 
-        $("div.head div.logo").on("click", function(e){ location.href = "/"; });
+        $("div.head div.logo").on("click", function(e){ location.href = self.route("/"); });
 
         $("div.head a[name='logout']")
             .on("click", function(e){
                 e.preventDefault();
-                location.href = "/account/logout?" + Core.ref();
+                location.href = self.route("/account/logout") + "?" + Core.ref();
             });
 
         $("div.head a[name='login']")
             .on("click", function(e){
                 e.preventDefault();
+                console.log((locale ? "/" + locale : "") + "/account/ajax/dialog/login");
                 CoreDialog.showUrl("/account/ajax/dialog/login");
             });
 
@@ -36,6 +38,16 @@ Core = (function(){
             });
     };
 
+    self.locale = function(set) {
+        if (typeof set !== "undefined") {
+            if (set) {
+                locale = set;
+            }
+        } else {
+            return locale;
+        }
+    };
+
     self.ref = function(set) {
         if (typeof set !== "undefined") {
             if (set) {
@@ -44,6 +56,10 @@ Core = (function(){
         } else {
             return "rc=" + ref;
         }
+    };
+
+    self.route = function(url) {
+        return (locale ? "/" + locale : "") + url;
     };
 
     self.changeUrl = function(url, title) {
@@ -69,11 +85,11 @@ Core = (function(){
                     break;
 
                 case "login":
-                    CoreDialog.showUrl("/account/ajax/dialog/login");
+                    CoreDialog.showUrl(self.route("/account/ajax/dialog/login"));
                     break;
 
                 case "captcha":
-                    CoreDialog.showUrl("/account/ajax/dialog/captcha");
+                    CoreDialog.showUrl(self.route("/account/ajax/dialog/captcha"));
                     break;
 
                 case "fault":
@@ -95,6 +111,8 @@ Core = (function(){
                 CoreDialog.error("There seems to have been a problem with your request.");
             }
         };
+
+        opts.url = self.route(opts.url);
 
         if (ref) {
             opts.url += "?" + Core.ref();

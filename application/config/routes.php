@@ -13,63 +13,63 @@
                 'secure' => true,
                 'locale' => [
                     'en' => 'account',
-                    'fr' => 'compte',
+                    //'fr' => 'compte',
                 ],
                 'children' => [
                     'login' => new http_route([
                         'controller' => '/account/login',
                         'locale' => [
                             'en' => 'login',
-                            'fr' => 'connexion',
+                            //'fr' => 'connexion',
                         ],
                     ]),
                     'create' => new http_route([
                         'controller' => '/account/create',
                         'locale' => [
                             'en' => 'create',
-                            'fr' => 'créer',
+                            //'fr' => 'créer',
                         ],
                     ]),
                     'logout' => new http_route([
                         'controller' => '/account/logout',
                         'locale' => [
                             'en' => 'logout',
-                            'fr' => 'quitter',
+                            //'fr' => 'quitter',
                         ],
                     ]),
                     'passwordretreive' => new http_route([
                         'controller' => '/account/password_lost',
                         'locale' => [
                             'en' => 'password_lost',
-                            'fr' => 'mot_de_passe_perdu',
+                            //'fr' => 'mot_de_passe_perdu',
                         ],
                     ]),
                     'passwordreset' => new http_route([
                         'controller' => '/account/password_found',
                         'locale' => [
                             'en' => 'password_found',
-                            'fr' => 'mot_de_passe_trouvé',
+                            //'fr' => 'mot_de_passe_trouvé',
                         ],
                     ]),
                     'info' => new http_route([
                         'controller' => '/account/info',
                         'locale' => [
                             'en' => 'info',
-                            'fr' => 'info',
+                            //'fr' => 'info',
                         ],
                     ]),
                     'password' => new http_route([
                         'controller' => '/account/password',
                         'locale' => [
                             'en' => 'password',
-                            'fr' => 'mot_de_passe',
+                            //'fr' => 'mot_de_passe',
                         ],
                     ]),
                     'email' => new http_route([
                         'controller' => '/account/email',
                         'locale' => [
                             'en' => 'email',
-                            'fr' => 'courriel',
+                            //'fr' => 'courriel',
                         ],
                     ]),
 

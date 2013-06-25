@@ -111,7 +111,18 @@ form, input, select, textarea, button {
     vertical-align: middle;
 }
 
-form.general select { min-width: 100px; }
+form select {
+    min-width: 100px;
+    margin: 3px 0;
+    font-size: 12px;
+    font-weight: normal;
+    line-height: 21px;
+    padding: 3px 5px;
+    border: 1px solid #bbb;
+    border-bottom: 1px solid #ccc;
+    outline: none;
+    font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
+}
 
 form input[type="text"],
 form input[type="password"],

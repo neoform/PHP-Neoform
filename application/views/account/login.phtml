@@ -21,7 +21,7 @@
                 "success": function(response) {
 
                     if (response.status === 'good') {
-                        location.href = "/<?php echo htmlspecialchars($this->bounce); ?>";
+                        location.href = "<?php echo htmlspecialchars($this->locale->route("/{$this->bounce}")); ?>";
                         return;
                     } else {
                         if (response.message) {

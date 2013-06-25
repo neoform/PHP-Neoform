@@ -1,4 +1,55 @@
 
+CREATE TABLE `acl_group` (
+  `id` int(10) unsigned NOT NULL,
+  `name` varchar(64) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+
+CREATE TABLE `acl_group_role` (
+  `acl_group_id` int(10) unsigned NOT NULL,
+  `acl_role_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`acl_group_id`,`acl_role_id`),
+  KEY `acl_role_id` (`acl_role_id`) USING BTREE,
+  CONSTRAINT `acl_group_role_ibfk_acl_group_id` FOREIGN KEY (`acl_group_id`) REFERENCES `acl_group` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `acl_group_role_ibfk_acl_role_id` FOREIGN KEY (`acl_role_id`) REFERENCES `acl_role` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+
+CREATE TABLE `acl_group_user` (
+  `acl_group_id` int(10) unsigned NOT NULL,
+  `user_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`acl_group_id`,`user_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `acl_group_user_ibfk_acl_group_id` FOREIGN KEY (`acl_group_id`) REFERENCES `acl_group` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `acl_group_user_ibfk_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `acl_resource` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `parent_id` int(10) unsigned DEFAULT NULL,
+  `name` char(32) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`) USING HASH,
+  KEY `parent_id` (`parent_id`),
+  CONSTRAINT `acl_resource_ibfk_parent_id` FOREIGN KEY (`parent_id`) REFERENCES `acl_resource` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `acl_role` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `acl_role_resource` (
+  `acl_role_id` int(10) unsigned NOT NULL,
+  `acl_resource_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`acl_role_id`,`acl_resource_id`),
+  KEY `acl_resource_id` (`acl_resource_id`),
+  CONSTRAINT `acl_role_resource_ibfk_acl_resource_id` FOREIGN KEY (`acl_resource_id`) REFERENCES `acl_resource` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `acl_role_resource_ibfk_acl_role_id` FOREIGN KEY (`acl_role_id`) REFERENCES `acl_role` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE `auth` (
   `hash` binary(40) NOT NULL,
   `user_id` int(10) unsigned NOT NULL,
@@ -9,7 +60,6 @@ CREATE TABLE `auth` (
   CONSTRAINT `auth_ibfk_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
 
-
 CREATE TABLE `locale` (
   `iso2` char(2) NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -17,7 +67,7 @@ CREATE TABLE `locale` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
 
 LOCK TABLES `locale` WRITE;
-INSERT INTO `locale` VALUES ('en','English'),('fr','Fran√ßais');
+INSERT INTO `locale` VALUES ('en','English'),('fr','Français');
 UNLOCK TABLES;
 
 
@@ -57,17 +107,8 @@ CREATE TABLE `locale_namespace` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
 
 LOCK TABLES `locale_namespace` WRITE;
-INSERT INTO `locale_namespace` VALUES (1,'main');
+INSERT INTO `locale_namespace` VALUES (1,'admin');
 UNLOCK TABLES;
-
-
-CREATE TABLE `permission` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `name` (`name`) USING HASH
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
-
 
 CREATE TABLE `site` (
   `id` smallint(5) unsigned NOT NULL,
@@ -131,16 +172,14 @@ CREATE TABLE `user_lostpassword` (
   CONSTRAINT `user_lostpassword_ibfk_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
 
-
-CREATE TABLE `user_permission` (
+CREATE TABLE `user_acl_role` (
   `user_id` int(10) unsigned NOT NULL,
-  `permission_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`user_id`,`permission_id`),
-  KEY `user_permission` (`permission_id`),
-  CONSTRAINT `user_permission_ibfk_acl_role` FOREIGN KEY (`permission_id`) REFERENCES `permission` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `user_permission_ibfk_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  `acl_role_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`user_id`,`acl_role_id`),
+  KEY `acl_role_id` (`acl_role_id`),
+  CONSTRAINT `user_acl_role_ibfk_acl_role_id` FOREIGN KEY (`acl_role_id`) REFERENCES `acl_role` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `user_acl_role_ibfk_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
-
 
 CREATE TABLE `user_site` (
   `user_id` int(10) unsigned NOT NULL,

@@ -1,6 +1,6 @@
 <?php
 
-    core::locale()->set_namespace('main');
+    core::locale()->set_namespace('admin');
 
     $user = new user_model((int) core::http()->parameter('id'));
 

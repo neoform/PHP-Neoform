@@ -1,6 +1,6 @@
 <?php
 
-    core::locale()->set_namespace('main');
+    core::locale()->set_namespace('admin');
 
     $page = (int) core::http()->parameter('page');
     $per_page = 10;

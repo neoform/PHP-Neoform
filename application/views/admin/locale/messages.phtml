@@ -30,6 +30,15 @@
                                     "css": {
                                         "width": "300px"
                                     }
+                                },
+                                {
+                                    "type": "select",
+                                    "label": "Namespace",
+                                    "name": "namespace",
+                                    "options": <?php echo json_encode($this->namespaces); ?>,
+                                    "css": {
+                                        "padding": "10px"
+                                    }
                                 }
                             ],
                             [
@@ -38,7 +47,7 @@
                                     "action": function() {
                                         page.create(
                                             $("input[name='key']", this.elements.form).val(),
-                                            1  //default main namespace "1"
+                                            $("select[name='namespace']", this.elements.form).val()
                                         );
                                     },
                                     "cssClass": "good"
@@ -180,7 +189,7 @@
                     success: function(response) {
                         if (response.status === 'good') {
                             CoreDialog.close();
-                            alert("Translation key added");
+                            location.href = location.href;
                         } else {
                             if (response.message && response.message.length) {
                                 alert(response.message);
@@ -272,7 +281,10 @@
 
     <div id="page">
 
-        <h3 class="header"><a href="<?php $this->locale->route('/admin'); ?>">Admin</a> / <a href="<?php $this->locale->route('/admin/locale'); ?>">Locale</a> / Translations</h3>
+        <h3 class="header">
+            <a href="<?php $this->locale->route('/admin'); ?>"><?php echo htmlspecialchars($this->locale->translate('Admin')); ?></a>
+            / <a href="<?php $this->locale->route('/admin/locale'); ?>"><?php echo htmlspecialchars($this->locale->translate('Locale')); ?></a>
+            / <?php echo htmlspecialchars($this->locale->translate('Translations')); ?></h3>
 
         <?php $this->inc('admin/templates/sidebar'); ?>
         <div>
@@ -287,7 +299,6 @@
             <div class="inside">
 
                 <?php if ($this->translations && count($this->translations)): ?>
-
 
                     <div class="box">
                         <div class="table-head">
@@ -318,7 +329,7 @@
 
                 <?php else: ?>
 
-                    <div class="fat big">No translations to show</div>
+                    <div class="fat big"><?php echo htmlspecialchars($this->locale->translate('No translations to show')); ?></div>
 
                 <?php endif; ?>
             </div>

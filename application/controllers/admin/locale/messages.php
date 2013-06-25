@@ -1,6 +1,6 @@
 <?php
 
-    core::locale()->set_namespace('main');
+    core::locale()->set_namespace('admin');
 
     $view = new render_view();
 
@@ -26,7 +26,8 @@
         }
     }
 
-    $view->locales      = array_map('utf8_encode', array_column(locale_dao::all(), 'name', 'iso2'));
+    $view->locales      = array_column(locale_dao::all(), 'name', 'iso2');
     $view->translations = $translations;
+    $view->namespaces   = array_column(locale_namespace_dao::all(), 'name', 'id');
 
     $view->render('admin/locale/messages');

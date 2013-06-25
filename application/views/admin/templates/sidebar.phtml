@@ -3,10 +3,10 @@
 ?>
 <div class="box inner sidebar">
     <ul>
-        <li><a href="/admin/users">Users</a></li>
-        <li><a href="/admin/groups">Groups</a></li>
-        <li><a href="/admin/acl/roles">ACL Roles</a></li>
-        <li><a href="/admin/acl/resources">ACL Resources</a></li>
-        <li><a href="/admin/locale/messages">Translations</a></li>
+        <li><a href="<?php echo $this->locale->route('/admin/users'); ?>"><?php echo htmlspecialchars($this->locale->translate('Users')); ?></a></li>
+        <li><a href="<?php echo $this->locale->route('/admin/groups'); ?>"><?php echo htmlspecialchars($this->locale->translate('Groups')); ?></a></li>
+        <li><a href="<?php echo $this->locale->route('/admin/acl/roles'); ?>"><?php echo htmlspecialchars($this->locale->translate('ACL Roles')); ?></a></li>
+        <li><a href="<?php echo $this->locale->route('/admin/acl/resources'); ?>"><?php echo htmlspecialchars($this->locale->translate('ACL Resources')); ?></a></li>
+        <li><a href="<?php echo $this->locale->route('/admin/locale/messages'); ?>"><?php echo htmlspecialchars($this->locale->translate('Translations')); ?></a></li>
     </ul>
 </div>

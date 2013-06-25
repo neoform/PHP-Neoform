@@ -26,6 +26,9 @@
 
         <script>
             Core.ref("<?php echo core::http()->get_ref(); ?>");
+            <?php if ($this->locale->get_default() !== $this->locale->get()): ?>
+                Core.locale("<?php echo $this->locale->get(); ?>");
+            <?php endif; ?>
         </script>
     </head>
     <body>
@@ -35,11 +38,11 @@
                 <nav>
                     <ul>
                         <?php if (core::auth()->user_id): ?>
-                            <li><a href="/account"><?php echo htmlspecialchars(core::auth()->user()->email); ?></a></li>
-                            <li><a href="" name="logout">Logout</a></li>
+                            <li><a href="<?php echo $this->locale->route('/account'); ?>"><?php echo htmlspecialchars(core::auth()->user()->email); ?></a></li>
+                            <li><a href="<?php echo $this->locale->route('/account/logout'); ?>" name="logout"><?php echo htmlspecialchars($this->locale->translate('Logout')); ?></a></li>
                         <?php else: ?>
-                            <li><a href="/account/login" name="login">Login</a></li>
-                            <li><a href="/account/create" name="create-account">Create Account</a></li>
+                            <li><a href="<?php echo $this->locale->route('/account/login'); ?>" name="login"><?php echo htmlspecialchars($this->locale->translate('Login')); ?></a></li>
+                            <li><a href="<?php echo $this->locale->route('/account/create'); ?>" name="create-account"><?php echo htmlspecialchars($this->locale->translate('Create Account')); ?></a></li>
                         <?php endif; ?>
                     </ul>
                 </nav>

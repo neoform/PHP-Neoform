@@ -53,8 +53,9 @@
          * @param array $config
          */
         public function __construct(array $config) {
-            $this->active   = (bool) $config['active'];
-            $this->all_iso2 = array_merge([], $config['allowed']);
+            $this->active       = (bool) $config['active'];
+            $this->all_iso2     = array_merge([], $config['allowed']);
+            $this->default_iso2 = (string) $config['default'];
             $this->set((string) $config['default']);
         }
 
@@ -65,6 +66,15 @@
          */
         public function get() {
             return $this->current_iso2;
+        }
+
+        /**
+         * Get default locale iso2
+         *
+         * @return mixed
+         */
+        public function get_default() {
+            return $this->default_iso2;
         }
 
         /**
@@ -178,7 +188,7 @@
          * @return string
          */
         public function route($route) {
-            return $this->struct . (isset($this->routes[$route]) ? $this->routes[$route] : $route);
+            return ($this->struct) . (isset($this->routes[$route]) ? $this->routes[$route] : $route);
         }
 
         /**

@@ -167,7 +167,12 @@
          * @return output_instance
          */
         public function redirect($url='', $http_code=303) {
-            $this->header('Location', core::http()->server('url') . $url, true, $http_code);
+            $base_url = substr(core::http()->server('url'), 0, -1);
+            if (substr($url, 0, 1) !== '/') {
+                $this->header('Location', $base_url . core::locale()->route("/{$url}"), true, $http_code);
+            } else {
+                $this->header('Location', $base_url . core::locale()->route($url), true, $http_code);
+            }
             return $this;
         }
 

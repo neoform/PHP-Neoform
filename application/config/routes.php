@@ -197,15 +197,28 @@
                         'resources' => 'locale',
                         'children' => [
 
-                            // Messages
-                            'messages' => new http_route([
-                                'controller' => '/admin/locale/messages',
+                            // Namespaces
+                            'namespaces' => new http_route([
+                                'controller' => '/admin/locale/namespaces',
                                 'children' => [
 
                                     // Ajax
                                     'ajax' => new http_route([
-                                        'controller' => '/admin/locale/messages/ajax',
+                                        'controller' => '/admin/locale/namespaces/ajax',
                                     ]),
+
+                                    // Messages
+                                    'messages' => new http_route([
+                                        'controller' => '/admin/locale/namespaces/messages',
+                                        'children' => [
+
+                                            // Ajax
+                                            'ajax' => new http_route([
+                                                'controller' => '/admin/locale/namespaces/messages/ajax',
+                                            ]),
+                                        ],
+                                    ]),
+
                                 ],
                             ]),
                         ],

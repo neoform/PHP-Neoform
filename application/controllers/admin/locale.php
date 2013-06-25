@@ -1,3 +1,3 @@
 <?php
 
-    core::output()->redirect('admin/locale/messages');
+    core::output()->redirect('admin/locale/namespaces');

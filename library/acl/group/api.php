@@ -46,7 +46,7 @@
 
             // id
             $input->id->cast('int')->digit(0, 4294967295)->callback(function($id) {
-                $id_arr = acl_group_dao::by_id($id->val());
+                $id_arr = acl_group_dao::by_pk($id->val());
                 if (is_array($id_arr) && count($id_arr)) {
                     $id->errors('already in use');
                 }
@@ -65,7 +65,7 @@
 
             // id
             $input->id->cast('int')->optional()->digit(0, 4294967295)->callback(function($id) use ($acl_group) {
-                $id_arr = acl_group_dao::by_id($id->val());
+                $id_arr = acl_group_dao::by_pk($id->val());
                 if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $acl_group->id) {
                     $id->errors('already in use');
                 }

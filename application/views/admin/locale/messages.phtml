@@ -180,7 +180,7 @@
             create: function(body, namespace_id) {
 
                 Core.ajax({
-                    url: "/admin/locale/messages/ajax/create",
+                    url: "/admin/locale/namespaces/messages/ajax/insert",
                     data: {
                         "locale":         "en",
                         "body":         body,
@@ -205,7 +205,7 @@
             update: function(id, locale, body) {
 
                 Core.ajax({
-                    url: "/admin/locale/messages/ajax/update",
+                    url: "/admin/locale/namespaces/messages/ajax/update",
                     data: {
                         "key_id": id,
                         "locale": locale,
@@ -228,7 +228,7 @@
 
             del: function(id) {
                 Core.ajax({
-                    url: "/admin/locale/messages/ajax/delete/id:" + id,
+                    url: "/admin/locale/namespaces/messages/ajax/delete/id:" + id,
                     success: function(response) {
                         if (response.status === 'good') {
                             alert("Translation deleted");
@@ -282,9 +282,11 @@
     <div id="page">
 
         <h3 class="header">
-            <a href="<?php $this->locale->route('/admin'); ?>"><?php echo htmlspecialchars($this->locale->translate('Admin')); ?></a>
-            / <a href="<?php $this->locale->route('/admin/locale'); ?>"><?php echo htmlspecialchars($this->locale->translate('Locale')); ?></a>
-            / <?php echo htmlspecialchars($this->locale->translate('Translations')); ?></h3>
+            <a href="<?php echo $this->locale->route('/admin'); ?>"><?php echo htmlspecialchars($this->locale->translate('Admin')); ?></a>
+            / <a href="<?php echo $this->locale->route('/admin/locale'); ?>"><?php echo htmlspecialchars($this->locale->translate('Locale')); ?></a>
+            / <a href="<?php echo $this->locale->route('/admin/locale/namespaces'); ?>"><?php echo htmlspecialchars($this->locale->translate('Namespaces')); ?></a>
+            / <?php echo htmlspecialchars($this->locale->translate('Translations')); ?>
+        </h3>
 
         <?php $this->inc('admin/templates/sidebar'); ?>
         <div>

@@ -6,7 +6,9 @@
 
     $view->meta_title = 'Locale Translations';
 
-    $keys = new locale_key_collection(null, locale_key_dao::all());
+    $namespace = new locale_namespace_model(core::http()->parameter('id'));
+
+    $keys = new locale_key_collection(locale_key_dao::by_namespace($namespace->id));
 
     $translations = [];
     foreach ($keys as $key) {

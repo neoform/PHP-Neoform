@@ -5,9 +5,9 @@
 
     $json = new render_json();
 
-    switch (core::http()->segment(5)) {
+    switch (core::http()->segment(6)) {
 
-        case 'create':
+        case 'insert':
             try {
                 locale_key_api::insert(
                     core::http()->posts()

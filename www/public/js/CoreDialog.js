@@ -125,14 +125,14 @@
         };
 
         // Public - alert()
-        self.alert = function(message, title) {
+        self.alert = function(message, title, cssClass) {
             var okay = $("<button/>")
                 .addClass("okay")
                 .html("OK")
                 .on("click", self.close);
 
             var body = $("<div/>")
-                .addClass("alert padded info")
+                .addClass((cssClass || "alert") + " padded info")
                 .html(message);
 
             _show({

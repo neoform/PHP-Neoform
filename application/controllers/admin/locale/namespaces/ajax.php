@@ -15,7 +15,7 @@
                 $json->status = 'good';
             } catch (input_exception $e) {
                 $json->status = 'error';
-                $json->message = $e->message() ? $e->message() : 'Namespace could not be created';
+                $json->message = $e->message() ?: 'Namespace could not be created';
                 $json->errors = $e->errors();
             }
             break;
@@ -29,7 +29,7 @@
                 $json->status = 'good';
             } catch (input_exception $e) {
                 $json->status = 'error';
-                $json->message = $e->message() ? $e->message() : 'Namespace could not be updated';
+                $json->message = $e->message() ?: 'Namespace could not be updated';
                 $json->errors = $e->errors();
             }
             break;
@@ -40,7 +40,7 @@
                 $json->status = 'good';
             } catch (input_exception $e) {
                 $json->status = 'error';
-                $json->message = $e->message() ? $e->message() : 'Namespace could not be deleted';
+                $json->message = $e->message() ?: 'Namespace could not be deleted';
                 $json->errors = $e->errors();
             }
             break;

@@ -30,7 +30,9 @@
 
         <script>
             Core.ref("<?php echo core::http()->get_ref(); ?>");
-            Core.locale("<?php echo $this->locale->get(); ?>");
+            <?php if ($this->locale->get_default() !== $this->locale->get()): ?>
+                Core.locale("<?php echo $this->locale->get(); ?>");
+            <?php endif; ?>
         </script>
     </head>
     <body>

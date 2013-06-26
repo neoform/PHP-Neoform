@@ -12,7 +12,7 @@
                 $hashmethod      = user_lib::default_hashmethod();
                 $hashmethod_cost = user_lib::default_hashmethod_cost();
                 $salt            = user_lib::generate_salt();
-                $hash            = user_lib::hash($input->password1->val(), $salt, $hashmethod, $hashmethod_cost);
+                $hash            = $hashmethod->hash($input->password1->val(), $salt, $hashmethod_cost);
 
                 $user = user_dao::insert([
                     'email'               => $input->email->val(),
@@ -67,11 +67,53 @@
                         'password_salt'       => $salt,
                         'password_cost'       => $password_cost,
                         'password_hashmethod' => $hash_method->id,
-                        'password_hash'       => user_lib::hash(
+                        'password_hash'       => $hash_method->hash(
                             $input->password1->val(),
                             $salt,
-                            $hash_method,
                             $password_cost
+                        ),
+                    ]
+                );
+            }
+            throw $input->exception();
+        }
+
+        public static function admin_update(user_model $user, array $info) {
+
+            $input = new input_collection($info);
+
+            self::_validate_admin_update($user, $input);
+
+            if ($input->is_valid()) {
+                return user_dao::update(
+                    $user,
+                    [
+                        'email'     => $input->email->val(),
+                        'status_id' => $input->status_id->val(),
+                    ]
+                );
+            }
+            throw $input->exception();
+        }
+
+        public static function admin_password_update(user_model $user, array $info) {
+
+            $input = new input_collection($info);
+
+            self::_validate_admin_password_update($user, $input);
+
+            if ($input->is_valid()) {
+
+                return user_dao::update(
+                    $user,
+                    [
+                        'password_salt'       => $input->password_salt->val(),
+                        'password_cost'       => $input->password_cost->val(),
+                        'password_hashmethod' => $input->password_hashmethod->data('model')->id,
+                        'password_hash'       => $input->password_hashmethod->data('model')->hash(
+                            $input->password->val(),
+                            $input->password_salt->val(),
+                            $input->password_cost->val()
                         ),
                     ]
                 );
@@ -154,7 +196,7 @@
             });
 
             // password_hash
-            $input->password_hash->cast('string')->length(1, 255);
+            $input->password->cast('string')->length(1, 255);
 
             // password_hashmethod
             $input->password_hashmethod->cast('int')->digit(0, 255)->callback(function($password_hashmethod){
@@ -184,18 +226,32 @@
         public static function _validate_admin_update(user_model $user, input_collection $input) {
 
             // email
-            $input->email->cast('string')->optional()->length(1, 255)->callback(function($email) use ($user) {
+            $input->email->cast('string')->length(1, 255)->callback(function($email) use ($user) {
                 $id_arr = user_dao::by_email($email->val());
                 if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $user->id) {
                     $email->errors('already in use');
                 }
             });
 
+            // status
+            $input->status_id->cast('int')->digit(0, 255)->callback(function($status_id){
+                try {
+                    $status_id->data('model', new user_status_model($status_id->val()));
+                } catch (user_status_exception $e) {
+                    $status_id->errors($e->getMessage());
+                }
+            });
+        }
+
+
+
+        public static function _validate_admin_password_update(user_model $user, input_collection $input) {
+
             // password_hash
-            $input->password_hash->cast('string')->optional()->length(1, 255);
+            $input->password->cast('string')->length(6, 255);
 
             // password_hashmethod
-            $input->password_hashmethod->cast('int')->optional()->digit(0, 255)->callback(function($password_hashmethod){
+            $input->password_hashmethod->cast('int')->digit(0, 255)->callback(function($password_hashmethod){
                 try {
                     $password_hashmethod->data('model', new user_hashmethod_model($password_hashmethod->val()));
                 } catch (user_hashmethod_exception $e) {
@@ -204,19 +260,10 @@
             });
 
             // password_cost
-            $input->password_cost->cast('int')->optional()->digit(0, 4294967295);
+            $input->password_cost->cast('int')->digit(0, 4294967295);
 
             // password_salt
-            $input->password_salt->cast('string')->optional()->length(1, 40);
-
-            // status
-            $input->status_id->cast('int')->optional()->digit(0, 255)->callback(function($status_id){
-                try {
-                    $status_id->data('model', new user_status_model($status_id->val()));
-                } catch (user_status_exception $e) {
-                    $status_id->errors($e->getMessage());
-                }
-            });
+            $input->password_salt->cast('string')->length(1, 40);
         }
 
     }

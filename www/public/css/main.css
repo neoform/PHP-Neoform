@@ -22,7 +22,7 @@
         position: absolute;
         top: 7px;
         left: 9px;
-        background: url("/public/images/logo.png") no-repeat;
+        /* background: url("/public/images/logo.png") no-repeat; */
         cursor: pointer;
     }
     .default .head .logo label {
@@ -400,4 +400,8 @@ h3.header {
 .inside .counts {
     margin: 0 0 10px 0;
     color: #777;
+}
+
+.inside {
+    margin-top: 10px;
 }

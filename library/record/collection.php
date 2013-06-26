@@ -200,7 +200,6 @@
             return $this;
         }
 
-
         /**
          * Get many groups of records all in one shot.
          * this is ideal for installations where memcached

@@ -26,26 +26,6 @@
             return (int) core::config()->auth['max_salt_length'];
         }
 
-        // HASH THE USER'S PASSWORD
-        public static function hash($password, $salt, user_hashmethod_model $hash_method, $cost) {
-
-            if (($cost = (int) $cost) < 1) {
-                throw new user_exception('Password hash cost must be at least 1');
-            }
-
-            switch ($hash_method->name) {
-                case 'whirlpool':
-                    $hash = $password . $salt;
-                    for ($i=0; $i < $cost; $i++) {
-                        $hash = hash('whirlpool', $hash, 1);
-                    }
-                    return $hash;
-
-                default:
-                    throw new user_exception('Password hash method does not exist');
-            }
-        }
-
         public static function generate_salt() {
             $salt = '';
             $len = self::max_salt_length();
@@ -59,12 +39,12 @@
         }
 
         public static function password_matches(user_model $user, $password) {
-            $hash = user_lib::hash(
+            $hash = $user->user_hashmethod()->hash(
                 $password,
                 $user->password_salt,
-                $user->user_hashmethod(),
                 $user->password_cost
             );
+
             return strcmp($user->password_hash, $hash) === 0;
         }
     }

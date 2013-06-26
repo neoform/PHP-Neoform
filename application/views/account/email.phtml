@@ -35,7 +35,7 @@
 
                             if (response && response.errors) {
                                 for (var k in response.errors) {
-                                    page.div.find('.id-error-' + k).html(response.errors[k]).css('display', 'block');
+                                    $('.id-error-' + k, page.div).html(response.errors[k]).css('display', 'block');
                                 }
                             }
                         }

@@ -80,7 +80,7 @@
                     'password_salt'       => $salt,
                     'password_cost'       => $password_cost,
                     'password_hashmethod' => $hash_method->id,
-                    'password_hash'       => user_lib::hash($password, $salt, $hash_method, $password_cost),
+                    'password_hash'       => $hash_method->hash($password, $salt, $password_cost),
                 )
             );
 

@@ -41,4 +41,24 @@
             return $this->_vars['user_collection'];
         }
 
+        /**
+         * Hashes a password, with salt given a certain cost value
+         *
+         * @param string        $password
+         * @param binary|string $salt
+         * @param integer       $cost
+         *
+         * @return binary|string
+         * @throws user_exception
+         */
+        public function hash($password, $salt, $cost) {
+            if (($cost = (int) $cost) < 1) {
+                throw new user_exception('Password hash cost must be at least 1');
+            }
+
+            // Seems pointless to make an object here, except PHP doesn't allow abstract static functions, weak
+            $hashmethod = "user_hashmethod_driver_{$this->name}";
+            $hashmethod = new $hashmethod;
+            return $hashmethod->hash($password, $salt, $cost);
+        }
     }

@@ -45,12 +45,15 @@
         public static function _validate_insert(input_collection $input) {
 
             // id
-            $input->id->cast('int')->digit(0, 255);
+            $input->id->cast('int')->digit(0, 255)->callback(function($id) {
+                if (user_hashmethod_dao::by_pk($id->val())) {
+                    $id->errors('already in use');
+                }
+            });
 
             // name
             $input->name->cast('string')->length(1, 255)->callback(function($name) {
-                $id_arr = user_hashmethod_dao::by_name($name->val());
-                if (is_array($id_arr) && count($id_arr)) {
+                if (user_hashmethod_dao::by_name($name->val())) {
                     $name->errors('already in use');
                 }
             });
@@ -59,7 +62,12 @@
         public static function _validate_update(user_hashmethod_model $user_hashmethod, input_collection $input) {
 
             // id
-            $input->id->cast('int')->optional()->digit(0, 255);
+            $input->id->cast('int')->optional()->digit(0, 255)->callback(function($id) use ($user_hashmethod) {
+                $user_hashmethod_info = user_hashmethod_dao::by_pk($id->val());
+                if ($user_hashmethod_info && (int) $user_hashmethod_info['id'] !== $user_hashmethod->id) {
+                    $id->errors('already in use');
+                }
+            });
 
             // name
             $input->name->cast('string')->optional()->length(1, 255)->callback(function($name) use ($user_hashmethod) {
@@ -69,5 +77,4 @@
                 }
             });
         }
-
     }

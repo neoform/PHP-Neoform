@@ -46,16 +46,14 @@
 
             // id
             $input->id->cast('int')->digit(0, 4294967295)->callback(function($id) {
-                $id_arr = acl_group_dao::by_pk($id->val());
-                if (is_array($id_arr) && count($id_arr)) {
+                if (acl_group_dao::by_pk($id->val())) {
                     $id->errors('already in use');
                 }
             });
 
             // name
             $input->name->cast('string')->length(1, 64)->callback(function($name) {
-                $id_arr = acl_group_dao::by_name($name->val());
-                if (is_array($id_arr) && count($id_arr)) {
+                if (acl_group_dao::by_name($name->val())) {
                     $name->errors('already in use');
                 }
             });
@@ -64,15 +62,15 @@
         public static function _validate_update(acl_group_model $acl_group, input_collection $input) {
 
             // id
-            $input->id->cast('int')->optional()->digit(0, 4294967295)->callback(function($id) use ($acl_group) {
-                $id_arr = acl_group_dao::by_pk($id->val());
-                if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $acl_group->id) {
+            $input->id->cast('int')->digit(0, 4294967295)->callback(function($id) use ($acl_group) {
+                $acl_group_info = acl_group_dao::by_pk($id->val());
+                if ($acl_group_info && (int) $acl_group_info['id'] !== $acl_group->id) {
                     $id->errors('already in use');
                 }
             });
 
             // name
-            $input->name->cast('string')->optional()->length(1, 64)->callback(function($name) use ($acl_group) {
+            $input->name->cast('string')->length(1, 64)->callback(function($name) use ($acl_group) {
                 $id_arr = acl_group_dao::by_name($name->val());
                 if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $acl_group->id) {
                     $name->errors('already in use');

@@ -57,8 +57,7 @@
 
             // name
             $input->name->cast('string')->length(1, 32)->callback(function($name) {
-                $id_arr = acl_resource_dao::by_name($name->val());
-                if (is_array($id_arr) && count($id_arr)) {
+                if (acl_resource_dao::by_name($name->val())) {
                     $name->errors('already in use');
                 }
             });

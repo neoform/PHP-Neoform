@@ -137,8 +137,7 @@
 
             // email
             $input->email->cast('string')->length(1, 255)->is_email()->callback(function($email) {
-                $id_arr = user_dao::by_email($email->val());
-                if (is_array($id_arr) && count($id_arr)) {
+                if (user_dao::by_email($email->val())) {
                     $email->errors('already in use');
                 }
             });
@@ -189,8 +188,7 @@
 
             // email
             $input->email->cast('string')->length(1, 255)->callback(function($email) {
-                $id_arr = user_dao::by_email($email->val());
-                if (is_array($id_arr) && count($id_arr)) {
+                if (user_dao::by_email($email->val())) {
                     $email->errors('already in use');
                 }
             });
@@ -243,8 +241,6 @@
             });
         }
 
-
-
         public static function _validate_admin_password_update(user_model $user, input_collection $input) {
 
             // password_hash
@@ -265,5 +261,4 @@
             // password_salt
             $input->password_salt->cast('string')->length(1, 40);
         }
-
     }

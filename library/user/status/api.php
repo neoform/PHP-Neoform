@@ -45,12 +45,15 @@
         public static function _validate_insert(input_collection $input) {
 
             // id
-            $input->id->cast('int')->digit(0, 255);
+            $input->id->cast('int')->digit(0, 255)->callback(function($id) {
+                if (user_status_dao::by_pk($id->val())) {
+                    $id->errors('already in use');
+                }
+            });
 
             // name
             $input->name->cast('string')->length(1, 255)->callback(function($name) {
-                $id_arr = user_status_dao::by_name($name->val());
-                if (is_array($id_arr) && count($id_arr)) {
+                if (user_status_dao::by_name($name->val())) {
                     $name->errors('already in use');
                 }
             });
@@ -59,7 +62,12 @@
         public static function _validate_update(user_status_model $user_status, input_collection $input) {
 
             // id
-            $input->id->cast('int')->optional()->digit(0, 255);
+            $input->id->cast('int')->optional()->digit(0, 255)->callback(function($id) use ($user_status) {
+                $user_status_info = user_status_dao::by_pk($id->val());
+                if ($user_status_info && (int) $user_status_info['id'] !== $user_status->id) {
+                    $id->errors('already in use');
+                }
+            });
 
             // name
             $input->name->cast('string')->optional()->length(1, 255)->callback(function($name) use ($user_status) {
@@ -69,5 +77,4 @@
                 }
             });
         }
-
     }

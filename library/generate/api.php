@@ -25,8 +25,12 @@
                 //unique
                 if ($field->is_unique()) {
                     $this->code .= "->callback(function($" . $field->name . ") {\n";
-                    $this->code .= "\t\t\t\t$" . $pk->name . "_arr = " . $this->table->name . "_dao::by_" . $field->name_idless . "($" . $field->name . "->val());\n";
-                    $this->code .= "\t\t\t\tif (is_array($" . $pk->name . "_arr) && count($" . $pk->name . "_arr)) {\n";
+                    // by_pk() is a different function, it returns an array with entity info, not it's id only
+                    if ($field->is_primary_key()) {
+                        $this->code .= "\t\t\t\tif (" . $this->table->name . "_dao::by_pk($" . $field->name . "->val())) {\n";
+                    } else {
+                        $this->code .= "\t\t\t\tif (" . $this->table->name . "_dao::by_" . $field->name_idless . "($" . $field->name . "->val())) {\n";
+                    }
                     $this->code .= "\t\t\t\t\t$" . $field->name . "->errors('already in use');\n";
                     $this->code .= "\t\t\t\t}\n";
                     $this->code .= "\t\t\t})";
@@ -65,8 +69,14 @@
                 //unique
                 if ($field->is_unique()) {
                     $this->code .= "->callback(function($" . $field->name . ") use ($" . $this->table->name . ") {\n";
-                    $this->code .= "\t\t\t\t$" . $pk->name . "_arr = " . $this->table->name . "_dao::by_" . $field->name_idless . "($" . $field->name . "->val());\n";
-                    $this->code .= "\t\t\t\tif (is_array($" . $pk->name . "_arr) && count($" . $pk->name . "_arr) && (" . $pk->casting . ") current($" . $pk->name . "_arr) !== $" . $this->table->name . "->" . $pk->name . ") {\n";
+                    // by_pk() is a different function, it returns an array with entity info, not it's id only
+                    if ($field->is_primary_key()) {
+                        $this->code .= "\t\t\t\t$" . $this->table->name . "_info = " . $this->table->name . "_dao::by_pk($" . $field->name . "->val());\n";
+                        $this->code .= "\t\t\t\tif ($" . $this->table->name . "_info && (" . $pk->casting . ") $" . $this->table->name . "_info['" . $pk->name . "'] !== $" . $this->table->name . "->" . $pk->name . ") {\n";
+                    } else {
+                        $this->code .= "\t\t\t\t$" . $pk->name . "_arr = " . $this->table->name . "_dao::by_" . $field->name_idless . "($" . $field->name . "->val());\n";
+                        $this->code .= "\t\t\t\tif (is_array($" . $pk->name . "_arr) && count($" . $pk->name . "_arr) && (" . $pk->casting . ") current($" . $pk->name . "_arr) !== $" . $this->table->name . "->" . $pk->name . ") {\n";
+                    }
                     $this->code .= "\t\t\t\t\t$" . $field->name . "->errors('already in use');\n";
                     $this->code .= "\t\t\t\t}\n";
                     $this->code .= "\t\t\t})";

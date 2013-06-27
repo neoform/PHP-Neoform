@@ -134,8 +134,7 @@
 
             // user_id
             $input->user_id->cast('int')->digit(0, 4294967295)->callback(function($user_id) {
-                $hash_arr = user_lostpassword_dao::by_user($user_id->val());
-                if (is_array($hash_arr) && count($hash_arr)) {
+                if (user_lostpassword_dao::by_user($user_id->val())) {
                     $user_id->errors('already in use');
                 }
             })->callback(function($user_id){
@@ -172,5 +171,4 @@
             // posted_on
             $input->posted_on->cast('string')->optional()->is_datetime();
         }
-
     }

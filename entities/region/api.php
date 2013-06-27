@@ -55,17 +55,7 @@
         public static function _validate_insert(input_collection $input) {
 
             // country_id
-            $input->country_id->cast('int')->digit(0, 255)->callback(function($country_id) {
-                $id_arr = region_dao::by_country($country_id->val());
-                if (is_array($id_arr) && count($id_arr)) {
-                    $country_id->errors('already in use');
-                }
-            })->callback(function($country_id) {
-                $id_arr = region_dao::by_country($country_id->val());
-                if (is_array($id_arr) && count($id_arr)) {
-                    $country_id->errors('already in use');
-                }
-            })->callback(function($country_id){
+            $input->country_id->cast('int')->digit(0, 255)->callback(function($country_id){
                 try {
                     $country_id->data('model', new country_model($country_id->val()));
                 } catch (country_exception $e) {
@@ -84,33 +74,22 @@
 
             // iso2
             $input->iso2->cast('string')->length(1, 2)->callback(function($iso2) {
-                $id_arr = region_dao::by_iso2($iso2->val());
-                if (is_array($id_arr) && count($id_arr)) {
+                if (region_dao::by_iso2($iso2->val())) {
                     $iso2->errors('already in use');
                 }
             });
 
             // longitude
-            $input->longitude->cast('string');
+            $input->longitude->cast('float');
 
             // latitude
-            $input->latitude->cast('string');
+            $input->latitude->cast('float');
         }
 
         public static function _validate_update(region_model $region, input_collection $input) {
 
             // country_id
-            $input->country_id->cast('int')->optional()->digit(0, 255)->callback(function($country_id) use ($region) {
-                $id_arr = region_dao::by_country($country_id->val());
-                if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $region->id) {
-                    $country_id->errors('already in use');
-                }
-            })->callback(function($country_id) use ($region) {
-                $id_arr = region_dao::by_country($country_id->val());
-                if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $region->id) {
-                    $country_id->errors('already in use');
-                }
-            })->callback(function($country_id){
+            $input->country_id->cast('int')->optional()->digit(0, 255)->callback(function($country_id){
                 try {
                     $country_id->data('model', new country_model($country_id->val()));
                 } catch (country_exception $e) {
@@ -136,10 +115,9 @@
             });
 
             // longitude
-            $input->longitude->cast('string')->optional();
+            $input->longitude->cast('float')->optional();
 
             // latitude
-            $input->latitude->cast('string')->optional();
+            $input->latitude->cast('float')->optional();
         }
-
     }

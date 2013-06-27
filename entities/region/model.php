@@ -39,7 +39,6 @@
                         return $this->vars[$k];
                 }
             }
-
         }
 
         /**
@@ -64,5 +63,4 @@
         public function country() {
             return $this->_model('country', $this->vars['country_id'], 'country_model');
         }
-
     }

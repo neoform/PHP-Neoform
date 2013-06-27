@@ -50,32 +50,28 @@
 
             // name
             $input->name->cast('string')->length(1, 255)->callback(function($name) {
-                $id_arr = country_dao::by_name($name->val());
-                if (is_array($id_arr) && count($id_arr)) {
+                if (country_dao::by_name($name->val())) {
                     $name->errors('already in use');
                 }
             });
 
             // name_normalized
             $input->name_normalized->cast('string')->length(1, 255)->callback(function($name_normalized) {
-                $id_arr = country_dao::by_name_normalized($name_normalized->val());
-                if (is_array($id_arr) && count($id_arr)) {
+                if (country_dao::by_name_normalized($name_normalized->val())) {
                     $name_normalized->errors('already in use');
                 }
             });
 
             // iso2
             $input->iso2->cast('string')->length(1, 2)->callback(function($iso2) {
-                $id_arr = country_dao::by_iso2($iso2->val());
-                if (is_array($id_arr) && count($id_arr)) {
+                if (country_dao::by_iso2($iso2->val())) {
                     $iso2->errors('already in use');
                 }
             });
 
             // iso3
             $input->iso3->cast('string')->length(1, 3)->callback(function($iso3) {
-                $id_arr = country_dao::by_iso3($iso3->val());
-                if (is_array($id_arr) && count($id_arr)) {
+                if (country_dao::by_iso3($iso3->val())) {
                     $iso3->errors('already in use');
                 }
             });
@@ -115,5 +111,4 @@
                 }
             });
         }
-
     }

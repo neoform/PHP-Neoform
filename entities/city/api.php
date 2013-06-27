@@ -55,12 +55,7 @@
         public static function _validate_insert(input_collection $input) {
 
             // region_id
-            $input->region_id->cast('int')->digit(0, 65535)->callback(function($region_id) {
-                $id_arr = city_dao::by_region($region_id->val());
-                if (is_array($id_arr) && count($id_arr)) {
-                    $region_id->errors('already in use');
-                }
-            })->callback(function($region_id){
+            $input->region_id->cast('int')->digit(0, 65535)->callback(function($region_id){
                 try {
                     $region_id->data('model', new region_model($region_id->val()));
                 } catch (region_exception $e) {
@@ -78,24 +73,19 @@
             $input->name_soundex->cast('string')->length(1, 255);
 
             // top
-            $input->top->cast('string')->in(['yes','no']);
+            $input->top->cast('string')->in([0]);
 
             // longitude
-            $input->longitude->cast('string');
+            $input->longitude->cast('float');
 
             // latitude
-            $input->latitude->cast('string');
+            $input->latitude->cast('float');
         }
 
         public static function _validate_update(city_model $city, input_collection $input) {
 
             // region_id
-            $input->region_id->cast('int')->optional()->digit(0, 65535)->callback(function($region_id) use ($city) {
-                $id_arr = city_dao::by_region($region_id->val());
-                if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $city->id) {
-                    $region_id->errors('already in use');
-                }
-            })->callback(function($region_id){
+            $input->region_id->cast('int')->optional()->digit(0, 65535)->callback(function($region_id){
                 try {
                     $region_id->data('model', new region_model($region_id->val()));
                 } catch (region_exception $e) {
@@ -113,13 +103,12 @@
             $input->name_soundex->cast('string')->optional()->length(1, 255);
 
             // top
-            $input->top->cast('string')->optional()->in(['yes','no']);
+            $input->top->cast('string')->optional()->in([0]);
 
             // longitude
-            $input->longitude->cast('string')->optional();
+            $input->longitude->cast('float')->optional();
 
             // latitude
-            $input->latitude->cast('string')->optional();
+            $input->latitude->cast('float')->optional();
         }
-
     }

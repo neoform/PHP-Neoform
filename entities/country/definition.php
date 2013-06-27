@@ -14,6 +14,6 @@
         const ENTITY_POOL   = 'entities';
         const CACHE_ENGINE  = 'redis';
         const SOURCE_ENGINE = null;
-        const USING_LIMIT   = true;
-        const USING_COUNT   = true;
+        const USING_LIMIT   = false;
+        const USING_COUNT   = false;
     }

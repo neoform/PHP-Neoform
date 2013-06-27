@@ -36,13 +36,13 @@
                     case 'name':
                     case 'name_normalized':
                     case 'name_soundex':
+                    case 'top':
                         return (string) $this->vars[$k];
 
                     default:
                         return $this->vars[$k];
                 }
             }
-
         }
 
         /**
@@ -53,5 +53,4 @@
         public function region() {
             return $this->_model('region', $this->vars['region_id'], 'region_model');
         }
-
     }

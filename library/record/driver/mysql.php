@@ -21,11 +21,10 @@
         /**
          * Get full record by primary key
          *
-         * @param string     $self the name of the DAO
-         * @param int|string $pk
+         * @param string          $self the name of the DAO
+         * @param int|string|null $pk
          *
          * @return mixed
-         * @throws record_exception
          */
         public static function by_pk($self, $pk) {
             $info = core::sql('slave')->prepare("
@@ -38,12 +37,9 @@
                 $pk,
             ]);
 
-            if (! ($info = $info->fetch())) {
-                $exception = $self::ENTITY_NAME . '_exception';
-                throw new $exception('That ' . $self::NAME . ' doesn\'t exist');
+            if ($info = $info->fetch()) {
+                return $info;
             }
-
-            return $info;
         }
 
         /**

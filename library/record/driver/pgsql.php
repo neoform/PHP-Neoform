@@ -24,11 +24,10 @@
         /**
          * Get full record by primary key
          *
-         * @param string $self
-         * @param int|string $pk
+         * @param string          $self
+         * @param int|string|null $pk
          *
          * @return mixed
-         * @throws record_exception
          */
         public static function by_pk($self, $pk) {
 
@@ -41,14 +40,10 @@
             $info->bindValue(1, $pk, sql_pdo::pdo_binding($self::bindings(), $self::PRIMARY_KEY));
             $info->execute();
 
-            if (! ($info = $info->fetch())) {
-                $exception = $self::ENTITY_NAME . '_exception';
-                throw new $exception('That ' . $self::NAME . ' doesn\'t exist');
+            if ($info = $info->fetch()) {
+                sql_pdo::unbinary($info);
+                return $info;
             }
-
-            sql_pdo::unbinary($info);
-
-            return $info;
         }
 
         /**

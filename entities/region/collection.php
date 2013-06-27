@@ -22,5 +22,4 @@
         public function country_collection() {
             return $this->_preload_one_to_one('country', 'country_id');
         }
-
     }

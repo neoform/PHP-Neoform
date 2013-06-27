@@ -12,12 +12,18 @@
         const BY_NAME            = 'by_name';
 
         /**
-         * Caching engines used by this entity
+         * Get the generic bindings of the table columns
          *
-         * @return int
+         * @return array
          */
-        protected static function _cache_engines() {
-            return cache_lib::MC;
+        public static function bindings() {
+            return [
+                'id'              => 'int',
+                'name'            => 'string',
+                'name_normalized' => 'string',
+                'iso2'            => 'string',
+                'iso3'            => 'string',
+            ];
         }
 
         // READS
@@ -87,6 +93,78 @@
         }
 
         /**
+         * Get Country id_arr by an array of name_normalizeds
+         *
+         * @param array $name_normalized_arr an array containing name_normalizeds
+         *
+         * @return array of arrays of Country ids
+         */
+        public static function by_name_normalized_multi(array $name_normalized_arr) {
+            $keys_arr = [];
+            foreach ($name_normalized_arr as $k => $name_normalized) {
+                $keys_arr[$k] = [ 'name_normalized' => (string) $name_normalized, ];
+            }
+            return self::_by_fields_multi(
+                self::BY_NAME_NORMALIZED,
+                $keys_arr
+            );
+        }
+
+        /**
+         * Get Country id_arr by an array of iso2s
+         *
+         * @param array $iso2_arr an array containing iso2s
+         *
+         * @return array of arrays of Country ids
+         */
+        public static function by_iso2_multi(array $iso2_arr) {
+            $keys_arr = [];
+            foreach ($iso2_arr as $k => $iso2) {
+                $keys_arr[$k] = [ 'iso2' => (string) $iso2, ];
+            }
+            return self::_by_fields_multi(
+                self::BY_ISO2,
+                $keys_arr
+            );
+        }
+
+        /**
+         * Get Country id_arr by an array of iso3s
+         *
+         * @param array $iso3_arr an array containing iso3s
+         *
+         * @return array of arrays of Country ids
+         */
+        public static function by_iso3_multi(array $iso3_arr) {
+            $keys_arr = [];
+            foreach ($iso3_arr as $k => $iso3) {
+                $keys_arr[$k] = [ 'iso3' => (string) $iso3, ];
+            }
+            return self::_by_fields_multi(
+                self::BY_ISO3,
+                $keys_arr
+            );
+        }
+
+        /**
+         * Get Country id_arr by an array of names
+         *
+         * @param array $name_arr an array containing names
+         *
+         * @return array of arrays of Country ids
+         */
+        public static function by_name_multi(array $name_arr) {
+            $keys_arr = [];
+            foreach ($name_arr as $k => $name) {
+                $keys_arr[$k] = [ 'name' => (string) $name, ];
+            }
+            return self::_by_fields_multi(
+                self::BY_NAME,
+                $keys_arr
+            );
+        }
+
+        /**
          * Get all data for all Country records
          *
          * @return array containing all Country records
@@ -105,7 +183,12 @@
          * @return country_model
          */
         public static function insert(array $info) {
+
+            // Insert record
             $return = parent::_insert($info);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ALL
@@ -161,6 +244,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -172,7 +258,12 @@
          * @return country_collection
          */
         public static function inserts(array $infos) {
+
+            // Insert records
             $return = parent::_inserts($infos);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ALL
@@ -228,8 +319,10 @@
                         )
                     );
                 }
-
             }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
 
             return $return;
         }
@@ -244,7 +337,12 @@
          * @return country_model updated model
          */
         public static function update(country_model $country, array $info) {
+
+            // Update record
             $updated_model = parent::_update($country, $info);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ALL
@@ -332,6 +430,9 @@
                 );
             }
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $updated_model;
         }
 
@@ -343,7 +444,12 @@
          * @return bool
          */
         public static function delete(country_model $country) {
+
+            // Delete record
             $return = parent::_delete($country);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ALL
@@ -391,6 +497,9 @@
                 )
             );
 
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -402,7 +511,12 @@
          * @return bool
          */
         public static function deletes(country_collection $country_collection) {
+
+            // Delete records
             $return = parent::_deletes($country_collection);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             // BY_ALL
@@ -450,10 +564,11 @@
                         ]
                     )
                 );
-
             }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
 
             return $return;
         }
-
     }

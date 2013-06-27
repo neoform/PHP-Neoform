@@ -5,29 +5,31 @@
      */
     class region_dao extends record_dao implements region_definition {
 
-        const BY_NAME_SOUNDEX            = 'by_name_soundex';
         const BY_COUNTRY                 = 'by_country';
         const BY_COUNTRY_NAME_NORMALIZED = 'by_country_name_normalized';
         const BY_ISO2                    = 'by_iso2';
         const BY_COUNTRY_NAME            = 'by_country_name';
-
-        // READS
+        const BY_NAME_SOUNDEX            = 'by_name_soundex';
 
         /**
-         * Get Region ids by name_soundex
+         * Get the generic bindings of the table columns
          *
-         * @param string $name_soundex
-         *
-         * @return array of Region ids
+         * @return array
          */
-        public static function by_name_soundex($name_soundex) {
-            return self::_by_fields(
-                self::BY_NAME_SOUNDEX,
-                [
-                    'name_soundex' => (string) $name_soundex,
-                ]
-            );
+        public static function bindings() {
+            return [
+                'id'              => 'int',
+                'country_id'      => 'int',
+                'name'            => 'string',
+                'name_normalized' => 'string',
+                'name_soundex'    => 'string',
+                'iso2'            => 'string',
+                'longitude'       => 'float',
+                'latitude'        => 'float',
+            ];
         }
+
+        // READS
 
         /**
          * Get Region ids by country
@@ -40,7 +42,7 @@
             return self::_by_fields(
                 self::BY_COUNTRY,
                 [
-                    'country_id' => (int) $country_id,
+                    'country_id'      => (int) $country_id,
                 ]
             );
         }
@@ -98,20 +100,122 @@
         }
 
         /**
+         * Get Region ids by name_soundex
+         *
+         * @param string $name_soundex
+         *
+         * @return array of Region ids
+         */
+        public static function by_name_soundex($name_soundex) {
+            return self::_by_fields(
+                self::BY_NAME_SOUNDEX,
+                [
+                    'name_soundex' => (string) $name_soundex,
+                ]
+            );
+        }
+
+        /**
          * Get multiple sets of Region ids by country
          *
-         * @param country_collection $country_collection
+         * @param country_collection|array $country_list
          *
          * @return array of arrays containing Region ids
          */
-        public static function by_country_multi(country_collection $country_collection) {
+        public static function by_country_multi($country_list) {
             $keys = [];
-            foreach ($country_collection as $k => $country) {
-                $keys[$k] = [
-                    'country_id' => (int) $country->id,
-                ];
+            if ($country_list instanceof country_collection) {
+                foreach ($country_list as $k => $country) {
+                    $keys[$k] = [
+                        'country_id' => (int) $country->id,
+                    ];
+                }
+            } else {
+                foreach ($country_list as $k => $country) {
+                    $keys[$k] = [
+                        'country_id' => (int) $country,
+                    ];
+                }
             }
             return self::_by_fields_multi(self::BY_COUNTRY, $keys);
+        }
+
+        /**
+         * Get Region id_arr by an array of country and name_normalizeds
+         *
+         * @param array $country_name_normalized_arr an array of arrays containing country_ids and name_normalizeds
+         *
+         * @return array of arrays of Region ids
+         */
+        public static function by_country_name_normalized_multi(array $country_name_normalized_arr) {
+            $keys_arr = [];
+            foreach ($country_name_normalized_arr as $k => $country_name_normalized) {
+                $keys_arr[$k] = [
+                    'country_id'      => (int) $country_name_normalized['country_id'],
+                    'name_normalized' => (string) $country_name_normalized['name_normalized'],
+                ];
+            }
+            return self::_by_fields_multi(
+                self::BY_COUNTRY_NAME_NORMALIZED,
+                $keys_arr
+            );
+        }
+
+        /**
+         * Get Region id_arr by an array of iso2s
+         *
+         * @param array $iso2_arr an array containing iso2s
+         *
+         * @return array of arrays of Region ids
+         */
+        public static function by_iso2_multi(array $iso2_arr) {
+            $keys_arr = [];
+            foreach ($iso2_arr as $k => $iso2) {
+                $keys_arr[$k] = [ 'iso2' => (string) $iso2, ];
+            }
+            return self::_by_fields_multi(
+                self::BY_ISO2,
+                $keys_arr
+            );
+        }
+
+        /**
+         * Get Region id_arr by an array of country and names
+         *
+         * @param array $country_name_arr an array of arrays containing country_ids and names
+         *
+         * @return array of arrays of Region ids
+         */
+        public static function by_country_name_multi(array $country_name_arr) {
+            $keys_arr = [];
+            foreach ($country_name_arr as $k => $country_name) {
+                $keys_arr[$k] = [
+                    'country_id' => (int) $country_name['country_id'],
+                    'name'       => (string) $country_name['name'],
+                ];
+            }
+            return self::_by_fields_multi(
+                self::BY_COUNTRY_NAME,
+                $keys_arr
+            );
+        }
+
+        /**
+         * Get Region id_arr by an array of name_soundexs
+         *
+         * @param array $name_soundex_arr an array containing name_soundexs
+         *
+         * @return array of arrays of Region ids
+         */
+        public static function by_name_soundex_multi(array $name_soundex_arr) {
+            $keys_arr = [];
+            foreach ($name_soundex_arr as $k => $name_soundex) {
+                $keys_arr[$k] = [ 'name_soundex' => (string) $name_soundex, ];
+            }
+            return self::_by_fields_multi(
+                self::BY_NAME_SOUNDEX,
+                $keys_arr
+            );
         }
 
         // WRITES
@@ -124,21 +228,14 @@
          * @return region_model
          */
         public static function insert(array $info) {
+
+            // Insert record
             $return = parent::_insert($info);
 
-            // Delete Cache
-            // BY_NAME_SOUNDEX
-            if (array_key_exists('name_soundex', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME_SOUNDEX,
-                        [
-                            'name_soundex' => (string) $info['name_soundex'],
-                        ]
-                    )
-                );
-            }
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
+            // Delete Cache
             // BY_COUNTRY
             if (array_key_exists('country_id', $info)) {
                 parent::_cache_delete(
@@ -189,6 +286,21 @@
                 );
             }
 
+            // BY_NAME_SOUNDEX
+            if (array_key_exists('name_soundex', $info)) {
+                parent::_cache_delete(
+                    parent::_build_key(
+                        self::BY_NAME_SOUNDEX,
+                        [
+                            'name_soundex' => (string) $info['name_soundex'],
+                        ]
+                    )
+                );
+            }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -200,22 +312,15 @@
          * @return region_collection
          */
         public static function inserts(array $infos) {
+
+            // Insert records
             $return = parent::_inserts($infos);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             foreach ($infos as $info) {
-                // BY_NAME_SOUNDEX
-                if (array_key_exists('name_soundex', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_NAME_SOUNDEX,
-                            [
-                                'name_soundex' => (string) $info['name_soundex'],
-                            ]
-                        )
-                    );
-                }
-
                 // BY_COUNTRY
                 if (array_key_exists('country_id', $info)) {
                     parent::_cache_delete(
@@ -266,7 +371,21 @@
                     );
                 }
 
+                // BY_NAME_SOUNDEX
+                if (array_key_exists('name_soundex', $info)) {
+                    parent::_cache_delete(
+                        parent::_build_key(
+                            self::BY_NAME_SOUNDEX,
+                            [
+                                'name_soundex' => (string) $info['name_soundex'],
+                            ]
+                        )
+                    );
+                }
             }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
 
             return $return;
         }
@@ -281,36 +400,21 @@
          * @return region_model updated model
          */
         public static function update(region_model $region, array $info) {
+
+            // Update record
             $updated_model = parent::_update($region, $info);
 
-            // Delete Cache
-            // BY_NAME_SOUNDEX
-            if (array_key_exists('name_soundex', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME_SOUNDEX,
-                        [
-                            'name_soundex' => (string) $region->name_soundex,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME_SOUNDEX,
-                        [
-                            'name_soundex' => (string) $info['name_soundex'],
-                        ]
-                    )
-                );
-            }
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
+            // Delete Cache
             // BY_COUNTRY
             if (array_key_exists('country_id', $info)) {
                 parent::_cache_delete(
                     parent::_build_key(
                         self::BY_COUNTRY,
                         [
-                            'country_id' => (int) $region->country_id,
+                            'country_id'      => (int) $region->country_id,
                         ]
                     )
                 );
@@ -318,7 +422,7 @@
                     parent::_build_key(
                         self::BY_COUNTRY,
                         [
-                            'country_id' => (int) $info['country_id'],
+                            'country_id'      => (int) $info['country_id'],
                         ]
                     )
                 );
@@ -388,6 +492,29 @@
                 );
             }
 
+            // BY_NAME_SOUNDEX
+            if (array_key_exists('name_soundex', $info)) {
+                parent::_cache_delete(
+                    parent::_build_key(
+                        self::BY_NAME_SOUNDEX,
+                        [
+                            'name_soundex' => (string) $region->name_soundex,
+                        ]
+                    )
+                );
+                parent::_cache_delete(
+                    parent::_build_key(
+                        self::BY_NAME_SOUNDEX,
+                        [
+                            'name_soundex' => (string) $info['name_soundex'],
+                        ]
+                    )
+                );
+            }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $updated_model;
         }
 
@@ -399,25 +526,20 @@
          * @return bool
          */
         public static function delete(region_model $region) {
+
+            // Delete record
             $return = parent::_delete($region);
 
-            // Delete Cache
-            // BY_NAME_SOUNDEX
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_NAME_SOUNDEX,
-                    [
-                        'name_soundex' => (string) $region->name_soundex,
-                    ]
-                )
-            );
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
+            // Delete Cache
             // BY_COUNTRY
             parent::_cache_delete(
                 parent::_build_key(
                     self::BY_COUNTRY,
                     [
-                        'country_id' => (int) $region->country_id,
+                        'country_id'      => (int) $region->country_id,
                     ]
                 )
             );
@@ -454,6 +576,19 @@
                 )
             );
 
+            // BY_NAME_SOUNDEX
+            parent::_cache_delete(
+                parent::_build_key(
+                    self::BY_NAME_SOUNDEX,
+                    [
+                        'name_soundex' => (string) $region->name_soundex,
+                    ]
+                )
+            );
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
+
             return $return;
         }
 
@@ -465,26 +600,21 @@
          * @return bool
          */
         public static function deletes(region_collection $region_collection) {
+
+            // Delete records
             $return = parent::_deletes($region_collection);
+
+            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
+            parent::cache_batch_start();
 
             // Delete Cache
             foreach ($region_collection as $region) {
-                // BY_NAME_SOUNDEX
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME_SOUNDEX,
-                        [
-                            'name_soundex' => (string) $region->name_soundex,
-                        ]
-                    )
-                );
-
                 // BY_COUNTRY
                 parent::_cache_delete(
                     parent::_build_key(
                         self::BY_COUNTRY,
                         [
-                            'country_id' => (int) $region->country_id,
+                            'country_id'      => (int) $region->country_id,
                         ]
                     )
                 );
@@ -521,9 +651,20 @@
                     )
                 );
 
+                // BY_NAME_SOUNDEX
+                parent::_cache_delete(
+                    parent::_build_key(
+                        self::BY_NAME_SOUNDEX,
+                        [
+                            'name_soundex' => (string) $region->name_soundex,
+                        ]
+                    )
+                );
             }
+
+            // Execute pipelined cache deletion queries (if supported by cache engine)
+            parent::cache_batch_execute();
 
             return $return;
         }
-
     }

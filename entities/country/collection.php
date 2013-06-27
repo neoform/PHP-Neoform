@@ -13,5 +13,4 @@
         public function region_collection() {
             return $this->_preload_one_to_many('region', 'by_country');
         }
-
     }

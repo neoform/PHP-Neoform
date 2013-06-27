@@ -326,8 +326,7 @@
             $rs->execute();
 
             if (count($select_fields) === 1) {
-                $field = reset($select_fields);
-                $return = array_column($rs->fetchAll(), $field);
+                $return = array_column($rs->fetchAll(), reset($select_fields));
             } else {
                 $return = $rs->fetchAll();
             }

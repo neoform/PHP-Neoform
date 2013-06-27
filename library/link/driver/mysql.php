@@ -12,7 +12,7 @@
         protected static function table($table) {
             if (strpos($table, '.') !== false) {
                 $table = explode('.', $table);
-                return "$table[0]`.`$table[1]";
+                return "{$table[0]}`.`{$table[1]}";
             } else {
                 return $table;
             }
@@ -34,10 +34,10 @@
             if (count($keys)) {
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
-                        $where[] = "`$k` IS NULL";
+                        $where[] = "`{$k}` IS NULL";
                     } else {
                         $vals[]  = $v;
-                        $where[] = "`$k` = ?";
+                        $where[] = "`{$k}` = ?";
                     }
                 }
             }
@@ -50,17 +50,11 @@
 
             $rs->execute($vals);
 
-            $rs = $rs->fetchAll();
-            $return = [];
             if (count($select_fields) === 1) {
-                $field = current($select_fields);
-                foreach ($rs as $row) {
-                    $return[] = $row[$field];
-                }
+                return array_column($rs->fetchAll(), reset($select_fields));
             } else {
-                $return = $rs;
+                return $rs->fetchAll();
             }
-            return $return;
         }
 
         /**
@@ -85,10 +79,10 @@
                 $return[$k] = [];
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
-                        $w[] = "`$k` IS NULL";
+                        $w[] = "`{$k}` IS NULL";
                     } else {
                         $vals[] = $v;
-                        $w[] = "`$k` = ?";
+                        $w[] = "`{$k}` = ?";
                     }
                 }
                 $where[] = '(' . join(" AND ", $w) . ')';
@@ -132,7 +126,7 @@
 
             $insert_fields = [];
             foreach ($info as $k => $v) {
-                $insert_fields[] = "`$k`";
+                $insert_fields[] = "`{$k}`";
             }
 
             $insert = core::sql('master')->prepare("
@@ -165,7 +159,7 @@
             }
 
             foreach ($info as $k => $v) {
-                $insert_fields[] = "`$k`";
+                $insert_fields[] = "`{$k}`";
             }
 
             $insert = $sql->prepare("
@@ -199,18 +193,18 @@
             $vals          = [];
             $update_fields = [];
 
-            foreach ($new_info as $key => $val) {
-                $update_fields[] = "`$key` = ?";
-                $vals[] = $val;
+            foreach ($new_info as $k => $v) {
+                $update_fields[] = "`{$k}` = ?";
+                $vals[] = $v;
             }
 
             $where_fields = [];
             foreach ($where as $k => $v) {
                 if ($v === null) {
-                    $where_fields[] = "`$k` IS NULL";
+                    $where_fields[] = "`{$k}` IS NULL";
                 } else {
                     $vals[] = $v;
-                    $where_fields[] = "`$k` = ?";
+                    $where_fields[] = "`{$k}` = ?";
                 }
             }
 
@@ -237,10 +231,10 @@
 
             foreach ($keys as $k => $v) {
                 if ($v === null) {
-                    $where[] = "`$k` IS NULL";
+                    $where[] = "`{$k}` IS NULL";
                 } else {
                     $vals[]  = $v;
-                    $where[] = "`$k` = ?";
+                    $where[] = "`{$k}` = ?";
                 }
             }
 
@@ -268,10 +262,10 @@
                 $w = [];
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
-                        $w[] = "`$k` IS NULL";
+                        $w[] = "`{$k}` IS NULL";
                     } else {
                         $vals[] = $v;
-                        $w[]    = "`$k` = ?";
+                        $w[]    = "`{$k}` = ?";
                     }
                 }
                 $where[] = "(" . join(" AND ", $w) . ")";

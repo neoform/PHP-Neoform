@@ -15,7 +15,7 @@
         protected static function table($table) {
             if (strpos($table, '.') !== false) {
                 $table = explode('.', $table);
-                return "$table[0]\".\"$table[1]";
+                return "{$table[0]}\".\"{$table[1]}";
             } else {
                 return $table;
             }
@@ -96,11 +96,11 @@
             $pk = $self::PRIMARY_KEY;
 
             $rs = core::sql('slave')->prepare("
-                SELECT \"$pk\"
+                SELECT \"{$pk}\"
                 FROM \"" . self::table($self::TABLE) . "\"
-                " . ($after_pk !== null ? "WHERE \"$pk\" " . ($direction === 'ASC' ? '>' : '<') . ' ?' : '') . "
-                ORDER BY \"$order_by\" $direction
-                LIMIT $limit
+                " . ($after_pk !== null ? "WHERE \"{$pk}\" " . ($direction === 'ASC' ? '>' : '<') . ' ?' : '') . "
+                ORDER BY \"{$order_by}\" {$direction}
+                LIMIT {$limit}
             ");
             if ($after_pk !== null) {
                 $rs->execute($after_pk);
@@ -108,10 +108,8 @@
                 $rs->execute();
             }
 
-            $pks = [];
-            foreach ($rs->fetchAll() as $row) {
-                $pks[] = $row[$pk];
-            }
+            $pks = array_column($rs->fetchAll(), $pk);
+            sql_pdo::unbinary($pks);
 
             return $pks;
         }
@@ -169,7 +167,7 @@
                 SELECT *
                 FROM \"" . self::table($self::TABLE) . "\"
                 " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
-                ORDER BY \"$pk\" ASC
+                ORDER BY \"{$pk}\" ASC
             ");
 
             sql_pdo::bind_by_casting(
@@ -180,11 +178,7 @@
 
             $info->execute();
 
-            $infos = [];
-            foreach ($info->fetchAll() as $info) {
-                $infos[$info[$pk]] = $info;
-            }
-
+            $infos = array_column($info->fetchAll(), null, $pk);
             sql_pdo::unbinary($infos);
 
             return $infos;
@@ -206,16 +200,16 @@
             if (count($keys)) {
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
-                        $where[] = "\"$k\" IS NULL";
+                        $where[] = "\"{$k}\" IS NULL";
                     } else {
                         $vals[$k] = $v;
-                        $where[]  = "\"$k\" = ?";
+                        $where[]  = "\"{$k}\" = ?";
                     }
                 }
             }
 
             $rs = core::sql('slave')->prepare("
-                SELECT \"$pk\"
+                SELECT \"{$pk}\"
                 FROM \"" . self::table($self::TABLE) . "\"
                 " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
             ");
@@ -229,11 +223,8 @@
             $rs->execute();
 
             $rs = $rs->fetchAll();
-            $pks = [];
-            foreach ($rs as $row) {
-                $pks[] = $row[$pk];
-            }
 
+            $pks = array_column($rs->fetchAll(), $pk);
             sql_pdo::unbinary($pks);
 
             return $pks;
@@ -272,7 +263,7 @@
 
             $rs = core::sql('slave')->prepare("
                 SELECT
-                    \"$pk\",
+                    \"{$pk}\",
                     CONCAT(" . join(", ':', ", $key_fields) . ") \"__cache_key__\"
                 FROM \"" . self::table($self::TABLE) . "\"
                 WHERE " . join(' OR ', $where) . "
@@ -288,9 +279,7 @@
 
             $rows = $rs->fetchAll();
             foreach ($rows as $row) {
-                $return[
-                $reverse_lookup[$row['__cache_key__']]
-                ][] = $row[$pk];
+                $return[$reverse_lookup[$row['__cache_key__']]][] = $row[$pk];
             }
 
             sql_pdo::unbinary($return);
@@ -314,10 +303,10 @@
             if (count($keys)) {
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
-                        $where[] = "\"$k\" IS NULL";
+                        $where[] = "\"{$k}\" IS NULL";
                     } else {
                         $vals[$k] = $v;
-                        $where[]  = "\"$k\" = ?";
+                        $where[]  = "\"{$k}\" = ?";
                     }
                 }
             }
@@ -336,15 +325,11 @@
 
             $rs->execute();
 
-            $rs = $rs->fetchAll();
-            $return = [];
             if (count($select_fields) === 1) {
                 $field = reset($select_fields);
-                foreach ($rs as $row) {
-                    $return[] = $row[$field];
-                }
+                $return = array_column($rs->fetchAll(), $field);
             } else {
-                $return = $rs;
+                $return = $rs->fetchAll();
             }
 
             sql_pdo::unbinary($return);
@@ -409,7 +394,7 @@
                 $insert_fields = [];
 
                 foreach (array_keys(reset($infos)) as $k) {
-                    $insert_fields[] = "\"$k\"";
+                    $insert_fields[] = "\"{$k}\"";
                 }
 
                 // If the table is auto increment, we cannot lump all inserts into one query
@@ -523,12 +508,12 @@
 
             $update_fields = [];
             foreach (array_keys($info) as $key) {
-                $update_fields[] = "\"$key\" = :$key";
+                $update_fields[] = "\"{$key}\" = :{$key}";
             }
             $update = $sql->prepare("
                 UPDATE \"" . self::table($self::TABLE) . "\"
                 SET " . implode(", \n", $update_fields) . "
-                WHERE \"$pk\" = :$pk
+                WHERE \"{$pk}\" = :{$pk}
             ");
 
             $info[$pk] = $model->$pk;
@@ -553,7 +538,7 @@
         public static function delete($self, $pk, record_model $model) {
             $delete = core::sql('master')->prepare("
                 DELETE FROM \"" . self::table($self::TABLE) . "\"
-                WHERE \"$pk\" = ?
+                WHERE \"{$pk}\" = ?
             ");
             $delete->bindValue(1, $model->$pk, sql_pdo::pdo_binding($self::bindings(), $self::PRIMARY_KEY));
             $delete->execute();
@@ -570,7 +555,7 @@
             $pks = $collection->field($pk);
             $delete = core::sql('master')->prepare("
                 DELETE FROM \"" . self::table($self::TABLE) . "\"
-                WHERE \"$pk\" IN (" . join(',', array_fill(0, count($collection), '?')) . ")
+                WHERE \"{$pk}\" IN (" . join(',', array_fill(0, count($collection), '?')) . ")
             ");
 
             $pdo_binding = sql_pdo::pdo_binding($self::bindings(), $self::PRIMARY_KEY);

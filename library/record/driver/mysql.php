@@ -12,7 +12,7 @@
         protected static function table($table) {
             if (strpos($table, '.') !== false) {
                 $table = explode('.', $table);
-                return "$table[0]`.`$table[1]";
+                return "{$table[0]}`.`{$table[1]}";
             } else {
                 return $table;
             }
@@ -96,12 +96,7 @@
                 $rs->execute();
             }
 
-            $pks = [];
-            foreach ($rs->fetchAll() as $row) {
-                $pks[] = $row[$pk];
-            }
-
-            return $pks;
+            return array_column($rs->fetchAll(), $pk);
         }
 
         /**
@@ -117,9 +112,7 @@
                 FROM `" . self::table($self::TABLE) . "`
             ");
             $rs->execute();
-            $count = $rs->fetch();
-
-            return (int) $count['num'];
+            return (int) $rs->fetch()['num'];
         }
 
         /**
@@ -157,17 +150,12 @@
                 SELECT *
                 FROM `" . self::table($self::TABLE) . "`
                 " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
-                ORDER BY `$pk` ASC
+                ORDER BY `{$pk}` ASC
             ");
 
             $info->execute($vals);
 
-            $infos = [];
-            foreach ($info->fetchAll() as $info) {
-                $infos[$info[$pk]] = $info;
-            }
-
-            return $infos;
+            return array_column($info->fetchAll(), null, $pk);
         }
 
         /**
@@ -186,27 +174,22 @@
             if (count($keys)) {
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
-                        $where[] = "`$k` IS NULL";
+                        $where[] = "`{$k}` IS NULL";
                     } else {
                         $vals[]  = $v;
-                        $where[] = "`$k` = ?";
+                        $where[] = "`{$k}` = ?";
                     }
                 }
             }
 
             $rs = core::sql('slave')->prepare("
-                SELECT `$pk`
+                SELECT `{$pk}`
                 FROM `" . self::table($self::TABLE) . "`
                 " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
             ");
             $rs->execute($vals);
 
-            $pks = [];
-            foreach ($rs->fetchAll() as $row) {
-                $pks[] = $row[$pk];
-            }
-
-            return $pks;
+            return array_column($rs->fetchAll(), $pk);
         }
 
         /**
@@ -232,10 +215,10 @@
                 $return[$k] = [];
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
-                        $w[] = "`$k` IS NULL";
+                        $w[] = "`{$k}` IS NULL";
                     } else {
                         $vals[] = $v;
-                        $w[]    = "`$k` = ?";
+                        $w[]    = "`{$k}` = ?";
                     }
                 }
                 $where[] = '(' . join(" AND ", $w) . ')';
@@ -243,7 +226,7 @@
 
             $rs = $sql->prepare("
                 SELECT
-                    `$pk`,
+                    `{$pk}`,
                     CONCAT(" . join(", ':', ", $key_fields) . ") `__cache_key__`
                 FROM `" . self::table($self::TABLE) . "`
                 WHERE " . join(' OR ', $where) . "
@@ -252,9 +235,7 @@
             $rs->execute($vals);
 
             foreach ($rs->fetchAll() as $row) {
-                $return[
-                $reverse_lookup[$row['__cache_key__']]
-                ][] = $row[$pk];
+                $return[$reverse_lookup[$row['__cache_key__']]][] = $row[$pk];
             }
 
             return $return;
@@ -276,10 +257,10 @@
             if (count($keys)) {
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
-                        $where[] = "`$k` IS NULL";
+                        $where[] = "`{$k}` IS NULL";
                     } else {
                         $vals[]  = $v;
-                        $where[] = "`$k` = ?";
+                        $where[] = "`{$k}` = ?";
                     }
                 }
             }
@@ -292,17 +273,11 @@
 
             $rs->execute($vals);
 
-            $return = [];
             if (count($select_fields) === 1) {
-                $field = reset($select_fields);
-                foreach ($rs->fetchAll() as $row) {
-                    $return[] = $row[$field];
-                }
+                return array_column($rs->fetchAll(), reset($select_fields));
             } else {
-                $return = $rs->fetchAll();
+                return $rs->fetchAll();
             }
-
-            return $return;
         }
 
         /**
@@ -354,9 +329,8 @@
 
             if ($keys_match) {
                 $insert_fields = [];
-
                 foreach (array_keys(reset($infos)) as $k) {
-                    $insert_fields[] = "`$k`";
+                    $insert_fields[] = "`{$k}`";
                 }
 
                 // If the table is auto increment, we cannot lump all inserts into one query
@@ -403,9 +377,8 @@
 
                 foreach ($infos as $info) {
                     $insert_fields = [];
-
                     foreach (array_keys($info) as $key) {
-                        $insert_fields[] = "`$key`";
+                        $insert_fields[] = "`{$key}`";
                     }
 
                     $insert = $sql->prepare("
@@ -439,12 +412,12 @@
         public static function update($self, $pk, record_model $model, array $info) {
             $update_fields = [];
             foreach (array_keys($info) as $key) {
-                $update_fields[] = "`$key` = :$key";
+                $update_fields[] = "`{$key}` = :{$key}";
             }
             $update = core::sql('master')->prepare("
                 UPDATE `" . self::table($self::TABLE) . "`
-                SET " . implode(", \n", $update_fields) . "
-                WHERE `$pk` = :$pk
+                SET " . join(", \n", $update_fields) . "
+                WHERE `{$pk}` = :{$pk}
             ");
 
             $info[$pk] = $model->$pk;
@@ -461,7 +434,7 @@
         public static function delete($self, $pk, record_model $model) {
             $delete = core::sql('master')->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
-                WHERE `$pk` = ?
+                WHERE `{$pk}` = ?
             ");
             $delete->execute([
                 $model->$pk,
@@ -478,7 +451,7 @@
         public static function deletes($self, $pk, record_collection $collection) {
             $delete = core::sql('master')->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
-                WHERE `$pk` IN (" . join(',', array_fill(0, count($collection), '?')) . ")
+                WHERE `{$pk}` IN (" . join(',', array_fill(0, count($collection), '?')) . ")
             ");
             $delete->execute(
                 array_values($collection->field($pk))

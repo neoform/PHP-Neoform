@@ -54,9 +54,9 @@
             $collection = static::ENTITY_NAME . '_collection';
             $dao        = static::ENTITY_NAME . '_dao';
             if ($name === 'by_all') {
-                return new $collection(null, call_user_func_array("$dao::$name", $args));
+                return new $collection(null, call_user_func_array("{$dao}::{$name}", $args));
             } else {
-                return new $collection(call_user_func_array("$dao::$name", $args));
+                return new $collection(call_user_func_array("{$dao}::{$name}", $args));
             }
         }
 
@@ -224,7 +224,7 @@
             $pks        = [];
 
             // make a flat array of all keys, removing dupes along the way.
-            foreach ($pks_groups as $k => $pks_group) {
+            foreach ($pks_groups as $pks_group) {
                 foreach ($pks_group as $pk) {
                     $pks[$pk] = $pk;
                 }

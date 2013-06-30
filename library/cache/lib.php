@@ -12,8 +12,10 @@
          * @param string $pool
          */
         public static function pipeline_start($engine, $pool) {
-            $engine_driver = "cache_{$engine}_driver";
-            $engine_driver::pipeline_start($pool);
+            if ($engine) {
+                $engine_driver = "cache_{$engine}_driver";
+                $engine_driver::pipeline_start($pool);
+            }
         }
 
         /**
@@ -25,8 +27,10 @@
          * @return mixed result of batch operation
          */
         public static function pipeline_execute($engine, $pool) {
-            $engine_driver = "cache_{$engine}_driver";
-            return $engine_driver::pipeline_execute($pool);
+            if ($engine) {
+                $engine_driver = "cache_{$engine}_driver";
+                return $engine_driver::pipeline_execute($pool);
+            }
         }
 
         /**
@@ -39,15 +43,17 @@
          * @return mixed|null
          */
         public static function get($engine, $key, $pool) {
-            $engine_driver = "cache_{$engine}_driver";
 
             // Memory
             if (cache_memory_dao::exists($key)) {
                 return cache_memory_dao::get($key);
             }
 
-            if ($engine && $data = $engine_driver::get($key, $pool)) {
-                return current($data);
+            if ($engine) {
+                $engine_driver = "cache_{$engine}_driver";
+                if ( $data = $engine_driver::get($key, $pool)) {
+                    return current($data);
+                }
             }
         }
 
@@ -168,15 +174,14 @@
          */
         public static function single($engine, $key, $pool, callable $data_func, $args=null, $ttl=null, $cache_empty_results=true) {
 
-            $engine_driver = "cache_{$engine}_driver";
-
             // Memory
             if (cache_memory_dao::exists($key)) {
                 return cache_memory_dao::get($key);
             }
 
-            if ($engine && $data = $engine_driver::get($key, $pool)) {
+            $engine_driver = "cache_{$engine}_driver";
 
+            if ($engine && $data = $engine_driver::get($key, $pool)) {
                 $data = current($data);
             } else {
                 //get the data from it's original source
@@ -241,8 +246,7 @@
              */
 
             //MEMORY
-            $found_in_memory = cache_memory_dao::get_multi($missing_rows);
-            if (count($found_in_memory)) {
+            if ($found_in_memory = cache_memory_dao::get_multi($missing_rows)) {
                 foreach ($found_in_memory as $index => $key) {
                     $matched_rows[$index] = $key;
                     unset($missing_rows[$index]);

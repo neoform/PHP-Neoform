@@ -136,7 +136,11 @@
         // kill all sessions (forms that are being filled out).
         "ref_secret": "AAABBBCCCDDDEEEFFF12345678901234567890123456789012345678901234567890",
 
-        "memcache_pool": "entities"
+        // Flash session cache engine
+        "flash_cache_engine": "redis",
+
+        // Flash session cache pool
+        "flash_cache_pool": "entities"
     },
 
     "output": {

@@ -19,12 +19,14 @@
         /**
          * Get a flash value by key
          *
-         * @param $key
+         * @param string $key
          *
          * @return mixed
          */
         public function get($key) {
-            return core::cache_memcache(core::config()->session['memcache_pool'])->get("{$this->hash}:{$key}");
+            $config = core::config()->session;
+            $engine = "cache_{$config['flash_cache_engine']}_driver";
+            return $engine::get("{$this->hash}:{$key}", $config['flash_cache_pool']);
         }
 
         /**
@@ -37,21 +39,26 @@
          * @return mixed
          */
         public function set($key, $val, $ttl=null) {
-            return core::cache_memcache(core::config()->session['memcache_pool'])->set(
+            $config = core::config()->session;
+            $engine = "cache_{$config['flash_cache_engine']}_driver";
+            return $engine::get(
                 "{$this->hash}:{$key}",
+                $config['flash_cache_pool'],
                 $val,
-                $ttl !== null ? $ttl : (int) core::config()->session['default_flash_lifetime']
+                $ttl !== null ? $ttl : (int) $config['default_flash_lifetime']
             );
         }
 
         /**
          * Delete a value from flash
          *
-         * @param $key
+         * @param string $key
          *
          * @return mixed
          */
         public function del($key) {
-            return core::cache_memcache(core::config()->session['memcache_pool'])->delete("{$this->hash}:{$key}");
+            $config = core::config()->session;
+            $engine = "cache_{$config['flash_cache_engine']}_driver";
+            return $engine::delete("{$this->hash}:{$key}", $config['flash_cache_pool']);
         }
     }

@@ -3,7 +3,7 @@ PHP Neoform - PHP Framwork
 
 PHP Neoform is not a CMS. PHP Neoform is not wordpress. PHP Neoform is not a framework that does everything for you.
 
-PHP Neoform is a framework that facilitates the creation of very well organized, easy to work with code that runs very efficiently. Unlike most frameworks out there, phpCore will not get in your way. It is extremely flexible and extremely fast. This of course comes at a cost, it means this is not a framework for non-programmers, sorry. The only backend interfaces you're going to get are the ones you create. That said, making one is not difficult at all.
+PHP Neoform is a framework that facilitates the creation of very well organized, easy to work with code that runs very efficiently. Unlike most frameworks out there, PHP Neoform will not get in your way. It is extremely flexible and extremely fast. This of course comes at a cost, it means this is not a framework for non-programmers, sorry. The only backend interfaces you're going to get are the ones you create. That said, making one is not difficult at all.
 
 ## Features
 

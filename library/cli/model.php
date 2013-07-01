@@ -143,5 +143,21 @@
         public static function readline() {
             return trim(fgets(STDIN));
         }
+
+        /**
+         * Get as password from console
+         *
+         * @param string $prompt
+         *
+         * @return string
+         */
+        public static function readpassword($prompt = 'Enter Password:') {
+            system('stty -echo');
+            $password = trim(fgets(STDIN));
+            system('stty echo');
+            // add a new line since the users CR didn't echo
+            echo "\n";
+            return $password;
+        }
     }
 

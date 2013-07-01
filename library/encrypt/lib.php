@@ -22,8 +22,7 @@
          *
          * @return string
          */
-        public static function encrypt($cipher, $key, $plaintext)
-        {
+        public static function encrypt($cipher, $key, $plaintext) {
             $max_key_len = mcrypt_get_key_size($cipher, MCRYPT_MODE_CBC);
 
             if (strlen($key) > $max_key_len) {
@@ -51,8 +50,7 @@
          *
          * @return string
          */
-        public static function decrypt($cipher, $key, $encrypted_str)
-        {
+        public static function decrypt($cipher, $key, $encrypted_str) {
             $max_key_len = mcrypt_get_key_size($cipher, MCRYPT_MODE_CBC);
 
             if (strlen($key) > $max_key_len) {

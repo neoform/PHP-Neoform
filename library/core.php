@@ -339,5 +339,72 @@
         }
     }
 
+    /**
+     * Compatibility with PHP 5.4
+     */
 
+    if (PHP_MAJOR_VERSION <= 5 && PHP_MINOR_VERSION < 5) {
+
+        /**
+         * This file is part of the array_column library
+         *
+         * For the full copyright and license information, please view the LICENSE
+         * file that was distributed with this source code.
+         *
+         * @copyright Copyright (c) 2013 Ben Ramsey <http://benramsey.com>
+         * @license http://opensource.org/licenses/MIT MIT
+         */
+
+        /**
+         * Returns the values from a single column of the input array, identified by
+         * the $columnKey.
+         *
+         * Optionally, you may provide an $indexKey to index the values in the returned
+         * array by the values from the $indexKey column in the input array.
+         *
+         * @param array $input A multi-dimensional array (record set) from which to pull
+         * a column of values.
+         * @param mixed $columnKey The column of values to return. This value may be the
+         * integer key of the column you wish to retrieve, or it
+         * may be the string key name for an associative array.
+         * @param mixed $indexKey (Optional.) The column to use as the index/keys for
+         * the returned array. This value may be the integer key
+         * of the column, or it may be the string key name.
+         * @return array
+         */
+        function array_column($input = null, $columnKey = null, $indexKey = null) {
+
+            $resultArray = array();
+
+            foreach ($input as $row) {
+
+                $key    = $value    = null;
+                $keySet = $valueSet = false;
+
+                if ($indexKey !== null && array_key_exists($indexKey, $row)) {
+                    $keySet = true;
+                    $key = (string) $row[$indexKey];
+                }
+
+                if ($columnKey === null) {
+                    $valueSet = true;
+                    $value = $row;
+                } elseif (is_array($row) && array_key_exists($columnKey, $row)) {
+                    $valueSet = true;
+                    $value = $row[$columnKey];
+                }
+
+                if ($valueSet) {
+                    if ($keySet) {
+                        $resultArray[$key] = $value;
+                    } else {
+                        $resultArray[] = $value;
+                    }
+                }
+
+            }
+
+            return $resultArray;
+        }
+    }
 

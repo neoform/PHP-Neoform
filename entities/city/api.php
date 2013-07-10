@@ -73,7 +73,7 @@
             $input->name_soundex->cast('string')->length(1, 255);
 
             // top
-            $input->top->cast('string')->in([0]);
+            $input->top->cast('string')->in(['yes','no']);
 
             // longitude
             $input->longitude->cast('float');
@@ -103,7 +103,7 @@
             $input->name_soundex->cast('string')->optional()->length(1, 255);
 
             // top
-            $input->top->cast('string')->optional()->in([0]);
+            $input->top->cast('string')->optional()->in(['yes','no']);
 
             // longitude
             $input->longitude->cast('float')->optional();

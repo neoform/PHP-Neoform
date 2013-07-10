@@ -90,7 +90,11 @@
 
                 // The size (in bytes) of this field
                 case 'size':
-                    return (int) $this->info['size'];
+                    return $this->info['size'];
+
+                // ENUM values, or decimal length, or varchar length
+                case 'var_info':
+                    return $this->info['size'];
 
                 // The field that this field references
                 case 'referenced_field':

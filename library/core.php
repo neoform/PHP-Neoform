@@ -20,7 +20,7 @@
     */
     spl_autoload_register(
         function($name) {
-            require_once(str_replace(['\\', '_'], '/', $name) . '.' . EXT);
+            require(str_replace(['\\', '_'], '/', $name) . '.' . EXT);
         },
         true,
         true

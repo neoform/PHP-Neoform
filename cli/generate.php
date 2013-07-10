@@ -43,7 +43,7 @@
                 $code  = new $class($table_info, $options);
 
                 if (in_array('--install', $options)) {
-                    $path = core::path('library') . '/' . str_replace('_', '/', $table . '_' . $entity . '.php');
+                    $path = core::path('entities') . '/' . str_replace('_', '/', $table . '_' . $entity . '.php');
                 } else {
                     $path = __DIR__ . '/' . str_replace('_', '/', $table . '_' . $entity . '.php');
                 }
@@ -62,7 +62,7 @@
                     $code  = new $class($table_info, $options);
 
                     if (in_array('--install', $options)) {
-                        $path = core::path('library') . '/' . str_replace('_', '/', $table . '_' . $entity . '.php');
+                        $path = core::path('entities') . '/' . str_replace('_', '/', $table . '_' . $entity . '.php');
                     } else {
                         $path = __DIR__ . '/' . str_replace('_', '/', $table . '_' . $entity . '.php');
                     }

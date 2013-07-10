@@ -392,7 +392,7 @@
                     return "->is_date()";
 
                 case 'enum':
-                    return "->in([" . $field->size . "])";
+                    return "->in([" . $field->var_info . "])";
             }
         }
 

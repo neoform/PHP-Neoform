@@ -445,7 +445,7 @@
                 // If permissions set, make sure user has matching permissions
                 if ($controller['resource_ids']) {
                     // If user is logged in
-                    if (core::auth()->user_id) {
+                    if (core::auth()->logged_in()) {
                         // And does not have permission - access denied
                         if (! core::auth()->user()->has_access($controller['resource_ids'])) {
                             core::output()->redirect('error/access_denied');

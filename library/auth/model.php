@@ -46,4 +46,13 @@
                 return $this->_model($name, $this->vars['user_id'], $name . '_model');
             }
         }
+
+        /**
+         * Checks if user is logged in
+         *
+         * @return bool
+         */
+        public function logged_in() {
+            return (bool) $this->user_id;
+        }
     }

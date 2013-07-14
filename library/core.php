@@ -20,7 +20,7 @@
     */
     spl_autoload_register(
         function($name) {
-            require(str_replace(['\\', '_'], '/', $name) . '.' . EXT);
+            require(str_replace(['\\', '_'], DIRECTORY_SEPARATOR, $name) . '.' . EXT);
         },
         true,
         true

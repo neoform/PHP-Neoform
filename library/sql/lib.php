@@ -14,6 +14,18 @@
         }
 
         /**
+         * Quote a field name according to its driver
+         *
+         * @param string $field_name
+         *
+         * @return string
+         */
+        public static function quote_field_name($field_name) {
+            $driver = 'sql_driver_' . core::sql('slave')->driver();
+            return $driver::quote_field_name($field_name);
+        }
+
+        /**
          * PHP equivalent of MySQL's INET_ATON()
          *
          * @param string $ip

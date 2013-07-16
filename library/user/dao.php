@@ -157,8 +157,8 @@
         public static function pagination($order_by, $direction, $offset, $limit) {
             $users = core::sql('slave')->prepare("
                 SELECT id
-                FROM user
-                ORDER BY {$order_by} {$direction}
+                FROM " . sql_lib::quote_field_name('user') . "
+                ORDER BY " . sql_lib::quote_field_name($order_by) . " {$direction}
                 LIMIT {$limit}
                 OFFSET {$offset}
             ");

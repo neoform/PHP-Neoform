@@ -65,6 +65,32 @@
             return parent::_all(self::BY_ALL);
         }
 
+        /**
+         * Get a paginated list of group ids
+         *
+         * @param string  $order_by
+         * @param string  $direction
+         * @param integer $offset
+         * @param integer $limit
+         *
+         * @return array
+         */
+        public static function pagination($order_by, $direction, $offset, $limit) {
+            $users = core::sql('slave')->prepare("
+                SELECT id
+                FROM " . sql_lib::quote_field_name('acl_group') . "
+                ORDER BY " . sql_lib::quote_field_name($order_by) . " {$direction}
+                LIMIT {$limit}
+                OFFSET {$offset}
+            ");
+            $users->execute();
+            $ids = [];
+            foreach ($users->fetchAll() as $user) {
+                $ids[] = (int) $user['id'];
+            }
+            return $ids;
+        }
+
         // WRITES
 
         /**

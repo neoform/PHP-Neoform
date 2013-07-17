@@ -4,7 +4,6 @@
 
     new liner([
         'application',
-        'entities',
         'library',
     ]);
 

@@ -12,8 +12,6 @@
         'extension'   => getenv('CORE_PHP_EXT'),
         'environment' => getenv('CORE_ENVIRONMENT_NAME'),
         'application' => getenv('CORE_APP_ROOT'),
-        'entities'    => getenv('CORE_ENT_ROOT'),
-        'library'     => getenv('CORE_LIB_ROOT'),
         'external'    => getenv('CORE_EXT_ROOT'),
         'logs'        => getenv('CORE_LOG_DIR'),
         'website'     => __DIR__,

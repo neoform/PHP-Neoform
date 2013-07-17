@@ -193,20 +193,15 @@
                 die("Config Error: PHP file extension not set. core::init([\"extension\" => [...] ]).\n");
             }
 
+            // This file is always found in the library dir
+            self::$paths['library'] = realpath(__DIR__);
+
             if (! isset($params['environment']) || ! self::$environment = $params['environment']) {
                 die("Config Error: PHP file extension not set. core::init([\"environment\" => [...] [)\n");
             }
 
             if (! isset($params['application']) || ! self::$paths['application'] = realpath($params['application'])) {
                 die("Config Error: PHP file extension not set or is invalid. core::init([\"application\" => [...] ])\n");
-            }
-
-            if (! isset($params['library']) || ! self::$paths['library'] = realpath($params['library'])) {
-                die("Config Error: Library root path not set or is invalid. core::init([\"library\" => [...] ])\n");
-            }
-
-            if (! isset($params['entities']) || ! self::$paths['entities'] = realpath($params['entities'])) {
-                die("Config Error: Entities root path not set or is invalid. core::init([\"entities\" => [...] ])\n");
             }
 
             if (! isset($params['logs']) || ! self::$paths['logs'] = realpath($params['logs'])) {
@@ -223,9 +218,7 @@
 
              //tell php where to find stuff
             set_include_path(
-                self::$paths['entities'] . // Data entities
-                PATH_SEPARATOR .
-                self::$paths['application'] . '/library' . // core library overrides
+                self::$paths['application'] . '/library' . // core library overrides and entities
                 PATH_SEPARATOR .
                 self::$paths['library'] . // core library
                 PATH_SEPARATOR .

@@ -8,9 +8,7 @@
         'environment' => 'sling',
 
         'application' => $root . '/application/',
-        'library'     => $root . '/library/',
         'external'    => $root . '/external/',
-        'entities'    => $root . '/entities/',
         'logs'        => $root . '/logs/',
         'website'     => $root . '/www/',
     ]);

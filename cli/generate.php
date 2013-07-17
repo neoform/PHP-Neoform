@@ -8,9 +8,7 @@
         'environment' => 'sling',
 
         'application' => $root . '/application/',
-        'library'     => $root . '/library/',
         'external'    => $root . '/external/',
-        'entities'    => $root . '/entities/',
         'logs'        => $root . '/logs/',
         'website'     => $root . '/www/',
     ]);
@@ -43,7 +41,7 @@
                 $code  = new $class($table_info, $options);
 
                 if (in_array('--install', $options)) {
-                    $path = core::path('entities') . '/' . str_replace('_', '/', $table . '_' . $entity . '.php');
+                    $path = core::path('application') . '/library/' . str_replace('_', '/', "{$table}_{$entity}.php");
                 } else {
                     $path = __DIR__ . '/' . str_replace('_', '/', $table . '_' . $entity . '.php');
                 }
@@ -62,7 +60,7 @@
                     $code  = new $class($table_info, $options);
 
                     if (in_array('--install', $options)) {
-                        $path = core::path('entities') . '/' . str_replace('_', '/', $table . '_' . $entity . '.php');
+                        $path = core::path('application') . '/library/' . str_replace('_', '/', $table . '_' . $entity . '.php');
                     } else {
                         $path = __DIR__ . '/' . str_replace('_', '/', $table . '_' . $entity . '.php');
                     }

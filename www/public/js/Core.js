@@ -27,7 +27,6 @@ Core = (function(){
         $("div.head a[name='login']")
             .on("click", function(e){
                 e.preventDefault();
-                console.log((locale ? "/" + locale : "") + "/account/ajax/dialog/login");
                 CoreDialog.showUrl("/account/ajax/dialog/login");
             });
 

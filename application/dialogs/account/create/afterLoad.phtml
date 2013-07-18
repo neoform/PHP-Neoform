@@ -82,9 +82,7 @@
         });
     });
 
-    $("input[name='email']", elements.body)
-       .focus()
-       .blur(_validate_email);
+    $("input[name='email']", elements.body).blur(_validate_email);
 
     $("a[name='login']", elements.dialog).on("click", function(e) {
        e.preventDefault();

@@ -437,7 +437,7 @@
                             for (var k in resp.callbacks) {
                                 if (typeof resp.callbacks[k] === "string") {
                                     try {
-                                        resp.callbacks[k] = eval("(" + resp.callbacks[k] + ")");
+                                        resp.callbacks[k] = eval("(function(){" + resp.callbacks[k] + "})");
                                     } catch (e) {
                                         if (console && console.log) {
                                             console.log(e);

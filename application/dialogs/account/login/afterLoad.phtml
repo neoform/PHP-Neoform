@@ -1,10 +1,13 @@
 <script>
-    var messageEl = $("div#message", elements.body);
+    var messageEl       = $("div#message", elements.body);
     var originalMessage = messageEl.text();
-    var self = this;
+    var self            = this;
 
     $("form", elements.dialog).on("submit", function(e) {
         e.preventDefault();
+
+        var emailEl    = $("input[name='email']", elements.dialog);
+        var passwordEl = $("input[name='password']", elements.dialog);
 
         Core.ajax({
             "url": "/account/ajax/login/verify",
@@ -14,6 +17,7 @@
                 "remember": $("input[name='remember']", elements.dialog).attr('checked') ? 1 : 0
             },
             "success": function(response) {
+
                 if (response.status === 'good') {
                     if (self.activeRemaining()) {
                         self.close();
@@ -28,6 +32,9 @@
                         var message = "There was a problem logging you in.";
                     }
 
+                    emailEl.addClass('error');
+                    passwordEl.addClass('error');
+
                     messageEl
                        .text(message)
                        .addClass("error")
@@ -38,13 +45,15 @@
                            .text(originalMessage)
                            .addClass("info")
                            .removeClass("error");
-                    }, 3500);
+
+                        emailEl.removeClass('error');
+                        passwordEl.removeClass('error');
+
+                    }, 5500);
                 }
             }
         });
     });
-
-    $("input[name='email']", elements.body).focus();
 
     $("a[name='create']", elements.dialog).on("click", function(e) {
        e.preventDefault();

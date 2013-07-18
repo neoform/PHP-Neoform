@@ -627,6 +627,13 @@
                             .append(elements.loadingInner)
                     )
                     .appendTo(elements.form);
+            } else {
+                // Remove any lingering event handlers that might have been applied to the dialog
+                elements.form.off();
+                elements.head.off();
+                elements.body.off();
+                elements.foot.off();
+                elements.dialog.off();
             }
 
             // CSS

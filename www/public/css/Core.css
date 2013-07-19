@@ -133,8 +133,8 @@ form textarea {
     font-weight: normal;
     line-height: 19px;
     padding: 3px 5px;
-    border: 1px solid #bbb;
-    border-bottom: 1px solid #ccc;
+    border: 1px solid #aaa;
+    border-bottom: 1px solid #999;
     outline: none;
     -webkit-box-shadow: 0 0 3px rgba(0, 0, 0, .15), inset 2px 3px 6px rgba(0, 0, 0, .11), 0 2px 0 rgba(255, 255, 255, .8);
        -moz-box-shadow: 0 0 3px rgba(0, 0, 0, .15), inset 2px 3px 6px rgba(0, 0, 0, .11), 0 2px 0 rgba(255, 255, 255, .8);
@@ -155,8 +155,8 @@ form textarea {
         -webkit-box-shadow: 0 0 4px rgba(0, 0, 0, .1), inset 2px 3px 3px rgba(220, 225, 246, .7), 0 2px 0 rgba(255, 255, 255, .8);
            -moz-box-shadow: 0 0 4px rgba(0, 0, 0, .1), inset 2px 3px 3px rgba(220, 225, 246, .7), 0 2px 0 rgba(255, 255, 255, .8);
                 box-shadow: 0 0 4px rgba(0, 0, 0, .1), inset 2px 3px 3px rgba(220, 225, 246, .7), 0 2px 0 rgba(255, 255, 255, .8);
-        border: 1px solid #95a2d8;
-        border-bottom: 1px solid #b5c2f8;
+        border: 1px solid #7582b8;
+        border-bottom: 1px solid #95a2d8;
         background: #eef0fa;
         color: #17214d;
     }

@@ -5,10 +5,12 @@
     $("form", elements.dialog).on("submit", function(e) {
         e.preventDefault();
 
+        var emailEl = $("input[name='email']", elements.dialog);
+
         Core.ajax({
             "url": "/account/ajax/password_lost",
             "data": {
-                "email": $("input[name='email']", elements.dialog).val()
+                "email": emailEl.val()
             },
             "success": function(response) {
                 if (response.status === 'good') {
@@ -21,17 +23,29 @@
                         var message = "There was a problem requesting a new password, please make sure your email address is correct.";
                     }
 
+                    var labelEl = $("label[name='email']", elements.dialog);
+
                     messageEl
                        .text(message)
                        .addClass("error")
                        .removeClass("info");
 
-                    setTimeout(function(){
+                    emailEl.addClass("error");
+                    labelEl.addClass("error");
+
+                    CoreDialog.bodyResized();
+
+                    emailEl.on("keydown", function(e) {
                         messageEl
                            .text(originalMessage)
                            .addClass("info")
                            .removeClass("error");
-                    }, 3500);
+
+                        emailEl.removeClass("error");
+                        labelEl.removeClass("error");
+
+                        CoreDialog.bodyResized();
+                    });
                 }
             }
         });

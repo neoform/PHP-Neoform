@@ -62,7 +62,10 @@
                     }, 3500);
 
                     $("div.tiny.error", elements.body)
-                        .css("display", "none");
+                            .css("display", "none");
+
+                    $("label.error", elements.body)
+                        .removeClass("error");
 
                     $("input", elements.body)
                         .removeClass("error");
@@ -75,6 +78,9 @@
 
                             $("input[name='" + k + "']", elements.dialog)
                                 .addClass("error");
+
+                            $("label[name='" + k + "']", elements.dialog)
+                                    .addClass("error");
                         }
                     }
                 }
@@ -82,7 +88,9 @@
         });
     });
 
-    $("input[name='email']", elements.body).blur(_validate_email);
+    $("input[name='email']", elements.body)
+       .focus()
+       .blur(_validate_email);
 
     $("a[name='login']", elements.dialog).on("click", function(e) {
        e.preventDefault();

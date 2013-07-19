@@ -4,14 +4,15 @@
         $json = new render_json();
         $json->status = 'close';
         $json->render();
-    } else {            
+    } else {
         (new render_dialog('account/login'))
-            ->title('Login') 
+            ->title('Login')
             ->css([
                 'width' => '600px',
             ])
             ->content('body')
             ->content('foot')
             ->callback('afterLoad')
+            ->callback('afterShow')
             ->render();
     }

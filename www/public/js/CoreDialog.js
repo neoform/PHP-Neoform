@@ -577,64 +577,60 @@
                     .addClass("CoreDialog")
                     .appendTo("body");
 
-                // Form
-                elements.form = $("<form/>")
-                    .addClass("inner")
-                    .on("submit", function(e){
-                        e.preventDefault();
-                    })
-                    .appendTo(elements.dialog);
-
-                // Head
-                elements.head = $("<div/>")
-                    .addClass("head")
-                    .append(elements.title)
-                    .append(elements.close)
-                    .appendTo(elements.form);
-
-                // Body
-                elements.body = $("<div/>")
-                    .addClass("body")
-                    .append(
-                        $("<div/>")
-                            .addClass("loading")
-                            .html("Loading...")
-                    )
-                    .appendTo(elements.form);
-
-                // Foot
-                elements.foot = $("<div/>")
-                    .addClass("foot")
-                    .appendTo(elements.form);
-
-                // Spinner
-                elements.spinner = _spinner();
-
-                // Loading Inner
-                elements.loadingInner = $("<div/>")
-                    .addClass("loading-inner")
-                    .append(
-                        $("<div/>").addClass("loading-message").text("Loading...")
-                    )
-                    .append(elements.spinner);
-
-                // Loading
-                elements.loading = $("<div/>")
-                    .addClass("loading")
-                    .append(
-                        $("<div/>")
-                            .addClass("loading-outer")
-                            .append(elements.loadingInner)
-                    )
-                    .appendTo(elements.form);
             } else {
-                // Remove any lingering event handlers that might have been applied to the dialog
-                elements.form.off();
-                elements.head.off();
-                elements.body.off();
-                elements.foot.off();
+
+                // Remove events from dialog
                 elements.dialog.off();
+
+                // Destroy the current form - incase the dialog's contents did something to it (added listeners or wtv)
+                elements.form.remove();
             }
+
+            // Form
+            elements.form = $("<form/>")
+                .addClass("inner")
+                .on("submit", function(e){
+                    e.preventDefault();
+                })
+                .appendTo(elements.dialog);
+
+            // Head
+            elements.head = $("<div/>")
+                .addClass("head")
+                .append(elements.title)
+                .append(elements.close)
+                .appendTo(elements.form);
+
+            // Body
+            elements.body = $("<div/>")
+                .addClass("body")
+                .appendTo(elements.form);
+
+            // Foot
+            elements.foot = $("<div/>")
+                .addClass("foot")
+                .appendTo(elements.form);
+
+            // Spinner
+            elements.spinner = _spinner();
+
+            // Loading Inner
+            elements.loadingInner = $("<div/>")
+                .addClass("loading-inner")
+                .append(
+                $("<div/>").addClass("loading-message").text("Loading...")
+            )
+                .append(elements.spinner);
+
+            // Loading
+            elements.loading = $("<div/>")
+                .addClass("loading")
+                .append(
+                $("<div/>")
+                    .addClass("loading-outer")
+                    .append(elements.loadingInner)
+            )
+                .appendTo(elements.form);
 
             // CSS
             if (options && options.css) {
@@ -675,8 +671,8 @@
                 elements.dialog
                     .css({
                         "position": "fixed",
-                        "top":  (($window.height() - elements.dialog.outerHeight()) / 2) + "px",
-                        "left": (($window.width() - elements.dialog.outerWidth()) / 2) + "px"
+                        "top":      (($window.height() - elements.dialog.outerHeight()) / 2) + "px",
+                        "left":     (($window.width() - elements.dialog.outerWidth()) / 2) + "px"
                     });
 
                 // Loading
@@ -819,6 +815,8 @@
 
             return self;
         })();
+
+        self.bodyResized = _center;
 
         _init();
 

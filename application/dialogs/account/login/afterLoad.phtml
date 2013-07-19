@@ -35,6 +35,9 @@
                     emailEl.addClass('error');
                     passwordEl.addClass('error');
 
+                    $("label[name='email']", elements.dialog).addClass('error');
+                    $("label[name='password']", elements.dialog).addClass('error');
+
                     messageEl
                        .text(message)
                        .addClass("error")
@@ -48,6 +51,9 @@
 
                         emailEl.removeClass('error');
                         passwordEl.removeClass('error');
+
+                        $("label[name='email']", elements.dialog).removeClass('error');
+                        $("label[name='password']", elements.dialog).removeClass('error');
 
                     }, 5500);
                 }

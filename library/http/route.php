@@ -41,6 +41,13 @@
         protected $children;
 
         /**
+         * URL segments
+         *
+         * @var array|null
+         */
+        protected $segments;
+
+        /**
          * Assemble route information
          *
          * @param array $info
@@ -51,6 +58,7 @@
             $this->resource        = isset($info['resources']) ? $info['resources'] : null;
             $this->locale          = isset($info['locale']) && is_array($info['locale']) && count($info['locale']) ? $info['locale'] : null;
             $this->children        = isset($info['children']) && is_array($info['children']) && count($info['children']) ? $info['children'] : null;
+            $this->segments        = isset($info['segments']) && is_array($info['segments']) && count($info['segments']) ? $info['segments'] : null;
         }
 
         // Don't use these functions in the routes file, they're intended for the core http classes.
@@ -122,6 +130,7 @@
                 'resource_ids'    => array_values($resource_ids),
                 'controller_path' => $this->controller_path,
                 'children'        => count($children) ? $children : null,
+                'segments'        => $this->segments,
             ];
         }
     }

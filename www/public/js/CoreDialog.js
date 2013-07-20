@@ -558,9 +558,6 @@
 
             if (typeof elements.dialog === "undefined") {
 
-                elements.title = $("<div/>").addClass("title");
-                elements.close = $("<div/>").addClass("close").click(_closeAll);
-
                 // Dim
                 elements.dim = $("<div/>")
                     .addClass("dim")
@@ -585,6 +582,9 @@
                 // Destroy the current form - incase the dialog's contents did something to it (added listeners or wtv)
                 elements.form.remove();
             }
+
+            elements.title = $("<div/>").addClass("title");
+            elements.close = $("<div/>").addClass("close").click(_closeAll);
 
             // Form
             elements.form = $("<form/>")

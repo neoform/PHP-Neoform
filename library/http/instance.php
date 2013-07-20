@@ -208,15 +208,16 @@
         }
 
         /**
+         * Get named/un-named segments from the URL. If un-named, the segments are numbered, starting at 1
          * http://www.example.com/segment1/segment2/segment3/etc..
          *
-         * @param integer $number
+         * @param integer|string $k
          *
          * @return string|null
          */
-        public function segment($number) {
-            if (isset($this->segments[$number])) {
-                return $this->segments[$number];
+        public function segment($k) {
+            if (isset($this->segments[$k])) {
+                return $this->segments[$k];
             }
         }
 
@@ -424,9 +425,10 @@
             $info = http_dao::get(core::locale()->get());
             core::locale()->set_routes($info['routes']);
 
-            $controllers       = $info['controllers'];
-            $controller_path   = false;
-            $controller_secure = false;
+            $controllers         = $info['controllers'];
+            $controller_path     = false;
+            $controller_secure   = false;
+            $controller_segments = null;
 
             //
             // Router
@@ -469,7 +471,8 @@
                     break;
                 }
 
-                $controller = & $controller['children'];
+                $controller_segments = & $controller['segments'];
+                $controller          = & $controller['children'];
             }
 
             // Remove it from the global namespace
@@ -517,6 +520,14 @@
                 core::output()->redirect($this->server_vars['query']);
                 return;
             } else {
+
+                // Name the segment variables based on the controller config
+                if ($controller_segments) {
+                    foreach ($controller_segments as $k => $segment_name) {
+                        $this->segments[$segment_name] = isset($this->segments[$k]) ? $this->segments[$k] : null;
+                        unset($this->segments[$k]);
+                    }
+                }
 
                 // Clean the path of naughtiness
                 if (strpos($controller_path, '..') !== false) {

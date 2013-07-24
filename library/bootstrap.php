@@ -57,8 +57,15 @@
                 if (core::output()->output_type() === output_instance::JSON) {
                     $json         = new render_json;
                     $json->status = 'login';
+                    if ($e->url()) {
+                        $json->login_bounce = $e->url();
+                    }
+                    if ($e->message()) {
+                        $json->login_message = $e->message();
+                    }
                     $json->render();
                 } else {
+                    core::debug($e);
                     if ($e->url() !== null) {
                         core::flash()->set('login_bounce', $e->url());
                     }

@@ -41,7 +41,7 @@
         public function set($key, $val, $ttl=null) {
             $config = core::config()->session;
             $engine = "cache_{$config['flash_cache_engine']}_driver";
-            return $engine::get(
+            return $engine::set(
                 "{$this->hash}:{$key}",
                 $config['flash_cache_pool'],
                 $val,

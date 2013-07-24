@@ -9,7 +9,7 @@
 
             $json = new render_json;
 
-            switch (core::http()->segment(6)) {
+            switch (core::http()->segment('action')) {
 
                 case 'insert':
                     try {

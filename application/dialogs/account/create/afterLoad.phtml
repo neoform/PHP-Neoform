@@ -3,7 +3,7 @@
         var email = $("input[name='email']", elements.body).val();
 
         if (email && email.length) {
-            $.ajax({
+            Core.ajax({
                 "url": "/account/ajax/check/email",
                 "data": {
                     "email": email

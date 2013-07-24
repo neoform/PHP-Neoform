@@ -4,7 +4,7 @@
 
         public function default_action() {
             if (core::auth()->logged_in()) {
-                core::output()->redirect(core::flash()->get('login_bounce'));
+                core::output()->redirect(current(core::flash()->get('login_bounce')));
             } else {
                 $view = new render_view;
 

@@ -17,21 +17,15 @@
                 "remember": $("input[name='remember']", elements.dialog).attr('checked') ? 1 : 0
             },
             "success": function(response) {
-
+                console.log(response);
                 if (response.status === 'good') {
                     if (self.activeRemaining()) {
                         self.close();
                     } else {
                         self.closeAll();
-                        location.href = response.bounce || location.href;
+                        location.href = response.bounce ? "/" + response.bounce : location.href;
                     }
                 } else {
-                    if (response.message) {
-                        var message = response.message;
-                    } else {
-                        var message = "There was a problem logging you in.";
-                    }
-
                     emailEl.addClass('error');
                     passwordEl.addClass('error');
 
@@ -39,7 +33,7 @@
                     $("label[name='password']", elements.dialog).addClass('error');
 
                     messageEl
-                       .text(message)
+                       .text(response.message || "There was a problem logging you in.")
                        .addClass("error")
                        .removeClass("info");
 

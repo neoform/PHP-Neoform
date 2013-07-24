@@ -7,6 +7,12 @@
             if (core::auth()->logged_in()) {
                 $json = new render_json();
                 $json->status = 'close';
+
+                if ($bounce = core::flash()->get('login_bounce')) {
+                    $json->bounce = current($bounce);
+                    core::flash()->del('login_bounce');
+                }
+
                 $json->render();
             } else {
                 (new render_dialog('account/create'))

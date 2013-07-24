@@ -3,9 +3,6 @@
     return new http_route([
         'controller' => 'controller_index',
         'children' => [
-            'error' => new http_route([
-                'controller' => 'controller_error',
-            ]),
 
             // Account
             'account' => new http_route([

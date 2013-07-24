@@ -14,13 +14,17 @@
             $.ajax({
                 "url": "<?php echo core::http()->server('surl'); ?>account/ajax/login/verify?rc=<?php echo core::http()->get_ref(); ?>",
                 "data": {
-                    "email":     $("input[name='email']", page.form).val(),
+                    "email":    $("input[name='email']", page.form).val(),
                     "password": $("input[name='password']", page.form).val(),
                     "remember": $("input[name='remember']", page.form).attr('checked') ? 1 : 0
                 },
                 "success": function(response) {
                     if (response.status === 'good') {
-                        location.href = "<?php echo htmlspecialchars($this->locale->route("/{$this->bounce}")); ?>";
+                        <?php if ($this->bounce): ?>
+                            location.href = "/<?php echo htmlspecialchars($this->bounce); ?>";
+                        <?php else: ?>
+                            location.href = location.href;
+                        <?php endif; ?>
                     } else {
                         alert(response.message || "There was a problem logging you in.");
                     }

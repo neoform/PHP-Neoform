@@ -17,6 +17,10 @@
 
             if (core::auth()->logged_in()) {
                 $json->status = 'good';
+                if ($bounce = core::flash()->get('login_bounce')) {
+                    $json->bounce = current($bounce);
+                    core::flash()->del('login_bounce');
+                }
             } else {
                 try {
                     auth_api::login(
@@ -25,8 +29,10 @@
                     );
                     $json->status = 'good';
 
-                    // if it exists, delete the login bounce
-                    core::flash()->del('login_bounce');
+                    if ($bounce = core::flash()->get('login_bounce')) {
+                        $json->bounce = current($bounce);
+                        core::flash()->del('login_bounce');
+                    }
                 } catch (input_exception $e) {
                     sleep(1);
                     $json->message = 'Your email address or password are incorrect. Please try again.';

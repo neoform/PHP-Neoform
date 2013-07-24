@@ -32,9 +32,13 @@
                         submitButton.removeAttr('disabled');
 
                         if (response.status === 'good') {
-                            location.href = location.href;
+                            <?php if ($this->bounce): ?>
+                                location.href = "/<?php echo htmlspecialchars($this->bounce); ?>";
+                            <?php else: ?>
+                                location.href = location.href;
+                            <?php endif; ?>
                         } else {
-                            if (response.message && response.message.length) {
+                            if (response.message) {
                                 errorDiv.html(response.message).css('display', 'block');
                             } else {
                                 errorDiv.html('There was a problem creating your account').css('display', 'block');

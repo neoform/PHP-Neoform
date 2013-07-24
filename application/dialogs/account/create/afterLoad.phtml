@@ -40,17 +40,11 @@
                         CoreDialog.close();
                     } else {
                         CoreDialog.closeAll();
-                        location.href = response.bounce || location.href;
+                        location.href = response.bounce ? "/" + response.bounce : location.href;
                     }
                 } else {
-                    if (response.message) {
-                        var message = response.message;
-                    } else {
-                        var message = "There was a problem creating your account";
-                    }
-
                     messageEl
-                       .text(message)
+                       .text(response.message || "There was a problem creating your account")
                        .addClass("error")
                        .removeClass("info");
 

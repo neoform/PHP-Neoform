@@ -1,7 +1,11 @@
 <form name="login" style="margin: 0 auto; display: block;">
     <div class="regular-body" style="padding: 0 0 10px 0;">
         <div class="padded info" id="message">
-            Please login to continue
+            <?php if ($this->message): ?>
+                <?php echo htmlspecialchars($this->message); ?>
+            <?php else: ?>
+                Please login to continue
+            <?php endif; ?>
         </div>
         <table width="100%">
             <tr>

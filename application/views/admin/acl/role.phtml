@@ -122,9 +122,13 @@
                                                     <?php echo htmlspecialchars(join(', ', $role->acl_resource_collection()->field('name'))); ?>
                                                 </td>
                                                 <td>
-                                                    <?php foreach ($role->acl_group_collection() as $group): ?>
-                                                        <a href="/admin/groups/view/id:<?php echo $group->id; ?>"><?php echo htmlspecialchars($group->name); ?></a>,
-                                                    <?php endforeach; ?>
+                                                    <?php
+                                                        $links = [];
+                                                        foreach ($role->acl_group_collection() as $group) {
+                                                            $links[] = '<a href="/admin/groups/view/id:' . $group->id . '">' . htmlspecialchars($group->name) . '</a>';
+                                                        }
+                                                        echo join(', ', $links);
+                                                    ?>&nbsp;
                                                 </td>
                                             </tr>
                                         </table>

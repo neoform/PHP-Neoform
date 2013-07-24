@@ -1,0 +1,148 @@
+<?php $this->inc('admin/templates/header'); ?>
+
+<script>
+    var page = {
+
+        onload: function() {
+            page.div     = $("#page");
+            page.i         = 0;
+
+            // Nav form
+            $(".nav form", page.div).on("submit", function(e) {
+                e.preventDefault();
+            });
+
+            // List forms
+            $(".inside form", page.div).on("submit", function(e) {
+                e.preventDefault();
+            });
+
+            $("button[name='new']", page.div)
+                .on("click", function(){
+
+                });
+
+            $("form[name='update']", page.div)
+                .on("submit", function(e){
+
+                    e.preventDefault();
+
+                    var form = $(this);
+
+                    Core.ajax({
+                        url: form.attr("action"),
+                        data: {
+                            "name": $("input[name='name']", form).val()
+                        },
+                        success: function(response) {
+                            if (response.status === 'good') {
+                                CoreDialog.alert("Group info has been updated", null, "good");
+                            } else {
+                                if (response.message && response.message.length) {
+                                    alert(response.message);
+                                }
+                            }
+
+                            $(".error", form).hide();
+
+                            if (response && response.errors) {
+                                for (var k in response.errors) {
+                                    $(".id-error-" + k, form).html(response.errors[k]).show();
+                                }
+                            }
+                        },
+                        error: function(response) {
+                            alert("There was a problem saving your user info");
+                        }
+                    });
+                });
+
+        }
+    };
+
+    $(page.onload);
+
+</script>
+
+<div id="page">
+
+    <h3 class="header">
+        <a href="/admin"><?php echo htmlspecialchars($this->locale->translate('Admin')); ?></a>
+        / <a href="/admin/groups"><?php echo htmlspecialchars($this->locale->translate('Groups')); ?></a>
+        / <?php echo htmlspecialchars($this->group->name); ?>
+    </h3>
+
+    <?php $this->inc('admin/templates/sidebar'); ?>
+
+    <div>
+        <div class="nav">
+            <div class="side">
+                <form>
+                    <button name="new" class="btn"><?php echo htmlspecialchars($this->locale->translate('New Group')); ?></button>
+                </form>
+            </div>
+        </div>
+
+        <div class="inside">
+            <div class="box">
+                <div class="table-head">
+                    <?php echo htmlspecialchars($this->locale->translate('Group')); ?>
+                </div>
+                <form name="update" action="/admin/groups/ajax/update/id:<?php echo $this->group->id; ?>">
+                    <div class="table-body">
+                        <div style="padding: 10px 0;">
+                            <table width="100%">
+                                <tr>
+                                    <td width="175" align="right">
+                                        Name
+                                        <div class="id-error-name tiny error" style="display: none;"></div>
+                                    </td>
+                                    <td width="10"></td>
+                                    <td>
+                                        <input type="text" name="name" value="<?php echo htmlspecialchars($this->group->name); ?>" style="width: 300px;" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="table-foot">
+                        <button class="good" style="margin: 0 0 0 177px;">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="inside">
+            <div class="box">
+                <div class="table-head">
+                    Group Roles
+                </div>
+                <form name="roles" action="/admin/groups/ajax/update_roles">
+                    <div class="standard-body">
+                        <div style="padding: 10px;">
+                            <ul>
+                                <?php foreach ($this->roles as $role): ?>
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" name="role[]" value="<?php echo $role->id; ?>" <?php if (in_array($role->id, $this->group->acl_role_collection()->field('id'))) { echo 'checked="checked" '; } ?>/>
+                                            <b><?php echo htmlspecialchars($role->name); ?></b>
+                                            <?php if (count($role->acl_resource_collection())): ?>
+                                                (<?php echo join(', ', $role->acl_resource_collection()->field('name')); ?>)
+                                            <?php endif; ?>
+                                        </label>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="table-foot">
+                        <button class="good">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<?php $this->inc('admin/templates/footer'); ?>

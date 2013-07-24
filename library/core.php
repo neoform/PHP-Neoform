@@ -250,7 +250,12 @@
                     core::log('FATAL ERROR - ' . $message . ' ' . $file . ' (' . $line . ')');
                     if (core::context() === 'web') {
                         if (core::is_loaded('http')) {
-                            core::output()->error();
+                            try {
+                                controller::error(500);
+                            } catch (Exception $e) {
+                                core::output()->body('Unexpected Error - There was a problem loading that page');
+                            }
+
                             echo core::output()->send_headers()->body();
                         } else {
                             header('HTTP/1.1 500 Internal Server Error');

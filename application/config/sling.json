@@ -143,12 +143,6 @@
         "flash_cache_pool": "entities"
     },
 
-    "output": {
-
-        // When showing core::output()->error() what view is used
-        "default_error_view": "error"
-    },
-
     "memcache": {
 
         //leave black (empty string) if no prefix is needed

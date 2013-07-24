@@ -36,7 +36,6 @@
                             {
                                 "label": "Save",
                                 "action": function() {
-                                    console.log($("input[name='name']", this.elements.form).val());
                                     Core.ajax({
                                         "url": "/admin/locale/namespaces/ajax/insert",
                                         "data": {
@@ -46,7 +45,7 @@
                                             if (response.status === "good") {
                                                 location.href = location.href;
                                             } else {
-                                                CoreDialog.alert("A namespace with that name already exists");
+                                                CoreDialog.alert(response.message || "A namespace with that name already exists");
                                             }
                                         }
                                     });
@@ -91,10 +90,10 @@
                         <table width="100%" cellspacing="0" cellpadding="0">
                             <tr>
                                 <td width="100">
-                                    ID
+                                    <?php echo htmlspecialchars($this->locale->translate('ID')); ?>
                                 </td>
                                 <td>
-                                    Name
+                                    <?php echo htmlspecialchars($this->locale->translate('Name')); ?>
                                 </td>
                             </tr>
                         </table>
@@ -122,7 +121,7 @@
 
             <?php else: ?>
 
-                <div class="fat big">No namespaces to show</div>
+                <div class="fat big"><?php echo htmlspecialchars($this->locale->translate('No namespaces to show')); ?></div>
 
             <?php endif; ?>
         </div>

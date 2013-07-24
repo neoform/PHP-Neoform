@@ -21,7 +21,7 @@
         protected $output_type = self::HTML;
 
         public function __construct() {
-            $this->header('Core', 'v0.1');
+            $this->header('Core', 'v0.2');
             $this->header('cache-control', 'private, max-age=0');
         }
 
@@ -179,10 +179,11 @@
         /**
          * Display an error to the user
          *
-         * @param string|null $title
-         * @param string|null $message
+         * @param string|null  $title
+         * @param string|null  $message
+         * @param integer|null $status_code
          */
-        public function error($title=null, $message=null) {
+        public function error($title=null, $message=null, $status_code=500) {
 
             try {
                 //trash anything that was going to be outputted
@@ -194,8 +195,8 @@
             }
 
             // Reset the page
-            $this->headers     = [];
-            $this->body     = null;
+            $this->headers = [];
+            $this->body    = null;
 
             if ($this->output_type === self::JSON) {
 
@@ -214,15 +215,8 @@
 
             } else {
 
-                try {
-                    $this->http_status_code(500);
-                    $view                 = new render_view();
-                    $view->meta_title     = 'Error';
-                    $view->pre_header    = 'Error';
-                    $view->header         = $title ? $title : 'Server Error';
-                    $view->body         = $message ? $message : 'There was a problem generating that page.';
-                    $view->render(core::config()->output['default_error_view']);
-
+                try {;
+                    controller::error($status_code, $title, $message);
                 } catch (Exception $e) {
                     $this->body = $message;
                 }

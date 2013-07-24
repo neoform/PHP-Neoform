@@ -69,12 +69,7 @@
                 }
             } catch (exception $e) {
                 error_lib::log($e, false);
-
-                try {
-                    core::output()->error('Unexpected Error', 'There was a problem loading that page');
-                } catch (Exception $e) {
-                    core::output()->body('Unexpected Error - There was a problem loading that page');
-                }
+                controller::error(500);
             }
 
             return $this;

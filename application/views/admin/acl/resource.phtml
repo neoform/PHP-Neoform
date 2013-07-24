@@ -116,11 +116,13 @@
                                                     <b><?php echo htmlspecialchars($resource->name); ?></b>
                                                 </td>
                                                 <td>
-                                                    <ul>
-                                                        <?php foreach ($resource->acl_role_collection() as $role): ?>
-                                                            <li><a href="/admin/acl/roles/view/id:<?php echo $role->id; ?>"><?php echo htmlspecialchars($role->name); ?></a></li>
-                                                        <?php endforeach; ?>
-                                                    </ul>
+                                                    <?php
+                                                        $links = [];
+                                                        foreach ($resource->acl_role_collection() as $role) {
+                                                            $links[] = '<a href="/admin/acl/roles/view/id:' . $role->id . '">' . htmlspecialchars($role->name) . '</a>';
+                                                        }
+                                                        echo join(', ', $links);
+                                                    ?>&nbsp;
                                                 </td>
                                             </tr>
                                         </table>

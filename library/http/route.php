@@ -7,11 +7,18 @@
     class http_route {
 
         /**
-         * Relative path to a controller
+         * Class name of the controller
          *
          * @var string
          */
-        protected $controller_path;
+        protected $controller_class;
+
+        /**
+         * Action name
+         *
+         * @var string
+         */
+        protected $action_name;
 
         /**
          * Is the URL supposed to be 'secure' (HTTPS if available)
@@ -53,12 +60,13 @@
          * @param array $info
          */
         public function __construct(array $info) {
-            $this->controller_path = isset($info['controller']) ? (string) $info['controller'] : '';
-            $this->secure          = isset($info['secure']) ? (bool) $info['secure'] : false;
-            $this->resource        = isset($info['resources']) ? $info['resources'] : null;
-            $this->locale          = isset($info['locale']) && is_array($info['locale']) && count($info['locale']) ? $info['locale'] : null;
-            $this->children        = isset($info['children']) && is_array($info['children']) && count($info['children']) ? $info['children'] : null;
-            $this->segments        = isset($info['segments']) && is_array($info['segments']) && count($info['segments']) ? $info['segments'] : null;
+            $this->controller_class = isset($info['controller']) ? (string) $info['controller'] : '';
+            $this->action_name      = isset($info['action']) ? (string) $info['action'] : null;
+            $this->secure           = isset($info['secure']) ? (bool) $info['secure'] : false;
+            $this->resource         = isset($info['resources']) ? $info['resources'] : null;
+            $this->locale           = isset($info['locale']) && is_array($info['locale']) && count($info['locale']) ? $info['locale'] : null;
+            $this->children         = isset($info['children']) && is_array($info['children']) && count($info['children']) ? $info['children'] : null;
+            $this->segments         = isset($info['segments']) && is_array($info['segments']) && count($info['segments']) ? $info['segments'] : null;
         }
 
         // Don't use these functions in the routes file, they're intended for the core http classes.
@@ -126,11 +134,12 @@
             }
 
             return [
-                'secure'          => $this->secure,
-                'resource_ids'    => array_values($resource_ids),
-                'controller_path' => $this->controller_path,
-                'children'        => count($children) ? $children : null,
-                'segments'        => $this->segments,
+                'secure'           => $this->secure,
+                'resource_ids'     => array_values($resource_ids),
+                'controller_class' => $this->controller_class,
+                'action_name'      => $this->action_name,
+                'children'         => count($children) ? $children : null,
+                'segments'         => $this->segments,
             ];
         }
     }

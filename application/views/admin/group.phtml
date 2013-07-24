@@ -1,0 +1,125 @@
+<?php $this->inc('admin/templates/header'); ?>
+
+<script>
+    var page = {
+
+        onload: function() {
+            page.div = $("#page");
+            page.i   = 0;
+
+            // Nav form
+            $(".nav form", page.div).on("submit", function(e) {
+                e.preventDefault();
+            });
+
+            // List forms
+            $(".inside form", page.div).on("submit", function(e) {
+                e.preventDefault();
+            });
+
+            $("button[name='new']", page.div)
+                .on("click", function(){
+
+                });
+        }
+    };
+
+    $(page.onload);
+
+</script>
+
+<div id="page">
+
+    <h3 class="header"><a href="/admin">Admin</a> / Groups</h3>
+
+    <?php $this->inc('admin/templates/sidebar'); ?>
+    <div>
+        <div class="nav">
+            <div class="side">
+                <form>
+                    <button name="new" class="btn"><?php echo htmlspecialchars($this->locale->translate('New Group')); ?></button>
+                </form>
+            </div>
+        </div>
+
+        <div class="inside">
+
+            <?php if ($this->groups): ?>
+
+                <div class="counts">
+                    Total Groups: <?php echo number_format($this->total); ?>
+                </div>
+
+                <div class="box">
+                    <div class="table-head">
+                        <table width="100%" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td width="100">
+                                    ID
+                                </td>
+                                <td>
+                                    Name
+                                </td>
+                                <td width="100">
+                                    User Count
+                                </td>
+                                <td width="200">
+                                    Resources
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <form>
+                        <div class="table-body">
+                            <ul id="groups">
+                                <?php foreach ($this->groups as $group): ?>
+                                <li>
+                                    <table width="100%" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td width="100">
+                                                <?php echo $group->id; ?>
+                                            </td>
+                                            <td>
+                                                <a href="/admin/groups/view/id:<?php echo $group->id; ?>"><?php echo htmlspecialchars($group->name); ?></a>
+                                            </td>
+                                            <td width="100">
+                                                <?php echo count(acl_group_user_dao::by_acl_group($group->id)); ?>
+                                            </td>
+                                            <td width="200">
+                                                <?php echo join(', ', $group->acl_role_collection()->acl_resource_collection()->field('name')); ?>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    </form>
+                    <div class="table-foot">
+                        Page
+                        <?php
+                        $this->inc(
+                            'templates/pagination',
+                            [
+                                'url'          => '/admin/groups',
+                                'current_page' => (int) $this->page,
+                                'page_count'   => $this->total > 1 ? ceil($this->total / $this->per_page) : 1,
+                                'link_count'   => 5,
+                                'next'         => true,
+                            ]
+                        );
+                        ?>
+                    </div>
+                </div>
+
+            <?php else: ?>
+
+                <div class="fat big">No groups to show</div>
+
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<?php $this->inc('admin/templates/footer'); ?>

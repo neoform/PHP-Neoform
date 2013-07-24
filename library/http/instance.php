@@ -426,7 +426,8 @@
             core::locale()->set_routes($info['routes']);
 
             $controllers         = $info['controllers'];
-            $controller_path     = false;
+            $controller_class    = null;
+            $action_name         = null;
             $controller_secure   = false;
             $controller_segments = null;
 
@@ -461,7 +462,9 @@
                     }
                 }
 
-                $controller_path = $controller['controller_path'];
+                $controller_class    = $controller['controller_class'];
+                $action_name         = $controller['action_name'];
+                $controller_segments = $controller['segments'];
 
                 if ($controller['secure']) {
                     $controller_secure = true;
@@ -471,8 +474,7 @@
                     break;
                 }
 
-                $controller_segments = & $controller['segments'];
-                $controller          = & $controller['children'];
+                $controller = & $controller['children'];
             }
 
             // Remove it from the global namespace
@@ -529,26 +531,20 @@
                     }
                 }
 
-                // Clean the path of naughtiness
-                if (strpos($controller_path, '..') !== false) {
-                    $controller_path = str_replace('..', '', $controller_path);
-                }
-
-                // Load the controller
-                if (file_exists(core::path('application') . "/controllers{$controller_path}." . EXT)) {
-                    $controller_path = "/controllers{$controller_path}." . EXT;
-
-                // If page does not exist, 404 erorr page
+                // if no class set, 404
+                if (! $controller_class) {
+                    controller::show404();
                 } else {
-                    core::log("Controller missing: {$controller_path}." . EXT, 'fatal');
-                    core::output()->redirect('error/not_found', 301);
-                    return;
+                    if (! $action_name) {
+                        $action_name = controller::DEFAULT_ACTION;
+                    }
+
+                    $this->server_vars['controller'] = $controller_class;
+                    $this->server_vars['action']     = $action_name;
+
+                    $controller = new $controller_class;
+                    $controller->$action_name();
                 }
-
-                $this->server_vars['controller'] = $controller_path;
-
-                //load the controller
-                require_once(core::path('application') . $controller_path);
             }
         }
 

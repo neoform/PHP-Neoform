@@ -5,6 +5,7 @@
         if (email && email.length) {
             Core.ajax({
                 "url": "/account/ajax/check/email",
+                "hideLoading": true,
                 "data": {
                     "email": email
                 },
@@ -56,7 +57,7 @@
                     }, 3500);
 
                     $("div.tiny.error", elements.body)
-                            .css("display", "none");
+                        .css("display", "none");
 
                     $("label.error", elements.body)
                         .removeClass("error");

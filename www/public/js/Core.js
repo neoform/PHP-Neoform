@@ -123,7 +123,10 @@ Core = (function(){
             }
         }
 
-        CoreDialog.showLoading();
+        if (! opts.hideLoading) {
+            CoreDialog.showLoading();
+        }
+
         return $.ajax(opts);
     };
 

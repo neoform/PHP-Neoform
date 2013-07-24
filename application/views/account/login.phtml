@@ -19,18 +19,10 @@
                     "remember": $("input[name='remember']", page.form).attr('checked') ? 1 : 0
                 },
                 "success": function(response) {
-
                     if (response.status === 'good') {
                         location.href = "<?php echo htmlspecialchars($this->locale->route("/{$this->bounce}")); ?>";
-                        return;
                     } else {
-                        if (response.message) {
-                            var message = response.message;
-                        } else {
-                            var message = "There was a problem logging you in.";
-                        }
-
-                        alert(message);
+                        alert(response.message || "There was a problem logging you in.");
                     }
                 }
             });

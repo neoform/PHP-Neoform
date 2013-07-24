@@ -12,17 +12,13 @@
                 $view->subheader       = 'Login';
                 $view->social_inactive = true;
 
-                $message = core::flash()->get('login_message');
-                $bounce  = core::flash()->get('login_bounce');
-
-                if ($message) {
-                    $view->message = $message;
+                if ($message = core::flash()->get('login_message')) {
+                    $view->message = current($message);
                     core::flash()->del('login_message');
                 }
 
-                if ($bounce) {
-                    $view->bounce = $bounce;
-                    core::flash()->del('login_bounce');
+                if ($bounce = core::flash()->get('login_bounce')) {
+                    $view->bounce = current($bounce);
                 }
 
                 $view->render('account/login');

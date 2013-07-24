@@ -22,11 +22,11 @@
             core::locale()->set_namespace('main');
             core::output()->http_status_code(404);
 
-            $view                 = new render_view;
-            $view->meta_title     = core::locale()->translate('Page Not Found');
-            $view->pre_header     = core::locale()->translate('Page Not Found');
-            $view->header         = core::locale()->translate('404: Page Not Found');
-            $view->body           = core::locale()->translate('The page you requested does not exist');
+            $view             = new render_view;
+            $view->meta_title = core::locale()->translate('Page Not Found');
+            $view->pre_header = core::locale()->translate('Page Not Found');
+            $view->header     = core::locale()->translate('404: Page Not Found');
+            $view->body       = core::locale()->translate('The page you requested does not exist');
 
             $view->render('error');
         }
@@ -38,11 +38,11 @@
             core::locale()->set_namespace('main');
             core::output()->http_status_code(500);
 
-            $view                 = new render_view;
-            $view->meta_title     = core::locale()->translate('Server Error');
-            $view->pre_header     = core::locale()->translate('Server Error');
-            $view->header         = core::locale()->translate('500: Server Error');
-            $view->body           = core::locale()->translate('There was a problem generating this page');
+            $view             = new render_view;
+            $view->meta_title = core::locale()->translate('Server Error');
+            $view->pre_header = core::locale()->translate('Server Error');
+            $view->header     = core::locale()->translate('500: Server Error');
+            $view->body       = core::locale()->translate('There was a problem generating this page');
 
             $view->render('error');
         }
@@ -58,11 +58,11 @@
             core::locale()->set_namespace('main');
             core::output()->http_status_code($status_code);
 
-            $view                 = new render_view;
-            $view->meta_title     = core::locale()->translate('Error');
-            $view->pre_header     = core::locale()->translate('Error');
-            $view->header         = core::locale()->translate($title ? $title : 'Server Error');
-            $view->body           = core::locale()->translate($message ? $message : 'There was a problem generating this page.');
+            $view             = new render_view;
+            $view->meta_title = core::locale()->translate('Error');
+            $view->pre_header = core::locale()->translate('Error');
+            $view->header     = core::locale()->translate($title ? $title : 'Server Error');
+            $view->body       = $message ? core::locale()->translate($message) : (! $title ? 'There was a problem generating this page' : null);
 
             $view->render('error');
         }

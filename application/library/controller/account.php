@@ -6,8 +6,7 @@
             core::locale()->set_namespace('main');
 
             if (! core::auth()->logged_in()) {
-                // @todo replace 'account' with something better
-                throw new redirect_login_exception('account');
+                throw new redirect_login_exception(core::http()->server('query'));
             }
         }
 

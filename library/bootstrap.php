@@ -65,7 +65,6 @@
                     }
                     $json->render();
                 } else {
-                    core::debug($e);
                     if ($e->url() !== null) {
                         core::flash()->set('login_bounce', $e->url());
                     }

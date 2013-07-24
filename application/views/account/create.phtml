@@ -48,7 +48,6 @@
 
                             if (response.errors) {
                                 for (var k in response.errors) {
-                                    console.log($("div[name='" + k + "'].error", page.form));
                                     $("div[name='" + k + "'].error", page.form).html(response.errors[k]).css('display', 'block');
                                 }
                             }

@@ -208,6 +208,9 @@
                                     // Ajax
                                     'ajax' => new http_route([
                                         'controller' => 'controller_admin_locale_namespaces_ajax',
+                                        'segments' => [
+                                            5 => 'action',
+                                        ]
                                     ]),
 
                                     // Messages
@@ -218,6 +221,9 @@
                                             // Ajax
                                             'ajax' => new http_route([
                                                 'controller' => 'controller_admin_locale_namespaces_messages_ajax',
+                                                'segments' => [
+                                                    6 => 'action',
+                                                ]
                                             ]),
                                         ],
                                     ]),

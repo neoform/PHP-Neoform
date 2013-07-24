@@ -17,7 +17,6 @@
                 "remember": $("input[name='remember']", elements.dialog).attr('checked') ? 1 : 0
             },
             "success": function(response) {
-                console.log(response);
                 if (response.status === 'good') {
                     if (self.activeRemaining()) {
                         self.close();

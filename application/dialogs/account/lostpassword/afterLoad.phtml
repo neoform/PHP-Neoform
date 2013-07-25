@@ -8,7 +8,7 @@
         var emailEl = $("input[name='email']", elements.dialog);
 
         Core.ajax({
-            "url": "/account/ajax/password_lost",
+            "url": "<?php echo core::http()->server('surl'); ?>/account/ajax/password_lost",
             "data": {
                 "email": emailEl.val()
             },

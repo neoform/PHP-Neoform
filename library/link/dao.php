@@ -118,7 +118,7 @@
          * @param array   $select_fields  array of table fields (table columns) to be selected
          * @param array   $keys           array of table keys and their values being looked up in the table
          * @return array  array of records from cache
-         * @throws record_exception
+         * @throws model_exception
          */
         final protected static function _by_fields($cache_key_name, array $select_fields, array $keys) {
 
@@ -145,7 +145,7 @@
          * @param array   $select_fields  array of table fields (table columns) to be selected
          * @param array   $keys_arr       array of arrays of table keys and their values being looked up in the table - each sub-array must have matching keys
          * @return array  ids of records from cache
-         * @throws record_exception
+         * @throws model_exception
          */
         final protected static function _by_fields_multi($cache_key_name, array $select_fields, array $keys_arr) {
 
@@ -173,7 +173,7 @@
          * @param array   $info    an associative array of into to be put info the database
          * @param boolean $replace optional - user REPLACE INTO instead of INSERT INTO
          * @return boolean result of the PDO::execute()
-         * @throws record_exception
+         * @throws model_exception
          */
         protected static function _insert(array $info, $replace=false) {
             $self   = static::ENTITY_NAME . '_dao';
@@ -189,7 +189,7 @@
          * @param array   $infos   an array of associative array of info to be put into the database
          * @param boolean $replace optional - user REPLACE INTO instead of INSERT INTO
          * @return boolean result of the PDO::execute()
-         * @throws record_exception
+         * @throws model_exception
          */
         protected static function _inserts(array $infos, $replace=false) {
             if (! count($infos)) {
@@ -209,7 +209,7 @@
          * @param array $new_info the new info to be put into the model
          * @param array $where    return a model of the new record
          * @return boolean|null result of the PDO::execute()
-         * @throws record_exception
+         * @throws model_exception
          */
         protected static function _update(array $new_info, array $where) {
             if (count($new_info)) {
@@ -226,7 +226,7 @@
          * @static
          * @param array $keys the where of the query
          * @return boolean result of the PDO::execute()
-         * @throws record_exception
+         * @throws model_exception
          */
         protected static function _delete(array $keys) {
             $self   = static::ENTITY_NAME . '_dao';
@@ -241,7 +241,7 @@
          * @static
          * @param array of arrays matching the PKs of the link
          * @return boolean returns true on success
-         * @throws record_exception
+         * @throws model_exception
          */
         protected static function _deletes(array $keys_arr) {
             $self   = static::ENTITY_NAME . '_dao';

@@ -3,6 +3,16 @@
     class error_lib {
 
         public static function log(exception $e, $rethrow=true) {
+
+            try {
+                //trash anything that was going to be outputted
+                while (ob_get_status() && ob_end_clean()) {
+
+                }
+            } catch (exception $e) {
+
+            }
+
             try {
                 $err = $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine() . "\nStack Trace:\n";
                 foreach ($e->getTrace() as $trace) {
@@ -21,25 +31,7 @@
                     throw new error_exception('An unexpected error occured.');
                 }
             } catch (exception $e) {
-                try {
-                    //trash anything that was going to be outputted
-                    while (ob_get_status() && ob_end_clean()) {
-
-                    }
-                } catch (Exception $e) {
-
-                }
                 die('An unexpected error occured.' . "\n");
             }
-        }
-
-        protected static function args($targs) {
-            $args = [];
-            if (is_array($targs)) {
-                foreach ($targs as $arg) {
-                    $args[] = is_array($arg) ? '[]' : (is_object($arg) ? '[object]' : $arg);
-                }
-            }
-            return $args;
         }
     }

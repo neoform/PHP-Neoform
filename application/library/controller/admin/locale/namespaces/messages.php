@@ -30,6 +30,7 @@
                 }
             }
 
+            $view->namespace    = $namespace;
             $view->locales      = array_column(locale_dao::all(), 'name', 'iso2');
             $view->translations = $translations;
             $view->namespaces   = array_column(locale_namespace_dao::all(), 'name', 'id');

@@ -72,8 +72,13 @@
                 // if for some reason this key is holding a non-list delete it and create a list (this should never happen)
                 // this is here just for fault tolerance
                 $redis = core::cache_redis($pool);
+
+                $redis->multi();
                 $redis->delete($key);
-                return $redis->sAdd($key, $value);
+                $redis->sAdd($key, $value);
+                $return = $redis->exec();
+
+                return $return[1];
             }
         }
 

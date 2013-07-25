@@ -4,8 +4,8 @@
 
         public static function lost(site_model $site, array $info) {
 
-            if (core::auth()->user_id) {
-                throw new redirect_exception();
+            if (core::auth()->logged_in()) {
+                throw new redirect_exception;
             }
 
             $input = new input_collection($info);
@@ -58,8 +58,8 @@
         }
 
         public static function find(site_model $site, $hash) {
-            if (core::auth()->user_id) {
-                throw new redirect_exception();
+            if (core::auth()->logged_in()) {
+                throw new redirect_exception;
             }
 
             try {

@@ -36,6 +36,9 @@
                     ]),
                     'passwordretreive' => new http_route([
                         'controller' => 'controller_account_passwordlost',
+                        'segments'   => [
+                            3 => 'action',
+                        ],
                         'locale' => [
                             'en' => 'passwordretreive',
                             //'fr' => 'mot_de_passe_perdu',
@@ -67,6 +70,9 @@
                     ]),
                     'email' => new http_route([
                         'controller' => 'controller_account_email',
+                        'segments'   => [
+                            3 => 'action',
+                        ],
                         'locale' => [
                             'en' => 'email',
                             //'fr' => 'courriel',
@@ -79,9 +85,15 @@
 
                             'check' => new http_route([
                                 'controller' => 'controller_account_ajax_check',
+                                'segments'   => [
+                                    4 => 'action',
+                                ],
                             ]),
                             'login' => new http_route([
                                 'controller' => 'controller_account_ajax_login',
+                                'segments'   => [
+                                    4 => 'action',
+                                ],
                             ]),
                             'insert' => new http_route([
                                 'controller' => 'controller_account_ajax_insert',
@@ -128,11 +140,14 @@
                             // View
                             'view' => new http_route([
                                 'controller' => 'controller_admin_user_view',
-                                'resources' => 'user view',
+                                'resources'  => 'user view',
                             ]),
                             // Ajax
                             'ajax' => new http_route([
                                 'controller' => 'controller_admin_user_ajax',
+                                'segments'   => [
+                                    4 => 'action',
+                                ],
                             ]),
                         ],
                     ]),
@@ -168,6 +183,9 @@
                                     // Ajax
                                     'ajax' => new http_route([
                                         'controller' => 'controller_admin_acl_role_ajax',
+                                        'segments'   => [
+                                            5 => 'action',
+                                        ],
                                     ]),
                                 ],
                             ]),
@@ -180,6 +198,9 @@
                                     // Ajax
                                     'ajax' => new http_route([
                                         'controller' => 'controller_admin_acl_resource_ajax',
+                                        'segments' => [
+                                            5 => 'action',
+                                        ],
                                     ]),
                                 ],
                             ]),
@@ -187,6 +208,9 @@
                             // Ajax
                             'ajax' => new http_route([
                                 'controller' => 'controller_admin_group_ajax',
+                                'segments'   => [
+                                    4 => 'action',
+                                ],
                             ]),
                         ],
                     ]),
@@ -224,7 +248,6 @@
                                             ]),
                                         ],
                                     ]),
-
                                 ],
                             ]),
                         ],

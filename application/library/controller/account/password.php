@@ -4,7 +4,7 @@
 
         public function default_action() {
 
-            switch (core::http()->segment(3)) {
+            switch (core::http()->segment('action')) {
                 case 'update':
                     $this->update();
                     break;

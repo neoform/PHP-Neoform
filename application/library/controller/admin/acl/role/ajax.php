@@ -8,7 +8,7 @@
 
             $json = new render_json;
 
-            switch (core::http()->segment(5)) {
+            switch (core::http()->segment('action')) {
 
                 case 'insert':
                     try {
@@ -17,9 +17,9 @@
                         );
                         $json->status = 'good';
                     } catch (input_exception $e) {
-                        $json->status = 'error';
+                        $json->status  = 'error';
                         $json->message = $e->message() ? $e->message() : 'ACL role could not be created';
-                        $json->errors = $e->errors();
+                        $json->errors  = $e->errors();
                     }
                     break;
 
@@ -31,9 +31,9 @@
                         );
                         $json->status = 'good';
                     } catch (input_exception $e) {
-                        $json->status = 'error';
+                        $json->status  = 'error';
                         $json->message = $e->message() ? $e->message() : 'ACL role could not be updated';
-                        $json->errors = $e->errors();
+                        $json->errors  = $e->errors();
                     }
                     break;
 
@@ -44,9 +44,9 @@
                         );
                         $json->status = 'good';
                     } catch (input_exception $e) {
-                        $json->status = 'error';
+                        $json->status  = 'error';
                         $json->message = $e->message() ? $e->message() : 'ACL role could not be deleted';
-                        $json->errors = $e->errors();
+                        $json->errors  = $e->errors();
                     }
                     break;
             }

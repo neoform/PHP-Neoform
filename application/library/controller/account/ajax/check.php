@@ -5,7 +5,7 @@
         public function default_action() {
             $json = new render_json;
 
-            switch (core::http()->segment(4)) {
+            switch (core::http()->segment('action')) {
                 //check if an email address is valid and available
                 case 'email':
                     try {

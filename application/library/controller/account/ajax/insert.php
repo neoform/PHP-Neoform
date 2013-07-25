@@ -4,7 +4,7 @@
 
         public function default_action() {
 
-            $json = new render_json();
+            $json = new render_json;
 
             //if already logged in
             if (core::auth()->logged_in()) {

@@ -608,7 +608,7 @@
             if ($good && ($timestamp > $time + $timeout || $timestamp < $time - $timeout)) {
                 $good = false;
                 if ($output_error) {
-                    throw new error_exception("Your session has timed out, please go back and reload the page you were just on.");
+                    throw new error_exception("Your session has timed out, please try again");
                 }
             } else if ($output_error && ! $good) {
                 throw new error_exception("There was a problem verifying that your browser was referred here properly.");

@@ -49,30 +49,38 @@
                     $this->server,
                     $this->cookies
                 )->execute();
+
+            // Error Exception
             } catch (error_exception $e) {
                 core::output()->error($e->message(), $e->description());
+
+            // Model Exception
             } catch (model_exception $e) {
                 core::output()->error($e->message(), $e->description());
+
+            // Force user to login exception
             } catch (redirect_login_exception $e) {
+                if ($e->url() !== null) {
+                    core::flash()->set('login_bounce', $e->url());
+                }
+                if ($e->message() !== null) {
+                    core::flash()->set('login_message', $e->message());
+                }
                 if (core::output()->output_type() === output_instance::JSON) {
-                    $json         = new render_json;
+                    $json = new render_json;
                     $json->status = 'login';
-                    if ($e->url()) {
-                        $json->login_bounce = $e->url();
-                    }
-                    if ($e->message()) {
-                        $json->login_message = $e->message();
-                    }
                     $json->render();
                 } else {
-                    if ($e->url() !== null) {
-                        core::flash()->set('login_bounce', $e->url());
-                    }
-                    if ($e->message() !== null) {
-                        core::flash()->set('login_message', $e->message());
-                    }
                     core::output()->redirect('account/login');
                 }
+
+            // Force user to enter a captcha exception
+            } catch (captcha_exception $e) {
+                $json = new render_json;
+                $json->status = 'captcha';
+                $json->render();
+
+            // All other exceptions - 500 error
             } catch (exception $e) {
                 error_lib::log($e, false);
                 controller::error(500);

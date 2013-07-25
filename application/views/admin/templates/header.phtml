@@ -44,7 +44,7 @@
                 <div class="logo"><label><?php echo htmlspecialchars(core::config()->system['site_name']); ?></label></div>
                 <nav>
                     <ul>
-                        <?php if (core::auth()->user_id): ?>
+                        <?php if (core::auth()->logged_in()): ?>
                             <li><a href="<?php echo $this->locale->route('/account'); ?>"><?php echo htmlspecialchars(core::auth()->user()->email); ?></a></li>
                             <li><a href="<?php echo $this->locale->route('/account/logout'); ?>" name="logout"><?php echo htmlspecialchars($this->locale->translate('Logout', 'admin')); ?></a></li>
                         <?php else: ?>

@@ -4,7 +4,7 @@
 
         public function default_action() {
 
-            switch (core::http()->segment(4)) {
+            switch (core::http()->segment('action')) {
                 case 'verify':
                     $this->verify();
                     break;
@@ -13,7 +13,7 @@
 
         protected function verify() {
 
-            $json = new render_json();
+            $json = new render_json;
 
             if (core::auth()->logged_in()) {
                 $json->status = 'good';

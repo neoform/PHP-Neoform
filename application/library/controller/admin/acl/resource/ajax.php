@@ -8,7 +8,7 @@
 
             $json = new render_json;
 
-            switch (core::http()->segment(5)) {
+            switch (core::http()->segment('action')) {
 
                 case 'insert':
                     try {

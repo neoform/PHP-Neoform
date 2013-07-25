@@ -3,7 +3,7 @@
     class controller_account_email extends controller_account {
 
         public function default_action() {
-            switch (core::http()->segment(3)) {
+            switch (core::http()->segment('action')) {
                 case 'update':
                     $this->update();
                     break;

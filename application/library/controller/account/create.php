@@ -6,7 +6,8 @@
 
             //if already logged in
             if (core::auth()->logged_in()) {
-                core::output()->redirect('/' . current(core::flash()->get('login_bounce')));
+                $bounce = core::flash()->get('login_bounce');
+                core::output()->redirect($bounce ? '/' . current($bounce) : null);
             } else {
                 // view variables
                 $view = new render_view;

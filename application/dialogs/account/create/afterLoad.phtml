@@ -4,7 +4,7 @@
 
         if (email && email.length) {
             Core.ajax({
-                "url": "/account/ajax/check/email",
+                "url": "<?php echo core::http()->server('surl'); ?>/account/ajax/check/email",
                 "hideLoading": true,
                 "data": {
                     "email": email
@@ -22,14 +22,14 @@
         }
     };
 
-    var messageEl = $("div#message", elements.body);
+    var messageEl = $(".message", elements.body);
     var originalMessage = messageEl.text();
 
     $("form", elements.dialog).on("submit", function(e) {
         e.preventDefault();
 
         Core.ajax({
-            "url": "/account/ajax/insert",
+            "url": "<?php echo core::http()->server('surl'); ?>/account/ajax/insert",
             "data": {
                 "email":     $("input[name='email']", elements.dialog).val(),
                 "password1": $("input[name='password1']", elements.dialog).val(),
@@ -75,7 +75,7 @@
                                 .addClass("error");
 
                             $("label[name='" + k + "']", elements.dialog)
-                                    .addClass("error");
+                                .addClass("error");
                         }
                     }
                 }

@@ -18,11 +18,12 @@
             "create": function(e) {
                 e.preventDefault();
 
-                var submitButton = $("submit", page.form).attr('disabled', 'disabled');
-                var errorDiv     = $("div[name='login_error']", page.form);
+                var submitButton    = $("submit", page.form).attr('disabled', 'disabled');
+                var messageEl       = $(".message", page.form);
+                var originalMessage = messageEl.text();
 
-                $.ajax({
-                    "url": "/account/ajax/insert?rc=<?php echo core::http()->get_ref(); ?>",
+                Core.ajax({
+                    "url": "/account/ajax/insert",
                     "data": {
                         "email":         $("input[name='email']", page.form).val(),
                         "password1":     $("input[name='password1']", page.form).val(),
@@ -38,17 +39,42 @@
                                 location.href = location.href;
                             <?php endif; ?>
                         } else {
-                            if (response.message) {
-                                errorDiv.html(response.message).css('display', 'block');
-                            } else {
-                                errorDiv.html('There was a problem creating your account').css('display', 'block');
-                            }
+                            messageEl
+                                .html(response.message || "There was a problem creating your account")
+                                .addClass("error")
+                                .removeClass("info");
 
-                            $(".error", page.form).css('display', 'none');
+                            setTimeout(function(){
+                                messageEl
+                                    .text(originalMessage)
+                                    .addClass("info")
+                                    .removeClass("error");
+
+                                $("input.error", page.form)
+                                    .removeClass("error");
+
+                                $("label.error", page.form)
+                                    .removeClass("error");
+
+                                $(".tiny.error", page.form)
+                                    .css('display', 'none');
+
+                            }, 3500);
+
+                            $(".tiny.error", page.form)
+                                .css('display', 'none');
 
                             if (response.errors) {
                                 for (var k in response.errors) {
-                                    $("div[name='" + k + "'].error", page.form).html(response.errors[k]).css('display', 'block');
+                                    $("div[name='" + k + "'].error", page.form)
+                                        .html(response.errors[k])
+                                        .css('display', 'block');
+
+                                    $("input[name='" + k + "']", page.form)
+                                        .addClass("error");
+
+                                    $("label[name='" + k + "']", page.form)
+                                        .addClass("error");
                                 }
                             }
                         }
@@ -98,38 +124,40 @@
             </div>
 
             <div class="regular-body">
-                <div name="login_error" class="error"></div>
+                <div class="padded info message">
+                    Please fill out the following fields in order to create an account
+                </div>
 
                 <table>
                     <tr>
                         <td width="130" align="right">
-                            Email
+                            <label name="email"><strong>Email</strong></label>
                             <div name="email" class="tiny error" style="display: none;"></div>
                         </td>
                         <td width="10">&nbsp;</td>
                         <td>
-                            <input type="text" name="email" style="width: 300px;" value="" />
+                            <input type="text" name="email" style="width: 300px; font-size: 14px; line-height: 18px; padding: 5px 8px;" value="" />
                             <span name="email_status" class="tiny"></span>
                         </td>
                     </tr>
                     <tr>
                         <td width="130" align="right">
-                            New Password
+                            <label name="password1"><strong>New Password</strong></label>
                             <div name="password1" class="tiny error" style="display: none;"></div>
                         </td>
                         <td width="10">&nbsp;</td>
                         <td>
-                            <input type="password" name="password1" style="width: 300px;" value="" />
+                            <input type="password" name="password1" style="width: 300px; font-size: 14px; line-height: 18px; padding: 5px 8px;" value="" />
                         </td>
                     </tr>
                     <tr>
                         <td width="130" align="right">
-                            Retype Password
+                            <label name="password2"><strong>Retype Password</strong></label>
                             <div name="password2" class="tiny error" style="display: none;"></div>
                         </td>
                         <td width="10">&nbsp;</td>
                         <td>
-                            <input type="password" name="password2" style="width: 300px;" value="" />
+                            <input type="password" name="password2" style="width: 300px; font-size: 14px; line-height: 18px; padding: 5px 8px;" value="" />
                         </td>
                     </tr>
                 </table>

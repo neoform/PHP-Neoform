@@ -212,8 +212,9 @@ form button {
     display: inline-block;
     font-family: 'Open Sans', sans-serif;
     font-size: 14px;
+    font-weight: bold;
     line-height: 19px;
-    padding: 3px 12px;
+    padding: 5px 20px;
     text-align: center;
     text-shadow: rgba(255, 255, 255, 0.74902) 0px 1px 1px;
     vertical-align: middle;

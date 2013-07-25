@@ -2,7 +2,7 @@
 
     return new http_route([
         'controller' => 'controller_index',
-        'children' => [
+        'children'   => [
 
             // Account
             'account' => new http_route([

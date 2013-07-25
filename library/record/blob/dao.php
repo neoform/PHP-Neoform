@@ -9,7 +9,7 @@
          * @param string|int $pk Primary key
          *
          * @return array cached record data
-         * @throws record_exception
+         * @throws model_exception
          */
         public static function by_pk($pk) {
             $info = parent::by_pk($pk);

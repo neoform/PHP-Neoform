@@ -1,9 +1,9 @@
 <?php
 
     /**
-     * Link model (not commonly used)
+     * Link model - this class is not commonly used, but included for consistency
      */
-    abstract class link_model {
+    abstract class link_model implements arrayaccess {
 
         /**
          * @var array of entity data
@@ -97,6 +97,53 @@
             return [
                 'vars',
             ];
+        }
+
+        /**
+         * Attempt to set a value in this model - this is not possible
+         *
+         * @param string $k
+         * @param mixed $v
+         *
+         * @throws model_exception
+         */
+        public function offsetSet($k, $v) {
+            $exception = static::ENTITY_NAME . '_exception';
+            throw new $exception('This is not an active record. Use the _update() function instead.');
+        }
+
+        /**
+         * Check if a field exist in this model
+         *
+         * @param string $k
+         *
+         * @return bool
+         */
+        public function offsetExists($k) {
+            return isset($this->vars[$k]);
+        }
+
+        /**
+         * Attempt to unset a value in this model - this is not possible
+         *
+         * @param string $k
+         *
+         * @throws model_exception
+         */
+        public function offsetUnset($k) {
+            $exception = static::ENTITY_NAME . '_exception';
+            throw new $exception('This is not an active record. You cannot unset values in this way.');
+        }
+
+        /**
+         * Get a field from this model
+         *
+         * @param string $k
+         *
+         * @return mixed
+         */
+        public function offsetGet($k) {
+            return static::__get($k);
         }
     }
 

@@ -141,7 +141,7 @@
          * @param int $pk primary key of a record
          *
          * @return array cached record data
-         * @throws record_exception
+         * @throws model_exception
          */
         public static function by_pk($pk) {
 
@@ -165,7 +165,7 @@
          * @static
          * @param array   $pks primary key of a records
          * @return array  cached records data - with preserved key names from $pks.
-         * @throws record_exception
+         * @throws model_exception
          */
         public static function by_pks(array $pks) {
 
@@ -199,7 +199,7 @@
          * @param string  $after_pk  A PK offset to be used (it's more efficient to use PK offsets than an SQL 'OFFSET')
          *
          * @return array of PKs
-         * @throws record_exception
+         * @throws model_exception
          */
         public static function limit($limit, $order_by, $direction, $after_pk=null) {
 
@@ -257,7 +257,7 @@
          * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
          * @param array   $keys           array of table keys and their values being looked up in the table
          * @return array  pks of records from cache
-         * @throws record_exception
+         * @throws model_exception
          */
         final protected static function _all($cache_key_name, array $keys=null) {
 
@@ -304,7 +304,7 @@
          * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
          * @param array   $keys           array of table keys and their values being looked up in the table
          * @return array  pks of records from cache
-         * @throws record_exception
+         * @throws model_exception
          */
         final protected static function _by_fields($cache_key_name, array $keys) {
 
@@ -331,7 +331,7 @@
          * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
          * @param array   $keys_arr       array of arrays of table keys and their values being looked up in the table - each sub-array must have matching keys
          * @return array  pks of records from cache
-         * @throws record_exception
+         * @throws model_exception
          */
         final protected static function _by_fields_multi($cache_key_name, array $keys_arr) {
 
@@ -363,7 +363,7 @@
          * @param array   $select_fields  array of table fields (table columns) to be selected
          * @param array   $keys           array of table keys and their values being looked up in the table
          * @return array  array of records from cache
-         * @throws record_exception
+         * @throws model_exception
          */
         final protected static function _by_fields_select($cache_key_name, array $select_fields, array $keys) {
 
@@ -389,7 +389,7 @@
          * @param boolean $replace      optional - user REPLACE INTO instead of INSERT INTO
          * @param boolean $return_model optional - return a model of the new record
          * @return record_model|true if $return_model is set to true, the model created from the info is returned
-         * @throws record_exception
+         * @throws model_exception
          */
         protected static function _insert(array $info, $replace = false, $return_model = true) {
 
@@ -442,7 +442,7 @@
          * @param boolean $replace           optional - user REPLACE INTO instead of INSERT INTO
          * @param boolean $return_collection optional - return a collection of models created
          * @return record_collection|true if $return_collection is true function returns a collection
-         * @throws record_exception
+         * @throws model_exception
          */
         protected static function _inserts(array $infos, $keys_match = true, $replace = false, $return_collection = true) {
 
@@ -521,7 +521,7 @@
          * @param array        $info          the new info to be put into the model
          * @param boolean      $return_model  optional - return a model of the new record
          * @return record_model|true if $return_model is true, an updated model is returned
-         * @throws record_exception
+         * @throws model_exception
          */
         protected static function _update(record_model $model, array $info, $return_model = true) {
 
@@ -576,7 +576,7 @@
          * @static
          * @param record_model $model the model that is to be deleted
          * @return boolean returns true on success
-         * @throws record_exception
+         * @throws model_exception
          */
         protected static function _delete(record_model $model) {
             $self   = static::ENTITY_NAME . '_dao';
@@ -616,7 +616,7 @@
          * @static
          * @param record_collection $collection the collection of models that is to be deleted
          * @return boolean returns true on success
-         * @throws record_exception
+         * @throws model_exception
          */
         protected static function _deletes(record_collection $collection) {
 

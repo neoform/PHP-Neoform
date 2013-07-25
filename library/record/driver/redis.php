@@ -17,7 +17,7 @@
          * @param int|string $pk
          *
          * @return mixed
-         * @throws record_exception
+         * @throws model_exception
          */
         public static function by_pk($self, $pk) {
 

@@ -36,7 +36,7 @@
                     $buffer .= ob_get_clean();
                 }
                 return $buffer;
-               } catch (Exception $e) {
+            } catch (Exception $e) {
                 throw new Exception('Output buffer error occurred');
             }
         }

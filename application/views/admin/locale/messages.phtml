@@ -285,7 +285,7 @@
             <a href="<?php echo $this->locale->route('/admin'); ?>"><?php echo htmlspecialchars($this->locale->translate('Admin')); ?></a>
             / <a href="<?php echo $this->locale->route('/admin/locale'); ?>"><?php echo htmlspecialchars($this->locale->translate('Locale')); ?></a>
             / <a href="<?php echo $this->locale->route('/admin/locale/namespaces'); ?>"><?php echo htmlspecialchars($this->locale->translate('Namespaces')); ?></a>
-            / <?php echo htmlspecialchars($this->locale->translate('Translations')); ?>
+            / <?php echo htmlspecialchars($this->namespace['name']); ?>
         </h3>
 
         <?php $this->inc('admin/templates/sidebar'); ?>

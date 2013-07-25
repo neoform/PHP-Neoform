@@ -18,7 +18,7 @@
         const XML  = 'application/xml';
 
         protected $headers_sent = false;
-        protected $output_type = self::HTML;
+        protected $output_type  = self::HTML;
 
         public function __construct() {
             $this->header('Core', 'v0.2');
@@ -129,13 +129,13 @@
         /**
          * Set the content-type header
          *
-         * @param string|null $type 'json', 'xml', defaults to 'html', if null passed the output type is returned
+         * @param string $type 'json', 'xml', defaults to 'html', if null passed the output type is returned
          *
          * @return output_instance|string
          */
-        public function output_type($type=null) {
+        public function output_type($type='') {
             if ($type !== null) {
-                switch ($type) {
+                switch ((string) $type) {
                     case 'json':
                         $this->output_type = self::JSON;
                         $this->header('Content-type', self::JSON . '; charset="' . core::config()->system['encoding'] . '"');
@@ -146,10 +146,15 @@
                         $this->header('Content-type', self::XML . '; charset="' . core::config()->system['encoding'] . '"');
                         break;
 
-                    //case 'html':
-                    default:
+                    case 'html':
+                    case '':
                         $this->output_type = self::HTML;
                         $this->header('Content-type', self::HTML . '; charset="' . core::config()->system['encoding'] . '"');
+                        break;
+
+                    default:
+                        $this->output_type = $type;
+                        $this->header('Content-type', $type . '; charset="' . core::config()->system['encoding'] . '"');
                         break;
                 }
                 return $this;

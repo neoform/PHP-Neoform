@@ -300,6 +300,9 @@ footer {
         color: #555;
         font-weight: 700;
     }
+        .box .table-foot .padded {
+            margin: 0 0 5px 0;
+        }
 
     /* lists */
     .box .table-body ul { margin: 0; padding: 0; }

@@ -28,7 +28,7 @@
             }
 
             $get = function() use ($locale_iso2, $namespace_id) {
-                $messages = core::sql('slave')->prepare("
+                $messages = core::sql(core::config()->sql['default_read'])->prepare("
                     SELECT
                         locale_key.body k,
                         locale_key_message.body v
@@ -59,7 +59,8 @@
             return cache_lib::single(
                 $config['cache_engine'],
                 self::by_locale_namespace_key($locale_iso2, $namespace_id),
-                $config['cache_pool'],
+                $config['cache_engine_read'],
+                $config['cache_engine_write'],
                 $get
             );
         }
@@ -77,7 +78,8 @@
             cache_lib::delete(
                 $config['cache_engine'],
                 self::by_locale_namespace_key($locale_iso2, $namespace->id),
-                $config['cache_pool']
+                $config['cache_engine_read'],
+                $config['cache_engine_write']
             );
         }
     }

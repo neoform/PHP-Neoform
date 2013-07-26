@@ -38,11 +38,11 @@
          *
          * @param string $engine
          * @param string $key
-         * @param string $pool
+         * @param string $pool_read
          *
          * @return mixed|null
          */
-        public static function get($engine, $key, $pool) {
+        public static function get($engine, $key, $pool_read) {
 
             // Memory
             if (cache_memory_dao::exists($key)) {
@@ -51,7 +51,7 @@
 
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
-                if ( $data = $engine_driver::get($key, $pool)) {
+                if ( $data = $engine_driver::get($key, $pool_read)) {
                     return current($data);
                 }
             }
@@ -62,12 +62,12 @@
          *
          * @param string     $engine
          * @param string     $list_key
-         * @param string     $pool
+         * @param string     $pool_read
          * @param array|null $filter
          *
          * @return mixed|null
          */
-        public static function list_get($engine, $list_key, $pool, array $filter=null) {
+        public static function list_get($engine, $list_key, $pool_read, array $filter=null) {
 
             // Memory
             // This cannot be used until it's properly set up. There are bugs that happen when a new list is created
@@ -79,7 +79,7 @@
 
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
-                return $engine_driver::list_get($list_key, $pool, $filter);
+                return $engine_driver::list_get($list_key, $pool_read, $filter);
             }
         }
 
@@ -88,17 +88,17 @@
          *
          * @param string $engine
          * @param string $list_key
-         * @param string $pool
+         * @param string $pool_write
          * @param mixed  $value
          */
-        public static function list_add($engine, $list_key, $pool, $value) {
+        public static function list_add($engine, $list_key, $pool_write, $value) {
 
             // Memory
             //cache_memory_dao::list_add($list_key, $value);
 
             if ($engine) {
                 $engine = "cache_{$engine}_driver";
-                $engine::list_add($list_key, $pool, $value);
+                $engine::list_add($list_key, $pool_write, $value);
             }
         }
 
@@ -107,17 +107,17 @@
          *
          * @param string $engine
          * @param string $list_key
-         * @param string $pool
+         * @param string $pool_write
          * @param array  $remove_keys
          */
-        public static function list_remove($engine, $list_key, $pool, $remove_keys) {
+        public static function list_remove($engine, $list_key, $pool_write, $remove_keys) {
 
             // Memory
             //cache_memory_dao::list_remove($list_key, $remove_keys);
 
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
-                $engine_driver::list_remove($list_key, $pool, $remove_keys);
+                $engine_driver::list_remove($list_key, $pool_write, $remove_keys);
             }
         }
 
@@ -126,17 +126,17 @@
          *
          * @param string  $engine
          * @param string  $key
-         * @param string  $pool
+         * @param string  $pool_write
          * @param integer $offset
          */
-        public static function increment($engine, $key, $pool, $offset=1){
+        public static function increment($engine, $key, $pool_write, $offset=1){
 
             // Memory
             cache_memory_dao::increment($key, $offset);
 
             if ($engine) {
                 $engine = "cache_{$engine}_driver";
-                $engine::increment($key, $pool, $offset);
+                $engine::increment($key, $pool_write, $offset);
             }
         }
 
@@ -145,17 +145,17 @@
          *
          * @param string  $engine
          * @param string  $key
-         * @param string  $pool
+         * @param string  $pool_write
          * @param integer $offset
          */
-        public static function decrement($engine, $key, $pool, $offset=1) {
+        public static function decrement($engine, $key, $pool_write, $offset=1) {
 
             // Memory
             cache_memory_dao::decrement($key, $offset);
 
             if ($engine) {
                 $engine = "cache_{$engine}_driver";
-                $engine::decrement($key, $pool, $offset);
+                $engine::decrement($key, $pool_write, $offset);
             }
         }
 
@@ -164,7 +164,8 @@
          *
          * @param string       $engine              Which caching engines to use
          * @param string       $key                 Cache key
-         * @param string       $pool                Caching pool
+         * @param string       $pool_read           Caching pool
+         * @param string       $pool_write          Caching pool
          * @param callable     $data_func           Source data function
          * @param mixed|null   $args                Args to pass to $data_func($args)
          * @param integer|null $ttl                 Cache length
@@ -172,7 +173,7 @@
          *
          * @return mixed returns the value from $data_func()
          */
-        public static function single($engine, $key, $pool, callable $data_func, $args=null, $ttl=null, $cache_empty_results=true) {
+        public static function single($engine, $key, $pool_read, $pool_write, callable $data_func, $args=null, $ttl=null, $cache_empty_results=true) {
 
             // Memory
             if (cache_memory_dao::exists($key)) {
@@ -181,7 +182,7 @@
 
             $engine_driver = "cache_{$engine}_driver";
 
-            if ($engine && $data = $engine_driver::get($key, $pool)) {
+            if ($engine && $data = $engine_driver::get($key, $pool_read)) {
                 $data = current($data);
             } else {
                 //get the data from it's original source
@@ -195,7 +196,7 @@
 
                 // cache data to engine
                 if ($engine) {
-                    $engine_driver::set($key, $pool, $data, $ttl);
+                    $engine_driver::set($key, $pool_write, $data, $ttl);
                 }
             }
 
@@ -216,7 +217,8 @@
          * @param string       $engine              Which caching engines to use
          * @param array        $rows                Rows to look up in cache
          * @param callable     $key_func            generates the cache key based on data from $rows
-         * @param string       $pool                Which caching pool to use
+         * @param string       $pool_read           Which caching pool to use
+         * @param string       $pool_write          Which caching pool to use
          * @param callable     $data_func           Source data function(array $keys [, array $args])
          * @param mixed|null   $args                args to pass to the $data_func
          * @param integer|null $ttl                 How long to cache
@@ -224,7 +226,7 @@
          *
          * @return array of mixed values from $data_func() calls
          */
-        public static function multi($engine, array $rows, callable $key_func, $pool, callable $data_func, $args=null, $ttl=null, $cache_empty_results=true) {
+        public static function multi($engine, array $rows, callable $key_func, $pool_read, $pool_write, callable $data_func, $args=null, $ttl=null, $cache_empty_results=true) {
 
             //this function will preserve the order of the rows
 
@@ -261,7 +263,7 @@
 
             if ($engine && $missing_rows) {
                 $engine = "cache_{$engine}_driver";
-                foreach ($engine::get_multi($missing_rows, $pool) as $key => $row) {
+                foreach ($engine::get_multi($missing_rows, $pool_read) as $key => $row) {
                     $matched_rows[$key] = $row;
                     unset($missing_rows[$key]);
                 }
@@ -315,7 +317,7 @@
                     }
                 }
 
-                $engine::set_multi($save_to_cache, $pool, $ttl);
+                $engine::set_multi($save_to_cache, $pool_write, $ttl);
             }
 
             return $matched_rows;
@@ -326,16 +328,16 @@
          *
          * @param string $engine
          * @param string $key
-         * @param string $pool
+         * @param string $pool_write
          */
-        public static function delete($engine, $key, $pool){
+        public static function delete($engine, $key, $pool_write) {
 
             // Memory
             cache_memory_dao::delete($key);
 
             if ($engine) {
                 $engine = "cache_{$engine}_driver";
-                $engine::delete($key, $pool);
+                $engine::delete($key, $pool_write);
             }
         }
 
@@ -344,9 +346,9 @@
          *
          * @param string $engine
          * @param array  $keys
-         * @param string $pool
+         * @param string $pool_write
          */
-        public static function delete_multi($engine, array $keys, $pool){
+        public static function delete_multi($engine, array $keys, $pool_write){
 
             if (count($keys)) {
 
@@ -357,7 +359,7 @@
 
                 if ($engine) {
                     $engine = "cache_{$engine}_driver";
-                    $engine::delete_multi($keys, $pool);
+                    $engine::delete_multi($keys, $pool_write);
                 }
             }
         }
@@ -367,20 +369,20 @@
          *
          * @param string            $engine
          * @param string            $list_key
-         * @param string            $pool
+         * @param string            $pool_write
          * @param string|array|null $filter
          */
-        public static function delete_limit_cache($engine, $list_key, $pool, $filter=null) {
+        public static function delete_limit_cache($engine, $list_key, $pool_write, $filter=null) {
 
             $keys = self::list_get(
                 $engine,
                 $list_key,
-                $pool
+                $pool_write
             );
 
             if ($keys) {
 
-                self::pipeline_start($engine, $pool);
+                self::pipeline_start($engine, $pool_write);
 
                 if ($filter !== null) {
                     if (is_array($filter)) {
@@ -396,7 +398,7 @@
                             self::delete_multi(
                                 $engine,
                                 $keys_matched,
-                                $pool
+                                $pool_write
                             );
                         }
                     } else {
@@ -404,7 +406,7 @@
                             self::delete_multi(
                                 $engine,
                                 $keys_matched,
-                                $pool
+                                $pool_write
                             );
                         }
                     }
@@ -414,7 +416,7 @@
                         self::list_remove(
                             $engine,
                             $list_key,
-                            $pool,
+                            $pool_write,
                             $keys_matched
                         );
                     }
@@ -424,7 +426,7 @@
                     self::list_remove(
                         $engine,
                         $list_key,
-                        $pool,
+                        $pool_write,
                         $keys
                     );
 
@@ -433,11 +435,11 @@
                     self::delete_multi(
                         $engine,
                         $keys,
-                        $pool
+                        $pool_write
                     );
                 }
 
-                self::pipeline_execute($engine, $pool);
+                self::pipeline_execute($engine, $pool_write);
             }
         }
     }

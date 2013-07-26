@@ -31,7 +31,7 @@
          */
         public static function by_pk($self, $pk) {
 
-            $info = core::sql('slave')->prepare("
+            $info = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
                 SELECT *
                 FROM \"" . self::table($self::TABLE) . "\"
                 WHERE \"" . $self::PRIMARY_KEY . "\" = ?
@@ -56,7 +56,7 @@
          */
         public static function by_pks($self, array $pks) {
 
-            $infos_rs = core::sql('slave')->prepare("
+            $infos_rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
                 SELECT *
                 FROM \"" . self::table($self::TABLE) . "\"
                 WHERE \"" . $self::PRIMARY_KEY . "\" IN (" . join(',', array_fill(0, count($pks), '?')) . ")
@@ -95,7 +95,7 @@
         public static function limit($self, $limit, $order_by, $direction, $after_pk) {
             $pk = $self::PRIMARY_KEY;
 
-            $rs = core::sql('slave')->prepare("
+            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
                 SELECT \"{$pk}\"
                 FROM \"" . self::table($self::TABLE) . "\"
                 " . ($after_pk !== null ? "WHERE \"{$pk}\" " . ($direction === 'ASC' ? '>' : '<') . ' ?' : '') . "
@@ -122,7 +122,7 @@
          * @return int
          */
         public static function count($self) {
-            $rs = core::sql('slave')->prepare("
+            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
                 SELECT COUNT(0) \"num\"
                 FROM \"" . self::table($self::TABLE) . "\"
             ");
@@ -163,7 +163,7 @@
                 }
             }
 
-            $info = core::sql('slave')->prepare("
+            $info = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
                 SELECT *
                 FROM \"" . self::table($self::TABLE) . "\"
                 " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
@@ -208,7 +208,7 @@
                 }
             }
 
-            $rs = core::sql('slave')->prepare("
+            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
                 SELECT \"{$pk}\"
                 FROM \"" . self::table($self::TABLE) . "\"
                 " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
@@ -261,7 +261,7 @@
                 $where[] = '(' . join(" AND ", $w) . ')';
             }
 
-            $rs = core::sql('slave')->prepare("
+            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
                 SELECT
                     \"{$pk}\",
                     CONCAT(" . join(", ':', ", $key_fields) . ") \"__cache_key__\"
@@ -311,7 +311,7 @@
                 }
             }
 
-            $rs = core::sql('slave')->prepare("
+            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
                 SELECT " . join(',', $select_fields) . "
                 FROM \"" . self::table($self::TABLE) . "\"
                 " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
@@ -352,7 +352,7 @@
                 $insert_fields[] = "\"$key\"";
             }
 
-            $insert = core::sql('master')->prepare("
+            $insert = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write'])->prepare("
                 INSERT INTO
                     \"" . self::table($self::TABLE) . "\"
                     ( " . join(', ', $insert_fields) . " )
@@ -399,7 +399,7 @@
                 // If the table is auto increment, we cannot lump all inserts into one query
                 // since we need the returned IDs for cache-busting and to return a model
                 if ($autoincrement) {
-                    $sql = core::sql('master');
+                    $sql = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write']);
                     $sql->beginTransaction();
                     $pk = $self::PRIMARY_KEY;
 
@@ -437,7 +437,7 @@
                         }
                     }
 
-                    $inserts = core::sql('master')->prepare("
+                    $inserts = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write'])->prepare("
                         INSERT INTO
                             \"" . self::table($self::TABLE) . "\"
                             ( " . implode(', ', $insert_fields) . " )
@@ -454,7 +454,7 @@
                     $inserts->execute();
                 }
             } else {
-                $sql   = core::sql('master');
+                $sql   = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write']);
                 $table = self::table($self::TABLE);
 
                 $sql->beginTransaction();
@@ -503,7 +503,7 @@
          * @param array        $info
          */
         public static function update($self, $pk, record_model $model, array $info) {
-            $sql = core::sql('master');
+            $sql = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write']);
 
             $update_fields = [];
             foreach (array_keys($info) as $key) {
@@ -535,7 +535,7 @@
          * @param record_model $model
          */
         public static function delete($self, $pk, record_model $model) {
-            $delete = core::sql('master')->prepare("
+            $delete = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write'])->prepare("
                 DELETE FROM \"" . self::table($self::TABLE) . "\"
                 WHERE \"{$pk}\" = ?
             ");
@@ -552,7 +552,7 @@
          */
         public static function deletes($self, $pk, record_collection $collection) {
             $pks = $collection->field($pk);
-            $delete = core::sql('master')->prepare("
+            $delete = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write'])->prepare("
                 DELETE FROM \"" . self::table($self::TABLE) . "\"
                 WHERE \"{$pk}\" IN (" . join(',', array_fill(0, count($collection), '?')) . ")
             ");

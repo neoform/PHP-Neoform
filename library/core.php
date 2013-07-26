@@ -251,7 +251,7 @@
                     if (core::context() === 'web') {
                         if (core::is_loaded('http')) {
                             try {
-                                controller::error(500);
+                                controller::error(500, null, null, true);
                             } catch (Exception $e) {
                                 core::output()->body('Unexpected Error - There was a problem loading that page');
                             }

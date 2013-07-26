@@ -26,7 +26,8 @@
             "cache_engine": "redis",
 
             // which cache pool should translations use to store compiled translation dictionaries
-            "cache_pool": "entities"
+            "cache_engine_read":  "master",
+            "cache_engine_write": "master"
         },
 
         // default site domain [required]
@@ -48,7 +49,8 @@
     "sql": {
 
         // the connection name that is use when all else fails to [required]
-        "fallback_connection": "master",
+        "default_read":  "master",
+        "default_write": "master",
 
         // all connections are randomly picked from the arrays. each name must be formatted like this: name[] = { connection: info };
 
@@ -140,7 +142,8 @@
         "flash_cache_engine": "redis",
 
         // Flash session cache pool
-        "flash_cache_pool": "entities"
+        "flash_cache_pool_read":  "master",
+        "flash_cache_pool_write": "master"
     },
 
     "memcache": {
@@ -164,14 +167,17 @@
         //this prefix is useful if you have multiple instances of the same code base
         "key_prefix": "sample.sample",
 
-        "default_cache_pool":      "entities",
-        "default_database_server": "database",
+        "default_read":  "master",
+        "default_write": "master",
+
+        "default_cache_read":  "master",
+        "default_cache_write": "master",
+
+        "default_database_read":  "master",
+        "default_database_write": "master",
 
         "servers": {
-            "entities": [
-                { "host": "127.0.0.1", "port": 6379 }
-            ],
-            "database": [
+            "master": [
                 { "host": "127.0.0.1", "port": 6379 }
             ]
         }

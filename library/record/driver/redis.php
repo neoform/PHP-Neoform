@@ -2,14 +2,6 @@
 
     class record_driver_redis implements record_driver {
 
-        protected static function pool() {
-            static $pool;
-            if ($pool === null) {
-                $pool = core::config()->redis['default_database_server'];
-            }
-            return $pool;
-        }
-
         /**
          * Get full record by primary key
          *
@@ -21,9 +13,9 @@
          */
         public static function by_pk($self, $pk) {
 
-            $key = 'db:' . $self::TABLE . ":$pk";
+            $key = 'db:' . $self::TABLE . ":{$pk}";
 
-            $redis = core::redis(self::pool());
+            $redis = core::redis($self::SOURCE_ENGINE_READ ?: core::config()->redis['default_database_read']);
             $data  = $redis->get($key);
 
             // since false is potentially a valid result being stored in redis, we must check if the key exists
@@ -46,10 +38,10 @@
         public static function by_pks($self, array $pks) {
             $keys = [];
             foreach ($pks as $k => $pk) {
-                $keys[$k] = 'db:' . $self::TABLE . ":$pk";
+                $keys[$k] = 'db:' . $self::TABLE . ":{$pk}";
             }
 
-            $redis = core::redis(self::pool());
+            $redis = core::redis($self::SOURCE_ENGINE_READ ?: core::config()->redis['default_database_read']);
 
             // Redis returns the results in order - if the key doesn't exist, false is returned - this problematic
             // since false might be an actual value being stored... therefore we check if the key exists if false is
@@ -170,7 +162,7 @@
          * @return array
          */
         public static function insert($self, array $info, $autoincrement, $replace) {
-            core::redis(self::pool())->set(
+            core::redis($self::SOURCE_ENGINE_WRITE ?: core::config()->redis['default_database_write'])->set(
                 'db:' . $self::TABLE . ':' . $info[$self::PRIMARY_KEY],
                 $info
             );
@@ -208,8 +200,8 @@
          * @param array        $info
          */
         public static function update($self, $pk, record_model $model, array $info) {
-            return core::redis(self::pool())->set(
-                'db:' . $self::TABLE . ':' . $model->$pk,
+            return core::redis($self::SOURCE_ENGINE_WRITE ?: core::config()->redis['default_database_write'])->set(
+                'db:' . $self::TABLE . ":{$model->$pk}",
                 array_merge($model->export(), $info)
             );
         }
@@ -222,7 +214,7 @@
          * @param record_model $model
          */
         public static function delete($self, $pk, record_model $model) {
-            return core::redis(self::pool())->delete('db:' . $self::TABLE . ':' . $model->$pk);
+            return core::redis($self::SOURCE_ENGINE_WRITE ?: core::config()->redis['default_database_write'])->delete('db:' . $self::TABLE . ":{$model->$pk}");
         }
 
         /**
@@ -235,9 +227,9 @@
         public static function deletes($self, $pk, record_collection $collection) {
             $keys = [];
             foreach ($collection as $model) {
-                $keys[] = 'db:' . $self::TABLE . ':' . $model->$pk;
+                $keys[] = 'db:' . $self::TABLE . ":{$model->$pk}";
             }
 
-            return core::redis(self::pool())->delete($keys);
+            return core::redis($self::SOURCE_ENGINE_WRITE ?: core::config()->redis['default_database_write'])->delete($keys);
         }
     }

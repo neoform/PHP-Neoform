@@ -29,17 +29,29 @@
         /**
          * Get the record DAO driver name
          *
+         * @param bool $read default true
+         *
          * @return string
          */
-        protected static function driver() {
+        protected static function source_driver($read=true) {
+            // If source engine is set in the record definition, use it
             if (static::SOURCE_ENGINE) {
                 return 'record_driver_' . static::SOURCE_ENGINE;
+
+            // If source engine is not defined, use the sql connection in the configs
             } else {
-                static $driver;
-                if (! $driver) {
-                    $driver = 'record_driver_' . core::sql('slave')->driver();
+                static $drivers;
+
+                // We need to ask the proper connection as to what type of DB it is (we need the proper driver name)
+                $engine = ($read ? static::SOURCE_ENGINE_READ : static::SOURCE_ENGINE_WRITE)
+                    ?: core::config()->sql[$read ? 'default_read' : 'default_write'];
+
+                // Get the driver name and stash it in a static var, so we don't need to look it up a second time
+                if (! isset($drivers[$engine])) {
+                    $drivers[$engine] = 'record_driver_' . core::sql($engine)->driver();
                 }
-                return $driver;
+
+                return $drivers[$engine];
             }
         }
 
@@ -57,7 +69,8 @@
             return cache_lib::single(
                 static::CACHE_ENGINE,
                 $key,
-                static::ENTITY_POOL,
+                static::CACHE_ENGINE_READ,
+                static::CACHE_ENGINE_WRITE,
                 $get
             );
         }
@@ -68,7 +81,7 @@
         final protected static function cache_batch_start() {
             cache_lib::pipeline_start(
                 static::CACHE_ENGINE,
-               static::ENTITY_POOL
+               static::CACHE_ENGINE_WRITE
             );
         }
 
@@ -80,7 +93,7 @@
         final protected static function cache_batch_execute() {
             return cache_lib::pipeline_execute(
                 static::CACHE_ENGINE,
-                static::ENTITY_POOL
+                static::CACHE_ENGINE_WRITE
             );
         }
 
@@ -97,13 +110,13 @@
                 cache_lib::delete_multi(
                     static::CACHE_ENGINE,
                     $key,
-                    static::ENTITY_POOL
+                    static::CACHE_ENGINE_WRITE
                 );
             } else {
                 cache_lib::delete(
                     static::CACHE_ENGINE,
                     $key,
-                    static::ENTITY_POOL
+                    static::CACHE_ENGINE_WRITE
                 );
             }
         }
@@ -150,10 +163,11 @@
             return cache_lib::single(
                 static::CACHE_ENGINE,
                 static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($pk)) : $pk),
-                static::ENTITY_POOL,
+                static::CACHE_ENGINE_READ,
+                static::CACHE_ENGINE_WRITE,
                 function() use ($pk, $self) {
-                    $driver = $self::driver();
-                    return $driver::by_pk($self, $pk);
+                    $source_driver = $self::source_driver();
+                    return $source_driver::by_pk($self, $pk);
                 }
             );
         }
@@ -181,10 +195,11 @@
                 function($pk) use ($self) {
                     return $self::ENTITY_NAME . ':' . $self::BY_PK . ':' . ($self::BINARY_PK ? md5(base64_encode($pk)) : $pk);
                 },
-                static::ENTITY_POOL,
+                static::CACHE_ENGINE_READ,
+                static::CACHE_ENGINE_WRITE,
                 function(array $pks) use ($self) {
-                    $driver = $self::driver();
-                    return $driver::by_pks($self, $pks);
+                    $source_driver = $self::source_driver();
+                    return $source_driver::by_pks($self, $pks);
                 }
             );
         }
@@ -223,7 +238,8 @@
             return cache_lib::single(
                 static::CACHE_ENGINE,
                 $cache_key,
-                static::ENTITY_POOL,
+                static::CACHE_ENGINE_READ,
+                static::CACHE_ENGINE_WRITE,
                 function() use ($self, $cache_key, $limit, $order_by, $direction, $after_pk) {
 
                     // create a list entry to store all the LIMIT keys - we need to be able to destroy these
@@ -231,13 +247,13 @@
                     cache_lib::list_add(
                         $self::CACHE_ENGINE,
                         $self::_build_key($self::LIMIT . '[]'),
-                        $self::ENTITY_POOL,
+                        $self::CACHE_ENGINE_WRITE,
                         $cache_key
                     );
 
                     // Pull content from source
-                    $driver = $self::driver();
-                    return $driver::limit(
+                    $source_driver = $self::source_driver();
+                    return $source_driver::limit(
                         $self,
                         $limit,
                         $order_by,
@@ -267,10 +283,11 @@
             return cache_lib::single(
                 static::CACHE_ENGINE,
                 self::_build_key($cache_key_name, []),
-                static::ENTITY_POOL,
+                static::CACHE_ENGINE_READ,
+                static::CACHE_ENGINE_WRITE,
                 function() use ($self, $pk, $keys) {
-                    $driver = $self::driver();
-                    return $driver::all($self, $pk, $keys);
+                    $source_driver = $self::source_driver();
+                    return $source_driver::all($self, $pk, $keys);
                 }
             );
         }
@@ -287,10 +304,11 @@
             return cache_lib::single(
                 static::CACHE_ENGINE,
                 static::ENTITY_NAME . ':' . self::COUNT,
-                static::ENTITY_POOL,
+                static::CACHE_ENGINE_READ,
+                static::CACHE_ENGINE_WRITE,
                 function() use ($self) {
-                    $driver = $self::driver();
-                    return $driver::count($self);
+                    $source_driver = $self::source_driver();
+                    return $source_driver::count($self);
                 }
             );
         }
@@ -314,10 +332,11 @@
             return cache_lib::single(
                 static::CACHE_ENGINE,
                 self::_build_key($cache_key_name, $keys),
-                static::ENTITY_POOL,
+                static::CACHE_ENGINE_READ,
+                static::CACHE_ENGINE_WRITE,
                 function() use ($self, $keys, $pk) {
-                    $driver = $self::driver();
-                    return $driver::by_fields($self, $keys, $pk);
+                    $source_driver = $self::source_driver();
+                    return $source_driver::by_fields($self, $keys, $pk);
                 }
             );
         }
@@ -344,10 +363,11 @@
                 function($fields) use ($self, $cache_key_name) {
                     return record_dao::_build_key($cache_key_name, $fields, $self);
                 },
-                static::ENTITY_POOL,
+                static::CACHE_ENGINE_READ,
+                static::CACHE_ENGINE_WRITE,
                 function($keys_arr) use ($self, $pk) {
-                    $driver = $self::driver();
-                    return $driver::by_fields_multi($self, $keys_arr, $pk);
+                    $source_driver = $self::source_driver();
+                    return $source_driver::by_fields_multi($self, $keys_arr, $pk);
                 }
             );
         }
@@ -372,10 +392,11 @@
             return cache_lib::single(
                 static::CACHE_ENGINE,
                 self::_build_key($cache_key_name, $keys),
-                static::ENTITY_POOL,
+                static::CACHE_ENGINE_READ,
+                static::CACHE_ENGINE_WRITE,
                 function() use ($self, $select_fields, $keys) {
-                    $driver = $self::driver();
-                    return $driver::by_fields_select($self, $select_fields, $keys);
+                    $source_driver = $self::source_driver();
+                    return $source_driver::by_fields_select($self, $select_fields, $keys);
                 }
             );
         }
@@ -393,8 +414,8 @@
          */
         protected static function _insert(array $info, $replace = false, $return_model = true) {
 
-            $driver = self::driver();
-            $info = $driver::insert(
+            $source_driver = self::source_driver(false);
+            $info          = $source_driver::insert(
                 static::ENTITY_NAME . '_dao',
                 $info,
                 static::AUTOINCREMENT,
@@ -407,14 +428,14 @@
             cache_lib::delete(
                 static::CACHE_ENGINE,
                 static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[static::PRIMARY_KEY])) : $info[static::PRIMARY_KEY]),
-                static::ENTITY_POOL
+                static::CACHE_ENGINE_WRITE
             );
 
             if (static::USING_COUNT) {
                 cache_lib::delete(
                     static::CACHE_ENGINE,
                     static::ENTITY_NAME . ':' . self::COUNT,
-                    static::ENTITY_POOL
+                    static::CACHE_ENGINE_WRITE
                 );
             }
 
@@ -446,8 +467,8 @@
          */
         protected static function _inserts(array $infos, $keys_match = true, $replace = false, $return_collection = true) {
 
-            $driver = self::driver();
-            $infos  = $driver::inserts(
+            $source_driver = self::source_driver(false);
+            $infos         = $source_driver::inserts(
                 static::ENTITY_NAME . '_dao',
                 $infos,
                 $keys_match,
@@ -487,14 +508,14 @@
             cache_lib::delete_multi(
                 static::CACHE_ENGINE,
                 $delete_keys,
-                static::ENTITY_POOL
+                static::CACHE_ENGINE_WRITE
             );
 
             if (static::USING_COUNT) {
                 cache_lib::delete(
                     static::CACHE_ENGINE,
                     static::ENTITY_NAME . ':' . self::COUNT,
-                    static::ENTITY_POOL
+                    static::CACHE_ENGINE_WRITE
                 );
             }
 
@@ -529,17 +550,17 @@
                 return $return_model ? $model : false;
             }
 
-            $self   = static::ENTITY_NAME . '_dao';
-            $pk     = static::PRIMARY_KEY;
-            $driver = self::driver();
-            $driver::update($self, static::PRIMARY_KEY, $model, $info);
+            $self          = static::ENTITY_NAME . '_dao';
+            $pk            = static::PRIMARY_KEY;
+            $source_driver = self::source_driver(false);
+            $source_driver::update($self, static::PRIMARY_KEY, $model, $info);
 
             self::cache_batch_start();
 
             cache_lib::delete(
                 static::CACHE_ENGINE,
                 static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
-                static::ENTITY_POOL
+                static::CACHE_ENGINE_WRITE
             );
 
             // if the primary key was changed, bust the cache for that new key too
@@ -548,7 +569,7 @@
                 cache_lib::delete(
                     static::CACHE_ENGINE,
                     static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[$pk])) : $info[$pk]),
-                    static::ENTITY_POOL
+                    static::CACHE_ENGINE_WRITE
                 );
             }
 
@@ -579,24 +600,24 @@
          * @throws model_exception
          */
         protected static function _delete(record_model $model) {
-            $self   = static::ENTITY_NAME . '_dao';
-            $pk     = static::PRIMARY_KEY;
-            $driver = self::driver();
-            $driver::delete($self, $pk, $model);
+            $self          = static::ENTITY_NAME . '_dao';
+            $pk            = static::PRIMARY_KEY;
+            $source_driver = self::source_driver(false);
+            $source_driver::delete($self, $pk, $model);
 
             self::cache_batch_start();
 
             cache_lib::delete(
                 static::CACHE_ENGINE,
                 static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
-                static::ENTITY_POOL
+                static::CACHE_ENGINE_WRITE
             );
 
             if (static::USING_COUNT) {
                 cache_lib::delete(
                     static::CACHE_ENGINE,
                     static::ENTITY_NAME . ':' . self::COUNT,
-                    static::ENTITY_POOL
+                    static::CACHE_ENGINE_WRITE
                 );
             }
 
@@ -624,14 +645,14 @@
                 return;
             }
 
-            $self   = static::ENTITY_NAME . '_dao';
-            $pks    = $collection->field(static::PRIMARY_KEY);
-            $driver = self::driver();
-            $driver::deletes($self, static::PRIMARY_KEY, $collection);
+            $self          = static::ENTITY_NAME . '_dao';
+            $pks           = $collection->field(static::PRIMARY_KEY);
+            $source_driver = self::source_driver(false);
+            $source_driver::deletes($self, static::PRIMARY_KEY, $collection);
 
             $delete_cache_keys = [];
             foreach ($pks as $pk) {
-                $delete_cache_keys[] = static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? ':' . md5(base64_encode($pk)) : ":$pk");
+                $delete_cache_keys[] = static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? ':' . md5(base64_encode($pk)) : ":{$pk}");
             }
 
             self::cache_batch_start();
@@ -639,14 +660,14 @@
             cache_lib::delete_multi(
                 static::CACHE_ENGINE,
                 $delete_cache_keys,
-                static::ENTITY_POOL
+                static::CACHE_ENGINE_WRITE
             );
 
             if (static::USING_COUNT) {
                 cache_lib::delete(
                     static::CACHE_ENGINE,
                     static::ENTITY_NAME . ':' . self::COUNT,
-                    static::ENTITY_POOL
+                    static::CACHE_ENGINE_WRITE
                 );
             }
 
@@ -670,10 +691,10 @@
                 if (is_array($order_by_field) && $order_by_field) {
                     $filter = [];
                     foreach ($order_by_field as $f) {
-                        $filter[] = static::ENTITY_NAME . ':' . self::LIMIT . ":$f:";
+                        $filter[] = static::ENTITY_NAME . ':' . self::LIMIT . ":{$f}:";
                     }
                 } else {
-                    $filter = static::ENTITY_NAME . ':' . self::LIMIT . ":$order_by_field:";
+                    $filter = static::ENTITY_NAME . ':' . self::LIMIT . ":{$order_by_field}:";
                 }
             } else {
                 $filter = null;
@@ -682,7 +703,7 @@
             cache_lib::delete_limit_cache(
                 static::CACHE_ENGINE,
                 static::_build_key(static::LIMIT . '[]'),
-                static::ENTITY_POOL,
+                static::CACHE_ENGINE_WRITE,
                 $filter
             );
         }

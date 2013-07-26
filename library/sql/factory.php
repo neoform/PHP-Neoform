@@ -9,11 +9,11 @@
             $config = core::config()->sql;
 
             if (! isset($config[$name])) {
-                if ($name !== $config['fallback_connection']) {
+                if ($name !== $config['default_write']) {
                     //try fallback connection
-                    return core::sql($config['fallback_connection']);
+                    return core::sql($config['default_write']);
                 } else {
-                    throw new error_exception('The database connection "' . $name . '" configuration could not be found.');
+                    throw new error_exception("The database connection \"{$name}\" configuration could not be found.");
                 }
             }
 
@@ -24,7 +24,7 @@
             $user  = isset($config[$name][$id]['user']) ? $config[$name][$id]['user'] : false;
 
             if (! $dsn || ! $user) {
-                throw new error_exception('The database connection "' . $name . '" has not been configured properly.');
+                throw new error_exception("The database connection \"{$name}\" has not been configured properly.");
             }
 
             $password = isset($config[$name][$id]['password']) ? $config[$name][$id]['password'] : '';
@@ -38,7 +38,7 @@
                 ];
 
                 if (isset($config['encoding'])) {
-                    $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES " . $config['encoding'];
+                    $options[PDO::MYSQL_ATTR_INIT_COMMAND] = "SET NAMES {$config['encoding']}";
                 }
 
                 //return new sql_debug(
@@ -49,7 +49,7 @@
                     $options
                 );
             } catch (exception $e) {
-                core::log('Could not connect to database configuration "' . $name . '" -- ' . $e->getMessage(), 'CRITICAL');
+                core::log("Could not connect to database configuration \"{$name}\" -- " . $e->getMessage(), 'CRITICAL');
                 throw new error_exception('We are experiencing a brief interruption of service', 'Please try again in a few moments...');
             }
         }

@@ -53,16 +53,21 @@
          * @param integer|null $status_code
          * @param string|null  $title
          * @param string|null  $message
+         * @param bool         $hard_error
          */
-        public static function error($status_code=500, $title=null, $message=null) {
-            core::locale()->set_namespace('main');
+        public static function error($status_code=500, $title=null, $message=null, $hard_error=false) {
+            if (! $hard_error) {
+                core::locale()->set_namespace('main');
+            }
             core::output()->http_status_code($status_code);
 
+            $message = $message ? $message : (! $title ? 'There was a problem generating this page' : null);
+
             $view             = new render_view;
-            $view->meta_title = core::locale()->translate('Error');
-            $view->pre_header = core::locale()->translate('Error');
-            $view->header     = core::locale()->translate($title ? $title : 'Server Error');
-            $view->body       = $message ? core::locale()->translate($message) : (! $title ? 'There was a problem generating this page' : null);
+            $view->meta_title = $hard_error ? 'Error' : core::locale()->translate('Error');
+            $view->pre_header = $hard_error ? 'Error' : core::locale()->translate('Error');
+            $view->header     = $hard_error ? ($title ? $title : 'Server Error') : core::locale()->translate($title ? $title : 'Server Error');
+            $view->body       = $hard_error ? $message : core::locale()->translate($message);
 
             $view->render('error');
         }

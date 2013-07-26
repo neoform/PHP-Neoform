@@ -27,7 +27,7 @@
          * @return mixed
          */
         public static function by_pk($self, $pk) {
-            $info = core::sql('slave')->prepare("
+            $info = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
                 SELECT *
                 FROM `" . self::table($self::TABLE) . "`
                 WHERE `" . $self::PRIMARY_KEY . "` = ?
@@ -51,7 +51,7 @@
          * @return array
          */
         public static function by_pks($self, array $pks) {
-            $infos_rs = core::sql('slave')->prepare("
+            $infos_rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
                 SELECT *
                 FROM `" . self::table($self::TABLE) . "`
                 WHERE `" . $self::PRIMARY_KEY . "` IN (" . join(',', array_fill(0, count($pks), '?')) . ")
@@ -83,7 +83,7 @@
         public static function limit($self, $limit, $order_by, $direction, $after_pk) {
             $pk = $self::PRIMARY_KEY;
 
-            $rs = core::sql('slave')->prepare("
+            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
                 SELECT `$pk`
                 FROM `" . self::table($self::TABLE) . "`
                 " . ($after_pk !== null ? "WHERE `$pk` " . ($direction === 'ASC' ? '>' : '<') . ' ?' : '') . "
@@ -107,7 +107,7 @@
          * @return int
          */
         public static function count($self) {
-            $rs = core::sql('slave')->prepare("
+            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
                 SELECT COUNT(0) `num`
                 FROM `" . self::table($self::TABLE) . "`
             ");
@@ -146,7 +146,7 @@
                 }
             }
 
-            $info = core::sql('slave')->prepare("
+            $info = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
                 SELECT *
                 FROM `" . self::table($self::TABLE) . "`
                 " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
@@ -182,7 +182,7 @@
                 }
             }
 
-            $rs = core::sql('slave')->prepare("
+            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
                 SELECT `{$pk}`
                 FROM `" . self::table($self::TABLE) . "`
                 " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
@@ -202,7 +202,7 @@
          * @return array
          */
         public static function by_fields_multi($self, array $keys_arr, $pk) {
-            $sql            = core::sql('slave');
+            $sql            = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read']);
             $key_fields     = array_keys(reset($keys_arr));
             $reverse_lookup = [];
             $return         = [];
@@ -265,7 +265,7 @@
                 }
             }
 
-            $rs = core::sql('slave')->prepare("
+            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
                 SELECT " . join(',', $select_fields) . "
                 FROM `" . self::table($self::TABLE) . "`
                 " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
@@ -296,7 +296,7 @@
                 $insert_fields[] = "`$key`";
             }
 
-            $sql = core::sql('slave');
+            $sql = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write']);
             $insert = $sql->prepare("
                 " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO `" . self::table($self::TABLE) . "`
                     ( " . join(', ', $insert_fields) . " )
@@ -325,7 +325,7 @@
          * @return array
          */
         public static function inserts($self, array $infos, $keys_match, $autoincrement, $replace) {
-            $sql = core::sql('master');
+            $sql = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write']);
 
             if ($keys_match) {
                 $insert_fields = [];
@@ -414,7 +414,7 @@
             foreach (array_keys($info) as $key) {
                 $update_fields[] = "`{$key}` = :{$key}";
             }
-            $update = core::sql('master')->prepare("
+            $update = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write'])->prepare("
                 UPDATE `" . self::table($self::TABLE) . "`
                 SET " . join(", \n", $update_fields) . "
                 WHERE `{$pk}` = :{$pk}
@@ -432,7 +432,7 @@
          * @param record_model $model
          */
         public static function delete($self, $pk, record_model $model) {
-            $delete = core::sql('master')->prepare("
+            $delete = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write'])->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE `{$pk}` = ?
             ");
@@ -449,7 +449,7 @@
          * @param record_collection $collection
          */
         public static function deletes($self, $pk, record_collection $collection) {
-            $delete = core::sql('master')->prepare("
+            $delete = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write'])->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE `{$pk}` IN (" . join(',', array_fill(0, count($collection), '?')) . ")
             ");

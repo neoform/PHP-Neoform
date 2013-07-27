@@ -34,24 +34,24 @@
          * @return string
          */
         protected static function source_driver($read=true) {
-            // If source engine is set in the record definition, use it
-            if (static::SOURCE_ENGINE) {
-                return 'record_driver_' . static::SOURCE_ENGINE;
+            $config = core::config();
+            $engine = static::SOURCE_ENGINE ?: $config['entities']['default_source_engine'];
 
-            // If source engine is not defined, use the sql connection in the configs
-            } else {
+            // SQL driver has different handlers depending on which DB is being used (mysql, pgsql etc)
+            if ($engine === 'sql') {
+                // We need to ask the correct connection as to what type of DB-driver it is
+                $pool = ($read ? static::SOURCE_ENGINE_READ : static::SOURCE_ENGINE_WRITE)
+                    ?: $config['entities'][$read ? 'default_source_engine_pool_read' : 'default_source_engine_pool_write'];
+
                 static $drivers;
-
-                // We need to ask the proper connection as to what type of DB it is (we need the proper driver name)
-                $engine = ($read ? static::SOURCE_ENGINE_READ : static::SOURCE_ENGINE_WRITE)
-                    ?: core::config()->sql[$read ? 'default_read' : 'default_write'];
-
-                // Get the driver name and stash it in a static var, so we don't need to look it up a second time
-                if (! isset($drivers[$engine])) {
-                    $drivers[$engine] = 'record_driver_' . core::sql($engine)->driver();
+                if (! isset($drivers[$pool])) {
+                   $drivers[$pool] = core::sql($pool)->driver();
                 }
 
-                return $drivers[$engine];
+                return "record_driver_{$drivers[$pool]}";
+
+            } else {
+                return "record_driver_{$engine}";
             }
         }
 
@@ -66,11 +66,12 @@
          * @return array   the cached recordset
          */
         final protected static function _single($key, $get) {
+            $config = core::config()->entities;
             return cache_lib::single(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 $key,
-                static::CACHE_ENGINE_READ,
-                static::CACHE_ENGINE_WRITE,
+                static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
                 $get
             );
         }
@@ -79,9 +80,10 @@
          * Start batched query pipeline
          */
         final protected static function cache_batch_start() {
+            $config = core::config()->entities;
             cache_lib::pipeline_start(
-                static::CACHE_ENGINE,
-               static::CACHE_ENGINE_WRITE
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write']
             );
         }
 
@@ -91,9 +93,10 @@
          * @return mixed result from batch execution
          */
         final protected static function cache_batch_execute() {
+            $config = core::config()->entities;
             return cache_lib::pipeline_execute(
-                static::CACHE_ENGINE,
-                static::CACHE_ENGINE_WRITE
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write']
             );
         }
 
@@ -106,17 +109,18 @@
          * @param string|array $key full cache key with namespace - it's recomended that record_dao::_build_key() is used to create this key
          */
         final protected static function _cache_delete($key) {
+            $config = core::config()->entities;
             if (is_array($key)) {
                 cache_lib::delete_multi(
-                    static::CACHE_ENGINE,
+                    static::CACHE_ENGINE ?: $config['default_cache_engine'],
                     $key,
-                    static::CACHE_ENGINE_WRITE
+                    static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write']
                 );
             } else {
                 cache_lib::delete(
-                    static::CACHE_ENGINE,
+                    static::CACHE_ENGINE ?: $config['default_cache_engine'],
                     $key,
-                    static::CACHE_ENGINE_WRITE
+                    static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write']
                 );
             }
         }
@@ -158,13 +162,14 @@
          */
         public static function by_pk($pk) {
 
-            $self = static::ENTITY_NAME . '_dao';
+            $self   = static::ENTITY_NAME . '_dao';
+            $config = core::config()->entities;
 
             return cache_lib::single(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($pk)) : $pk),
-                static::CACHE_ENGINE_READ,
-                static::CACHE_ENGINE_WRITE,
+                static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
                 function() use ($pk, $self) {
                     $source_driver = $self::source_driver();
                     return $source_driver::by_pk($self, $pk);
@@ -187,16 +192,17 @@
                 return [];
             }
 
-            $self = static::ENTITY_NAME . '_dao';
+            $self   = static::ENTITY_NAME . '_dao';
+            $config = core::config()->entities;
 
             return cache_lib::multi(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 $pks,
                 function($pk) use ($self) {
                     return $self::ENTITY_NAME . ':' . $self::BY_PK . ':' . ($self::BINARY_PK ? md5(base64_encode($pk)) : $pk);
                 },
-                static::CACHE_ENGINE_READ,
-                static::CACHE_ENGINE_WRITE,
+                static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
                 function(array $pks) use ($self) {
                     $source_driver = $self::source_driver();
                     return $source_driver::by_pks($self, $pks);
@@ -218,13 +224,14 @@
          */
         public static function limit($limit, $order_by, $direction, $after_pk=null) {
 
-            if (! static::USING_LIMIT && static::CACHE_ENGINE) {
+            if (! static::USING_LIMIT) {
                 $exception = static::ENTITY_NAME . '_exception';
                 throw new $exception('Limit queries are not active in the ' . static::NAME . ' entity definition');
             }
 
             $self      = static::ENTITY_NAME . '_dao';
             $direction = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
+            $config    = core::config()->entities;
 
             $cache_key = self::_build_key(
                 self::LIMIT . ":$order_by",
@@ -236,18 +243,18 @@
             );
 
             return cache_lib::single(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 $cache_key,
-                static::CACHE_ENGINE_READ,
-                static::CACHE_ENGINE_WRITE,
-                function() use ($self, $cache_key, $limit, $order_by, $direction, $after_pk) {
+                static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
+                function() use ($self, $config, $cache_key, $limit, $order_by, $direction, $after_pk) {
 
                     // create a list entry to store all the LIMIT keys - we need to be able to destroy these
                     // cache entries when something in the list changes
                     cache_lib::list_add(
                         $self::CACHE_ENGINE,
                         $self::_build_key($self::LIMIT . '[]'),
-                        $self::CACHE_ENGINE_WRITE,
+                        $self::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
                         $cache_key
                     );
 
@@ -277,14 +284,15 @@
          */
         final protected static function _all($cache_key_name, array $keys=null) {
 
-            $pk   = static::PRIMARY_KEY;
-            $self = static::ENTITY_NAME . '_dao';
+            $pk     = static::PRIMARY_KEY;
+            $self   = static::ENTITY_NAME . '_dao';
+            $config = core::config()->entities;
 
             return cache_lib::single(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 self::_build_key($cache_key_name, []),
-                static::CACHE_ENGINE_READ,
-                static::CACHE_ENGINE_WRITE,
+                static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
                 function() use ($self, $pk, $keys) {
                     $source_driver = $self::source_driver();
                     return $source_driver::all($self, $pk, $keys);
@@ -299,13 +307,14 @@
          */
         public static function count() {
 
-            $self = static::ENTITY_NAME . '_dao';
+            $self   = static::ENTITY_NAME . '_dao';
+            $config = core::config()->entities;
 
             return cache_lib::single(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 static::ENTITY_NAME . ':' . self::COUNT,
-                static::CACHE_ENGINE_READ,
-                static::CACHE_ENGINE_WRITE,
+                static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
                 function() use ($self) {
                     $source_driver = $self::source_driver();
                     return $source_driver::count($self);
@@ -326,14 +335,15 @@
          */
         final protected static function _by_fields($cache_key_name, array $keys) {
 
-            $pk   = static::PRIMARY_KEY;
-            $self = static::ENTITY_NAME . '_dao';
+            $pk     = static::PRIMARY_KEY;
+            $self   = static::ENTITY_NAME . '_dao';
+            $config = core::config()->entities;
 
             return cache_lib::single(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 self::_build_key($cache_key_name, $keys),
-                static::CACHE_ENGINE_READ,
-                static::CACHE_ENGINE_WRITE,
+                static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
                 function() use ($self, $keys, $pk) {
                     $source_driver = $self::source_driver();
                     return $source_driver::by_fields($self, $keys, $pk);
@@ -354,17 +364,18 @@
          */
         final protected static function _by_fields_multi($cache_key_name, array $keys_arr) {
 
-            $pk   = static::PRIMARY_KEY;
-            $self = static::ENTITY_NAME . '_dao';
+            $pk     = static::PRIMARY_KEY;
+            $self   = static::ENTITY_NAME . '_dao';
+            $config = core::config()->entities;
 
             return cache_lib::multi(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 $keys_arr,
                 function($fields) use ($self, $cache_key_name) {
                     return record_dao::_build_key($cache_key_name, $fields, $self);
                 },
-                static::CACHE_ENGINE_READ,
-                static::CACHE_ENGINE_WRITE,
+                static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
                 function($keys_arr) use ($self, $pk) {
                     $source_driver = $self::source_driver();
                     return $source_driver::by_fields_multi($self, $keys_arr, $pk);
@@ -387,13 +398,14 @@
          */
         final protected static function _by_fields_select($cache_key_name, array $select_fields, array $keys) {
 
-            $self = static::ENTITY_NAME . '_dao';
+            $self   = static::ENTITY_NAME . '_dao';
+            $config = core::config()->entities;
 
             return cache_lib::single(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 self::_build_key($cache_key_name, $keys),
-                static::CACHE_ENGINE_READ,
-                static::CACHE_ENGINE_WRITE,
+                static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
                 function() use ($self, $select_fields, $keys) {
                     $source_driver = $self::source_driver();
                     return $source_driver::by_fields_select($self, $select_fields, $keys);
@@ -414,6 +426,7 @@
          */
         protected static function _insert(array $info, $replace = false, $return_model = true) {
 
+            $config        = core::config()->entities;
             $source_driver = self::source_driver(false);
             $info          = $source_driver::insert(
                 static::ENTITY_NAME . '_dao',
@@ -426,16 +439,16 @@
 
             // In case a blank record was cached
             cache_lib::delete(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[static::PRIMARY_KEY])) : $info[static::PRIMARY_KEY]),
-                static::CACHE_ENGINE_WRITE
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write']
             );
 
             if (static::USING_COUNT) {
                 cache_lib::delete(
-                    static::CACHE_ENGINE,
+                    static::CACHE_ENGINE ?: $config['default_cache_engine'],
                     static::ENTITY_NAME . ':' . self::COUNT,
-                    static::CACHE_ENGINE_WRITE
+                    static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write']
                 );
             }
 
@@ -467,6 +480,7 @@
          */
         protected static function _inserts(array $infos, $keys_match = true, $replace = false, $return_collection = true) {
 
+            $config        = core::config()->entities;
             $source_driver = self::source_driver(false);
             $infos         = $source_driver::inserts(
                 static::ENTITY_NAME . '_dao',
@@ -506,16 +520,16 @@
             self::cache_batch_start();
 
             cache_lib::delete_multi(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 $delete_keys,
-                static::CACHE_ENGINE_WRITE
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write']
             );
 
             if (static::USING_COUNT) {
                 cache_lib::delete(
-                    static::CACHE_ENGINE,
+                    static::CACHE_ENGINE ?: $config['default_cache_engine'],
                     static::ENTITY_NAME . ':' . self::COUNT,
-                    static::CACHE_ENGINE_WRITE
+                    static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write']
                 );
             }
 
@@ -546,30 +560,32 @@
          */
         protected static function _update(record_model $model, array $info, $return_model = true) {
 
-            if (! count($info)) {
+            if (! $info) {
                 return $return_model ? $model : false;
             }
 
+            $config        = core::config()->entities;
             $self          = static::ENTITY_NAME . '_dao';
             $pk            = static::PRIMARY_KEY;
+
             $source_driver = self::source_driver(false);
             $source_driver::update($self, static::PRIMARY_KEY, $model, $info);
 
             self::cache_batch_start();
 
             cache_lib::delete(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
-                static::CACHE_ENGINE_WRITE
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write']
             );
 
             // if the primary key was changed, bust the cache for that new key too
             // technically the PK should never change though... that kinda defeats the purpose of a record PK...
             if (isset($info[$pk])) {
                 cache_lib::delete(
-                    static::CACHE_ENGINE,
+                    static::CACHE_ENGINE ?: $config['default_cache_engine'],
                     static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($info[$pk])) : $info[$pk]),
-                    static::CACHE_ENGINE_WRITE
+                    static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write']
                 );
             }
 
@@ -600,24 +616,27 @@
          * @throws model_exception
          */
         protected static function _delete(record_model $model) {
+
+            $config        = core::config()->entities;
             $self          = static::ENTITY_NAME . '_dao';
             $pk            = static::PRIMARY_KEY;
+
             $source_driver = self::source_driver(false);
             $source_driver::delete($self, $pk, $model);
 
             self::cache_batch_start();
 
             cache_lib::delete(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($model->$pk)) : $model->$pk),
-                static::CACHE_ENGINE_WRITE
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write']
             );
 
             if (static::USING_COUNT) {
                 cache_lib::delete(
-                    static::CACHE_ENGINE,
+                    static::CACHE_ENGINE ?: $config['default_cache_engine'],
                     static::ENTITY_NAME . ':' . self::COUNT,
-                    static::CACHE_ENGINE_WRITE
+                    static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write']
                 );
             }
 
@@ -645,8 +664,10 @@
                 return;
             }
 
+            $config        = core::config()->entities;
             $self          = static::ENTITY_NAME . '_dao';
             $pks           = $collection->field(static::PRIMARY_KEY);
+
             $source_driver = self::source_driver(false);
             $source_driver::deletes($self, static::PRIMARY_KEY, $collection);
 
@@ -658,16 +679,16 @@
             self::cache_batch_start();
 
             cache_lib::delete_multi(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 $delete_cache_keys,
-                static::CACHE_ENGINE_WRITE
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write']
             );
 
             if (static::USING_COUNT) {
                 cache_lib::delete(
-                    static::CACHE_ENGINE,
+                    static::CACHE_ENGINE ?: $config['default_cache_engine'],
                     static::ENTITY_NAME . ':' . self::COUNT,
-                    static::CACHE_ENGINE_WRITE
+                    static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write']
                 );
             }
 
@@ -700,10 +721,12 @@
                 $filter = null;
             }
 
+            $config = core::config()->entities;
+
             cache_lib::delete_limit_cache(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 static::_build_key(static::LIMIT . '[]'),
-                static::CACHE_ENGINE_WRITE,
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
                 $filter
             );
         }

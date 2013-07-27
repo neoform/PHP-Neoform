@@ -47,15 +47,20 @@
     },
 
     "entities": {
-        "default_cache_engine":    "redis",
-        "default_database_engine": "sql"
+        "default_source_engine":            "sql",
+        "default_source_engine_pool_read":  "master",
+        "default_source_engine_pool_write": "master",
+
+        "default_cache_engine":            "redis",
+        "default_cache_engine_pool_read":  "master",
+        "default_cache_engine_pool_write": "master"
     },
 
     "sql": {
 
         // the connection name that is use when all else fails to [required]
-        "default_read":  "master",
-        "default_write": "master",
+        "default_pool_read":  "master",
+        "default_pool_write": "master",
 
         "pools": {
             "master": [
@@ -157,14 +162,8 @@
         //this prefix is useful if you have multiple instances of the same code base
         "key_prefix": "sample.sample",
 
-        "default_read":  "master",
-        "default_write": "master",
-
-        "default_cache_read":  "master",
-        "default_cache_write": "master",
-
-        "default_database_read":  "master",
-        "default_database_write": "master",
+        "default_pool_read":  "master",
+        "default_pool_write": "master",
 
         "pools": {
             "master": [

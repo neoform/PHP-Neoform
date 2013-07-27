@@ -19,6 +19,7 @@
          * Error 404 action
          */
         public static function show404() {
+            core::output()->flush();
             core::locale()->set_namespace('main');
             core::output()->http_status_code(404);
 
@@ -35,6 +36,7 @@
          * Error 500 action
          */
         public static function show500() {
+            core::output()->flush();
             core::locale()->set_namespace('main');
             core::output()->http_status_code(500);
 
@@ -56,6 +58,9 @@
          * @param bool         $hard_error
          */
         public static function error($status_code=500, $title=null, $message=null, $hard_error=false) {
+
+            core::output()->flush();
+
             if (! $hard_error) {
                 core::locale()->set_namespace('main');
             }

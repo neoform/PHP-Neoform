@@ -8,8 +8,8 @@
             //get the class that instatiated this singleton
             $config = core::config()->sql;
 
-            if (! isset($config[$name])) {
-                if ($name !== $config['default_write']) {
+            if (! isset($config['pools'][$name])) {
+                if ($name !== $config['default_write'] && $config['default_write']) {
                     //try fallback connection
                     return core::sql($config['default_write']);
                 } else {
@@ -17,17 +17,15 @@
                 }
             }
 
-            //select a random connection id if there is more than one:
-            $count = count($config[$name]);
-            $id    = $count > 1 ? mt_rand(0, $count - 1) : 0;
-            $dsn   = isset($config[$name][$id]['dsn']) ? $config[$name][$id]['dsn'] : false;
-            $user  = isset($config[$name][$id]['user']) ? $config[$name][$id]['user'] : false;
+            //select a random connection:
+            $connection = $config['pools'][$name][array_rand($config['pools'][$name])];
+
+            $dsn   = isset($connection['dsn']) ? $connection['dsn'] : null;
+            $user  = isset($connection['user']) ? $connection['user'] : null;
 
             if (! $dsn || ! $user) {
                 throw new error_exception("The database connection \"{$name}\" has not been configured properly.");
             }
-
-            $password = isset($config[$name][$id]['password']) ? $config[$name][$id]['password'] : '';
 
             try {
                 $options = [
@@ -45,7 +43,7 @@
                 return new sql_pdo(
                     $dsn,
                     $user,
-                    $password,
+                    isset($connection['password']) ? $connection['password'] : '',
                     $options
                 );
             } catch (exception $e) {

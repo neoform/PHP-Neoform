@@ -46,39 +46,29 @@
         // ]
     },
 
+    "entities": {
+        "default_cache_engine":    "redis",
+        "default_database_engine": "sql"
+    },
+
     "sql": {
 
         // the connection name that is use when all else fails to [required]
         "default_read":  "master",
         "default_write": "master",
 
-        // all connections are randomly picked from the arrays. each name must be formatted like this: name[] = { connection: info };
-
-        // master sql database(s) [required]
-        "master": [
-            {
-                // "dsn": "pgsql:host=127.0.0.1;dbname=DBNAME_HERE",
-                "dsn": "mysql:dbname=core;host=127.0.0.1",
-                "user": "root",
-                "password": ""
-            }
-        ],
+        "pools": {
+            "master": [
+                {
+                    "dsn":      "mysql:dbname=core;host=127.0.0.1",
+                    "user":     "root",
+                    "password": ""
+                }
+            ]
+        },
 
         // SQL charset (encoding)
         "encoding": "utf8"
-
-        // slave sql database(s) [optional]
-        //
-        //    "slave": [
-        //      { "dsn": "mysql:dbname=com_keepset;host=127.0.0.1", "user": "root", "password": "" }
-        //  ],
-
-        // name any other database connections here:
-        // connections are picked randomly from the array
-        //
-        // "example_connection": [
-        //      { "dsn": "mysql:dbname=testdb1;host=127.0.0.1", "user": "testuser1", "password": "testpassword" }
-        //  ];
     },
 
     "auth": {
@@ -176,7 +166,7 @@
         "default_database_read":  "master",
         "default_database_write": "master",
 
-        "servers": {
+        "pools": {
             "master": [
                 { "host": "127.0.0.1", "port": 6379 }
             ]

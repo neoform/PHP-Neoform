@@ -4,7 +4,7 @@
 
         if (email && email.length) {
             Core.ajax({
-                "url": "<?php echo core::http()->server('surl'); ?>/account/ajax/check/email",
+                "url": "<?php echo core::http()->server('surl'); ?>account/ajax/check/email",
                 "hideLoading": true,
                 "data": {
                     "email": email
@@ -29,7 +29,7 @@
         e.preventDefault();
 
         Core.ajax({
-            "url": "<?php echo core::http()->server('surl'); ?>/account/ajax/insert",
+            "url": "<?php echo core::http()->server('surl'); ?>account/ajax/insert",
             "data": {
                 "email":     $("input[name='email']", elements.dialog).val(),
                 "password1": $("input[name='password1']", elements.dialog).val(),

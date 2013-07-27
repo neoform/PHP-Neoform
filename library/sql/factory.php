@@ -3,15 +3,15 @@
     class sql_factory implements core_factory {
 
         public static function init(array $args) {
-            $name = count($args) ? current($args) : null;
+            $name = $args ? current($args) : null;
 
             //get the class that instatiated this singleton
             $config = core::config()->sql;
 
             if (! isset($config['pools'][$name])) {
-                if ($name !== $config['default_write'] && $config['default_write']) {
+                if ($name !== $config['default_pool_write'] && $config['default_pool_write']) {
                     //try fallback connection
-                    return core::sql($config['default_write']);
+                    return core::sql($config['default_pool_write']);
                 } else {
                     throw new error_exception("The database connection \"{$name}\" configuration could not be found.");
                 }

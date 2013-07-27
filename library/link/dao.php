@@ -22,19 +22,25 @@
          * @return string
          */
         protected static function source_driver($read=true) {
+            $config = core::config();
+            $engine = static::SOURCE_ENGINE ?: $config['entities']['default_source_engine'];
 
-            static $drivers;
+            // SQL driver has different handlers depending on which DB is being used (mysql, pgsql etc)
+            if ($engine === 'sql') {
+                // We need to ask the correct connection as to what type of DB-driver it is
+                $pool = ($read ? static::SOURCE_ENGINE_READ : static::SOURCE_ENGINE_WRITE)
+                    ?: $config['entities'][$read ? 'default_source_engine_pool_read' : 'default_source_engine_pool_write'];
 
-            // We need to ask the proper connection as to what type of DB it is (we need the proper driver name)
-            $engine = ($read ? static::SOURCE_ENGINE_READ : static::SOURCE_ENGINE_WRITE)
-                ?: core::config()->sql[$read ? 'default_read' : 'default_write'];
+                static $drivers;
+                if (! isset($drivers[$pool])) {
+                    $drivers[$pool] = core::sql($pool)->driver();
+                }
 
-            // Get the driver name and stash it in a static var, so we don't need to look it up a second time
-            if (! isset($drivers[$engine])) {
-                $drivers[$engine] = 'link_driver_' . core::sql($engine)->driver();
+                return "link_driver_{$drivers[$pool]}";
+
+            } else {
+                return "link_driver_{$engine}";
             }
-
-            return $drivers[$engine];
         }
 
         /**
@@ -48,11 +54,12 @@
          * @return array   the cached recordset
          */
         final protected static function _single($key, callable $get) {
+            $config = core::config()->entities;
             return cache_lib::single(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 $key,
-                static::CACHE_ENGINE_READ,
-                static::CACHE_ENGINE_WRITE,
+                static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
+                static::CACHE_ENGINE_WRITE?: $config['default_cache_engine_pool_write'],
                 $get
             );
         }
@@ -61,9 +68,10 @@
          * Start batched query pipeline
          */
         final protected static function cache_batch_start() {
+            $config = core::config()->entities;
             cache_lib::pipeline_start(
-                static::CACHE_ENGINE,
-                static::CACHE_ENGINE_WRITE
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
+                static::CACHE_ENGINE_WRITE?: $config['default_cache_engine_pool_write']
             );
         }
 
@@ -73,9 +81,10 @@
          * @return mixed result from batch execution
          */
         final protected static function cache_batch_execute() {
+            $config = core::config()->entities;
             return cache_lib::pipeline_execute(
-                static::CACHE_ENGINE,
-                static::CACHE_ENGINE_WRITE
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
+                static::CACHE_ENGINE_WRITE?: $config['default_cache_engine_pool_write']
             );
         }
 
@@ -89,10 +98,11 @@
          * @return boolean result of the cache being deleted
          */
         final protected static function _cache_delete($key) {
+            $config = core::config()->entities;
             return cache_lib::delete(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 $key,
-                static::CACHE_ENGINE_WRITE
+                static::CACHE_ENGINE_WRITE?: $config['default_cache_engine_pool_write']
             );
         }
 
@@ -133,13 +143,14 @@
          */
         final protected static function _by_fields($cache_key_name, array $select_fields, array $keys) {
 
-            $self = static::ENTITY_NAME . '_dao';
+            $self   = static::ENTITY_NAME . '_dao';
+            $config = core::config()->entities;
 
             return cache_lib::single(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 self::_build_key($cache_key_name, $keys),
-                static::CACHE_ENGINE_READ,
-                static::CACHE_ENGINE_WRITE,
+                static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
+                static::CACHE_ENGINE_WRITE?: $config['default_cache_engine_pool_write'],
                 function() use ($self, $select_fields, $keys) {
                     $source_driver = $self::source_driver();
                     return $source_driver::by_fields($self, $select_fields, $keys);
@@ -161,16 +172,17 @@
          */
         final protected static function _by_fields_multi($cache_key_name, array $select_fields, array $keys_arr) {
 
-            $self = static::ENTITY_NAME . '_dao';
+            $self   = static::ENTITY_NAME . '_dao';
+            $config = core::config()->entities;
 
             return cache_lib::multi(
-                static::CACHE_ENGINE,
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 $keys_arr,
                 function($fields) use ($self, $cache_key_name) {
                     return record_dao::_build_key($cache_key_name, $fields, $self);
                 },
-                static::CACHE_ENGINE_READ,
-                static::CACHE_ENGINE_WRITE,
+                static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
+                static::CACHE_ENGINE_WRITE?: $config['default_cache_engine_pool_write'],
                 function($keys_arr) use ($self, $select_fields) {
                     $source_driver = $self::source_driver();
                     return $source_driver::by_fields_multi($self, $select_fields, $keys_arr);

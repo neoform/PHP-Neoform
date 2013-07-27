@@ -229,13 +229,19 @@
             // Standard errors
             set_error_handler(function($err_number, $err_string, $err_file, $err_line) {
                 if (error_reporting()) {
-                    throw new ErrorException($err_string, $err_number, 0, $err_file, $err_line);
+                    error_lib::log(new ErrorException($err_string, $err_number, 0, $err_file, $err_line));
+                    controller::error(500, null, null, true);
+                    echo core::output()->send_headers()->body();
+                    die;
                 }
             });
 
             // Unhandled exceptions
             set_exception_handler(function(Exception $e) {
-                error_lib::log($e);
+                error_lib::log($e, false);
+                controller::error(500, null, null, true);
+                echo core::output()->send_headers()->body();
+                die;
             });
 
             // For fatal errors
@@ -247,23 +253,30 @@
                     $file    = isset($error['file']) ? $error['file'] : null;
                     $line    = isset($error['line']) ? $error['line'] : null;
 
-                    core::log('FATAL ERROR - ' . $message . ' ' . $file . ' (' . $line . ')');
-                    if (core::context() === 'web') {
-                        if (core::is_loaded('http')) {
-                            try {
-                                controller::error(500, null, null, true);
-                            } catch (Exception $e) {
-                                core::output()->body('Unexpected Error - There was a problem loading that page');
-                            }
+                    core::log("{$message} {$file} ({$line})", 'fatal shutdown error');
 
-                            echo core::output()->send_headers()->body();
-                        } else {
-                            header('HTTP/1.1 500 Internal Server Error');
-                            echo 'An unexpected error occured.'."\n";
-                        }
-                    } else if (core::context() === 'cli') {
-                        echo 'FATAL ERROR - ' . $message . ' ' . $file . ' (' . $line . ')'."\n";
+                    switch ((string) core::context()) {
+                        case 'web':
+                            if (core::is_loaded('http')) {
+                                try {
+                                    controller::error(500, null, null, true);
+                                } catch (Exception $e) {
+                                    core::output()->body('Unexpected Error - There was a problem loading that page');
+                                }
+
+                                echo core::output()->send_headers()->body();
+                            } else {
+                                header('HTTP/1.1 500 Internal Server Error');
+                                echo "An unexpected error occured\n";
+                            }
+                            die;
+
+                        case 'cli':
+                            echo "FATAL ERROR - {$message} {$file} ({$line})\n";
+                            die;
                     }
+
+                    // We cannot continue at this point
                     die;
                 }
             });
@@ -317,9 +330,9 @@
                     $dt = new datetime();
 
                     if (self::is_loaded('http')) {
-                        $message = $dt->format('Y-m-d H:i:s') . ' ' . core::http()->server('ip') . ' /' . core::http()->server('query') . ' - ' . strtoupper($level) . ': '. $msg . "\n";
+                        $message = "\n" . $dt->format('Y-m-d H:i:s') . ' - ' . strtoupper($level) . "\n" . core::http()->server('ip') . ' /' . core::http()->server('query') . "\n{$msg}\n";
                     } else {
-                        $message = $dt->format('Y-m-d H:i:s') . ' - ' . strtoupper($level) . ': '. $msg . "\n";
+                        $message = "\n" . $dt->format('Y-m-d H:i:s') . ' - ' . strtoupper($level) . "\n" . "\n{$msg}\n";
                     }
 
                     if (file_put_contents($log_path, $message, FILE_APPEND) === false) {

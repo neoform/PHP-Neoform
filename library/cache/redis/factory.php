@@ -5,7 +5,7 @@
         public static function init(array $args) {
 
             $config = core::config()->redis;
-            $name   = $args ? current($args) : $config['default_cache_write'];
+            $name   = $args ? current($args) : null;
 
             if (empty($config['pools'][$name])) {
                 throw new cache_redis_exception("Redis server configuration \"{$name}\" does not exist");

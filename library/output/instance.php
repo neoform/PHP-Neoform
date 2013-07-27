@@ -34,7 +34,7 @@
          * @return output_instance
          */
         public function header($type, $val=null) {
-            $header = $type . ($val ? ': ' . $val : '');
+            $header = $type . ($val ? ": {$val}" : '');
             $hash   = md5($header);
             if (! isset($this->headers[$hash])) {
                 $this->headers[$hash] = $header;
@@ -190,14 +190,7 @@
          */
         public function error($title=null, $message=null, $status_code=500) {
 
-            try {
-                //trash anything that was going to be outputted
-                while (ob_get_status() && ob_end_clean()) {
-
-                }
-            } catch (Exception $e) {
-
-            }
+            $this->flush();
 
             // Reset the page
             $this->headers = [];
@@ -205,11 +198,11 @@
 
             if ($this->output_type === self::JSON) {
 
-                $json = new render_json();
+                $json = new render_json;
                 $json->status = 'fault';
 
                 if ($title && $message) {
-                    $json->message = $title . ' - ' . $message;
+                    $json->message = "{$title} - {$message}";
                 } else if ($title) {
                     $json->message = $title;
                 } else {
@@ -226,6 +219,22 @@
                     $this->body = $message;
                 }
             }
+        }
+
+        /**
+         * Destroy all output
+         */
+        public function flush() {
+            try {
+                //trash anything that was going to be outputted
+                while (ob_get_status() && ob_end_clean()) {
+
+                }
+            } catch (Exception $e) {
+
+            }
+
+            $this->body = null;
         }
 
         /**

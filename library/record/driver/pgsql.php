@@ -31,7 +31,9 @@
          */
         public static function by_pk($self, $pk) {
 
-            $info = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
+            $info = core::sql(
+                $self::SOURCE_ENGINE_READ ?: core::config()->entities['default_source_engine_pool_read']
+            )->prepare("
                 SELECT *
                 FROM \"" . self::table($self::TABLE) . "\"
                 WHERE \"" . $self::PRIMARY_KEY . "\" = ?
@@ -56,7 +58,9 @@
          */
         public static function by_pks($self, array $pks) {
 
-            $infos_rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
+            $infos_rs = core::sql(
+                $self::SOURCE_ENGINE_READ ?: core::config()->entities['default_source_engine_pool_read']
+            )->prepare("
                 SELECT *
                 FROM \"" . self::table($self::TABLE) . "\"
                 WHERE \"" . $self::PRIMARY_KEY . "\" IN (" . join(',', array_fill(0, count($pks), '?')) . ")
@@ -95,7 +99,9 @@
         public static function limit($self, $limit, $order_by, $direction, $after_pk) {
             $pk = $self::PRIMARY_KEY;
 
-            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
+            $rs = core::sql(
+                $self::SOURCE_ENGINE_READ ?: core::config()->entities['default_source_engine_pool_read']
+            )->prepare("
                 SELECT \"{$pk}\"
                 FROM \"" . self::table($self::TABLE) . "\"
                 " . ($after_pk !== null ? "WHERE \"{$pk}\" " . ($direction === 'ASC' ? '>' : '<') . ' ?' : '') . "
@@ -122,7 +128,9 @@
          * @return int
          */
         public static function count($self) {
-            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
+            $rs = core::sql(
+                $self::SOURCE_ENGINE_READ ?: core::config()->entities['default_source_engine_pool_read']
+            )->prepare("
                 SELECT COUNT(0) \"num\"
                 FROM \"" . self::table($self::TABLE) . "\"
             ");
@@ -151,22 +159,24 @@
                         foreach ($v as $arr_v) {
                             $vals[] = $arr_v;
                         }
-                        $where[] = "\"$k\" IN(" . join(',', array_fill(0, count($v), '?')) . ")";
+                        $where[] = "\"{$k}\" IN(" . join(',', array_fill(0, count($v), '?')) . ")";
                     } else {
                         if ($v === null) {
-                            $where[] = "\"$k\" IS NULL";
+                            $where[] = "\"{$k}\" IS NULL";
                         } else {
                             $vals[$k] = $v;
-                            $where[]  = "\"$k\" = ?";
+                            $where[]  = "\"{$k}\" = ?";
                         }
                     }
                 }
             }
 
-            $info = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
+            $info = core::sql(
+                $self::SOURCE_ENGINE_READ ?: core::config()->entities['default_source_engine_pool_read']
+            )->prepare("
                 SELECT *
                 FROM \"" . self::table($self::TABLE) . "\"
-                " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
+                " . ($where ? " WHERE " . join(" AND ", $where) : "") . "
                 ORDER BY \"{$pk}\" ASC
             ");
 
@@ -208,10 +218,12 @@
                 }
             }
 
-            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
+            $rs = core::sql(
+                $self::SOURCE_ENGINE_READ ?: core::config()->entities['default_source_engine_pool_read']
+            )->prepare("
                 SELECT \"{$pk}\"
                 FROM \"" . self::table($self::TABLE) . "\"
-                " . (count($where) ? " WHERE " . join(" AND ", $where) : "") . "
+                " . ($where ? " WHERE " . join(" AND ", $where) : "") . "
             ");
 
             sql_pdo::bind_by_casting(
@@ -252,16 +264,18 @@
                 $return[$k] = [];
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
-                        $w[] = "\"$k\" IS NULL";
+                        $w[] = "\"{$k}\" IS NULL";
                     } else {
                         $vals[$k] = $v;
-                        $w[]      = "\"$k\" = ?";
+                        $w[]      = "\"{$k}\" = ?";
                     }
                 }
                 $where[] = '(' . join(" AND ", $w) . ')';
             }
 
-            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
+            $rs = core::sql(
+                $self::SOURCE_ENGINE_READ ?: core::config()->entities['default_source_engine_pool_read']
+            )->prepare("
                 SELECT
                     \"{$pk}\",
                     CONCAT(" . join(", ':', ", $key_fields) . ") \"__cache_key__\"
@@ -311,10 +325,12 @@
                 }
             }
 
-            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->sql['default_read'])->prepare("
+            $rs = core::sql(
+                $self::SOURCE_ENGINE_READ ?: core::config()->entities['default_source_engine_pool_read']
+            )->prepare("
                 SELECT " . join(',', $select_fields) . "
                 FROM \"" . self::table($self::TABLE) . "\"
-                " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
+                " . ($where ? "WHERE " . join(" AND ", $where) : "") . "
             ");
 
             sql_pdo::bind_by_casting(
@@ -342,7 +358,7 @@
          * @param string $self the name of the DAO
          * @param array  $info
          * @param bool   $autoincrement
-         * @param boo    $replace
+         * @param bool   $replace
          *
          * @return array
          */
@@ -352,7 +368,9 @@
                 $insert_fields[] = "\"$key\"";
             }
 
-            $insert = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write'])->prepare("
+            $insert = core::sql(
+                $self::SOURCE_ENGINE_WRITE ?: core::config()->entities['default_source_engine_pool_write']
+            )->prepare("
                 INSERT INTO
                     \"" . self::table($self::TABLE) . "\"
                     ( " . join(', ', $insert_fields) . " )
@@ -399,7 +417,9 @@
                 // If the table is auto increment, we cannot lump all inserts into one query
                 // since we need the returned IDs for cache-busting and to return a model
                 if ($autoincrement) {
-                    $sql = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write']);
+                    $sql = core::sql(
+                        $self::SOURCE_ENGINE_WRITE ?: core::config()->entities['default_source_engine_pool_write']
+                    );
                     $sql->beginTransaction();
                     $pk = $self::PRIMARY_KEY;
 
@@ -409,7 +429,7 @@
                             ( " . join(', ', $insert_fields) . " )
                             VALUES
                             ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
-                            RETURNING \"$pk\"
+                            RETURNING \"{$pk}\"
                     ");
 
                     foreach ($infos as $info) {
@@ -437,7 +457,9 @@
                         }
                     }
 
-                    $inserts = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write'])->prepare("
+                    $inserts = core::sql(
+                        $self::SOURCE_ENGINE_WRITE ?: core::config()->entities['default_source_engine_pool_write']
+                    )->prepare("
                         INSERT INTO
                             \"" . self::table($self::TABLE) . "\"
                             ( " . implode(', ', $insert_fields) . " )
@@ -454,7 +476,9 @@
                     $inserts->execute();
                 }
             } else {
-                $sql   = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write']);
+                $sql   = core::sql(
+                    $self::SOURCE_ENGINE_WRITE ?: core::config()->entities['default_source_engine_pool_write']
+                );
                 $table = self::table($self::TABLE);
 
                 $sql->beginTransaction();
@@ -503,7 +527,9 @@
          * @param array        $info
          */
         public static function update($self, $pk, record_model $model, array $info) {
-            $sql = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write']);
+            $sql = core::sql(
+                $self::SOURCE_ENGINE_WRITE ?: core::config()->entities['default_source_engine_pool_write']
+            );
 
             $update_fields = [];
             foreach (array_keys($info) as $key) {
@@ -535,7 +561,9 @@
          * @param record_model $model
          */
         public static function delete($self, $pk, record_model $model) {
-            $delete = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write'])->prepare("
+            $delete = core::sql(
+                $self::SOURCE_ENGINE_WRITE ?: core::config()->entities['default_source_engine_pool_write']
+            )->prepare("
                 DELETE FROM \"" . self::table($self::TABLE) . "\"
                 WHERE \"{$pk}\" = ?
             ");
@@ -552,7 +580,9 @@
          */
         public static function deletes($self, $pk, record_collection $collection) {
             $pks = $collection->field($pk);
-            $delete = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->sql['default_write'])->prepare("
+            $delete = core::sql(
+                $self::SOURCE_ENGINE_WRITE ?: core::config()->entities['default_source_engine_pool_write']
+            )->prepare("
                 DELETE FROM \"" . self::table($self::TABLE) . "\"
                 WHERE \"{$pk}\" IN (" . join(',', array_fill(0, count($collection), '?')) . ")
             ");

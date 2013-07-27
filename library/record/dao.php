@@ -136,15 +136,15 @@
             // each key is namespaced with the name of the class
             $param_count = count($params);
             if ($param_count === 1) {
-                return ($entity_name ?: static::ENTITY_NAME) . ":$cache_key_name:" . md5(base64_encode(reset($params)));
+                return ($entity_name ?: static::ENTITY_NAME) . ":{$cache_key_name}:" . md5(base64_encode(reset($params)));
             } else if ($param_count === 0) {
-                return ($entity_name ?: static::ENTITY_NAME) . ":$cache_key_name:";
+                return ($entity_name ?: static::ENTITY_NAME) . ":{$cache_key_name}:";
             } else {
                 ksort($params);
                 foreach ($params as & $param) {
                     $param = base64_encode($param);
                 }
-                return ($entity_name ?: static::ENTITY_NAME) . ":$cache_key_name:" . md5(json_encode(array_values($params)));
+                return ($entity_name ?: static::ENTITY_NAME) . ":{$cache_key_name}:" . md5(json_encode(array_values($params)));
             }
         }
 

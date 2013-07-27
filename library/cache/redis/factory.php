@@ -7,11 +7,11 @@
             $config = core::config()->redis;
             $name   = $args ? current($args) : $config['default_cache_write'];
 
-            if (! isset($config['servers'][$name]) || $config['servers'][$name] === null) {
+            if (empty($config['pools'][$name])) {
                 throw new cache_redis_exception("Redis server configuration \"{$name}\" does not exist");
             }
 
-            $server = $config['servers'][$name][array_rand($config['servers'][$name])];
+            $server = $config['pools'][$name][array_rand($config['pools'][$name])];
 
             try {
                 $redis = new redis;

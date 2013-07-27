@@ -17,14 +17,24 @@
         /**
          * Get the record DAO driver name (name derived from db connection type)
          *
+         * @param bool $read default true
+         *
          * @return string
          */
-        protected static function driver() {
-            static $driver;
-            if (! $driver) {
-                $driver = 'link_driver_' . core::sql('slave')->driver();
+        protected static function source_driver($read=true) {
+
+            static $drivers;
+
+            // We need to ask the proper connection as to what type of DB it is (we need the proper driver name)
+            $engine = ($read ? static::SOURCE_ENGINE_READ : static::SOURCE_ENGINE_WRITE)
+                ?: core::config()->sql[$read ? 'default_read' : 'default_write'];
+
+            // Get the driver name and stash it in a static var, so we don't need to look it up a second time
+            if (! isset($drivers[$engine])) {
+                $drivers[$engine] = 'link_driver_' . core::sql($engine)->driver();
             }
-            return $driver;
+
+            return $drivers[$engine];
         }
 
         /**
@@ -41,7 +51,8 @@
             return cache_lib::single(
                 static::CACHE_ENGINE,
                 $key,
-                static::ENTITY_POOL,
+                static::CACHE_ENGINE_READ,
+                static::CACHE_ENGINE_WRITE,
                 $get
             );
         }
@@ -52,7 +63,7 @@
         final protected static function cache_batch_start() {
             cache_lib::pipeline_start(
                 static::CACHE_ENGINE,
-                static::ENTITY_POOL
+                static::CACHE_ENGINE_WRITE
             );
         }
 
@@ -64,7 +75,7 @@
         final protected static function cache_batch_execute() {
             return cache_lib::pipeline_execute(
                 static::CACHE_ENGINE,
-                static::ENTITY_POOL
+                static::CACHE_ENGINE_WRITE
             );
         }
 
@@ -81,7 +92,7 @@
             return cache_lib::delete(
                 static::CACHE_ENGINE,
                 $key,
-                static::ENTITY_POOL
+                static::CACHE_ENGINE_WRITE
             );
         }
 
@@ -100,10 +111,10 @@
             // each key is namespaced with the name of the class
             if (count($params) === 1) {
                 //base64_encode incase the value is binary or something
-                return ($entity_name ?: static::ENTITY_NAME) . ":$cache_key_name:" . md5(base64_encode(current($params)));
+                return ($entity_name ?: static::ENTITY_NAME) . ":{$cache_key_name}:" . md5(base64_encode(current($params)));
             } else {
                 ksort($params);
-                return ($entity_name ?: static::ENTITY_NAME) . ":$cache_key_name:" . md5(json_encode(array_values($params)));
+                return ($entity_name ?: static::ENTITY_NAME) . ":{$cache_key_name}:" . md5(json_encode(array_values($params)));
             }
         }
 
@@ -127,10 +138,11 @@
             return cache_lib::single(
                 static::CACHE_ENGINE,
                 self::_build_key($cache_key_name, $keys),
-                static::ENTITY_POOL,
+                static::CACHE_ENGINE_READ,
+                static::CACHE_ENGINE_WRITE,
                 function() use ($self, $select_fields, $keys) {
-                    $driver = $self::driver();
-                    return $driver::by_fields($self, $select_fields, $keys);
+                    $source_driver = $self::source_driver();
+                    return $source_driver::by_fields($self, $select_fields, $keys);
                 }
             );
         }
@@ -157,10 +169,11 @@
                 function($fields) use ($self, $cache_key_name) {
                     return record_dao::_build_key($cache_key_name, $fields, $self);
                 },
-                static::ENTITY_POOL,
+                static::CACHE_ENGINE_READ,
+                static::CACHE_ENGINE_WRITE,
                 function($keys_arr) use ($self, $select_fields) {
-                    $driver = $self::driver();
-                    return $driver::by_fields_multi($self, $select_fields, $keys_arr);
+                    $source_driver = $self::source_driver();
+                    return $source_driver::by_fields_multi($self, $select_fields, $keys_arr);
                 }
             );
         }
@@ -176,9 +189,9 @@
          * @throws model_exception
          */
         protected static function _insert(array $info, $replace=false) {
-            $self   = static::ENTITY_NAME . '_dao';
-            $driver = $self::driver();
-            return $driver::insert($self, $info, $replace);
+            $self          = static::ENTITY_NAME . '_dao';
+            $source_driver = $self::source_driver(false);
+            return $source_driver::insert($self, $info, $replace);
         }
 
         /**
@@ -192,13 +205,13 @@
          * @throws model_exception
          */
         protected static function _inserts(array $infos, $replace=false) {
-            if (! count($infos)) {
+            if (! $infos) {
                 return;
             }
 
-            $self   = static::ENTITY_NAME . '_dao';
-            $driver = $self::driver();
-            return $driver::inserts($self, $infos, $replace);
+            $self          = static::ENTITY_NAME . '_dao';
+            $source_driver = $self::source_driver(false);
+            return $source_driver::inserts($self, $infos, $replace);
         }
 
         /**
@@ -212,10 +225,10 @@
          * @throws model_exception
          */
         protected static function _update(array $new_info, array $where) {
-            if (count($new_info)) {
-                $self   = static::ENTITY_NAME . '_dao';
-                $driver = $self::driver();
-                return $driver::update($self, $new_info, $where);
+            if ($new_info) {
+                $self          = static::ENTITY_NAME . '_dao';
+                $source_driver = $self::source_driver(false);
+                return $source_driver::update($self, $new_info, $where);
             }
         }
 
@@ -229,9 +242,9 @@
          * @throws model_exception
          */
         protected static function _delete(array $keys) {
-            $self   = static::ENTITY_NAME . '_dao';
-            $driver = $self::driver();
-            return $driver::delete($self, $keys);
+            $self          = static::ENTITY_NAME . '_dao';
+            $source_driver = $self::source_driver(false);
+            return $source_driver::delete($self, $keys);
         }
 
         /**
@@ -244,13 +257,8 @@
          * @throws model_exception
          */
         protected static function _deletes(array $keys_arr) {
-            $self   = static::ENTITY_NAME . '_dao';
-            $driver = $self::driver();
-            return $driver::deletes($self, $keys_arr);
+            $self          = static::ENTITY_NAME . '_dao';
+            $source_driver = $self::source_driver(false);
+            return $source_driver::deletes($self, $keys_arr);
         }
     }
-
-
-
-
-

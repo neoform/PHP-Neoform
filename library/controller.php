@@ -16,6 +16,22 @@
         abstract public function default_action();
 
         /**
+         * Error 403 action
+         */
+        public static function show403() {
+            core::output()->flush();
+            core::locale()->set_namespace('main');
+            core::output()->http_status_code(403);
+
+            $view             = new render_view;
+            $view->meta_title = core::locale()->translate('Access Denied');
+            $view->pre_header = core::locale()->translate('403: Forbidden');
+            $view->header     = core::locale()->translate('Access Denied');
+            $view->body       = core::locale()->translate('You do not have the required permissions to access this page');
+
+            $view->render('error');
+        }
+        /**
          * Error 404 action
          */
         public static function show404() {

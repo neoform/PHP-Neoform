@@ -8,27 +8,47 @@
             $name   = $args ? current($args) : $config['default_pool_write'];
 
             if (! isset($config['pools'][$name]) || $config['pools'][$name] === null) {
-                throw new cache_redis_exception('Redis server configuration "' . $name . '" does not exist');
+                throw new cache_redis_exception("Redis server configuration \"{$name}\" does not exist");
             }
 
             $server = $config['pools'][$name][mt_rand(0, count($config['pools'][$name]) - 1)];
 
             try {
-                $redis = new redis();
+                $redis = new redis;
 
-                if (isset($server['host'])) {
-                    $redis->connect($server['host'], isset($server['port']) ? $server['port'] : 6379);
-                } else if (isset($server['socket'])) {
-                    $redis->connect($server['socket']);
+                if ($config['persistent_connection']) {
+                    if (isset($server['host'])) {
+                        $redis->pconnect(
+                            $server['host'],
+                            isset($server['port']) ? $server['port'] : 6379,
+                            isset($config['persistent_connection_timeout']) ? $config['persistent_connection_timeout'] : null,
+                            isset($config['persistent_connection_id']) ? $config['persistent_connection_id'] : null
+                        );
+                    } else if (isset($server['socket'])) {
+                        $redis->pconnect($server['socket']);
+                    } else {
+                        throw new cache_redis_exception("Redis server configuration \"{$name}\" does not contain a host or a socket.");
+                    }
                 } else {
-                    throw new cache_redis_exception('Redis server configuration "' . $name . '" does not contain a host or a socket.');
+                    if (isset($server['host'])) {
+                        $redis->connect(
+                            $server['host'],
+                            isset($server['port']) ? $server['port'] : 6379,
+                            isset($config['persistent_connection_timeout']) ? $config['persistent_connection_timeout'] : null,
+                            isset($config['persistent_connection_id']) ? $config['persistent_connection_id'] : null
+                        );
+                    } else if (isset($server['socket'])) {
+                        $redis->connect($server['socket']);
+                    } else {
+                        throw new cache_redis_exception("Redis server configuration \"{$name}\" does not contain a host or a socket.");
+                    }
                 }
 
                 $redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
-                $redis->setOption(Redis::OPT_PREFIX, $config['key_prefix'] . ':');
+                $redis->setOption(Redis::OPT_PREFIX, "{$config['key_prefix']}:");
 
             } catch (RedisException $e) {
-                throw new cache_redis_exception('Could not create redis instance "' . $name . ' -- ' . $e->getMessage());
+                throw new cache_redis_exception("Could not create redis instance \"{$name}\" -- " . $e->getMessage());
             }
 
             return $redis;

@@ -159,7 +159,7 @@
             )->prepare("
                 SELECT *
                 FROM `" . self::table($self::TABLE) . "`
-                " . ($where ? " WHERE " . join(" AND ", $where) : "") . "
+                " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
                 ORDER BY `{$pk}` ASC
             ");
 
@@ -197,7 +197,7 @@
             )->prepare("
                 SELECT `{$pk}`
                 FROM `" . self::table($self::TABLE) . "`
-                " . ($where ? " WHERE " . join(" AND ", $where) : "") . "
+                " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
             ");
             $rs->execute($vals);
 
@@ -285,7 +285,7 @@
             )->prepare("
                 SELECT " . join(',', $select_fields) . "
                 FROM `" . self::table($self::TABLE) . "`
-                " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
+                " . (count($where) ? "WHERE " . join(" AND ", $where) : '') . "
             ");
 
             $rs->execute($vals);

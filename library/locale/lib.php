@@ -28,7 +28,7 @@
             }
 
             $get = function() use ($locale_iso2, $namespace_id) {
-                $messages = core::sql(core::config()->sql['default_read'])->prepare("
+                $messages = core::sql(core::config()->sql['default_pool_read'])->prepare("
                     SELECT
                         locale_key.body k,
                         locale_key_message.body v

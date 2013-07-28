@@ -47,7 +47,7 @@
     },
 
     "entities": {
-        "default_source_engine":            "sql",
+        "default_source_engine":            "mysql",
         "default_source_engine_pool_read":  "master",
         "default_source_engine_pool_write": "master",
 
@@ -164,6 +164,10 @@
 
         "default_pool_read":  "master",
         "default_pool_write": "master",
+
+        "persistent_connection":         false,
+        "persistent_connection_timeout": 0,
+        "persistent_connection_id":      null,
 
         "pools": {
             "master": [

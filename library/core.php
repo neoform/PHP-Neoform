@@ -230,18 +230,30 @@
             set_error_handler(function($err_number, $err_string, $err_file, $err_line) {
                 if (error_reporting()) {
                     error_lib::log(new ErrorException($err_string, $err_number, 0, $err_file, $err_line));
-                    controller::error(500, null, null, true);
-                    echo core::output()->send_headers()->body();
-                    die;
+                    switch ((string) core::context()) {
+                        case 'web':
+                            controller::error(500, null, null, true);
+                            echo core::output()->send_headers()->body();
+                            die;
+
+                        default:
+                            die("Error - " . $e->getMessage() . "\n");
+                    }
                 }
             });
 
             // Unhandled exceptions
             set_exception_handler(function(Exception $e) {
                 error_lib::log($e, false);
-                controller::error(500, null, null, true);
-                echo core::output()->send_headers()->body();
-                die;
+                switch ((string) core::context()) {
+                    case 'web':
+                        controller::error(500, null, null, true);
+                        echo core::output()->send_headers()->body();
+                        die;
+
+                    default:
+                        die("Error - " . $e->getMessage() . "\n");
+                }
             });
 
             // For fatal errors
@@ -271,13 +283,10 @@
                             }
                             die;
 
-                        case 'cli':
-                            echo "FATAL ERROR - {$message} {$file} ({$line})\n";
-                            die;
+                        //case 'cli':
+                        default:
+                            die("FATAL ERROR - {$message} {$file} ({$line})\n");
                     }
-
-                    // We cannot continue at this point
-                    die;
                 }
             });
 

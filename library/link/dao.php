@@ -15,35 +15,6 @@
     abstract class link_dao {
 
         /**
-         * Get the record DAO driver name (name derived from db connection type)
-         *
-         * @param bool $read default true
-         *
-         * @return string
-         */
-        protected static function source_driver($read=true) {
-            $config = core::config();
-            $engine = static::SOURCE_ENGINE ?: $config['entities']['default_source_engine'];
-
-            // SQL driver has different handlers depending on which DB is being used (mysql, pgsql etc)
-            if ($engine === 'sql') {
-                // We need to ask the correct connection as to what type of DB-driver it is
-                $pool = ($read ? static::SOURCE_ENGINE_READ : static::SOURCE_ENGINE_WRITE)
-                    ?: $config['entities'][$read ? 'default_source_engine_pool_read' : 'default_source_engine_pool_write'];
-
-                static $drivers;
-                if (! isset($drivers[$pool])) {
-                    $drivers[$pool] = core::sql($pool)->driver();
-                }
-
-                return "link_driver_{$drivers[$pool]}";
-
-            } else {
-                return "link_driver_{$engine}";
-            }
-        }
-
-        /**
          * Get a cached link
          *
          * @access protected
@@ -151,8 +122,8 @@
                 self::_build_key($cache_key_name, $keys),
                 static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
                 static::CACHE_ENGINE_WRITE?: $config['default_cache_engine_pool_write'],
-                function() use ($self, $select_fields, $keys) {
-                    $source_driver = $self::source_driver();
+                function() use ($self, $select_fields, $keys, $config) {
+                    $source_driver = 'link_driver_' . ($self::SOURCE_ENGINE ?: $config['default_source_engine']);
                     return $source_driver::by_fields($self, $select_fields, $keys);
                 }
             );
@@ -183,8 +154,8 @@
                 },
                 static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
                 static::CACHE_ENGINE_WRITE?: $config['default_cache_engine_pool_write'],
-                function($keys_arr) use ($self, $select_fields) {
-                    $source_driver = $self::source_driver();
+                function($keys_arr) use ($self, $select_fields, $config) {
+                    $source_driver = 'link_driver_' . ($self::SOURCE_ENGINE ?: $config['default_source_engine']);
                     return $source_driver::by_fields_multi($self, $select_fields, $keys_arr);
                 }
             );
@@ -201,9 +172,8 @@
          * @throws model_exception
          */
         protected static function _insert(array $info, $replace=false) {
-            $self          = static::ENTITY_NAME . '_dao';
-            $source_driver = $self::source_driver(false);
-            return $source_driver::insert($self, $info, $replace);
+            $source_driver = 'link_driver_' . (static::SOURCE_ENGINE ?: core::config()->entities['default_source_engine']);
+            return $source_driver::insert(static::ENTITY_NAME . '_dao', $info, $replace);
         }
 
         /**
@@ -221,9 +191,8 @@
                 return;
             }
 
-            $self          = static::ENTITY_NAME . '_dao';
-            $source_driver = $self::source_driver(false);
-            return $source_driver::inserts($self, $infos, $replace);
+            $source_driver = 'link_driver_' . (static::SOURCE_ENGINE ?: core::config()->entities['default_source_engine']);
+            return $source_driver::inserts(static::ENTITY_NAME . '_dao', $infos, $replace);
         }
 
         /**
@@ -238,9 +207,8 @@
          */
         protected static function _update(array $new_info, array $where) {
             if ($new_info) {
-                $self          = static::ENTITY_NAME . '_dao';
-                $source_driver = $self::source_driver(false);
-                return $source_driver::update($self, $new_info, $where);
+                $source_driver = 'link_driver_' . (static::SOURCE_ENGINE ?: core::config()->entities['default_source_engine']);
+                return $source_driver::update(static::ENTITY_NAME . '_dao', $new_info, $where);
             }
         }
 
@@ -254,9 +222,8 @@
          * @throws model_exception
          */
         protected static function _delete(array $keys) {
-            $self          = static::ENTITY_NAME . '_dao';
-            $source_driver = $self::source_driver(false);
-            return $source_driver::delete($self, $keys);
+            $source_driver = 'link_driver_' . (static::SOURCE_ENGINE ?: core::config()->entities['default_source_engine']);
+            return $source_driver::delete(static::ENTITY_NAME . '_dao', $keys);
         }
 
         /**
@@ -269,8 +236,7 @@
          * @throws model_exception
          */
         protected static function _deletes(array $keys_arr) {
-            $self          = static::ENTITY_NAME . '_dao';
-            $source_driver = $self::source_driver(false);
-            return $source_driver::deletes($self, $keys_arr);
+            $source_driver = 'link_driver_' . (static::SOURCE_ENGINE ?: core::config()->entities['default_source_engine']);
+            return $source_driver::deletes(static::ENTITY_NAME . '_dao', $keys_arr);
         }
     }

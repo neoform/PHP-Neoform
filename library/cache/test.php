@@ -4,16 +4,17 @@
 
         public function init() {
 
-            $key    = 'cli:cache_unit_test';
-            $pool   = 'entities';
-            $driver = 'redis';
-            $key_prefix = '';
+            $key          = 'cli:cache_unit_test';
+            $pool_read    = 'master';
+            $pool_write   = 'master';
+            $driver       = 'redis';
+            $key_prefix   = '';
             $driver_class = "cache_{$driver}_driver";
             $driver_core  = "cache_{$driver}";
 
             // Delete cache
-            cache_lib::delete($driver, $key . ':111', 'entities');
-            cache_lib::delete($driver, $key . ':222', 'entities');
+            cache_lib::delete($driver, "{$key}:111", $pool_write);
+            cache_lib::delete($driver, "{$key}:222", $pool_write);
 
 
 
@@ -22,8 +23,9 @@
             $pulled = false;
             $result = cache_lib::single(
                 $driver,
-                $key . ':111',
-                $pool,
+                "{$key}:111",
+                $pool_read,
+                $pool_write,
                 function() use (& $pulled) {
                     $pulled = true;
                     return "Hey sexy pants";
@@ -40,8 +42,9 @@
             $pulled = false;
             $result = cache_lib::single(
                 $driver,
-                $key . ':111',
-                $pool,
+                "{$key}:111",
+                $pool_read,
+                $pool_write,
                 function() use (& $pulled) {
                     $pulled = true;
                     return "Uh oh...";
@@ -51,14 +54,14 @@
             $this->assert_true(! $pulled, __LINE__);
             $this->assert_true($result === "Hey sexy pants", __LINE__);
 
-            $this->assert_true(cache_memory_dao::exists($key . ':111'), __LINE__);
-            $this->assert_true($driver_class::exists($key . ':111', $pool), __LINE__);
+            $this->assert_true(cache_memory_dao::exists("{$key}:111"), __LINE__);
+            $this->assert_true($driver_class::exists("{$key}:111", $pool_read), __LINE__);
 
 
 
 
             // Pull multi - only one record should get pulled from origin
-            cache_memory_dao::delete($key . ':111'); //don't let it pull from memory
+            cache_memory_dao::delete("{$key}:111"); //don't let it pull from memory
 
             $pulled = 0;
             $result = cache_lib::multi(
@@ -68,9 +71,10 @@
                     9 => 222,
                 ],
                 function($id) use ($key) {
-                    return $key . ':'. $id;
+                    return "{$key}:{$id}";
                 },
-                $pool,
+                $pool_read,
+                $pool_write,
                 function($ids) use (& $pulled) {
                     foreach ($ids as $k => & $v) {
                         $pulled++;
@@ -91,8 +95,8 @@
 
 
             // Pull multi - same keys, none should get pulled from origin
-            cache_memory_dao::delete($key . ':111'); //don't let it pull from memory
-            cache_memory_dao::delete($key . ':222'); //don't let it pull from memory
+            cache_memory_dao::delete("{$key}:111"); //don't let it pull from memory
+            cache_memory_dao::delete("{$key}:222"); //don't let it pull from memory
 
             $pulled = 0;
             $result = cache_lib::multi(
@@ -102,9 +106,10 @@
                     9 => 222,
                 ],
                 function($id) use ($key) {
-                    return $key . ':'. $id;
+                    return "{$key}:{$id}";
                 },
-                $pool,
+                $pool_read,
+                $pool_write,
                 function($ids) use (& $pulled) {
                     foreach ($ids as $k => & $v) {
                         $pulled++;
@@ -115,10 +120,10 @@
             );
 
 
-            $this->assert_true(cache_memory_dao::exists($key . ':111'), __LINE__);
-            $this->assert_true(cache_memory_dao::exists($key . ':222'), __LINE__);
-            $this->assert_true($driver_class::exists($key . ':111', $pool), __LINE__);
-            $this->assert_true($driver_class::exists($key . ':222', $pool), __LINE__);
+            $this->assert_true(cache_memory_dao::exists("{$key}:111"), __LINE__);
+            $this->assert_true(cache_memory_dao::exists("{$key}:222"), __LINE__);
+            $this->assert_true($driver_class::exists("{$key}:111", $pool_read), __LINE__);
+            $this->assert_true($driver_class::exists("{$key}:222", $pool_read), __LINE__);
 
             $this->assert_true($pulled === 0, __LINE__);
             $this->assert_true(isset($result[3]), __LINE__);
@@ -126,22 +131,22 @@
             $this->assert_true($result[3] === "Hey sexy pants", __LINE__);
             $this->assert_true($result[9] === "Looking good, buuuudy", __LINE__);
 
-            $this->assert_true(cache_memory_dao::exists($key . ':111'), __LINE__);
-            $this->assert_true(cache_memory_dao::exists($key . ':222'), __LINE__);
-            $this->assert_true($driver_class::exists($key . ':111', $pool), __LINE__);
-            $this->assert_true($driver_class::exists($key . ':222', $pool), __LINE__);
+            $this->assert_true(cache_memory_dao::exists("{$key}:111"), __LINE__);
+            $this->assert_true(cache_memory_dao::exists("{$key}:222"), __LINE__);
+            $this->assert_true($driver_class::exists("{$key}:111", $pool_read), __LINE__);
+            $this->assert_true($driver_class::exists("{$key}:222", $pool_read), __LINE__);
 
 
 
 
             // Pull multi - same keys, none should get pulled from origin - same as before, but using memory only
-            core::$driver_core($pool)->delete($key_prefix . $key . ':111');
-            core::$driver_core($pool)->delete($key_prefix . $key . ':222');
+            core::$driver_core($pool_write)->delete("{$key_prefix}{$key}:111");
+            core::$driver_core($pool_write)->delete("{$key_prefix}{$key}:222");
 
-            $this->assert_true(cache_memory_dao::exists($key . ':111'), __LINE__);
-            $this->assert_true(cache_memory_dao::exists($key . ':222'), __LINE__);
-            $this->assert_true(! $driver_class::exists($key . ':111', $pool), __LINE__);
-            $this->assert_true(! $driver_class::exists($key . ':222', $pool), __LINE__);
+            $this->assert_true(cache_memory_dao::exists("{$key}:111"), __LINE__);
+            $this->assert_true(cache_memory_dao::exists("{$key}:222"), __LINE__);
+            $this->assert_true(! $driver_class::exists("{$key}:111", $pool_read), __LINE__);
+            $this->assert_true(! $driver_class::exists("{$key}:222", $pool_read), __LINE__);
 
             $pulled = 0;
             $result = cache_lib::multi(
@@ -151,9 +156,10 @@
                     9 => 222,
                 ],
                 function($id) use ($key) {
-                    return $key . ':'. $id;
+                    return "{$key}:{$id}";
                 },
-                $pool,
+                $pool_read,
+                $pool_write,
                 function($ids) use (& $pulled) {
                     foreach ($ids as $k => & $v) {
                         $pulled++;

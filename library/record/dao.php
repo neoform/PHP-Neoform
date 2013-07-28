@@ -27,35 +27,6 @@
         const COUNT = 'count';
 
         /**
-         * Get the record DAO driver name
-         *
-         * @param bool $read default true
-         *
-         * @return string
-         */
-        protected static function source_driver($read=true) {
-            $config = core::config();
-            $engine = static::SOURCE_ENGINE ?: $config['entities']['default_source_engine'];
-
-            // SQL driver has different handlers depending on which DB is being used (mysql, pgsql etc)
-            if ($engine === 'sql') {
-                // We need to ask the correct connection as to what type of DB-driver it is
-                $pool = ($read ? static::SOURCE_ENGINE_READ : static::SOURCE_ENGINE_WRITE)
-                    ?: $config['entities'][$read ? 'default_source_engine_pool_read' : 'default_source_engine_pool_write'];
-
-                static $drivers;
-                if (! isset($drivers[$pool])) {
-                   $drivers[$pool] = core::sql($pool)->driver();
-                }
-
-                return "record_driver_{$drivers[$pool]}";
-
-            } else {
-                return "record_driver_{$engine}";
-            }
-        }
-
-        /**
          * Get a cached recordset
          *
          * @access protected
@@ -170,8 +141,8 @@
                 static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5(base64_encode($pk)) : $pk),
                 static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
                 static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
-                function() use ($pk, $self) {
-                    $source_driver = $self::source_driver();
+                function() use ($pk, $self, $config) {
+                    $source_driver = 'record_driver_' . ($self::SOURCE_ENGINE ?: $config['default_source_engine']);
                     return $source_driver::by_pk($self, $pk);
                 }
             );
@@ -203,8 +174,8 @@
                 },
                 static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
                 static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
-                function(array $pks) use ($self) {
-                    $source_driver = $self::source_driver();
+                function(array $pks) use ($self, $config) {
+                    $source_driver = 'record_driver_' . ($self::SOURCE_ENGINE ?: $config['default_source_engine']);
                     return $source_driver::by_pks($self, $pks);
                 }
             );
@@ -259,7 +230,7 @@
                     );
 
                     // Pull content from source
-                    $source_driver = $self::source_driver();
+                    $source_driver = 'record_driver_' . ($self::SOURCE_ENGINE ?: $config['default_source_engine']);
                     return $source_driver::limit(
                         $self,
                         $limit,
@@ -293,8 +264,8 @@
                 self::_build_key($cache_key_name, []),
                 static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
                 static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
-                function() use ($self, $pk, $keys) {
-                    $source_driver = $self::source_driver();
+                function() use ($self, $pk, $keys, $config) {
+                    $source_driver = 'record_driver_' . ($self::SOURCE_ENGINE ?: $config['default_source_engine']);
                     return $source_driver::all($self, $pk, $keys);
                 }
             );
@@ -315,8 +286,8 @@
                 static::ENTITY_NAME . ':' . self::COUNT,
                 static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
                 static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
-                function() use ($self) {
-                    $source_driver = $self::source_driver();
+                function() use ($self, $config) {
+                    $source_driver = 'record_driver_' . ($self::SOURCE_ENGINE ?: $config['default_source_engine']);
                     return $source_driver::count($self);
                 }
             );
@@ -344,8 +315,8 @@
                 self::_build_key($cache_key_name, $keys),
                 static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
                 static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
-                function() use ($self, $keys, $pk) {
-                    $source_driver = $self::source_driver();
+                function() use ($self, $keys, $pk, $config) {
+                    $source_driver = 'record_driver_' . ($self::SOURCE_ENGINE ?: $config['default_source_engine']);
                     return $source_driver::by_fields($self, $keys, $pk);
                 }
             );
@@ -376,8 +347,8 @@
                 },
                 static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
                 static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
-                function($keys_arr) use ($self, $pk) {
-                    $source_driver = $self::source_driver();
+                function($keys_arr) use ($self, $pk, $config) {
+                    $source_driver = 'record_driver_' . ($self::SOURCE_ENGINE ?: $config['default_source_engine']);
                     return $source_driver::by_fields_multi($self, $keys_arr, $pk);
                 }
             );
@@ -406,8 +377,8 @@
                 self::_build_key($cache_key_name, $keys),
                 static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
                 static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
-                function() use ($self, $select_fields, $keys) {
-                    $source_driver = $self::source_driver();
+                function() use ($self, $select_fields, $keys, $config) {
+                    $source_driver = 'record_driver_' . ($self::SOURCE_ENGINE ?: $config['default_source_engine']);
                     return $source_driver::by_fields_select($self, $select_fields, $keys);
                 }
             );
@@ -427,7 +398,7 @@
         protected static function _insert(array $info, $replace = false, $return_model = true) {
 
             $config        = core::config()->entities;
-            $source_driver = self::source_driver(false);
+            $source_driver = 'record_driver_' . (static::SOURCE_ENGINE ?: $config['default_source_engine']);
             $info          = $source_driver::insert(
                 static::ENTITY_NAME . '_dao',
                 $info,
@@ -481,7 +452,7 @@
         protected static function _inserts(array $infos, $keys_match = true, $replace = false, $return_collection = true) {
 
             $config        = core::config()->entities;
-            $source_driver = self::source_driver(false);
+            $source_driver = 'record_driver_' . (static::SOURCE_ENGINE ?: $config['default_source_engine']);
             $infos         = $source_driver::inserts(
                 static::ENTITY_NAME . '_dao',
                 $infos,
@@ -568,7 +539,7 @@
             $self          = static::ENTITY_NAME . '_dao';
             $pk            = static::PRIMARY_KEY;
 
-            $source_driver = self::source_driver(false);
+            $source_driver = 'record_driver_' . (static::SOURCE_ENGINE ?: $config['default_source_engine']);
             $source_driver::update($self, static::PRIMARY_KEY, $model, $info);
 
             self::cache_batch_start();
@@ -621,7 +592,7 @@
             $self          = static::ENTITY_NAME . '_dao';
             $pk            = static::PRIMARY_KEY;
 
-            $source_driver = self::source_driver(false);
+            $source_driver = 'record_driver_' . (static::SOURCE_ENGINE ?: $config['default_source_engine']);
             $source_driver::delete($self, $pk, $model);
 
             self::cache_batch_start();
@@ -668,7 +639,7 @@
             $self          = static::ENTITY_NAME . '_dao';
             $pks           = $collection->field(static::PRIMARY_KEY);
 
-            $source_driver = self::source_driver(false);
+            $source_driver = 'record_driver_' . (static::SOURCE_ENGINE ?: $config['default_source_engine']);
             $source_driver::deletes($self, static::PRIMARY_KEY, $collection);
 
             $delete_cache_keys = [];

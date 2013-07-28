@@ -46,6 +46,14 @@
         // ]
     },
 
+    "acl": {
+
+        // When a user does not have the required ACL permissions to access a given controller/action, fail silently
+        // this means the user will not be aware that the controller exists, as opposed to seeing a "403: Access Denied"
+        // page
+        "silent_acccess_denied": true
+    },
+
     "entities": {
         "default_source_engine":            "mysql",
         "default_source_engine_pool_read":  "master",

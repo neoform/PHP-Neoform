@@ -451,8 +451,13 @@
                     if (core::auth()->logged_in()) {
                         // And does not have permission - access denied
                         if (! core::auth()->user()->has_access($controller['resource_ids'])) {
-                            core::output()->redirect('error/access_denied');
-                            return;
+                            if (! core::config()->acl['silent_acccess_denied']) {
+                                controller::show403();
+                                return;
+                            } else {
+                                // Skip any remaining controllers, and execute the last valid controller
+                                break;
+                            }
                         }
 
                     // If user is not logged in

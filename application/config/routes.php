@@ -67,15 +67,18 @@
                             'en' => 'password',
                             //'fr' => 'mot_de_passe',
                         ],
+                        'segments' => [
+                            3 => 'action',
+                        ],
                     ]),
                     'email' => new http_route([
                         'controller' => 'controller_account_email',
-                        'segments'   => [
-                            3 => 'action',
-                        ],
                         'locale' => [
                             'en' => 'email',
                             //'fr' => 'courriel',
+                        ],
+                        'segments'   => [
+                            3 => 'action',
                         ],
                     ]),
 

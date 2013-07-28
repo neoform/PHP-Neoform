@@ -16,8 +16,8 @@
 
                 $(".tiny.error", page.form).css('display', 'none').html('');
 
-                $.ajax({
-                    "url": "/account/email/update?rc=<?php echo core::http()->get_ref(); ?>",
+                Core.ajax({
+                    "url": "/account/email/update",
                     "data": {
                         "email": $("input[name='email']", page.form).val()
                     },

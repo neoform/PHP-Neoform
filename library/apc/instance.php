@@ -4,7 +4,7 @@
      * APC cache instance
      * to use: core::cache_apc()
      */
-    class cache_apc_instance extends ArrayObject {
+    class apc_instance extends ArrayObject {
 
         use core_instance;
 
@@ -14,14 +14,14 @@
          * @param $key
          *
          * @return mixed
-         * @throws cache_apc_exception
+         * @throws apc_exception
          */
         public function __get($key) {
             $data = apc_fetch($key, $success);
             if ($success) {
                 return $data;
             } else {
-                throw new cache_apc_exception('Cache does not exist');
+                throw new apc_exception('Cache does not exist');
             }
         }
 
@@ -31,14 +31,14 @@
          * @param $key
          *
          * @return mixed
-         * @throws cache_apc_exception
+         * @throws apc_exception
          */
         public function get($key) {
             $data = apc_fetch($key, $success);
             if ($success) {
                 return $data;
             } else {
-                throw new cache_apc_exception('Cache does not exist');
+                throw new apc_exception('Cache does not exist');
             }
         }
 

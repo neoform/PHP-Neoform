@@ -1,26 +1,26 @@
 <?php
 
-    class cache_memcache_factory implements core_factory {
+    class memcache_factory implements core_factory {
 
         public static function init(array $args) {
 
             $name = count($args) ? current($args) : null;
             $server_pools = core::config()->memcache['pools'];
 
-            if (! isset($server_pools[$name]) || $server_pools[$name] === null) {
-                throw new cache_memcache_exception('Memcached instance configuration "' . $name . '" does not exist');
+            if (empty($server_pools[$name])) {
+                throw new memcache_exception("Memcached instance configuration \"{$name}\" does not exist");
             }
 
             try {
-                $connection = new cache_memcache_instance($name);
+                $connection = new memcache_instance($name);
 
                 // big bug in this that causes keys not to match - nate thinks its because there's a null char in the key or something.
-                $connection->setOption(cache_memcache_instance::OPT_BINARY_PROTOCOL, false);
-                $connection->setOption(cache_memcache_instance::OPT_LIBKETAMA_COMPATIBLE, true);
-                //$connection->setOption(cache_memcache_instance::OPT_PREFIX_KEY, core::config()->memcache['key_prefix'] . ':');
+                $connection->setOption(memcache_instance::OPT_BINARY_PROTOCOL, false);
+                $connection->setOption(memcache_instance::OPT_LIBKETAMA_COMPATIBLE, true);
+                //$connection->setOption(memcache_instance::OPT_PREFIX_KEY, core::config()->memcache['key_prefix'] . ':');
 
             } catch (exception $e) {
-                throw new cache_memcache_exception('Could not create memcached instance "' . $name . ' -- ' . $e->getMessage());
+                throw new memcache_exception("Could not create memcached instance \"{$name}\" -- " . $e->getMessage());
             }
 
             $existing_memcache_servers = $connection->getServerList();
@@ -44,16 +44,16 @@
                     }
                 }
 
-                if (count($memcache_servers)) {
+                if ($memcache_servers) {
                     try {
                         $connection->addServers($memcache_servers);
                     } catch (exception $e) {
-                        throw new cache_memcache_exception('Could not create memcached instance "' . $name . ' -- ' . $e->getMessage());
+                        throw new memcache_exception("Could not create memcached instance \"{$name}\" -- " . $e->getMessage());
                     }
                 }
 
                 //if (count($memcache_servers) === 0) {
-                //    throw new cache_memcache_exception('Memcached instance configuration "' . $name . '" does not exist');
+                //    throw new memcache_exception('Memcached instance configuration "' . $name . '" does not exist');
                 //}
             }
 

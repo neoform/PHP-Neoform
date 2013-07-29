@@ -7,11 +7,11 @@
             $config = core::config()->redis;
             $name   = $args ? current($args) : $config['default_pool_write'];
 
-            if (! isset($config['pools'][$name]) || $config['pools'][$name] === null) {
-                throw new cache_redis_exception("Redis server configuration \"{$name}\" does not exist");
+            if (empty($config['pools'][$name])) {
+                throw new redis_exception("Redis server configuration \"{$name}\" does not exist");
             }
 
-            $server = $config['pools'][$name][mt_rand(0, count($config['pools'][$name]) - 1)];
+            $server = $config['pools'][$name][array_rand($config['pools'][$name])];
 
             try {
                 $redis = new redis;
@@ -27,7 +27,7 @@
                     } else if (isset($server['socket'])) {
                         $redis->pconnect($server['socket']);
                     } else {
-                        throw new cache_redis_exception("Redis server configuration \"{$name}\" does not contain a host or a socket.");
+                        throw new redis_exception("Redis server configuration \"{$name}\" does not contain a host or a socket.");
                     }
                 } else {
                     if (isset($server['host'])) {
@@ -40,7 +40,7 @@
                     } else if (isset($server['socket'])) {
                         $redis->connect($server['socket']);
                     } else {
-                        throw new cache_redis_exception("Redis server configuration \"{$name}\" does not contain a host or a socket.");
+                        throw new redis_exception("Redis server configuration \"{$name}\" does not contain a host or a socket.");
                     }
                 }
 
@@ -48,7 +48,7 @@
                 $redis->setOption(Redis::OPT_PREFIX, "{$config['key_prefix']}:");
 
             } catch (RedisException $e) {
-                throw new cache_redis_exception("Could not create redis instance \"{$name}\" -- " . $e->getMessage());
+                throw new redis_exception("Could not create redis instance \"{$name}\" -- " . $e->getMessage());
             }
 
             return $redis;

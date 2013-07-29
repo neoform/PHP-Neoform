@@ -47,9 +47,9 @@
          */
         public static function exists($key, $pool) {
             try {
-                core::cache_apc()->get(self::key_prefix() . $key);
+                core::apc()->get(self::key_prefix() . $key);
                 return true;
-            } catch (cache_apc_exception $e) {
+            } catch (apc_exception $e) {
                 return false;
             }
         }
@@ -101,7 +101,7 @@
          * @param integer $offset
          */
         public static function increment($key, $pool, $offset=1){
-            core::cache_apc()->increment(self::key_prefix() . $key, $offset);
+            core::apc()->increment(self::key_prefix() . $key, $offset);
         }
 
         /**
@@ -112,7 +112,7 @@
          * @param integer $offset
          */
         public static function decrement($key, $pool, $offset=1){
-            core::cache_apc()->decrement(self::key_prefix() . $key, $offset);
+            core::apc()->decrement(self::key_prefix() . $key, $offset);
         }
 
         /**
@@ -128,7 +128,7 @@
         public static function get($key, $pool) {
             try {
                 return [
-                    core::cache_apc()->get(self::key_prefix() . $key),
+                    core::apc()->get(self::key_prefix() . $key),
                 ];
             } catch (cache_apc_exception $e) {
 
@@ -144,7 +144,7 @@
          * @return mixed
          */
         public static function set($key, $pool, $data, $ttl=null) {
-            return core::cache_apc()->set(self::key_prefix() . $key, $data, $ttl);
+            return core::apc()->set(self::key_prefix() . $key, $data, $ttl);
         }
 
         /**
@@ -158,14 +158,14 @@
         public static function get_multi(array $keys, $pool) {
 
             $prefix_apc = self::key_prefix();
-            $apc        = core::cache_apc();
+            $apc        = core::apc();
 
             $matched_rows = [];
             foreach ($keys as $index => $key) {
                 try {
                     $matched_rows[$index] = $apc->get($prefix_apc . $key);
                     //unset($keys[$index]);
-                } catch (cache_apc_exception $e) {
+                } catch (apc_exception $e) {
 
                 }
             }
@@ -182,7 +182,7 @@
          */
         public static function set_multi(array $rows, $pool, $ttl=null) {
             $prefix = self::key_prefix();
-            $apc    = core::cache_apc();
+            $apc    = core::apc();
             foreach ($rows as $key => $row) {
                 $apc->set($prefix . $key, $row, $ttl);
             }
@@ -195,7 +195,7 @@
          * @param string $pool
          */
         public static function delete($key, $pool) {
-            core::cache_apc()->del(self::key_prefix() . $key);
+            core::apc()->del(self::key_prefix() . $key);
         }
 
         /**
@@ -207,7 +207,7 @@
         public static function delete_multi(array $keys, $pool){
 
             if (count($keys)) {
-                $apc = core::cache_apc();
+                $apc = core::apc();
                 $prefix = self::key_prefix();
                 foreach ($keys as $key) {
                     $apc->del($prefix . $key);

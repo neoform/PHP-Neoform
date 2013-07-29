@@ -46,7 +46,7 @@
          * @param integer $offset
          */
         public static function increment($key, $pool, $offset=1) {
-            core::cache_memcache($pool)->increment(self::key_prefix() . $key, $offset);
+            core::memcache($pool)->increment(self::key_prefix() . $key, $offset);
         }
 
         /**
@@ -57,7 +57,7 @@
          * @param integer $offset
          */
         public static function decrement($key, $pool, $offset=1) {
-            core::cache_memcache($pool)->decrement(self::key_prefix() . $key, $offset);
+            core::memcache($pool)->decrement(self::key_prefix() . $key, $offset);
         }
 
         /**
@@ -69,7 +69,7 @@
          * @return boolean
          */
         public static function exists($key, $pool) {
-            $memcache = core::cache_memcache($pool);
+            $memcache = core::memcache($pool);
             $memcache->get(self::key_prefix() . $key);
             return (bool) $memcache->row_found();
         }
@@ -124,7 +124,7 @@
          * @return array|null returns null if record does not exist.
          */
         public static function get($key, $pool) {
-            $memcache = core::cache_memcache($pool);
+            $memcache = core::memcache($pool);
             $data = $memcache->get(self::key_prefix() . $key);
             if ($memcache->row_found()) {
                 return [
@@ -142,7 +142,7 @@
          * @return mixed
          */
         public static function set($key, $pool, $data, $ttl=null) {
-            return core::cache_memcache($pool)->set(
+            return core::memcache($pool)->set(
                 self::key_prefix() . $key,
                 $data,
                 $ttl
@@ -166,7 +166,7 @@
                 $mc_keys[$index] = $prefix . $key;
             }
 
-            $found_rows = core::cache_memcache($pool)->getMulti($mc_keys);
+            $found_rows = core::memcache($pool)->getMulti($mc_keys);
 
             $matched_rows = [];
             if ($found_rows && count($found_rows)) {
@@ -200,7 +200,7 @@
                 $set[$prefix . $key] = $row;
             }
 
-            return core::cache_memcache($pool)->setMulti($set, $ttl);
+            return core::memcache($pool)->setMulti($set, $ttl);
         }
 
         /**
@@ -210,7 +210,7 @@
          * @param string $pool
          */
         public static function delete($key, $pool) {
-            core::cache_memcache($pool)->delete(self::key_prefix() . $key);
+            core::memcache($pool)->delete(self::key_prefix() . $key);
         }
 
         /**
@@ -222,7 +222,7 @@
         public static function delete_multi(array $keys, $pool) {
             if (count($keys)) {
                 reset($keys);
-                $mc = core::cache_memcache($pool);
+                $mc = core::memcache($pool);
                 $prefix_mc = self::key_prefix();
                 foreach ($keys as $key) {
                     $mc->delete($prefix_mc . $key);

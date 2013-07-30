@@ -42,7 +42,7 @@
                 }
             }
 
-            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->entities['default_source_engine_pool_read'])->prepare("
+            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()['entities']['default_source_engine_pool_read'])->prepare("
                 SELECT " . join(',', $select_fields) . "
                 FROM `" . self::table($self::TABLE) . "`
                 " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
@@ -88,7 +88,7 @@
                 $where[] = '(' . join(" AND ", $w) . ')';
             }
 
-            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()->entities['default_source_engine_pool_read'])->prepare("
+            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()['entities']['default_source_engine_pool_read'])->prepare("
                 SELECT
                     " . join(',', $select_fields) . ",
                     CONCAT(" . join(", ':', ", $key_fields) . ") `__cache_key__`
@@ -129,7 +129,7 @@
                 $insert_fields[] = "`{$k}`";
             }
 
-            $insert = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->entities['default_source_engine_pool_write'])->prepare("
+            $insert = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()['entities']['default_source_engine_pool_write'])->prepare("
                 " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO
                 `" . self::table($self::TABLE) . "`
                 ( " . join(', ', $insert_fields) . " )
@@ -152,7 +152,7 @@
         public static function inserts($self, array $infos, $replace) {
             $insert_fields = [];
             $info          = current($infos);
-            $sql           = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->entities['default_source_engine_pool_write']);
+            $sql           = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()['entities']['default_source_engine_pool_write']);
 
             if (count($infos) > 1) {
                 $sql->beginTransaction();
@@ -208,7 +208,7 @@
                 }
             }
 
-            $update = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->entities['default_source_engine_pool_write'])->prepare("
+            $update = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()['entities']['default_source_engine_pool_write'])->prepare("
                 UPDATE `" . self::table($self::TABLE) . "`
                 SET " . join(", \n", $update_fields) . "
                 WHERE " . join(" AND \n", $where_fields) . "
@@ -238,7 +238,7 @@
                 }
             }
 
-            $delete = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->entities['default_source_engine_pool_write'])->prepare("
+            $delete = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()['entities']['default_source_engine_pool_write'])->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE " . join(" AND ", $where) . "
             ");
@@ -271,7 +271,7 @@
                 $where[] = "(" . join(" AND ", $w) . ")";
             }
 
-            $delete = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()->entities['default_source_engine_pool_write'])->prepare("
+            $delete = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()['entities']['default_source_engine_pool_write'])->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE " . join(" OR ", $where) . "
             ");

@@ -11,7 +11,7 @@
 
         public function __construct($file=null) {
             $this->exchangeArray(
-                config_dao::get($file !== null ? '/' . $file : '')
+                config_dao::get($file)
             );
         }
 

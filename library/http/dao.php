@@ -62,10 +62,10 @@
 
             $return = null;
 
-            foreach (core::config()->system['locale']['allowed'] as $file_locale) {
+            foreach (core::config()['locale']['allowed'] as $file_locale) {
                 $info = [
                     'last_modified' => filectime($path),
-                    'controllers'    => [],
+                    'controllers'   => [],
                     'routes'        => [],
                 ];
 

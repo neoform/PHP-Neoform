@@ -6,7 +6,7 @@
             $name = $args ? current($args) : null;
 
             //get the class that instatiated this singleton
-            $config = core::config()->sql;
+            $config = core::config()['sql'];
 
             if (! isset($config['pools'][$name])) {
                 if ($name !== $config['default_pool_write'] && $config['default_pool_write']) {
@@ -20,8 +20,8 @@
             //select a random connection:
             $connection = $config['pools'][$name][array_rand($config['pools'][$name])];
 
-            $dsn   = isset($connection['dsn']) ? $connection['dsn'] : null;
-            $user  = isset($connection['user']) ? $connection['user'] : null;
+            $dsn  = isset($connection['dsn']) ? $connection['dsn'] : null;
+            $user = isset($connection['user']) ? $connection['user'] : null;
 
             if (! $dsn || ! $user) {
                 throw new error_exception("The database connection \"{$name}\" has not been configured properly.");

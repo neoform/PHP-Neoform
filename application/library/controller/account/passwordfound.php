@@ -8,7 +8,7 @@
                 core::output()->redirect(core::flash()->get('login_bounce'));
             } else {
                 list($user, $new_password) = user_lostpassword_api::find(
-                    new site_model(core::config()->system['site_id']),
+                    new site_model(core::config()['core']['site_id']),
                     core::http()->segment('code')
                 );
 

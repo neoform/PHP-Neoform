@@ -16,7 +16,7 @@
             $key = 'db:' . $self::TABLE . ":{$pk}";
 
             $redis = core::redis(
-                $self::SOURCE_ENGINE_READ ?: core::config()->entities['default_source_engine_pool_read']
+                $self::SOURCE_ENGINE_READ ?: core::config()['entities']['default_source_engine_pool_read']
             );
             $data  = $redis->get($key);
 
@@ -44,7 +44,7 @@
             }
 
             $redis = core::redis(
-                $self::SOURCE_ENGINE_READ ?: core::config()->entities['default_source_engine_pool_read']
+                $self::SOURCE_ENGINE_READ ?: core::config()['entities']['default_source_engine_pool_read']
             );
 
             // Redis returns the results in order - if the key doesn't exist, false is returned - this problematic
@@ -167,7 +167,7 @@
          */
         public static function insert($self, array $info, $autoincrement, $replace) {
             core::redis(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()->entities['default_source_engine_pool_write']
+                $self::SOURCE_ENGINE_WRITE ?: core::config()['entities']['default_source_engine_pool_write']
             )->set(
                 'db:' . $self::TABLE . ':' . $info[$self::PRIMARY_KEY],
                 $info
@@ -207,7 +207,7 @@
          */
         public static function update($self, $pk, record_model $model, array $info) {
             return core::redis(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()->entities['default_source_engine_pool_write']
+                $self::SOURCE_ENGINE_WRITE ?: core::config()['entities']['default_source_engine_pool_write']
             )->set(
                 'db:' . $self::TABLE . ":{$model->$pk}",
                 array_merge($model->export(), $info)
@@ -223,7 +223,7 @@
          */
         public static function delete($self, $pk, record_model $model) {
             return core::redis(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()->entities['default_source_engine_pool_write']
+                $self::SOURCE_ENGINE_WRITE ?: core::config()['entities']['default_source_engine_pool_write']
             )->delete('db:' . $self::TABLE . ":{$model->$pk}");
         }
 
@@ -241,7 +241,7 @@
             }
 
             return core::redis(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()->entities['default_source_engine_pool_write']
+                $self::SOURCE_ENGINE_WRITE ?: core::config()['entities']['default_source_engine_pool_write']
             )->delete($keys);
         }
     }

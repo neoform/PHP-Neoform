@@ -24,11 +24,11 @@
             static $config;
 
             if (! $config) {
-                $config = core::config()->system['locale'];
+                $config = core::config()['locale'];
             }
 
             $get = function() use ($locale_iso2, $namespace_id) {
-                $messages = core::sql(core::config()->sql['default_pool_read'])->prepare("
+                $messages = core::sql(core::config()['sql']['default_pool_read'])->prepare("
                     SELECT
                         locale_key.body k,
                         locale_key_message.body v
@@ -73,7 +73,7 @@
          */
         public static function flush_by_locale_namespace($locale_iso2, locale_namespace_model $namespace) {
 
-            $config = core::config()->system['locale'];
+            $config = core::config()['locale'];
 
             cache_lib::delete(
                 $config['cache_engine'],

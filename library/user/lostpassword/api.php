@@ -44,7 +44,7 @@
                 //email the request to the friend to tell them the good news
                 $email            = new email_model('password/lost');
                 $email->url       = core::http()->server('surl') . 'account/passwordreset/' . $hash;
-                $email->site_name = core::config()->system['site_name'];
+                $email->site_name = core::config()['core']['site_name'];
 
                 try {
                     $email->send($user->email, 'html');

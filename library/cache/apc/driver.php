@@ -14,7 +14,7 @@
          */
         public static function key_prefix() {
             if (self::$key_prefix === null) {
-                self::$key_prefix = core::config()->apc['key_prefix'] . ':';
+                self::$key_prefix = core::config()['apc']['key_prefix'] . ':';
             }
             return self::$key_prefix;
         }

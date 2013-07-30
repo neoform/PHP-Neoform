@@ -53,18 +53,20 @@
          */
         public function cookie_set($key, $val, $ttl=null) {
 
+            $config = core::config();
+
             if ($ttl === null || ! is_numeric($ttl)) {
-                $ttl = time() + core::config()->cookies['ttl'];
+                $ttl = time() + $config['cookies']['ttl'];
             }
 
             return setcookie(
                 $key,
                 base64_encode($val),
                 time() + intval($ttl),
-                isset(core::config()->cookies['path']) ? core::config()->cookies['path'] : core::http()->server('subdir'),
-                core::config()->system['domain'],
-                (bool) core::config()->cookies['secure'],
-                (bool) core::config()->cookies['httponly']
+                isset($config['cookies']['path']) ? $config['cookies']['path'] : core::http()->server('subdir'),
+                $config['http']['domain'],
+                (bool) $config['cookies']['secure'],
+                (bool) $config['cookies']['httponly']
             );
         }
 
@@ -76,12 +78,13 @@
          * @return bool
          */
         public static function cookie_delete($key) {
+            $config = core::config();
             return setcookie(
                 $key,
                 '',
                 time() - 100000,
-                isset(core::config()->cookies['path']) ? core::config()->cookies['path'] : core::http()->server('subdir'),
-                core::config()->system['domain']
+                isset($config['cookies']['path']) ? $config['cookies']['path'] : core::http()->server('subdir'),
+                $config['core']['domain']
             );
         }
 
@@ -138,23 +141,23 @@
                 switch ((string) $type) {
                     case 'json':
                         $this->output_type = self::JSON;
-                        $this->header('Content-type', self::JSON . '; charset="' . core::config()->system['encoding'] . '"');
+                        $this->header('Content-type', self::JSON . '; charset="' . core::config()['core']['encoding'] . '"');
                         break;
 
                     case 'xml':
                         $this->output_type = self::XML;
-                        $this->header('Content-type', self::XML . '; charset="' . core::config()->system['encoding'] . '"');
+                        $this->header('Content-type', self::XML . '; charset="' . core::config()['core']['encoding'] . '"');
                         break;
 
                     case 'html':
                     case '':
                         $this->output_type = self::HTML;
-                        $this->header('Content-type', self::HTML . '; charset="' . core::config()->system['encoding'] . '"');
+                        $this->header('Content-type', self::HTML . '; charset="' . core::config()['core']['encoding'] . '"');
                         break;
 
                     default:
                         $this->output_type = $type;
-                        $this->header('Content-type', $type . '; charset="' . core::config()->system['encoding'] . '"');
+                        $this->header('Content-type', $type . '; charset="' . core::config()['core']['encoding'] . '"');
                         break;
                 }
                 return $this;

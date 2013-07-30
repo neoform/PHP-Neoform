@@ -21,6 +21,7 @@
         protected $files;
         protected $server;
         protected $config;
+        protected $locale_config;
         protected $cookies;
 
         /**
@@ -36,6 +37,7 @@
          *
          * @param string $router_path
          * @param array $config
+         * @param array $locale_config
          * @param array $get
          * @param array $post
          * @param array $files
@@ -44,17 +46,18 @@
          * @returns array
          * @throws http_exception
          */
-        public function __construct($router_path, array $config, array $get, array $post, array $files, array $server, array $cookies) {
+        public function __construct($router_path, array $config, array $locale_config, array $get, array $post, array $files, array $server, array $cookies) {
             if ($router_path === false) {
                 throw new http_exception('Please set the routing path');
             }
 
-            $this->get     = $get;
-            $this->post    = $post;
-            $this->files   = $files;
-            $this->server  = $server;
-            $this->config  = $config;
-            $this->cookies = $cookies;
+            $this->get           = $get;
+            $this->post          = $post;
+            $this->files         = $files;
+            $this->server        = $server;
+            $this->config        = $config;
+            $this->locale_config = $locale_config;
+            $this->cookies       = $cookies;
 
             // Make sure require variables are set
             $subdomains = isset($config['subdomains']) && is_array($config['subdomains']) ? $config['subdomains'] : [];
@@ -81,7 +84,7 @@
                 }
 
                 // if locale is the first param of the url, override the default locale
-                if ($key === 1 && in_array($this->segments[$key], $config['locale']['allowed'], true)) {
+                if ($key === 1 && in_array($this->segments[$key], $this->locale_config['allowed'], true)) {
                     core::locale()->set($this->segments[$key]);
                     unset($this->segments[$key]);
                     $unsetted = true;
@@ -451,7 +454,7 @@
                     if (core::auth()->logged_in()) {
                         // And does not have permission - access denied
                         if (! core::auth()->user()->has_access($controller['resource_ids'])) {
-                            if (! core::config()->acl['silent_acccess_denied']) {
+                            if (! $this->config['silent_acccess_denied']) {
                                 controller::show403();
                                 return;
                             } else {
@@ -567,13 +570,13 @@
 
             $good = true;
 
-            $cookied_code = $this->cookie(core::config()->auth['cookie']);
+            $cookied_code = $this->cookie(core::config()['auth']['cookie']);
 
             if (! $cookied_code) {
                 $cookied_code = auth_lib::create_hash_cookie();
             }
 
-            $timeout = (int) core::config()->session['ref_timeout'];
+            $timeout = (int) $this->config['session']['ref_timeout'];
             if ($rc === null) {
                 $httphash = isset($this->get['rc']) ? base64_decode($this->get['rc']) : false;
             } else {
@@ -631,7 +634,7 @@
 
             if (! $this->ref_code_cache) {
 
-                $cookied_code = $this->cookie(core::config()->auth['cookie']);
+                $cookied_code = $this->cookie(core::config()['auth']['cookie']);
 
                 if (! $cookied_code) {
                     $cookied_code = auth_lib::create_hash_cookie();
@@ -657,7 +660,7 @@
         protected function ref_hash($code, $timestamp) {
 
             if (! $this->ref_secret_cache) {
-                $this->ref_secret_cache = core::config()->session['ref_secret'];
+                $this->ref_secret_cache = $this->config['session']['ref_secret'];
             }
 
             return hash('whirlpool', $code . $timestamp . $this->ref_secret_cache, 1) . $timestamp;

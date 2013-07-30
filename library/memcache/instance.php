@@ -10,7 +10,7 @@
 
         public function __construct($name) {
             //only maintain persistent connections for each site (key_prefix is used for this)
-            $prefix = core::config()->memcache['key_prefix'];
+            $prefix = core::config()['memcache']['key_prefix'];
             parent::__construct(($prefix ? "{$prefix}:" : '') . $name);
         }
 

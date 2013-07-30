@@ -21,7 +21,7 @@
                     $this->_default_sender = '=?UTF-8?B?' . base64_encode($default_sender_name) . '?= <' . $default_sender_email . '>';
                 }
             } else {
-                $this->_default_sender = '=?UTF-8?B?' . base64_encode(core::config()->system['site_name']) . '?= <noreply@' . core::config()->system['domain'] . '>';
+                $this->_default_sender = '=?UTF-8?B?' . base64_encode(core::config()['core']['site_name']) . '?= <noreply@' . core::config()['http']['domain'] . '>';
             }
 
             $this->_vars = [];

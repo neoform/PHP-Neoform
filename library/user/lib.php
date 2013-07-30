@@ -5,7 +5,7 @@
         public static function default_status() {
             static $status;
             if ($status === null) {
-                $status = new user_status_model(core::config()->auth['default_user_account_status_id']);
+                $status = new user_status_model(core::config()['auth']['default_user_account_status_id']);
             }
             return $status;
         }
@@ -13,17 +13,17 @@
         public static function default_hashmethod() {
             static $hashmethod;
             if ($hashmethod === null) {
-                $hashmethod = new user_hashmethod_model(core::config()->auth['default_hash_method_id']);
+                $hashmethod = new user_hashmethod_model(core::config()['auth']['default_hash_method_id']);
             }
             return $hashmethod;
         }
 
         public static function default_hashmethod_cost() {
-            return (int) core::config()->auth['default_hash_method_cost'];
+            return (int) core::config()['auth']['default_hash_method_cost'];
         }
 
         public static function max_salt_length() {
-            return (int) core::config()->auth['max_salt_length'];
+            return (int) core::config()['auth']['max_salt_length'];
         }
 
         public static function generate_salt() {

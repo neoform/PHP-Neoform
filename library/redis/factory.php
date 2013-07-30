@@ -4,7 +4,7 @@
 
         public static function init(array $args) {
 
-            $config = core::config()->redis;
+            $config = core::config()['redis'];
             $name   = $args ? current($args) : $config['default_pool_write'];
 
             if (empty($config['pools'][$name])) {

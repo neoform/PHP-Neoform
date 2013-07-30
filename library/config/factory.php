@@ -6,6 +6,6 @@
     class config_factory implements core_factory {
 
         public static function init(array $args) {
-            return new config_instance(count($args) ? current($args) : null);
+            return config_dao::get($args ? current($args) : null);
         }
     }

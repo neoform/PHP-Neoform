@@ -17,7 +17,7 @@
                 try {
                     // Create user
                     $user = user_api::insert(core::http()->posts());
-                    $site = new site_model(core::config()->system['site_id']);
+                    $site = new site_model(core::config()['core']['site_id']);
 
                     // Create user-site link
                     user_site_dao::insert([

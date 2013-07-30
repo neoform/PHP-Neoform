@@ -3,11 +3,11 @@
     class http_factory implements core_factory {
 
         public static function init(array $args) {
-
-            if (is_array($args) && count($args)) {
+            if ($args) {
                 return new http_instance(
                     $args[0],
-                    core::config()->system,
+                    core::config()['http'],
+                    core::config()['locale'],
                     $args[1],
                     $args[2],
                     $args[3],
@@ -17,7 +17,8 @@
             } else {
                 return new http_instance(
                     '',
-                    core::config()->system,
+                    core::config()['http'],
+                    core::config()['locale'],
                     [],
                     [],
                     [],

@@ -24,7 +24,7 @@
             } else {
                 try {
                     auth_api::login(
-                        new site_model(core::config()->system['site_id']),
+                        new site_model(core::config()['core']['site_id']),
                         core::http()->posts()
                     );
                     $json->status = 'good';

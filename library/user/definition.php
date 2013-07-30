@@ -11,9 +11,9 @@
         const PRIMARY_KEY         = 'id';
         const BINARY_PK           = false;
         const ENTITY_NAME         = 'user';
-        const CACHE_ENGINE        = 'redis';
-        const CACHE_ENGINE_READ   = 'master';
-        const CACHE_ENGINE_WRITE  = 'master';
+        const CACHE_ENGINE        = null;
+        const CACHE_ENGINE_READ   = null;
+        const CACHE_ENGINE_WRITE  = null;
         const SOURCE_ENGINE       = null;
         const SOURCE_ENGINE_READ  = null;
         const SOURCE_ENGINE_WRITE = null;

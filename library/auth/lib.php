@@ -15,9 +15,9 @@
             // Create expiry date for session
             $expires = new datetime();
             if ($remember) {
-                $expires->add(new DateInterval('P' . core::config()->auth['long_auth_lifetime']));
+                $expires->add(new DateInterval('P' . core::config()['auth']['long_auth_lifetime']));
             } else {
-                $expires->add(new DateInterval('P' . core::config()->auth['normal_auth_lifetime']));
+                $expires->add(new DateInterval('P' . core::config()['auth']['normal_auth_lifetime']));
             }
 
             // Create session
@@ -45,7 +45,7 @@
          * @return null|string
          */
         public static function get_hash_cookie() {
-            if (strlen($hash = core::http()->cookie(core::config()->auth['cookie'])) === 40) {
+            if (strlen($hash = core::http()->cookie(core::config()['auth']['cookie'])) === 40) {
                 return $hash;
             } else {
                 return self::create_hash_cookie();
@@ -66,7 +66,7 @@
             }
 
             core::output()->cookie_set(
-                core::config()->auth['cookie'],
+                core::config()['auth']['cookie'],
                 $hash
             );
 

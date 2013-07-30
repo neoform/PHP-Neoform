@@ -20,7 +20,7 @@
     */
     spl_autoload_register(
         function($name) {
-            require(str_replace(['\\', '_'], DIRECTORY_SEPARATOR, $name) . '.' . EXT);
+            return include(str_replace(['\\', '_'], DIRECTORY_SEPARATOR, $name) . '.' . EXT);
         },
         true,
         true
@@ -61,7 +61,7 @@
         public static function __callstatic($type, array $args) {
             $name = count($args) === 1 ? (string) current($args) : '';
             if (! isset(self::$instances[$type][$name])) {
-                $class = $type . '_factory';
+                $class = "{$type}_factory";
                 self::$instances[$type][$name] = $class::init($args);
             }
             return self::$instances[$type][$name];
@@ -79,21 +79,8 @@
             if (isset(self::$paths[$type])) {
                 return self::$paths[$type];
             }
-            throw new exception('Path ' . $type . ' not set');
+            throw new exception("Path {$type} not set");
         }
-
-        /**
-         * Manually load a file if the autoloader can't do it
-         *
-         * @access public
-         * @static
-         * @param mixed $name
-         * @return void
-         */
-        public static function req($name) {
-            require_once(str_replace(['\\', '_'], '/', strtolower($name)) . '.' . EXT);
-        }
-
 
         /**
          * Return the name of the environment
@@ -226,25 +213,11 @@
             );
             define('WEB_ROOT', getcwd() . '/'); // Store the current dir as being the web root
 
-            // Standard errors
-            set_error_handler(function($err_number, $err_string, $err_file, $err_line) {
-                if (error_reporting()) {
-                    error_lib::log(new ErrorException($err_string, $err_number, 0, $err_file, $err_line));
-                    switch ((string) core::context()) {
-                        case 'web':
-                            controller::error(500, null, null, true);
-                            echo core::output()->send_headers()->body();
-                            die;
+            // Uncaught exception handler
+            set_exception_handler(function(exception $e) {
 
-                        default:
-                            die("Error - " . $e->getMessage() . "\n");
-                    }
-                }
-            });
-
-            // Unhandled exceptions
-            set_exception_handler(function(Exception $e) {
                 error_lib::log($e, false);
+
                 switch ((string) core::context()) {
                     case 'web':
                         controller::error(500, null, null, true);
@@ -256,10 +229,21 @@
                 }
             });
 
-            // For fatal errors
+            // PHP Error handler
+            set_error_handler(function($err_number, $err_string, $err_file, $err_line) {
+
+                // error was suppressed with the @-operator
+                if (! error_reporting()) {
+                    return false;
+                }
+
+                throw new ErrorException($err_string, $err_number, 0, $err_file, $err_line);
+            });
+
+            // Fatal error shutdown handler
             register_shutdown_function(function() {
-                $error = error_get_last();
-                if ($error !== null) { //only grab error if there is one
+                //only grab error if there is one
+                if (($error = error_get_last()) !== null) {
                     //$type    = isset($error['type']) ? $error['type'] : null;
                     $message = isset($error['message']) ? $error['message'] : null;
                     $file    = isset($error['file']) ? $error['file'] : null;
@@ -297,8 +281,8 @@
             ini_set('display_errors', 'Off'); // do not display error(s) in browser - only affects non-fatal errors
             ini_set('display_startup_errors', 'Off');
 
-            mb_internal_encoding(core::config()->system['encoding']);
-            date_default_timezone_set(core::config()->system['timezone']);
+            mb_internal_encoding(core::config()['core']['encoding']);
+            date_default_timezone_set(core::config()['core']['timezone']);
         }
 
         /**

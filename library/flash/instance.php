@@ -24,7 +24,7 @@
          * @return mixed
          */
         public function get($key) {
-            $config = core::config()->session;
+            $config = core::config()['http']['session'];
             $engine = "cache_{$config['flash_cache_engine']}_driver";
             return $engine::get("{$this->hash}:{$key}", $config['flash_cache_pool_read']);
         }
@@ -39,7 +39,7 @@
          * @return mixed
          */
         public function set($key, $val, $ttl=null) {
-            $config = core::config()->session;
+            $config = core::config()['http']['session'];
             $engine = "cache_{$config['flash_cache_engine']}_driver";
             return $engine::set(
                 "{$this->hash}:{$key}",
@@ -57,7 +57,7 @@
          * @return mixed
          */
         public function del($key) {
-            $config = core::config()->session;
+            $config = core::config()['http']['session'];
             $engine = "cache_{$config['flash_cache_engine']}_driver";
             return $engine::delete("{$this->hash}:{$key}", $config['flash_cache_pool_write']);
         }

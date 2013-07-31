@@ -1,0 +1,294 @@
+<?php $this->inc('templates/header_admin'); ?>
+	
+	<script>
+		var page = {
+			
+			onload: function() {
+				page.div 	= $("#page");	
+				page.i 		= 0;
+				
+				$("button[name='new']", page.div).click(function(){
+					var body = prompt("Please enter the translation key");
+					if (body) {
+						page.create(body, 1); //default main namespace "1"
+					}
+				});		
+				
+				$("ul.list li", page.div).on("click", page.activateEdit);
+			
+				page.translations = <?php echo json_encode($this->translations); ?>;
+				page.locales = <?php echo json_encode($this->locales); ?>;
+				
+				for (var id in page.translations) {
+					page.addRow(id);
+				}
+			},
+			
+			translationText: function(id, locale) {
+				return ;
+			},
+			
+			addRow: function(id) {
+				var info = page.translations[id];
+				
+				var messages = $("<div/>");
+				for (var locale in info["messages"]) {
+					messages
+						.append(
+							$("<div/>")
+								.append(
+									$("<span/>")
+										.css({
+											"font-size": "11px",
+											"font-weight": "bold"
+										})
+										.html(page.locales[locale].name)
+								)
+								.append(
+									$("<div/>")
+										.addClass("translation")
+										.html(page.translations[id]["messages"][locale] ? page.translations[id]["messages"][locale] : "&laquo;NOT SET&raquo;")	 
+										.on("click", function(e) {
+											var self = $(this);
+											
+											if (! $("form", self).length) {
+												self
+													.html("")
+													.append(
+														$("<form/>")
+															.append(
+																$("<input/>")
+																	.attr("type", "text")
+																	.css("width", "340px")
+																	.val(page.translations[id]["messages"][locale])
+															)
+															.on("submit", function(e){
+																var val = $("input", this).val();
+																page.update(id, locale, val);
+																page.translations[id]["messages"][locale] = val;
+																$("form", self).remove();
+																self.html(page.translations[id]["messages"][locale] ? page.translations[id]["messages"][locale] : "&laquo;NOT SET&raquo;")
+																e.preventDefault();
+															})
+													);
+													
+												$("input", self).focus();
+											}
+											
+											e.preventDefault();
+										})
+								)
+						);
+				}
+				
+				$("<li/>")
+					.attr("id", "message-" + id)
+					.data("id", id)
+					.addClass(page.i++ % 2 === 1 ? "on" : "off")
+					.append(
+						$("<table/>")
+							.css("width", "100%")
+							.append(
+								$("<tr/>")
+									.append(
+										$("<td/>")
+											.addClass("key")
+											.html(info["key"])
+									)
+									.append(
+										$("<td/>")
+											.css({
+												"width": "30",
+												"text-align": "center"
+											})
+											.append(
+												$("<div/>").addClass("icon arrow-right")
+											)
+									)
+									.append(
+										$("<td/>")
+											.addClass("message")
+											.css("width", "400px")
+											.append(messages)
+									)
+									.append(
+										$("<td/>")
+											.css({
+												"width": "70",
+												"text-align": "right"
+											})
+											.append(
+												$("<button/>")
+													.html("Delete")
+													.on("click", function() {
+														page.del(
+															$(this)
+																.parents("li")
+																.data("id")
+														);
+													})
+											)
+									)
+							)
+					)
+					.appendTo("#translations");
+					
+					
+					
+			},
+			
+			create: function(body, namespace_id) {
+				
+				$.ajax({ 
+					url: "/admin/locale/messages/ajax/create?rc=<?php echo core::http()->get_ref(); ?>", 
+					data: {
+						"locale": 		"en",
+						"body": 		body,
+						"namespace_id": namespace_id					
+					},
+					success: function(response) {						
+						if (response.status === 'good') {
+							alert("Translation key added");
+						} else {
+							if (response.message && response.message.length) {
+								alert(response.message);
+							}
+						}
+			    	},
+			    	error: function(response) {
+			    		alert("There was a problem saving your translation key, please try again.");
+			    	}
+			    });
+			},
+			
+			update: function(id, locale, body) {
+				
+				$.ajax({ 
+					url: "/admin/locale/messages/ajax/update?rc=<?php echo core::http()->get_ref(); ?>", 
+					data: {
+						"key_id": 	id,
+						"locale": 	locale,
+						"body": 	body		
+					},
+					success: function(response) {						
+						if (response.status === 'good') {
+							return;
+						} else {
+							if (response.message && response.message.length) {
+								alert(response.message);
+							}
+						}
+			    	},
+			    	error: function(response) {
+			    		alert("There was a problem saving your translation, please try again.");
+			    	}
+			    });
+			},
+			
+			del: function(id) {
+				$.ajax({ 
+					url: "/admin/locale/messages/ajax/delete/id:" + id + "?rc=<?php echo core::http()->get_ref(); ?>", 
+					success: function(response) {						
+						if (response.status === 'good') {
+							alert("Translation deleted");
+							
+							$("ul#translations li#message-" + id)
+								.slideUp(500, function(){
+									$(this).remove();
+								})
+							
+						} else {
+							if (response.message && response.message.length) {
+								alert(response.message);
+							}
+						}
+			    	},
+			    	error: function(response) {
+			    		alert("There was a problem saving your translation, please try again.");
+			    	}
+			    });
+			},
+			
+			activateEdit: function(e) {
+				var tdKey 		= $("td.key", this);
+				var tdMessage 	= $("td.message", this);
+				
+				
+			}
+		};
+		
+		$(page.onload);
+					
+	</script>
+	
+	<style>
+		.key {
+			font-size: 14px;
+			line-height: 18px;
+			font-family: courier;			
+		}
+	
+		.translation {
+			cursor: pointer;
+			font-size: 14px;
+			line-height: 18px;
+			font-family: courier;
+		}
+		.translation:hover {
+			text-decoration: underline;
+		}
+	</style>
+	
+	<div id="page">
+		
+		<h3 class="header"><a href="/admin">Admin</a> / <a href="/admin/locale">Locale</a> / Translations</h3>
+			
+		<div style="position: relative;">
+			<div style="position: absolute; top: 0; left: 0;">
+				<?php $this->inc('admin/templates/sidebar'); ?>
+			</div>
+			<div style="margin: 0 0 0 180px;">
+				
+				<div class="nav">
+					<div class="side" style="margin: 3px 0 0 0;">
+						<button name="new">New Translation</button>
+					</div>
+					&nbsp;
+				</div>	
+				
+				<div class="inside">
+					
+					<?php if ($this->translations && count($this->translations)): ?>
+												
+						<div class="list-header">
+							<table width="100%" cellspacing="0" cellpadding="0">
+								<tr>
+									<td>
+										Key
+									</td>
+									<td width="30">
+										&nbsp;
+									</td>
+									<td width="400">
+										Translation
+									</td>
+									<td width="70">
+										&nbsp;
+									</td>
+								</tr>
+							</table>	
+						</div>
+						
+						<ul class="list" id="translations"></ul>
+					
+					<?php else: ?>
+					
+						<div class="fat big">No translations to show</div>
+					
+					<?php endif; ?>
+				</div>
+			</div>
+		</div>
+	</div>
+
+<?php $this->inc('templates/footer_admin'); ?>

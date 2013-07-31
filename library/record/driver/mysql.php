@@ -28,7 +28,7 @@
          */
         public static function by_pk($self, $pk) {
             $info = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entities']['default_source_engine_pool_read']
+                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
             )->prepare("
                 SELECT *
                 FROM `" . self::table($self::TABLE) . "`
@@ -54,7 +54,7 @@
          */
         public static function by_pks($self, array $pks) {
             $infos_rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entities']['default_source_engine_pool_read']
+                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
             )->prepare("
                 SELECT *
                 FROM `" . self::table($self::TABLE) . "`
@@ -88,7 +88,7 @@
             $pk = $self::PRIMARY_KEY;
 
             $rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entities']['default_source_engine_pool_read']
+                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
             )->prepare("
                 SELECT `{$pk}`
                 FROM `" . self::table($self::TABLE) . "`
@@ -114,7 +114,7 @@
          */
         public static function count($self) {
             $rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entities']['default_source_engine_pool_read']
+                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
             )->prepare("
                 SELECT COUNT(0) `num`
                 FROM `" . self::table($self::TABLE) . "`
@@ -155,7 +155,7 @@
             }
 
             $info = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entities']['default_source_engine_pool_read']
+                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
             )->prepare("
                 SELECT *
                 FROM `" . self::table($self::TABLE) . "`
@@ -193,7 +193,7 @@
             }
 
             $rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entities']['default_source_engine_pool_read']
+                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
             )->prepare("
                 SELECT `{$pk}`
                 FROM `" . self::table($self::TABLE) . "`
@@ -215,7 +215,7 @@
          */
         public static function by_fields_multi($self, array $keys_arr, $pk) {
             $sql = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entities']['default_source_engine_pool_read']
+                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
             );
 
             $key_fields     = array_keys(reset($keys_arr));
@@ -281,7 +281,7 @@
             }
 
             $rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entities']['default_source_engine_pool_read']
+                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
             )->prepare("
                 SELECT " . join(',', $select_fields) . "
                 FROM `" . self::table($self::TABLE) . "`
@@ -314,7 +314,7 @@
             }
 
             $sql = core::sql(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()['entities']['default_source_engine_pool_write']
+                $self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']
             );
             $insert = $sql->prepare("
                 " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO `" . self::table($self::TABLE) . "`
@@ -345,7 +345,7 @@
          */
         public static function inserts($self, array $infos, $keys_match, $autoincrement, $replace) {
             $sql = core::sql(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()['entities']['default_source_engine_pool_write']
+                $self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']
             );
 
             if ($keys_match) {
@@ -436,7 +436,7 @@
                 $update_fields[] = "`{$key}` = :{$key}";
             }
             $update = core::sql(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()['entities']['default_source_engine_pool_write']
+                $self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']
             )->prepare("
                 UPDATE `" . self::table($self::TABLE) . "`
                 SET " . join(", \n", $update_fields) . "
@@ -456,7 +456,7 @@
          */
         public static function delete($self, $pk, record_model $model) {
             $delete = core::sql(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()['entities']['default_source_engine_pool_write']
+                $self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']
             )->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE `{$pk}` = ?
@@ -475,7 +475,7 @@
          */
         public static function deletes($self, $pk, record_collection $collection) {
             $delete = core::sql(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()['entities']['default_source_engine_pool_write']
+                $self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']
             )->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE `{$pk}` IN (" . join(',', array_fill(0, count($collection), '?')) . ")

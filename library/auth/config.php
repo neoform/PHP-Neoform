@@ -27,6 +27,11 @@
 
                 // Which site does this user account belong to
                 'site' => 'main',
+
+                // What user_statuses can a user log in with
+                'login_account_statuses' => [
+                    'active',
+                ],
             ];
         }
     }

@@ -77,8 +77,13 @@
             });
             $input->remember->cast('bool');
             $input->password->cast('string')->callback(function($password) use ($attemtped_user) {
+                // Verify password matches
                 if ($attemtped_user && ! user_lib::password_matches($attemtped_user, $password->val())) {
                     $password->errors('Your email address or password is incorrect.');
+
+                // Make sure account is active
+                } else if (! in_array($attemtped_user->user_status()->name, core::config()['auth']['login_account_statuses'])) {
+                    $password->errors('You cannot log in with this account at this time');
                 }
             });
 

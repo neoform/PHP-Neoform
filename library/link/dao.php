@@ -25,7 +25,7 @@
          * @return array   the cached recordset
          */
         final protected static function _single($key, callable $get) {
-            $config = core::config()['entities'];
+            $config = core::config()['entity'];
             return cache_lib::single(
                 static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 $key,
@@ -39,7 +39,7 @@
          * Start batched query pipeline
          */
         final protected static function cache_batch_start() {
-            $config = core::config()['entities'];
+            $config = core::config()['entity'];
             cache_lib::pipeline_start(
                 static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 static::CACHE_ENGINE_WRITE?: $config['default_cache_engine_pool_write']
@@ -52,7 +52,7 @@
          * @return mixed result from batch execution
          */
         final protected static function cache_batch_execute() {
-            $config = core::config()['entities'];
+            $config = core::config()['entity'];
             return cache_lib::pipeline_execute(
                 static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 static::CACHE_ENGINE_WRITE?: $config['default_cache_engine_pool_write']
@@ -69,7 +69,7 @@
          * @return boolean result of the cache being deleted
          */
         final protected static function _cache_delete($key) {
-            $config = core::config()['entities'];
+            $config = core::config()['entity'];
             return cache_lib::delete(
                 static::CACHE_ENGINE ?: $config['default_cache_engine'],
                 $key,
@@ -115,7 +115,7 @@
         final protected static function _by_fields($cache_key_name, array $select_fields, array $keys) {
 
             $self   = static::ENTITY_NAME . '_dao';
-            $config = core::config()['entities'];
+            $config = core::config()['entity'];
 
             return cache_lib::single(
                 static::CACHE_ENGINE ?: $config['default_cache_engine'],
@@ -144,7 +144,7 @@
         final protected static function _by_fields_multi($cache_key_name, array $select_fields, array $keys_arr) {
 
             $self   = static::ENTITY_NAME . '_dao';
-            $config = core::config()['entities'];
+            $config = core::config()['entity'];
 
             return cache_lib::multi(
                 static::CACHE_ENGINE ?: $config['default_cache_engine'],
@@ -172,7 +172,7 @@
          * @throws model_exception
          */
         protected static function _insert(array $info, $replace=false) {
-            $source_driver = 'link_driver_' . (static::SOURCE_ENGINE ?: core::config()['entities']['default_source_engine']);
+            $source_driver = 'link_driver_' . (static::SOURCE_ENGINE ?: core::config()['entity']['default_source_engine']);
             return $source_driver::insert(static::ENTITY_NAME . '_dao', $info, $replace);
         }
 
@@ -191,7 +191,7 @@
                 return;
             }
 
-            $source_driver = 'link_driver_' . (static::SOURCE_ENGINE ?: core::config()['entities']['default_source_engine']);
+            $source_driver = 'link_driver_' . (static::SOURCE_ENGINE ?: core::config()['entity']['default_source_engine']);
             return $source_driver::inserts(static::ENTITY_NAME . '_dao', $infos, $replace);
         }
 
@@ -207,7 +207,7 @@
          */
         protected static function _update(array $new_info, array $where) {
             if ($new_info) {
-                $source_driver = 'link_driver_' . (static::SOURCE_ENGINE ?: core::config()['entities']['default_source_engine']);
+                $source_driver = 'link_driver_' . (static::SOURCE_ENGINE ?: core::config()['entity']['default_source_engine']);
                 return $source_driver::update(static::ENTITY_NAME . '_dao', $new_info, $where);
             }
         }
@@ -222,7 +222,7 @@
          * @throws model_exception
          */
         protected static function _delete(array $keys) {
-            $source_driver = 'link_driver_' . (static::SOURCE_ENGINE ?: core::config()['entities']['default_source_engine']);
+            $source_driver = 'link_driver_' . (static::SOURCE_ENGINE ?: core::config()['entity']['default_source_engine']);
             return $source_driver::delete(static::ENTITY_NAME . '_dao', $keys);
         }
 
@@ -236,7 +236,7 @@
          * @throws model_exception
          */
         protected static function _deletes(array $keys_arr) {
-            $source_driver = 'link_driver_' . (static::SOURCE_ENGINE ?: core::config()['entities']['default_source_engine']);
+            $source_driver = 'link_driver_' . (static::SOURCE_ENGINE ?: core::config()['entity']['default_source_engine']);
             return $source_driver::deletes(static::ENTITY_NAME . '_dao', $keys_arr);
         }
     }

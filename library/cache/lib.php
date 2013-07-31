@@ -307,7 +307,7 @@
             }
 
             // Save to cache
-            if ($rows_not_in_cache) {
+            if ($engine && $rows_not_in_cache) {
                 $save_to_cache = [];
                 foreach (array_keys($rows_not_in_cache) as $index) {
                     // either we cache empty results, or the row is not empty

@@ -62,13 +62,7 @@
                     ],
                 ]),
 
-                'auth' => new auth_config([
-                    // authentication cookie name [required]
-                    'cookie' => 'cc',
-
-                    // Which site does this user account belong to
-                    'site' => 'main',
-                ]),
+                'auth' => new auth_config,
 
                 'memcache' => new memcache_config([
                     //leave black (empty string) if no prefix is needed
@@ -112,9 +106,9 @@
                     'default_source_engine_pool_read'  => 'master',
                     'default_source_engine_pool_write' => 'master',
 
-                    'default_cache_engine'            => 'redis',
-                    'default_cache_engine_pool_read'  => 'master',
-                    'default_cache_engine_pool_write' => 'master',
+                    'default_cache_engine'            => null,//'redis',
+                    'default_cache_engine_pool_read'  => null,//'master',
+                    'default_cache_engine_pool_write' => null,//'master',
                 ]),
             ]);
         }

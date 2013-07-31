@@ -11,9 +11,9 @@
         const PRIMARY_KEY         = 'hash';
         const BINARY_PK           = true;
         const ENTITY_NAME         = 'auth';
-        const CACHE_ENGINE        = 'memcache';
-        const CACHE_ENGINE_READ   = null;
-        const CACHE_ENGINE_WRITE  = null;
+        const CACHE_ENGINE        = 'redis';
+        const CACHE_ENGINE_READ   = 'master';
+        const CACHE_ENGINE_WRITE  = 'master';
         const SOURCE_ENGINE       = 'redis';
         const SOURCE_ENGINE_READ  = null;
         const SOURCE_ENGINE_WRITE = null;

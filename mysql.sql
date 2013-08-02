@@ -185,7 +185,6 @@ CREATE TABLE `user_site` (
   `user_id` int(10) unsigned NOT NULL,
   `site_id` smallint(5) unsigned NOT NULL,
   PRIMARY KEY (`site_id`,`user_id`),
-  KEY `site_id` (`site_id`),
   KEY `user_site_ibfk_user` (`user_id`),
   CONSTRAINT `user_site_ibfk_site` FOREIGN KEY (`site_id`) REFERENCES `site` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `user_site_ibfk_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE

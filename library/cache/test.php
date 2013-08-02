@@ -10,7 +10,6 @@
             $driver       = 'redis';
             $key_prefix   = '';
             $driver_class = "cache_{$driver}_driver";
-            $driver_core  = "cache_{$driver}";
 
             // Delete cache
             cache_lib::delete($driver, "{$key}:111", $pool_write);
@@ -140,8 +139,8 @@
 
 
             // Pull multi - same keys, none should get pulled from origin - same as before, but using memory only
-            core::$driver_core($pool_write)->delete("{$key_prefix}{$key}:111");
-            core::$driver_core($pool_write)->delete("{$key_prefix}{$key}:222");
+            core::$driver($pool_write)->delete("{$key_prefix}{$key}:111");
+            core::$driver($pool_write)->delete("{$key_prefix}{$key}:222");
 
             $this->assert_true(cache_memory_dao::exists("{$key}:111"), __LINE__);
             $this->assert_true(cache_memory_dao::exists("{$key}:222"), __LINE__);

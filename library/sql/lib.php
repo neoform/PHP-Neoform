@@ -21,7 +21,7 @@
          * @return string
          */
         public static function quote_field_name($field_name) {
-            $driver = 'sql_driver_' . core::sql('slave')->driver();
+            $driver = 'sql_driver_' . core::sql(core::config()['sql']['default_pool_read'])->driver();
             return $driver::quote_field_name($field_name);
         }
 
@@ -33,7 +33,7 @@
          * @return string
          */
         public static function ip2int($ip) {
-               return sprintf("%u", ip2long($ip));
+            return sprintf("%u", ip2long($ip));
         }
 
         /**

@@ -155,7 +155,7 @@
          * @return array
          */
         public static function pagination($order_by, $direction, $offset, $limit) {
-            $users = core::sql('slave')->prepare("
+            $users = core::sql(core::config()['sql']['default_pool_read'])->prepare("
                 SELECT id
                 FROM " . sql_lib::quote_field_name('user') . "
                 ORDER BY " . sql_lib::quote_field_name($order_by) . " {$direction}

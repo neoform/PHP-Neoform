@@ -365,14 +365,14 @@
         }
 
         /**
-         * Delete all cache entries being stored by an entity limit
+         * Delete all cache entries being stored by a list, by applying filters
          *
          * @param string            $engine
          * @param string            $list_key
          * @param string            $pool_write
          * @param string|array|null $filter
          */
-        public static function delete_limit_cache($engine, $list_key, $pool_write, $filter=null) {
+        public static function delete_cache_filter_list($engine, $list_key, $pool_write, $filter=null) {
 
             $keys = self::list_get(
                 $engine,
@@ -387,28 +387,13 @@
                 if ($filter !== null) {
                     if (is_array($filter)) {
                         $keys_matched = [];
-
                         foreach ($filter as $f) {
                             foreach (preg_grep('`' . preg_quote($f) . '.*?`', $keys) as $key) {
                                 $keys_matched[] = $key;
                             }
                         }
-
-                        if ($keys_matched) {
-                            self::delete_multi(
-                                $engine,
-                                $keys_matched,
-                                $pool_write
-                            );
-                        }
                     } else {
-                        if ($keys_matched = preg_grep('`' . preg_quote($filter) . '\:.*?`', $keys)) {
-                            self::delete_multi(
-                                $engine,
-                                $keys_matched,
-                                $pool_write
-                            );
-                        }
+                        $keys_matched = preg_grep('`' . preg_quote($filter) . '\:.*?`', $keys);
                     }
 
                     // remove the keys from the list
@@ -419,10 +404,16 @@
                             $pool_write,
                             $keys_matched
                         );
+
+                        self::delete_multi(
+                            $engine,
+                            $keys_matched,
+                            $pool_write
+                        );
                     }
                 } else {
 
-                    // remove the keys from the list
+                    // remove the all keys from the list
                     self::list_remove(
                         $engine,
                         $list_key,
@@ -430,8 +421,12 @@
                         $keys
                     );
 
-                    // Add the list_key to the keys that need to be deleted
-                    $keys[] = $list_key;
+                    // Do not remove the list_key, because there's a race condition here
+                    // It's possible for the list to have newly added keys, right before it gets deleted
+                    // which would result in lost cache keys.
+                    // The downside to not deleting this, is the key is basically permanent.
+                    //$keys[] = $list_key;
+
                     self::delete_multi(
                         $engine,
                         $keys,

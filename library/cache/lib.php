@@ -1,6 +1,12 @@
 <?php
 
     /**
+     * Do not abort a script, even if the user stops loading the page
+     * If a cache engine query terminates in the middle of cache deletion, that can cause damaged/dirty cache.
+     */
+    ignore_user_abort(1);
+
+    /**
      * Caching library
      */
     class cache_lib {
@@ -365,7 +371,7 @@
         }
 
         /**
-         * Delete all cache entries being stored by a list, by applying filters
+         * Delete all cache entries being stored by a list (from the list as well), by applying filters
          *
          * @param string            $engine
          * @param string            $list_key
@@ -381,58 +387,54 @@
             );
 
             if ($keys) {
-
-                self::pipeline_start($engine, $pool_write);
-
                 if ($filter !== null) {
                     if (is_array($filter)) {
                         $keys_matched = [];
                         foreach ($filter as $f) {
-                            foreach (preg_grep('`' . preg_quote($f) . '.*?`', $keys) as $key) {
+                            foreach (preg_grep('`' . preg_quote($f) . '`', $keys) as $key) {
                                 $keys_matched[] = $key;
                             }
                         }
                     } else {
-                        $keys_matched = preg_grep('`' . preg_quote($filter) . '\:.*?`', $keys);
+                        $keys_matched = preg_grep('`' . preg_quote($filter) . '`', $keys);
                     }
 
-                    // remove the keys from the list
+                    // If there are any relevant keys in the list to remove, remove them
                     if ($keys_matched) {
-                        self::list_remove(
-                            $engine,
-                            $list_key,
-                            $pool_write,
-                            $keys_matched
-                        );
+                        $keys = $keys_matched;
 
-                        self::delete_multi(
-                            $engine,
-                            $keys_matched,
-                            $pool_write
-                        );
+                    // Otherwise return
+                    } else {
+                        return;
                     }
-                } else {
-
-                    // remove the all keys from the list
-                    self::list_remove(
-                        $engine,
-                        $list_key,
-                        $pool_write,
-                        $keys
-                    );
-
-                    // Do not remove the list_key, because there's a race condition here
-                    // It's possible for the list to have newly added keys, right before it gets deleted
-                    // which would result in lost cache keys.
-                    // The downside to not deleting this, is the key is basically permanent.
-                    //$keys[] = $list_key;
-
-                    self::delete_multi(
-                        $engine,
-                        $keys,
-                        $pool_write
-                    );
                 }
+
+                // We do not remove the list_key, because there's a race condition here
+                // It's possible for the list to have newly added keys, right before it gets deleted
+                // which would result in lost cache keys that exist but are not on the list any more.
+                // The downside to not deleting this, is the cache key is basically permanent.
+                // However, there is only one such key per entity, so it's not a big deal.
+
+                self::pipeline_start($engine, $pool_write);
+
+                // Even though these commands are pipelined, they are not necessarily atomic (as is the case with redis)
+                // So we delete from the list before we delete from the actual cache key, incase that cache key somehow
+                // gets re-added before it was removed from the list. (race condition, same as above)
+
+                // Remove the all keys from the list
+                self::list_remove(
+                    $engine,
+                    $list_key,
+                    $pool_write,
+                    $keys
+                );
+
+                // Delete keys
+                self::delete_multi(
+                    $engine,
+                    $keys,
+                    $pool_write
+                );
 
                 self::pipeline_execute($engine, $pool_write);
             }

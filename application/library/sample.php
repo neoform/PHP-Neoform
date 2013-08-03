@@ -1,6 +1,6 @@
 <?php
 
-    class sling extends config_environment {
+    class sample extends config_environment {
 
         public function __construct() {
             $this->merge([

@@ -121,6 +121,33 @@
         }
 
         /**
+         * Get a paginated list of entity PKs
+         *
+         * @param string  $self
+         * @param string  $order_by
+         * @param string  $direction
+         * @param integer $offset
+         * @param integer $limit
+         *
+         * @return array
+         */
+        public static function paginated($self, $order_by, $direction, $offset, $limit) {
+            $pk = $self::PRIMARY_KEY;
+            $rs = core::sql(
+                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
+            )->prepare("
+                SELECT \"{$pk}\"
+                FROM \"" . self::table($self::TABLE) . "\"
+                ORDER BY \"{$order_by}\" {$direction}
+                LIMIT {$limit}
+                OFFSET {$offset}
+            ");
+            $rs->execute();
+
+            return array_column($rs->fetchAll(), $pk);
+        }
+
+        /**
          * Get full count of rows in a table
          *
          * @param string $self

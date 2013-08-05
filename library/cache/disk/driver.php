@@ -83,6 +83,19 @@
         }
 
         /**
+         * Get all members of multiple list or get matching members of multiple lists (via filter array)
+         *
+         * @param array  $keys
+         * @param string $pool
+         * @param array  $filter list of keys, an intersection is done
+         *
+         * @throws cache_disk_exception
+         */
+        public static function list_get_union(array $keys, $pool, array $filter = null) {
+            throw new cache_disk_exception('List commands are not supported by disk cache');
+        }
+
+        /**
          * Remove values from a list
          *
          * @param string $key

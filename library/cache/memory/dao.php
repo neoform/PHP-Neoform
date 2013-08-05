@@ -38,7 +38,7 @@
         }
 
         /**
-         * Get all members of a list or get matching members of a list
+         * Get all members of a list or get matching members of a list (via filter array)
          *
          * @param string $k
          * @param array  $filter list of keys, an intersection is done
@@ -53,6 +53,30 @@
                     return self::$local[$k];
                 }
             }
+        }
+
+        /**
+         * Get all members of multiple list or get matching members of multiple lists (via filter array)
+         *
+         * @param array  $keys
+         * @param string $pool
+         * @param array  $filter list of keys, an intersection is done
+         *
+         * @return array|null
+         */
+        public static function list_get_union(array $keys, $pool, array $filter = null) {
+            $result = [];
+            foreach ($keys as $k) {
+                if (isset(self::$local[$k]) && is_array(self::$local[$k])) {
+                    if ($filter) {
+                        $result = array_merge($result, array_values(array_intersect(self::$local[$k], $filter)));
+                    } else {
+                        $result = array_merge($result, self::$local[$k]);
+                    }
+                }
+            }
+
+            return $result ? array_unique($result): null;
         }
 
         /**

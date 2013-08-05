@@ -9,6 +9,7 @@
         public static function exists($key, $pool);
         public static function list_add($key, $pool, $value);
         public static function list_get($key, $pool, array $filter=null);
+        public static function list_get_union(array $keys, $pool, array $filter=null);
         public static function list_remove($key, $pool, array $remove_keys);
         public static function get($key, $pool);
         public static function get_multi(array $keys, $pool);

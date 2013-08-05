@@ -88,6 +88,22 @@
         }
 
         /**
+         * Get a paginated list of entity PKs
+         *
+         * @param string  $self
+         * @param string  $order_by
+         * @param string  $direction
+         * @param integer $offset
+         * @param integer $limit
+         *
+         * @return array
+         * @throws redis_exception
+         */
+        public static function paginated($self, $order_by, $direction, $offset, $limit) {
+            throw new redis_exception('Paginated queries are not supported by redis driver.');
+        }
+
+        /**
          * Get full count of rows in a table
          *
          * @param string $self

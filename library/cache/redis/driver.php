@@ -83,19 +83,36 @@
         }
 
         /**
-         * Get all members of a list or get matching members of a list
+         * Get all members of a list or get matching members of a list (via filter array)
          *
          * @param string $key
          * @param string $pool
          * @param array  $filter list of keys, an intersection is done
          *
-         * @return mixed
+         * @return array
          */
         public static function list_get($key, $pool, array $filter = null) {
             if ($filter) {
                 return array_values(array_intersect(core::redis($pool)->sMembers($key), $filter));
             } else {
                 return core::redis($pool)->sMembers($key);
+            }
+        }
+
+        /**
+         * Get all members of multiple list or get matching members of multiple lists (via filter array)
+         *
+         * @param array  $keys
+         * @param string $pool
+         * @param array  $filter list of keys, an intersection is done
+         *
+         * @return array
+         */
+        public static function list_get_union(array $keys, $pool, array $filter = null) {
+            if ($filter) {
+                return array_values(array_intersect(core::redis($pool)->sUnion($keys), $filter));
+            } else {
+                return core::redis($pool)->sUnion($keys);
             }
         }
 

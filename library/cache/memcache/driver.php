@@ -101,6 +101,19 @@
         }
 
         /**
+         * Get all members of multiple list or get matching members of multiple lists (via filter array)
+         *
+         * @param array  $keys
+         * @param string $pool
+         * @param array  $filter list of keys, an intersection is done
+         *
+         * @throws cache_memcache_exception
+         */
+        public static function list_get_union(array $keys, $pool, array $filter = null) {
+            throw new cache_memcache_exception('List commands are not supported by memcache');
+        }
+
+        /**
          * Remove values from a list
          *
          * @param string $key

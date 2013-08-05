@@ -71,7 +71,7 @@
          * @param string     $pool_read
          * @param array|null $filter
          *
-         * @return mixed|null
+         * @return array|null
          */
         public static function list_get($engine, $list_key, $pool_read, array $filter=null) {
 
@@ -86,6 +86,23 @@
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
                 return $engine_driver::list_get($list_key, $pool_read, $filter);
+            }
+        }
+
+        /**
+         * Get a segment of multiple joined lists/arrays (via union)
+         *
+         * @param string     $engine
+         * @param array      $list_keys
+         * @param string     $pool_read
+         * @param array|null $filter
+         *
+         * @return array|null
+         */
+        public static function list_get_union($engine, array $list_keys, $pool_read, array $filter=null) {
+            if ($engine) {
+                $engine_driver = "cache_{$engine}_driver";
+                return $engine_driver::list_get_union($list_keys, $pool_read, $filter);
             }
         }
 

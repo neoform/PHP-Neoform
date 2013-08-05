@@ -23,6 +23,9 @@
         // Limit based lookups
         const LIMIT = 'limit';
 
+        // Paginated based lookups
+        const PAGINATED = 'paginated';
+
         // Counts
         const COUNT = 'count';
 
@@ -111,7 +114,7 @@
             // each key is namespaced with the name of the class
             $param_count = count($params);
             if ($param_count === 1) {
-                return ($entity_name ?: static::ENTITY_NAME) . ":{$cache_key_name}:" . md5(base64_encode(reset($params)));
+                return ($entity_name ?: static::ENTITY_NAME) . ":{$cache_key_name}:" . md5(reset($params));
             } else if ($param_count === 0) {
                 return ($entity_name ?: static::ENTITY_NAME) . ":{$cache_key_name}:";
             } else {
@@ -205,9 +208,9 @@
             $config    = core::config()['entity'];
 
             $cache_key = self::_build_key(
-                self::LIMIT . ":$order_by",
+                self::LIMIT . ":{$order_by}",
                 [
-                    $limit,
+                    (int) $limit,
                     $direction,
                     $after_pk !== null && static::BINARY_PK ? md5(base64_encode($after_pk)) : $after_pk,
                 ]
@@ -233,10 +236,73 @@
                     $source_driver = 'record_driver_' . ($self::SOURCE_ENGINE ?: $config['default_source_engine']);
                     return $source_driver::limit(
                         $self,
-                        $limit,
+                        (int) $limit,
                         $order_by,
                         $direction,
                         $after_pk
+                    );
+                }
+            );
+        }
+
+        /**
+         * Get a paginated list of entity PKs
+         * This function does not use any caching, and it's not particularly efficient in the first place.
+         * For performance reasons, you should always try using the record_dao::limit() function instead.
+         * When using large offsets on big tables, mysql tends to grind to a halt.
+         *
+         * @param string  $order_by
+         * @param string  $direction
+         * @param integer $offset
+         * @param integer $limit
+         *
+         * @return array
+         * @throws model_exception
+         */
+        public static function paginated($order_by, $direction, $offset, $limit) {
+
+            if (! static::USING_PAGINATED) {
+                $exception = static::ENTITY_NAME . '_exception';
+                throw new $exception('Limit queries are not active in the ' . static::NAME . ' entity definition');
+            }
+
+            $self      = static::ENTITY_NAME . '_dao';
+            $direction = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
+            $config    = core::config()['entity'];
+
+            $cache_key = self::_build_key(
+                self::LIMIT . ":{$order_by}",
+                [
+                    (int) $offset,
+                    (int) $limit,
+                    $direction,
+                ]
+            );
+
+            return cache_lib::single(
+                static::CACHE_ENGINE ?: $config['default_cache_engine'],
+                $cache_key,
+                static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
+                static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
+                function() use ($self, $config, $cache_key, $limit, $offset, $order_by, $direction) {
+
+                    // create a list entry to store all the LIMIT keys - we need to be able to destroy these
+                    // cache entries when something in the list changes
+                    cache_lib::list_add(
+                        $self::CACHE_ENGINE,
+                        $self::_build_key($self::PAGINATED . '[]'),
+                        $self::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
+                        $cache_key
+                    );
+
+                    // Pull content from source
+                    $source_driver = 'record_driver_' . ($self::SOURCE_ENGINE ?: $config['default_source_engine']);
+                    return $source_driver::paginated(
+                        $self,
+                        $order_by,
+                        $direction,
+                        (int) $offset,
+                        (int) $limit
                     );
                 }
             );
@@ -347,7 +413,7 @@
                 },
                 static::CACHE_ENGINE_READ ?: $config['default_cache_engine_pool_read'],
                 static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
-                function($keys_arr) use ($self, $pk, $config) {
+                function(array $keys_arr) use ($self, $pk, $config) {
                     $source_driver = 'record_driver_' . ($self::SOURCE_ENGINE ?: $config['default_source_engine']);
                     return $source_driver::by_fields_multi($self, $keys_arr, $pk);
                 }
@@ -427,6 +493,10 @@
 
             if (static::USING_LIMIT) {
                 self::_delete_limit_cache();
+            }
+
+            if (static::USING_PAGINATED) {
+                self::_delete_paginated_cache();
             }
 
             if ($return_model) {
@@ -510,6 +580,10 @@
                 self::_delete_limit_cache();
             }
 
+            if (static::USING_PAGINATED) {
+                self::_delete_paginated_cache();
+            }
+
             if ($return_collection) {
                 $collection = static::ENTITY_NAME . '_collection';
                 return new $collection(null, $models);
@@ -568,6 +642,10 @@
                 self::_delete_limit_cache(array_keys($info));
             }
 
+            if (static::USING_PAGINATED) {
+                self::_delete_paginated_cache(array_keys($info));
+            }
+
             if ($return_model) {
                 $updated_model = clone $model;
                 $updated_model->_update($info);
@@ -615,6 +693,10 @@
 
             if (static::USING_LIMIT) {
                 self::_delete_limit_cache();
+            }
+
+            if (static::USING_PAGINATED) {
+                self::_delete_paginated_cache();
             }
 
             return true;
@@ -669,6 +751,10 @@
                 self::_delete_limit_cache();
             }
 
+            if (static::USING_PAGINATED) {
+                self::_delete_paginated_cache();
+            }
+
             return true;
         }
 
@@ -692,11 +778,47 @@
                 $filter = null;
             }
 
-            $config = core::config()['entity'];
+            self::_delete_list_cache(static::LIMIT . '[]', $filter);
+        }
 
-            cache_lib::delete_limit_cache(
+        /**
+         * Delete LIMIT caches - with optional field limitation
+         *
+         * @param string|array|null $order_by_field
+         */
+        protected static function _delete_paginated_cache($order_by_field=null) {
+
+            if ($order_by_field !== null) {
+                if (is_array($order_by_field) && $order_by_field) {
+                    $filter = [];
+                    foreach ($order_by_field as $f) {
+                        $filter[] = static::ENTITY_NAME . ':' . self::PAGINATED . ":{$f}:";
+                    }
+                } else {
+                    $filter = static::ENTITY_NAME . ':' . self::PAGINATED . ":{$order_by_field}:";
+                }
+            } else {
+                $filter = null;
+            }
+
+            self::_delete_list_cache(static::PAGINATED . '[]', $filter);
+        }
+
+        /**
+         * Delete limit caches - with optional filters
+         *
+         * Filters operate by finding all keys that start with the filter string.
+         * Eg, Filter: "user:id:" would match the following keys: "user:id:4", "user:id:5" and delete them
+         *     but "user:email:foo@foo.com" would not be matched. It's the equivalent to an SQL "LIKE '%user:id:%'" query
+         *
+         * @param string            $list_key
+         * @param string|array|null $filter
+         */
+        protected static function _delete_list_cache($list_key, $filter=null) {
+            $config = core::config()['entity'];
+            cache_lib::delete_cache_filter_list(
                 static::CACHE_ENGINE ?: $config['default_cache_engine'],
-                static::_build_key(static::LIMIT . '[]'),
+                static::_build_key($list_key),
                 static::CACHE_ENGINE_WRITE ?: $config['default_cache_engine_pool_write'],
                 $filter
             );

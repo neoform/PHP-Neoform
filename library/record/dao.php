@@ -209,7 +209,7 @@
                 },
                 function(array $pks) use ($self) {
                     $source_driver = "record_driver_{$self->source_engine}";
-                    return $source_driver::by_pks($self, $pks);
+                    return $source_driver::by_pks($self, $self->source_engine_pool_read, $pks);
                 }
             );
         }
@@ -265,6 +265,7 @@
                     $source_driver = "record_driver_{$self->source_engine}";
                     return $source_driver::limit(
                         $self,
+                        $self->source_engine_pool_read,
                         (int) $limit,
                         $order_by,
                         $direction,
@@ -327,6 +328,7 @@
                     $source_driver = "record_driver_{$self->source_engine}";
                     return $source_driver::paginated(
                         $self,
+                        $self->source_engine_pool_read,
                         $order_by,
                         $direction,
                         (int) $offset,
@@ -359,7 +361,7 @@
                 self::_build_key($cache_key_name, []),
                 function() use ($self, $pk, $keys) {
                     $source_driver = "record_driver_{$self->source_engine}";
-                    return $source_driver::all($self, $pk, $keys);
+                    return $source_driver::all($self, $self->source_engine_pool_read, $pk, $keys);
                 }
             );
         }
@@ -380,7 +382,7 @@
                 static::ENTITY_NAME . ':' . self::COUNT,
                 function() use ($self) {
                     $source_driver = "record_driver_{$self->source_engine}";
-                    return $source_driver::count($self);
+                    return $source_driver::count($self, $self->source_engine_pool_read);
                 }
             );
         }
@@ -408,7 +410,7 @@
                 self::_build_key($cache_key_name, $keys),
                 function() use ($self, $keys, $pk) {
                     $source_driver = "record_driver_{$self->source_engine}";
-                    return $source_driver::by_fields($self, $keys, $pk);
+                    return $source_driver::by_fields($self, $self->source_engine_pool_read, $keys, $pk);
                 }
             );
         }
@@ -435,11 +437,11 @@
                 $this->cache_engine_pool_write,
                 $keys_arr,
                 function($fields) use ($self, $cache_key_name) {
-                    return record_dao::_build_key($cache_key_name, $fields, $self);
+                    return record_dao::_build_key($cache_key_name, $fields, $self::ENTITY_NAME);
                 },
                 function(array $keys_arr) use ($self, $pk) {
                     $source_driver = "record_driver_{$self->source_engine}";
-                    return $source_driver::by_fields_multi($self, $keys_arr, $pk);
+                    return $source_driver::by_fields_multi($self, $self->source_engine_pool_read, $keys_arr, $pk);
                 }
             );
         }
@@ -468,7 +470,7 @@
                 self::_build_key($cache_key_name, $keys),
                 function() use ($self, $select_fields, $keys) {
                     $source_driver = "record_driver_{$self->source_engine}";
-                    return $source_driver::by_fields_select($self, $select_fields, $keys);
+                    return $source_driver::by_fields_select($self, $self->source_engine_pool_read, $select_fields, $keys);
                 }
             );
         }
@@ -489,6 +491,7 @@
             $source_driver = "record_driver_{$this->source_engine}";
             $info          = $source_driver::insert(
                 $this,
+                $this->source_engine_pool_write,
                 $info,
                 static::AUTOINCREMENT,
                 $replace
@@ -546,6 +549,7 @@
             $source_driver = "record_driver_{$this->source_engine}";
             $infos         = $source_driver::inserts(
                 $this,
+                $this->source_engine_pool_write,
                 $infos,
                 $keys_match,
                 static::AUTOINCREMENT,
@@ -633,7 +637,7 @@
             $pk = static::PRIMARY_KEY;
 
             $source_driver = "record_driver_{$this->source_engine}";
-            $source_driver::update($this, static::PRIMARY_KEY, $model, $info);
+            $source_driver::update($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $model, $info);
 
             $this->cache_batch_start();
 
@@ -688,7 +692,7 @@
             $pk = static::PRIMARY_KEY;
 
             $source_driver = "record_driver_{$this->source_engine}";
-            $source_driver::delete($this, $pk, $model);
+            $source_driver::delete($this, $this->source_engine_pool_write, $pk, $model);
 
             $this->cache_batch_start();
 
@@ -735,7 +739,7 @@
             }
 
             $source_driver = "record_driver_{$this->source_engine}";
-            $source_driver::deletes($this, static::PRIMARY_KEY, $collection);
+            $source_driver::deletes($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $collection);
 
             $delete_cache_keys = [];
             foreach ($collection->field(static::PRIMARY_KEY) as $pk) {

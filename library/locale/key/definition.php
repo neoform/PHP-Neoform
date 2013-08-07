@@ -8,6 +8,7 @@
         const BINARY_PK     = false;
         const ENTITY_NAME   = 'locale_key';
         const USING_LIMIT   = true;
+        const USING_PAGINATED = true;
         const USING_COUNT   = true;
     }
 

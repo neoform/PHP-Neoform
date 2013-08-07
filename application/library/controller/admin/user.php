@@ -16,7 +16,7 @@
             $view->meta_title = 'Users';
 
             //$users = new user_collection(entity_dao::get('user')->limit(20, 'id', 'asc', null));
-            $users = new user_collection(entity_dao::get('user')->pagination('id', 'asc', ($page - 1) * $per_page, $per_page));
+            $users = new user_collection(entity_dao::get('user')->paginated('id', 'asc', ($page - 1) * $per_page, $per_page));
             $users->user_date_collection(); // preload user_dates
 
             $view->users    = $users;

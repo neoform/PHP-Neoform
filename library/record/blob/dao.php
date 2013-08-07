@@ -43,7 +43,7 @@
          * @param boolean $return_model  optional - return a model of the new record
          * @return record_model|true if $return_model is set to true, the model created from the info is returned
          */
-        protected static function _insert(array $info, $replace=false, $return_model = true) {
+        protected function _insert(array $info, $replace=false, $return_model=true) {
             if (isset($info[static::BLOB]) && is_array($info[static::BLOB])) {
                 $info[static::BLOB] = json_encode(type_array_lib::collapse($info[static::BLOB], false));
             } else {
@@ -63,7 +63,7 @@
          * @param boolean $return_collection optional - return a collection of models created
          * @return record_collection|true if $return_collection is true function returns a collection
          */
-        protected static function _inserts(array $infos, $keys_match = true, $replace=false, $return_collection = true) {
+        protected function _inserts(array $infos, $keys_match = true, $replace=false, $return_collection=true) {
             foreach ($infos as & $info) {
                 if (isset($info[static::BLOB]) && is_array($info[static::BLOB])) {
                     $info[static::BLOB] = json_encode(type_array_lib::collapse($info[static::BLOB], false));
@@ -84,7 +84,7 @@
          * @param boolean      $return_model optional - return a model of the new record
          * @return record_model|true if $return_model is true, an updated model is returned
          */
-        protected static function _update(record_model $model, array $info, $return_model = true) {
+        protected function _update(record_model $model, array $info, $return_model=true) {
             if (isset($info[static::BLOB]) && is_array($info[static::BLOB])) {
                 $info[static::BLOB] = json_encode(type_array_lib::collapse($info[static::BLOB], false));
             } else {

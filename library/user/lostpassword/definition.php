@@ -12,5 +12,6 @@
         const BINARY_PK     = false;
         const ENTITY_NAME   = 'user_lostpassword';
         const USING_LIMIT   = false;
+        const USING_PAGINATED = true;
         const USING_COUNT   = false;
     }

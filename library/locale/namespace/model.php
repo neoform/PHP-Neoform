@@ -6,7 +6,7 @@
     * @var int $id
     * @var string $name
     */
-    class locale_namespace_model extends record_model implements locale_namespace_definition {
+    class locale_namespace_model extends entity_record_model implements locale_namespace_definition {
 
         public function __get($k) {
 

@@ -3,7 +3,7 @@
     /**
      * Locale Key Message DAO
      */
-    class locale_key_message_dao extends record_dao implements locale_key_message_definition {
+    class locale_key_message_dao extends entity_record_dao implements locale_key_message_definition {
 
         const BY_LOCALE     = 'by_locale';
         const BY_LOCALE_KEY = 'by_locale_key';

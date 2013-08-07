@@ -3,7 +3,7 @@
     /**
      * User Lostpassword DAO
      */
-    class user_lostpassword_dao extends record_dao implements user_lostpassword_definition {
+    class user_lostpassword_dao extends entity_record_dao implements user_lostpassword_definition {
 
         const BY_USER = 'by_user';
 

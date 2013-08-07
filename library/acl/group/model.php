@@ -6,7 +6,7 @@
     * @var int $id
     * @var string $name
     */
-    class acl_group_model extends record_model implements acl_group_definition {
+    class acl_group_model extends entity_record_model implements acl_group_definition {
 
         public function __get($k) {
 

@@ -1,7 +1,7 @@
 <?php
 
     /**
-     * record_dao Standard database access, each extended DAO class must have a corresponding table with a primary key
+     * entity_record_dao Standard database access, each extended DAO class must have a corresponding table with a primary key
      *
      * REQUIRED: every extended class *must* have the following constants:
      *    string TABLE       the table name in the database
@@ -14,7 +14,7 @@
      *    bool BINARY_PK     is the primary key a binary string
      */
 
-    abstract class record_dao {
+    abstract class entity_record_dao {
 
         protected $source_engine;
         protected $source_engine_pool_read;
@@ -71,7 +71,7 @@
          * @access protected
          * @static
          * @final
-         * @param string   $key full cache key with namespace - it's recomended that record_dao::_build_key() is used to create this key
+         * @param string   $key full cache key with namespace - it's recomended that entity_record_dao::_build_key() is used to create this key
          * @param callable $get closure function that retreieves the recordset from its origin
          * @return array   the cached recordset
          */
@@ -113,7 +113,7 @@
          * @access protected
          * @static
          * @final
-         * @param string|array $key full cache key with namespace - it's recomended that record_dao::_build_key() is used to create this key
+         * @param string|array $key full cache key with namespace - it's recomended that entity_record_dao::_build_key() is used to create this key
          */
         final protected function _cache_delete($key) {
             if (is_array($key)) {
@@ -176,7 +176,7 @@
                 $this->cache_engine_pool_write,
                 static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($pk) : $pk),
                 function() use ($pk, $self) {
-                    $source_driver = "record_driver_{$self->source_engine}";
+                    $source_driver = "entity_record_driver_{$self->source_engine}";
                     return $source_driver::by_pk($self, $self->source_engine_pool_read, $pk);
                 }
             );
@@ -208,7 +208,7 @@
                     return $self::ENTITY_NAME . ':' . $self::BY_PK . ':' . ($self::BINARY_PK ? md5($pk) : $pk);
                 },
                 function(array $pks) use ($self) {
-                    $source_driver = "record_driver_{$self->source_engine}";
+                    $source_driver = "entity_record_driver_{$self->source_engine}";
                     return $source_driver::by_pks($self, $self->source_engine_pool_read, $pks);
                 }
             );
@@ -262,7 +262,7 @@
                     );
 
                     // Pull content from source
-                    $source_driver = "record_driver_{$self->source_engine}";
+                    $source_driver = "entity_record_driver_{$self->source_engine}";
                     return $source_driver::limit(
                         $self,
                         $self->source_engine_pool_read,
@@ -278,7 +278,7 @@
         /**
          * Get a paginated list of entity PKs
          * This function does not use any caching, and it's not particularly efficient in the first place.
-         * For performance reasons, you should always try using the record_dao::limit() function instead.
+         * For performance reasons, you should always try using the entity_record_dao::limit() function instead.
          * When using large offsets on big tables, mysql tends to grind to a halt.
          *
          * @param string  $order_by
@@ -325,7 +325,7 @@
                     );
 
                     // Pull content from source
-                    $source_driver = "record_driver_{$self->source_engine}";
+                    $source_driver = "entity_record_driver_{$self->source_engine}";
                     return $source_driver::paginated(
                         $self,
                         $self->source_engine_pool_read,
@@ -360,7 +360,7 @@
                 $this->cache_engine_pool_write,
                 self::_build_key($cache_key_name, []),
                 function() use ($self, $pk, $keys) {
-                    $source_driver = "record_driver_{$self->source_engine}";
+                    $source_driver = "entity_record_driver_{$self->source_engine}";
                     return $source_driver::all($self, $self->source_engine_pool_read, $pk, $keys);
                 }
             );
@@ -381,7 +381,7 @@
                 $this->cache_engine_pool_write,
                 static::ENTITY_NAME . ':' . self::COUNT,
                 function() use ($self) {
-                    $source_driver = "record_driver_{$self->source_engine}";
+                    $source_driver = "entity_record_driver_{$self->source_engine}";
                     return $source_driver::count($self, $self->source_engine_pool_read);
                 }
             );
@@ -409,7 +409,7 @@
                 $this->cache_engine_pool_write,
                 self::_build_key($cache_key_name, $keys),
                 function() use ($self, $keys, $pk) {
-                    $source_driver = "record_driver_{$self->source_engine}";
+                    $source_driver = "entity_record_driver_{$self->source_engine}";
                     return $source_driver::by_fields($self, $self->source_engine_pool_read, $keys, $pk);
                 }
             );
@@ -437,10 +437,10 @@
                 $this->cache_engine_pool_write,
                 $keys_arr,
                 function($fields) use ($self, $cache_key_name) {
-                    return record_dao::_build_key($cache_key_name, $fields, $self::ENTITY_NAME);
+                    return entity_record_dao::_build_key($cache_key_name, $fields, $self::ENTITY_NAME);
                 },
                 function(array $keys_arr) use ($self, $pk) {
-                    $source_driver = "record_driver_{$self->source_engine}";
+                    $source_driver = "entity_record_driver_{$self->source_engine}";
                     return $source_driver::by_fields_multi($self, $self->source_engine_pool_read, $keys_arr, $pk);
                 }
             );
@@ -469,7 +469,7 @@
                 $this->cache_engine_pool_write,
                 self::_build_key($cache_key_name, $keys),
                 function() use ($self, $select_fields, $keys) {
-                    $source_driver = "record_driver_{$self->source_engine}";
+                    $source_driver = "entity_record_driver_{$self->source_engine}";
                     return $source_driver::by_fields_select($self, $self->source_engine_pool_read, $select_fields, $keys);
                 }
             );
@@ -483,12 +483,12 @@
          * @param array   $info         an associative array of into to be put into the database
          * @param boolean $replace      optional - user REPLACE INTO instead of INSERT INTO
          * @param boolean $return_model optional - return a model of the new record
-         * @return record_model|true if $return_model is set to true, the model created from the info is returned
+         * @return entity_record_model|true if $return_model is set to true, the model created from the info is returned
          * @throws model_exception
          */
         protected function _insert(array $info, $replace = false, $return_model = true) {
 
-            $source_driver = "record_driver_{$this->source_engine}";
+            $source_driver = "entity_record_driver_{$this->source_engine}";
             $info          = $source_driver::insert(
                 $this,
                 $this->source_engine_pool_write,
@@ -541,12 +541,12 @@
          * @param boolean $keys_match        optional - if all the records being inserted have the same array keys this should be true. it is faster to insert all the records at the same time, but this can only be done if they all have the same keys.
          * @param boolean $replace           optional - user REPLACE INTO instead of INSERT INTO
          * @param boolean $return_collection optional - return a collection of models created
-         * @return record_collection|true if $return_collection is true function returns a collection
+         * @return entity_record_collection|true if $return_collection is true function returns a collection
          * @throws model_exception
          */
         protected function _inserts(array $infos, $keys_match = true, $replace = false, $return_collection = true) {
 
-            $source_driver = "record_driver_{$this->source_engine}";
+            $source_driver = "entity_record_driver_{$this->source_engine}";
             $infos         = $source_driver::inserts(
                 $this,
                 $this->source_engine_pool_write,
@@ -622,13 +622,13 @@
          *
          * @access protected
          * @static
-         * @param record_model $model         the model that is to be updated
+         * @param entity_record_model $model         the model that is to be updated
          * @param array        $info          the new info to be put into the model
          * @param boolean      $return_model  optional - return a model of the new record
-         * @return record_model|true if $return_model is true, an updated model is returned
+         * @return entity_record_model|true if $return_model is true, an updated model is returned
          * @throws model_exception
          */
-        protected function _update(record_model $model, array $info, $return_model = true) {
+        protected function _update(entity_record_model $model, array $info, $return_model = true) {
 
             if (! $info) {
                 return $return_model ? $model : false;
@@ -636,7 +636,7 @@
 
             $pk = static::PRIMARY_KEY;
 
-            $source_driver = "record_driver_{$this->source_engine}";
+            $source_driver = "entity_record_driver_{$this->source_engine}";
             $source_driver::update($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $model, $info);
 
             $this->cache_batch_start();
@@ -683,15 +683,15 @@
          *
          * @access protected
          * @static
-         * @param record_model $model the model that is to be deleted
+         * @param entity_record_model $model the model that is to be deleted
          * @return boolean returns true on success
          * @throws model_exception
          */
-        protected function _delete(record_model $model) {
+        protected function _delete(entity_record_model $model) {
 
             $pk = static::PRIMARY_KEY;
 
-            $source_driver = "record_driver_{$this->source_engine}";
+            $source_driver = "entity_record_driver_{$this->source_engine}";
             $source_driver::delete($this, $this->source_engine_pool_write, $pk, $model);
 
             $this->cache_batch_start();
@@ -728,17 +728,17 @@
          *
          * @access protected
          * @static
-         * @param record_collection $collection the collection of models that is to be deleted
+         * @param entity_record_collection $collection the collection of models that is to be deleted
          * @return boolean returns true on success
          * @throws model_exception
          */
-        protected function _deletes(record_collection $collection) {
+        protected function _deletes(entity_record_collection $collection) {
 
             if (! count($collection)) {
                 return;
             }
 
-            $source_driver = "record_driver_{$this->source_engine}";
+            $source_driver = "entity_record_driver_{$this->source_engine}";
             $source_driver::deletes($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $collection);
 
             $delete_cache_keys = [];

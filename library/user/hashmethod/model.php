@@ -6,7 +6,7 @@
     * @var int $id
     * @var string $name
     */
-    class user_hashmethod_model extends record_model implements user_hashmethod_definition {
+    class user_hashmethod_model extends entity_record_model implements user_hashmethod_definition {
 
         public function __get($k) {
 

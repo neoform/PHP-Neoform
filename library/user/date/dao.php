@@ -3,7 +3,7 @@
     /**
      * User Date DAO
      */
-    class user_date_dao extends record_dao implements user_date_definition {
+    class user_date_dao extends entity_record_dao implements user_date_definition {
 
         /**
          * Get the generic bindings of the table columns

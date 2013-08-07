@@ -6,7 +6,7 @@
     * @var int $id
     * @var string $name
     */
-    class site_model extends record_model implements site_definition {
+    class site_model extends entity_record_model implements site_definition {
 
         public function __get($k) {
 

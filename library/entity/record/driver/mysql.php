@@ -1,6 +1,6 @@
 <?php
 
-    class record_driver_mysql implements record_driver {
+    class entity_record_driver_mysql implements entity_record_driver {
 
         /**
          * Parse the table name into a properly escaped table string
@@ -21,13 +21,13 @@
         /**
          * Get full record by primary key
          *
-         * @param record_dao      $self the name of the DAO
+         * @param entity_record_dao      $self the name of the DAO
          * @param string          $pool which source engine pool to use
          * @param int|string|null $pk
          *
          * @return mixed
          */
-        public static function by_pk(record_dao $self, $pool, $pk) {
+        public static function by_pk(entity_record_dao $self, $pool, $pk) {
             $info = core::sql($pool)->prepare("
                 SELECT *
                 FROM `" . self::table($self::TABLE) . "`
@@ -46,13 +46,13 @@
         /**
          * Get full records by primary key
          *
-         * @param record_dao $self the name of the DAO
+         * @param entity_record_dao $self the name of the DAO
          * @param string     $pool which source engine pool to use
          * @param array      $pks
          *
          * @return array
          */
-        public static function by_pks(record_dao $self, $pool, array $pks) {
+        public static function by_pks(entity_record_dao $self, $pool, array $pks) {
             $infos_rs = core::sql($pool)->prepare("
                 SELECT *
                 FROM `" . self::table($self::TABLE) . "`
@@ -74,7 +74,7 @@
         /**
          * Get a list of PKs, with a limit, offset and order by
          *
-         * @param record_dao $self
+         * @param entity_record_dao $self
          * @param string     $pool which source engine pool to use
          * @param integer    $limit     max number of PKs to return
          * @param string     $order_by  field name
@@ -83,7 +83,7 @@
          *
          * @return array
          */
-        public static function limit(record_dao $self, $pool, $limit, $order_by, $direction, $after_pk) {
+        public static function limit(entity_record_dao $self, $pool, $limit, $order_by, $direction, $after_pk) {
             $pk = $self::PRIMARY_KEY;
 
             $rs = core::sql($pool)->prepare("
@@ -105,7 +105,7 @@
         /**
          * Get a paginated list of entity PKs
          *
-         * @param record_dao $self
+         * @param entity_record_dao $self
          * @param string     $pool which source engine pool to use
          * @param string     $order_by
          * @param string     $direction
@@ -114,7 +114,7 @@
          *
          * @return array
          */
-        public static function paginated(record_dao $self, $pool, $order_by, $direction, $offset, $limit) {
+        public static function paginated(entity_record_dao $self, $pool, $order_by, $direction, $offset, $limit) {
             $pk = $self::PRIMARY_KEY;
             $rs = core::sql($pool)->prepare("
                 SELECT `{$pk}`
@@ -131,12 +131,12 @@
         /**
          * Get full count of rows in a table
          *
-         * @param record_dao $self
+         * @param entity_record_dao $self
          * @param string     $pool which source engine pool to use
          *
          * @return int
          */
-        public static function count(record_dao $self, $pool) {
+        public static function count(entity_record_dao $self, $pool) {
             $rs = core::sql($pool)->prepare("
                 SELECT COUNT(0) `num`
                 FROM `" . self::table($self::TABLE) . "`
@@ -148,14 +148,14 @@
         /**
          * Get all records in the table
          *
-         * @param record_dao $self the name of the DAO
+         * @param entity_record_dao $self the name of the DAO
          * @param string     $pool which source engine pool to use
          * @param int|string $pk
          * @param array      $keys
          *
          * @return array
          */
-        public static function all(record_dao $self, $pool, $pk, array $keys=null) {
+        public static function all(entity_record_dao $self, $pool, $pk, array $keys=null) {
             $where = [];
             $vals  = [];
 
@@ -192,14 +192,14 @@
         /**
          * Get record primary key by fields
          *
-         * @param record_dao $self the name of the DAO
+         * @param entity_record_dao $self the name of the DAO
          * @param string     $pool which source engine pool to use
          * @param array      $keys
          * @param int|string $pk
          *
          * @return array
          */
-        public static function by_fields(record_dao $self, $pool, array $keys, $pk) {
+        public static function by_fields(entity_record_dao $self, $pool, array $keys, $pk) {
             $where = [];
             $vals  = [];
 
@@ -227,14 +227,14 @@
         /**
          * Get multiple record primary keys by fields
          *
-         * @param record_dao $self the name of the DAO
+         * @param entity_record_dao $self the name of the DAO
          * @param string     $pool which source engine pool to use
          * @param array      $keys_arr
          * @param int|string $pk
          *
          * @return array
          */
-        public static function by_fields_multi(record_dao $self, $pool, array $keys_arr, $pk) {
+        public static function by_fields_multi(entity_record_dao $self, $pool, array $keys_arr, $pk) {
             $sql = core::sql($pool);
 
             $key_fields     = array_keys(reset($keys_arr));
@@ -278,14 +278,14 @@
         /**
          * Get specific fields from a record, by keys
          *
-         * @param record_dao $self
+         * @param entity_record_dao $self
          * @param string     $pool which source engine pool to use
          * @param array      $select_fields
          * @param array      $keys
          *
          * @return array
          */
-        public static function by_fields_select(record_dao $self, $pool, array $select_fields, array $keys) {
+        public static function by_fields_select(entity_record_dao $self, $pool, array $select_fields, array $keys) {
             $where = [];
             $vals  = [];
 
@@ -318,7 +318,7 @@
         /**
          * Insert record
          *
-         * @param record_dao $self the name of the DAO
+         * @param entity_record_dao $self the name of the DAO
          * @param string     $pool which source engine pool to use
          * @param array      $info
          * @param bool       $autoincrement
@@ -326,7 +326,7 @@
          *
          * @return array
          */
-        public static function insert(record_dao $self, $pool, array $info, $autoincrement, $replace) {
+        public static function insert(entity_record_dao $self, $pool, array $info, $autoincrement, $replace) {
             $insert_fields = [];
             foreach (array_keys($info) as $key) {
                 $insert_fields[] = "`$key`";
@@ -352,7 +352,7 @@
         /**
          * Insert multiple records
          *
-         * @param record_dao $self the name of the DAO
+         * @param entity_record_dao $self the name of the DAO
          * @param string     $pool which source engine pool to use
          * @param array      $infos
          * @param bool       $keys_match
@@ -361,7 +361,7 @@
          *
          * @return array
          */
-        public static function inserts(record_dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace) {
+        public static function inserts(entity_record_dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace) {
             $sql = core::sql($pool);
 
             if ($keys_match) {
@@ -441,13 +441,13 @@
         /**
          * Update a record
          *
-         * @param record_dao   $self the name of the DAO
+         * @param entity_record_dao   $self the name of the DAO
          * @param string       $pool which source engine pool to use
          * @param int|string   $pk
-         * @param record_model $model
+         * @param entity_record_model $model
          * @param array        $info
          */
-        public static function update(record_dao $self, $pool, $pk, record_model $model, array $info) {
+        public static function update(entity_record_dao $self, $pool, $pk, entity_record_model $model, array $info) {
             $update_fields = [];
             foreach (array_keys($info) as $key) {
                 $update_fields[] = "`{$key}` = :{$key}";
@@ -465,12 +465,12 @@
         /**
          * Delete a record
          *
-         * @param record_dao   $self the name of the DAO
+         * @param entity_record_dao   $self the name of the DAO
          * @param string       $pool which source engine pool to use
          * @param int|string   $pk
-         * @param record_model $model
+         * @param entity_record_model $model
          */
-        public static function delete(record_dao $self, $pool, $pk, record_model $model) {
+        public static function delete(entity_record_dao $self, $pool, $pk, entity_record_model $model) {
             $delete = core::sql($pool)->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE `{$pk}` = ?
@@ -483,12 +483,12 @@
         /**
          * Delete multiple records
          *
-         * @param record_dao        $self the name of the DAO
+         * @param entity_record_dao        $self the name of the DAO
          * @param string            $pool which source engine pool to use
          * @param int|string        $pk
-         * @param record_collection $collection
+         * @param entity_record_collection $collection
          */
-        public static function deletes(record_dao $self, $pool, $pk, record_collection $collection) {
+        public static function deletes(entity_record_dao $self, $pool, $pk, entity_record_collection $collection) {
             $delete = core::sql($pool)->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE `{$pk}` IN (" . join(',', array_fill(0, count($collection), '?')) . ")

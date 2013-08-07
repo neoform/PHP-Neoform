@@ -3,7 +3,7 @@
     /**
      * Country collection
      */
-    class country_collection extends record_collection implements country_definition {
+    class country_collection extends entity_record_collection implements country_definition {
 
         /**
          * Preload the Region models in this collection

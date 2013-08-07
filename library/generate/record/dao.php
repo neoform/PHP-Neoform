@@ -11,7 +11,7 @@
             $this->code .= "\t * " . ucwords(str_replace('_', ' ', $this->table->name)) . " DAO\n";
             $this->code .= "\t */\n";
 
-            $this->code .= "\tclass " . $this->table->name . "_dao extends record_dao implements " . $this->table->name . "_definition {\n\n";
+            $this->code .= "\tclass " . $this->table->name . "_dao extends entity_record_dao implements " . $this->table->name . "_definition {\n\n";
 
             $this->constants();
             $this->bindings();

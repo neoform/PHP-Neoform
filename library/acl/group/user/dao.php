@@ -3,7 +3,7 @@
     /**
      * Acl Group User link DAO
      */
-    class acl_group_user_dao extends link_dao implements acl_group_user_definition {
+    class acl_group_user_dao extends entity_link_dao implements acl_group_user_definition {
 
         const BY_ACL_GROUP      = 'by_acl_group';
         const BY_ACL_GROUP_USER = 'by_acl_group_user';

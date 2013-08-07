@@ -3,7 +3,7 @@
     /**
      * User Status DAO
      */
-    class user_status_dao extends record_dao implements user_status_definition {
+    class user_status_dao extends entity_record_dao implements user_status_definition {
 
         const BY_ALL  = 'by_all';
         const BY_NAME = 'by_name';

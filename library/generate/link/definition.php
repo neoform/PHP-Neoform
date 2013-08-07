@@ -1,6 +1,6 @@
 <?php
 
-    class generate_link_definition extends generate_definition {
+    class generate_entity_link_definition extends generate_definition {
 
         protected function constants() {
 

@@ -6,7 +6,7 @@
     * @var string $iso2
     * @var string $name
     */
-    class locale_model extends record_model implements locale_definition {
+    class locale_model extends entity_record_model implements locale_definition {
 
         public function __get($k) {
 

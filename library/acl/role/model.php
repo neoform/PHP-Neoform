@@ -6,7 +6,7 @@
     * @var int $id
     * @var string $name
     */
-    class acl_role_model extends record_model implements acl_role_definition {
+    class acl_role_model extends entity_record_model implements acl_role_definition {
 
         public function __get($k) {
 

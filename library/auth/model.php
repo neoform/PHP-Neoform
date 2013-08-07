@@ -7,7 +7,7 @@
     * @var int $user_id
     * @var string $expires_on
     */
-    class auth_model extends record_model implements auth_definition {
+    class auth_model extends entity_record_model implements auth_definition {
 
         use core_instance;
 
@@ -39,7 +39,7 @@
          * @param string $name
          * @param mixed $args
          *
-         * @return mixed|record_model
+         * @return mixed|entity_record_model
          */
         public function __call($name, $args) {
             if (isset($this->vars['user_id'])) {

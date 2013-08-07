@@ -12,7 +12,7 @@
     * @var float $longitude
     * @var float $latitude
     */
-    class region_model extends record_model implements region_definition {
+    class region_model extends entity_record_model implements region_definition {
 
         public function __get($k) {
 

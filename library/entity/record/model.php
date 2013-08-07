@@ -1,6 +1,6 @@
 <?php
 
-    abstract class record_model implements arrayaccess {
+    abstract class entity_record_model implements arrayaccess {
 
         /**
          * @var array of values representing the entity
@@ -86,7 +86,7 @@
          * @param string $name
          * @param array $args
          *
-         * @return record_model
+         * @return entity_record_model
          */
         public static function __callstatic($name, array $args) {
             $model = static::ENTITY_NAME . '_model';
@@ -129,7 +129,7 @@
          * @param string         $model_name Name of model being loaded
          * @param mixed          $default    If model does not exist, store this value instead
          *
-         * @return record_model|mixed
+         * @return entity_record_model|mixed
          */
         protected function _model($key, $pk, $model_name, $default=null) {
             if (! array_key_exists($key, $this->_vars)) {

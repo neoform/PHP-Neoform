@@ -1,6 +1,6 @@
 <?php
 
-    class generate_link_dao extends generate_dao {
+    class generate_entity_link_dao extends generate_dao {
 
         public function code() {
 
@@ -9,7 +9,7 @@
             $this->code .= "\t/**\n";
             $this->code .= "\t * " . ucwords(str_replace('_', ' ', $this->table->name)) . " link DAO\n";
             $this->code .= "\t */\n";
-            $this->code .= "\tclass " . $this->table->name . "_dao extends link_dao implements " . $this->table->name . "_definition {\n\n";
+            $this->code .= "\tclass " . $this->table->name . "_dao extends entity_link_dao implements " . $this->table->name . "_definition {\n\n";
 
             $this->constants();
             $this->bindings();

@@ -3,7 +3,7 @@
     /**
      * Record Collection
      */
-    class record_collection extends ArrayObject {
+    class entity_record_collection extends ArrayObject {
 
         /**
          * @var array locally cached data
@@ -14,7 +14,7 @@
          * Construct
          *
          * @param array              $pks       Primary keys
-         * @param array|record_model $infos     Preloaded data array
+         * @param array|entity_record_model $infos     Preloaded data array
          * @param string|null        $map_field Assign collection keys based on this field (taken from the models)
          */
         public function __construct(array $pks=null, array $infos=null, $map_field=null) {
@@ -41,13 +41,13 @@
 
         /**
          * Get a collection by a given field or fields
-         * folder_collection::by_parent(5) will return a folder model.
-         * this is just a shortcut for new folder_model(entity_dao::get('folder')->by_parent(5));
+         * folder_collection::by_parent(5) will return a folder collection.
+         * this is just a shortcut for new folder_collection(entity_dao::get('folder')->by_parent(5));
          *
          * @param string $name
          * @param array $args
          *
-         * @return record_collection
+         * @return entity_record_collection
          */
         public static function __callstatic($name, array $args) {
             $collection = static::ENTITY_NAME . '_collection';
@@ -61,10 +61,10 @@
         /**
          * Add a model to the collection
          *
-         * @param array|record_model $info
+         * @param array|entity_record_model $info
          * @param string|null        $map_field Assign collection keys based on this field (taken from the models)
          *
-         * @return record_collection $this
+         * @return entity_record_collection $this
          */
         public function add($info, $map_field=null) {
             $model = static::ENTITY_NAME . '_model';
@@ -93,7 +93,7 @@
          *
          * @param $k Key
          *
-         * @return record_collection $this
+         * @return entity_record_collection $this
          */
         public function del($k) {
             unset($this[$k]);
@@ -110,7 +110,7 @@
          * @param string $field
          * @param bool   $ignore_null
          *
-         * @return record_collection $this
+         * @return entity_record_collection $this
          */
         public function remap($field, $ignore_null=false) {
             $new = [];
@@ -161,7 +161,7 @@
          * @param callable|string $f
          * @param string          $order
          *
-         * @return record_collection
+         * @return entity_record_collection
          */
         public function sort($f, $order='asc') {
             if (is_callable($f)) {
@@ -209,7 +209,7 @@
          * @param string      $by_function     eg, by_comments
          * @param string|null $method_override Override the name of the model function being preloaded
          *
-         * @return record_collection
+         * @return entity_record_collection
          */
         protected function _preload_one_to_many($entity, $by_function, $method_override=null) {
 
@@ -266,7 +266,7 @@
          * @param string      $foreign_type    eg, permission
          * @param string|null $method_override Override the name of the model function being preloaded
          *
-         * @return record_collection
+         * @return entity_record_collection
          */
         protected function _preload_many_to_many($entity, $by_function, $foreign_type, $method_override=null) {
 
@@ -321,7 +321,7 @@
          * @param string      $field           Corresponding field for that entity
          * @param string|null $method_override Override the name of the model function being preloaded
          *
-         * @return record_collection
+         * @return entity_record_collection
          */
         protected function _preload_one_to_one($entity, $field, $method_override=null) {
 

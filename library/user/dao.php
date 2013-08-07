@@ -3,7 +3,7 @@
     /**
      * User DAO
      */
-    class user_dao extends record_dao implements user_definition {
+    class user_dao extends entity_record_dao implements user_definition {
 
         const BY_EMAIL               = 'by_email';
         const BY_PASSWORD_HASHMETHOD = 'by_password_hashmethod';

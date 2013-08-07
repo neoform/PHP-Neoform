@@ -3,7 +3,7 @@
     /**
      * Locale Key DAO
      */
-    class locale_key_dao extends record_dao implements locale_key_definition {
+    class locale_key_dao extends entity_record_dao implements locale_key_definition {
 
         const BY_ALL       = 'by_all';
         const BY_LOCALE    = 'by_locale';

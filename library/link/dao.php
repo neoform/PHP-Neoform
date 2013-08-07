@@ -182,7 +182,7 @@
                 $this->cache_engine_pool_write,
                 $keys_arr,
                 function($fields) use ($self, $cache_key_name) {
-                    return record_dao::_build_key($cache_key_name, $fields, $self);
+                    return record_dao::_build_key($cache_key_name, $fields, $self::ENTITY_NAME);
                 },
                 function($keys_arr) use ($self, $select_fields) {
                     $source_driver = "link_driver_{$self->source_engine}";

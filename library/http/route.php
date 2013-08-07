@@ -122,7 +122,7 @@
             $resource_ids = [];
             if ($this->resource) {
                 $resources = is_array($this->resource) ? $this->resource : [ $this->resource ];
-                foreach (acl_resource_dao::by_name_multi($resources) as $resource_id) {
+                foreach (entity_dao::get('acl_resource')->by_name_multi($resources) as $resource_id) {
                     if ($resource_id = (int) current($resource_id)) {
                         $resource_ids[$resource_id] = $resource_id;
                     } else {

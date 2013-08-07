@@ -59,12 +59,11 @@
          * Get all members of multiple list or get matching members of multiple lists (via filter array)
          *
          * @param array  $keys
-         * @param string $pool
          * @param array  $filter list of keys, an intersection is done
          *
          * @return array|null
          */
-        public static function list_get_union(array $keys, $pool, array $filter = null) {
+        public static function list_get_union(array $keys, array $filter = null) {
             $result = [];
             foreach ($keys as $k) {
                 if (isset(self::$local[$k]) && is_array(self::$local[$k])) {
@@ -148,7 +147,7 @@
             //if not all was pulled from memory
             if (count($rows)) {
                 $db_rows = $db_func($rows, $args);
-                if (is_array($db_rows) && count($db_rows)) {
+                if (is_array($db_rows) && $db_rows) {
                     $valid_rows += $db_rows;
                     foreach ($db_rows as $k => $row) {
                         self::$local[$keys[$k]] = $row;

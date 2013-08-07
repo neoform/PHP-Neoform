@@ -9,7 +9,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                $locale_key = locale_key_dao::insert([
+                $locale_key = entity_dao::get('locale_key')->insert([
                     'body'         => $input->body->val(),
                     'locale'       => $input->locale->val(),
                     'namespace_id' => $input->namespace_id->val(),
@@ -27,7 +27,7 @@
             self::_validate_update($locale_key, $input);
 
             if ($input->is_valid()) {
-                $updated_locale_key = locale_key_dao::update(
+                $updated_locale_key = entity_dao::get('locale_key')->update(
                     $locale_key,
                     $input->vals(
                         [
@@ -48,7 +48,7 @@
         }
 
         public static function delete(locale_key_model $locale_key) {
-            $return = locale_key_dao::delete($locale_key);
+            $return = entity_dao::get('locale_key')->delete($locale_key);
             locale_lib::flush_by_locale_namespace($locale_key->locale, $locale_key->locale_namespace());
             return $return;
         }

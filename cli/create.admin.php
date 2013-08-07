@@ -60,7 +60,7 @@
 
             } while (1);
 
-            $roles = new acl_role_collection(null, acl_role_dao::all());
+            $roles = new acl_role_collection(null, entity_dao::get('acl_role')->all());
 
             $user_acl_roles = [];
             foreach ($roles as $role) {
@@ -70,7 +70,7 @@
                 ];
             }
 
-            user_acl_role_dao::inserts($user_acl_roles);
+            entity_dao::get('user_acl_role')->inserts($user_acl_roles);
 
             echo self::color_text('Done', 'green', true) . "\n";
         }

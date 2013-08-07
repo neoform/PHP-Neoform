@@ -20,8 +20,7 @@
         public function __construct(array $pks=null, array $infos=null, $map_field=null) {
 
             if ($pks !== null) {
-                $dao   = static::ENTITY_NAME . '_dao';
-                $infos = $dao::by_pks($pks);
+                $infos = entity_dao::get(static::ENTITY_NAME)->by_pks($pks);
             }
 
             if ($infos !== null && count($infos)) {
@@ -43,20 +42,19 @@
         /**
          * Get a collection by a given field or fields
          * folder_collection::by_parent(5) will return a folder model.
-         * this is just a shortcut for new folder_model(folder_dao::by_parent(5));
+         * this is just a shortcut for new folder_model(entity_dao::get('folder')->by_parent(5));
          *
          * @param string $name
          * @param array $args
          *
          * @return record_collection
          */
-        public static function __callstatic($name, $args) {
+        public static function __callstatic($name, array $args) {
             $collection = static::ENTITY_NAME . '_collection';
-            $dao        = static::ENTITY_NAME . '_dao';
             if ($name === 'by_all') {
-                return new $collection(null, call_user_func_array("{$dao}::{$name}", $args));
+                return new $collection(null, call_user_func_array([entity_dao::get(static::ENTITY_NAME), $name], $args));
             } else {
-                return new $collection(call_user_func_array("{$dao}::{$name}", $args));
+                return new $collection(call_user_func_array([entity_dao::get(static::ENTITY_NAME), $name], $args));
             }
         }
 
@@ -216,11 +214,11 @@
         protected function _preload_one_to_many($entity, $by_function, $method_override=null) {
 
             $collection_name  = "{$entity}_collection";
-            $dao_name         = "{$entity}_dao";
+            $dao              = entity_dao::get($entity);
             $by_function     .= '_multi';
 
             // Get the ids for those
-            $pks_groups = $dao_name::$by_function($this);
+            $pks_groups = $dao->$by_function($this);
             $pks        = [];
 
             // make a flat array of all keys, removing dupes along the way.
@@ -231,7 +229,7 @@
             }
 
             // get all the records all in one shot
-            $models = new $collection_name(null, $dao_name::by_pks($pks));
+            $models = new $collection_name(null, $dao->by_pks($pks));
 
             // sort flat array back into grouped data again
             foreach ($pks_groups as & $pks_group) {
@@ -272,13 +270,11 @@
          */
         protected function _preload_many_to_many($entity, $by_function, $foreign_type, $method_override=null) {
 
-            $dao                 = "{$entity}_dao";
             $by_function        .= '_multi';
-            $foreign_dao         = "{$foreign_type}_dao";
             $foreign_collection  = "{$foreign_type}_collection";
 
             // Get the ids for those
-            $pks_groups = $dao::$by_function($this);
+            $pks_groups = entity_dao::get($entity)->$by_function($this);
             $pks        = [];
 
             // make a flat array of all keys, removing dupes along the way.
@@ -289,7 +285,7 @@
             }
 
             // get all the records all in one shot
-            $models = new $foreign_collection(null, $foreign_dao::by_pks($pks));
+            $models = new $foreign_collection(null, entity_dao::get($foreign_type)->by_pks($pks));
 
             // sort flat array back into grouped data again
             foreach ($pks_groups as & $pks_group) {
@@ -329,7 +325,7 @@
          */
         protected function _preload_one_to_one($entity, $field, $method_override=null) {
 
-            $dao_name        = "{$entity}_dao";
+            $dao             = entity_dao::get($entity);
             $model_name      = "{$entity}_model";
             $collection_name = "{$entity}_collection";
 
@@ -338,7 +334,7 @@
             foreach ($this as $model) {
                 $pks[$model->$field] = $model->$field;
             }
-            $infos  = $dao_name::by_pks($pks);
+            $infos  = $dao->by_pks($pks);
             $models = [];
 
             foreach ($this as $key => $model) {

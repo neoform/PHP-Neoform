@@ -7,7 +7,7 @@
                 try {
                     $auth = new auth_model(core::http()->cookie(core::config()['auth']['cookie']));
                     if ((new type_date)->getTimestamp() > $auth->expires_on->getTimestamp()) {
-                        auth_dao::delete($auth);
+                        entity_dao::get('auth')->delete($auth);
                         $auth->reset();
                     }
                     return $auth;

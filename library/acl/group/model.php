@@ -34,7 +34,7 @@
         public function acl_role_collection() {
             if (! array_key_exists('acl_role_collection', $this->_vars)) {
                 $this->_vars['acl_role_collection'] = new acl_role_collection(
-                    acl_group_role_dao::by_acl_group($this->vars['id'])
+                    entity_dao::get('acl_group_role')->by_acl_group($this->vars['id'])
                 );
             }
             return $this->_vars['acl_role_collection'];
@@ -48,7 +48,7 @@
         public function user_collection() {
             if (! array_key_exists('user_collection', $this->_vars)) {
                 $this->_vars['user_collection'] = new user_collection(
-                    acl_group_user_dao::by_acl_group($this->vars['id'])
+                    entity_dao::get('acl_group_user')->by_acl_group($this->vars['id'])
                 );
             }
             return $this->_vars['user_collection'];

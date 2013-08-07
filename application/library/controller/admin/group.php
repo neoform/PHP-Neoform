@@ -15,15 +15,15 @@
 
             $view->meta_title = 'Groups';
 
-            //$users = new user_collection(user_dao::limit(20, 'id', 'asc', null));
-            $groups = new acl_group_collection(acl_group_dao::pagination('id', 'asc', ($page - 1) * $per_page, $per_page));
+            //$users = new user_collection(entity_dao::get('user')->limit(20, 'id', 'asc', null));
+            $groups = new acl_group_collection(entity_dao::get('acl_group')->pagination('id', 'asc', ($page - 1) * $per_page, $per_page));
             $roles  = $groups->acl_role_collection();
             $roles->acl_resource_collection();
 
             $view->groups    = $groups;
 
             $view->page     = $page;
-            $view->total    = acl_group_dao::count();
+            $view->total    = entity_dao::get('acl_group')->count();
             $view->per_page = $per_page;
 
             $view->render('admin/group');

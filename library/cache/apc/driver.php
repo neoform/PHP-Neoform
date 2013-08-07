@@ -3,23 +3,6 @@
     class cache_apc_driver implements cache_driver {
 
         /**
-         * @var The prefix used before all keys
-         */
-        protected static $key_prefix;
-
-        /**
-         * Gets the prefix from the configs and saves it locally
-         *
-         * @return string
-         */
-        public static function key_prefix() {
-            if (self::$key_prefix === null) {
-                self::$key_prefix = core::config()['apc']['key_prefix'] . ':';
-            }
-            return self::$key_prefix;
-        }
-
-        /**
          * Activate a pipelined (batch) query - this doesn't do anything, so ignore
          *
          * @param string $pool
@@ -40,14 +23,14 @@
         /**
          * Checks to see if a record exists
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          *
          * @return bool
          */
-        public static function exists($key, $pool) {
+        public static function exists($pool, $key) {
             try {
-                core::apc()->get(self::key_prefix() . $key);
+                core::apc()->get($key);
                 return true;
             } catch (apc_exception $e) {
                 return false;
@@ -57,75 +40,75 @@
         /**
          * Create a list and/or Add a value to a list
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          * @param mixed  $value
          *
          * @throws cache_apc_exception
          */
-        public static function list_add($key, $pool, $value) {
+        public static function list_add($pool, $key, $value) {
             throw new cache_apc_exception('List commands are not supported by APC');
         }
 
         /**
          * Get all members of a list or get matching members of a list
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          * @param array  $filter list of keys, an intersection is done
          *
          * @throws cache_apc_exception
          */
-        public static function list_get($key, $pool, array $filter = null) {
+        public static function list_get($pool, $key, array $filter = null) {
             throw new cache_apc_exception('List commands are not supported by APC');
         }
 
         /**
          * Get all members of multiple list or get matching members of multiple lists (via filter array)
          *
-         * @param array  $keys
          * @param string $pool
+         * @param array  $keys
          * @param array  $filter list of keys, an intersection is done
          *
          * @throws cache_apc_exception
          */
-        public static function list_get_union(array $keys, $pool, array $filter = null) {
+        public static function list_get_union($pool, array $keys, array $filter = null) {
             throw new cache_apc_exception('List commands are not supported by APC');
         }
 
         /**
          * Remove values from a list
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          * @param array  $remove_keys
          *
          * @throws cache_apc_exception
          */
-        public static function list_remove($key, $pool, array $remove_keys) {
+        public static function list_remove($pool, $key, array $remove_keys) {
             throw new cache_apc_exception('List commands are not supported by APC');
         }
 
         /**
          * Increment the value of a cached entry (only works if the value is an int)
          *
-         * @param string  $key
          * @param string  $pool
+         * @param string  $key
          * @param integer $offset
          */
-        public static function increment($key, $pool, $offset=1){
-            core::apc()->increment(self::key_prefix() . $key, $offset);
+        public static function increment($pool, $key, $offset=1){
+            core::apc()->increment($key, $offset);
         }
 
         /**
          * Decrement the value of a cached entry (only works if the value is an int)
          *
-         * @param string  $key
          * @param string  $pool
+         * @param string  $key
          * @param integer $offset
          */
-        public static function decrement($key, $pool, $offset=1){
-            core::apc()->decrement(self::key_prefix() . $key, $offset);
+        public static function decrement($pool, $key, $offset=1){
+            core::apc()->decrement($key, $offset);
         }
 
         /**
@@ -133,15 +116,15 @@
          *  if record does exist, an array with a single element, containing the data.
          *  returns null if record does not exist
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          *
          * @return array|null returns null if record does not exist.
          */
-        public static function get($key, $pool) {
+        public static function get($pool, $key) {
             try {
                 return [
-                    core::apc()->get(self::key_prefix() . $key),
+                    core::apc()->get($key),
                 ];
             } catch (cache_apc_exception $e) {
 
@@ -149,34 +132,33 @@
         }
 
         /**
-         * @param string       $key
          * @param string       $pool
+         * @param string       $key
          * @param mixed        $data
          * @param integer|null $ttl
          *
          * @return mixed
          */
-        public static function set($key, $pool, $data, $ttl=null) {
-            return core::apc()->set(self::key_prefix() . $key, $data, $ttl);
+        public static function set($pool, $key, $data, $ttl=null) {
+            return core::apc()->set($key, $data, $ttl);
         }
 
         /**
          * Fetch multiple rows from apc
          *
-         * @param array  $keys
          * @param string $pool
+         * @param array  $keys
          *
          * @return array
          */
-        public static function get_multi(array $keys, $pool) {
+        public static function get_multi($pool, array $keys) {
 
-            $prefix_apc = self::key_prefix();
-            $apc        = core::apc();
+            $apc = core::apc();
 
             $matched_rows = [];
             foreach ($keys as $index => $key) {
                 try {
-                    $matched_rows[$index] = $apc->get($prefix_apc . $key);
+                    $matched_rows[$index] = $apc->get($key);
                     //unset($keys[$index]);
                 } catch (apc_exception $e) {
 
@@ -189,41 +171,38 @@
         /**
          * Set multiple records in APC
          *
-         * @param array        $rows
          * @param string       $pool
+         * @param array        $rows
          * @param integer|null $ttl
          */
-        public static function set_multi(array $rows, $pool, $ttl=null) {
-            $prefix = self::key_prefix();
-            $apc    = core::apc();
+        public static function set_multi($pool, array $rows, $ttl=null) {
+            $apc = core::apc();
             foreach ($rows as $key => $row) {
-                $apc->set($prefix . $key, $row, $ttl);
+                $apc->set($key, $row, $ttl);
             }
         }
 
         /**
          * Delete a record from APC
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          */
-        public static function delete($key, $pool) {
-            core::apc()->del(self::key_prefix() . $key);
+        public static function delete($pool, $key) {
+            core::apc()->del($key);
         }
 
         /**
          * Delete multiple entries from cache
          *
-         * @param array  $keys
          * @param string $pool
+         * @param array  $keys
          */
-        public static function delete_multi(array $keys, $pool){
-
+        public static function delete_multi($pool, array $keys) {
             if (count($keys)) {
                 $apc = core::apc();
-                $prefix = self::key_prefix();
                 foreach ($keys as $key) {
-                    $apc->del($prefix . $key);
+                    $apc->del($key);
                 }
             }
         }

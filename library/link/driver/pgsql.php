@@ -21,17 +21,18 @@
         /**
          * Get specific fields from a record, by keys
          *
-         * @param string $self the name of the DAO
-         * @param array  $select_fields
-         * @param array  $keys
+         * @param link_dao $self the name of the DAO
+         * @param string   $pool which source engine pool to use
+         * @param array    $select_fields
+         * @param array    $keys
          *
          * @return array
          */
-        public static function by_fields($self, array $select_fields, array $keys) {
+        public static function by_fields(link_dao $self, $pool, array $select_fields, array $keys) {
             $where = [];
             $vals  = [];
 
-            if (count($keys)) {
+            if ($keys) {
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
                         $where[] = "\"{$k}\" IS NULL";
@@ -42,7 +43,7 @@
                 }
             }
 
-            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read'])->prepare("
+            $rs = core::sql($pool)->prepare("
                 SELECT " . join(',', $select_fields) . "
                 FROM \"" . self::table($self::TABLE) . "\"
                 " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
@@ -60,13 +61,14 @@
         /**
          * Get specific fields from multiple records, by keys
          *
-         * @param string $self the name of the DAO
-         * @param array  $select_fields
-         * @param array  $keys_arr
+         * @param link_dao $self the name of the DAO
+         * @param string   $pool which source engine pool to use
+         * @param array    $select_fields
+         * @param array    $keys_arr
          *
          * @return array
          */
-        public static function by_fields_multi($self, array $select_fields, array $keys_arr) {
+        public static function by_fields_multi(link_dao $self, $pool, array $select_fields, array $keys_arr) {
             $key_fields     = array_keys(current($keys_arr));
             $reverse_lookup = [];
             $return         = [];
@@ -88,7 +90,7 @@
                 $where[] = '(' . join(" AND ", $w) . ')';
             }
 
-            $rs = core::sql($self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read'])->prepare("
+            $rs = core::sql($pool)->prepare("
                 SELECT
                     " . join(',', $select_fields) . ",
                     CONCAT(" . join(", ':', ", $key_fields) . ") \"__cache_key__\"
@@ -116,20 +118,21 @@
         /**
          * Insert a link
          *
-         * @param string $self the name of the DAO
-         * @param array  $info
-         * @param bool   $replace
+         * @param link_dao $self the name of the DAO
+         * @param string   $pool which source engine pool to use
+         * @param array    $info
+         * @param bool     $replace
          *
          * @return mixed
          */
-        public static function insert($self, array $info, $replace) {
+        public static function insert(link_dao $self, $pool, array $info, $replace) {
 
             $insert_fields = [];
             foreach ($info as $k => $v) {
                 $insert_fields[] = "\"{$k}\"";
             }
 
-            $insert = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write'])->prepare("
+            $insert = core::sql($pool)->prepare("
                 INSERT INTO
                 \"" . self::table($self::TABLE) . "\"
                 ( " . join(', ', $insert_fields) . " )
@@ -143,16 +146,17 @@
         /**
          * Insert multiple links
          *
-         * @param string $self the name of the DAO
-         * @param array  $infos
-         * @param bool   $replace
+         * @param link_dao $self the name of the DAO
+         * @param string   $pool which source engine pool to use
+         * @param array    $infos
+         * @param bool     $replace
          *
          * @return bool
          */
-        public static function inserts($self, array $infos, $replace) {
+        public static function inserts(link_dao $self, $pool, array $infos, $replace) {
             $insert_fields = [];
             $info          = current($infos);
-            $sql           = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']);
+            $sql           = core::sql($pool);
 
             if (count($infos) > 1) {
                 $sql->beginTransaction();
@@ -183,13 +187,14 @@
         /**
          * Update a set of links
          *
-         * @param string $self the name of the DAO
-         * @param array  $new_info
-         * @param array  $where
+         * @param link_dao $self the name of the DAO
+         * @param string   $pool which source engine pool to use
+         * @param array    $new_info
+         * @param array    $where
          *
          * @return mixed
          */
-        public static function update($self, array $new_info, array $where) {
+        public static function update(link_dao $self, $pool, array $new_info, array $where) {
             $vals          = [];
             $update_fields = [];
 
@@ -208,7 +213,7 @@
                 }
             }
 
-            $update = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write'])->prepare("
+            $update = core::sql($pool)->prepare("
                 UPDATE \"" . self::table($self::TABLE) . "\"
                 SET " . join(", \n", $update_fields) . "
                 WHERE " . join(" AND \n", $where_fields) . "
@@ -220,12 +225,13 @@
         /**
          * Delete one or more links
          *
-         * @param string $self the name of the DAO
-         * @param array  $keys
+         * @param link_dao $self the name of the DAO
+         * @param string   $pool which source engine pool to use
+         * @param array    $keys
          *
          * @return mixed
          */
-        public static function delete($self, array $keys) {
+        public static function delete(link_dao $self, $pool, array $keys) {
             $where = [];
             $vals  = [];
 
@@ -238,7 +244,7 @@
                 }
             }
 
-            $delete = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write'])->prepare("
+            $delete = core::sql($pool)->prepare("
                 DELETE FROM \"" . self::table($self::TABLE) . "\"
                 WHERE " . join(" AND ", $where) . "
             ");
@@ -249,12 +255,13 @@
         /**
          * Delete sets of links
          *
-         * @param string $self the name of the DAO
-         * @param array  $keys_arr
+         * @param link_dao $self the name of the DAO
+         * @param string   $pool which source engine pool to use
+         * @param array    $keys_arr
          *
          * @return mixed
          */
-        public static function deletes($self, array $keys_arr) {
+        public static function deletes(link_dao $self, $pool, array $keys_arr) {
             $vals  = [];
             $where = [];
 
@@ -271,7 +278,7 @@
                 $where[] = "(" . join(" AND ", $w) . ")";
             }
 
-            $delete = core::sql($self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write'])->prepare("
+            $delete = core::sql($pool)->prepare("
                 DELETE FROM \"" . self::table($self::TABLE) . "\"
                 WHERE " . join(" OR ", $where) . "
             ");

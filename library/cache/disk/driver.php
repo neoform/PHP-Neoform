@@ -23,88 +23,88 @@
         /**
          * Increment the value of a cached entry (only works if the value is an int)
          *
-         * @param string  $key
          * @param string  $pool
+         * @param string  $key
          * @param integer $offset
          * @throws cache_disk_exception
          */
-        public static function increment($key, $pool, $offset=1) {
+        public static function increment($pool, $key, $offset=1) {
             throw new cache_disk_exception('Disk cache does not support incrementing');
         }
 
         /**
          * Decrement the value of a cached entry (only works if the value is an int)
          *
-         * @param string  $key
          * @param string  $pool
+         * @param string  $key
          * @param integer $offset
          * @throws cache_disk_exception
          */
-        public static function decrement($key, $pool, $offset=1) {
+        public static function decrement($pool, $key, $offset=1) {
             throw new cache_disk_exception('Disk cache does not support decrementing');
         }
 
         /**
          * Checks if a record exists
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          *
          * @return array|null returns null if record does not exist.
          */
-        public static function exists($key, $pool) {
-            return (bool) cache_disk_dao(cache_disk_dao::path($key));
+        public static function exists($pool, $key) {
+            return (bool) cache_disk_dao::exists(cache_disk_dao::path($key));
         }
 
         /**
          * Create a list and/or Add a value to a list
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          * @param mixed  $value
          *
          * @throws cache_disk_exception
          */
-        public static function list_add($key, $pool, $value) {
+        public static function list_add($pool, $key, $value) {
             throw new cache_disk_exception('List commands are not supported by disk cache');
         }
 
         /**
          * Get all members of a list or get matching members of a list
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          * @param array  $filter list of keys, an intersection is done
          *
          * @throws cache_disk_exception
          */
-        public static function list_get($key, $pool, array $filter = null) {
+        public static function list_get($pool, $key, array $filter = null) {
             throw new cache_disk_exception('List commands are not supported by disk cache');
         }
 
         /**
          * Get all members of multiple list or get matching members of multiple lists (via filter array)
          *
-         * @param array  $keys
          * @param string $pool
+         * @param array  $keys
          * @param array  $filter list of keys, an intersection is done
          *
          * @throws cache_disk_exception
          */
-        public static function list_get_union(array $keys, $pool, array $filter = null) {
+        public static function list_get_union($pool, array $keys, array $filter = null) {
             throw new cache_disk_exception('List commands are not supported by disk cache');
         }
 
         /**
          * Remove values from a list
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          * @param array  $remove_keys
          *
          * @throws cache_disk_exception
          */
-        public static function list_remove($key, $pool, array $remove_keys) {
+        public static function list_remove($pool, $key, array $remove_keys) {
             throw new cache_disk_exception('List commands are not supported by disk cache');
         }
 
@@ -113,12 +113,12 @@
          *  if record does exist, an array with a single element, containing the data.
          *  returns null if record does not exist
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          *
          * @return array|null returns null if record does not exist.
          */
-        public static function get($key, $pool) {
+        public static function get($pool, $key) {
             try {
                 return [
                     cache_disk_dao::get(cache_disk_dao::path($key)),
@@ -129,15 +129,13 @@
         }
 
         /**
-         * @param string       $key
          * @param string       $pool
+         * @param string       $key
          * @param mixed        $data
          * @param integer|null $ttl
-         *
-         * @return mixed
          */
-        public static function set($key, $pool, $data, $ttl=null) {
-            return cache_disk_dao::set(
+        public static function set($pool, $key, $data, $ttl=null) {
+            cache_disk_dao::set(
                 cache_disk_dao::path($key),
                 $data,
                 $ttl
@@ -147,12 +145,12 @@
         /**
          * Fetch multiple rows from disk
          *
-         * @param array $keys
          * @param array $pool
+         * @param array $keys
          *
          * @return array
          */
-        public static function get_multi(array $keys, $pool) {
+        public static function get_multi($pool, array $keys) {
             $matched_rows = [];
             foreach ($keys as $index => $key) {
                 try {
@@ -169,11 +167,11 @@
         /**
          * Set multiple records in cache
          *
-         * @param array  $rows
          * @param string $pool
+         * @param array  $rows
          * @param null   $ttl
          */
-        public static function set_multi(array $rows, $pool, $ttl=null) {
+        public static function set_multi($pool, array $rows, $ttl=null) {
             foreach ($rows as $key => $row) {
                 cache_disk_dao::set(cache_disk_dao::path($key), $row, $ttl);
             }
@@ -182,20 +180,20 @@
         /**
          * Delete a record from disk
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          */
-        public static function delete($key, $pool) {
+        public static function delete($pool, $key) {
             cache_disk_dao::del(cache_disk_dao::path($key));
         }
 
         /**
          * Delete multiple entries from cache
          *
-         * @param array $keys
          * @param string $pool
+         * @param array $keys
          */
-        public static function delete_multi(array $keys, $pool){
+        public static function delete_multi($pool, array $keys) {
 
             if (count($keys)) {
                 foreach ($keys as $key) {

@@ -94,12 +94,12 @@
             if (! isset($this->_vars['role_ids'])) {
 
                 // Get user's roles
-                $role_ids = user_acl_role_dao::by_user($this->vars['id']);
+                $role_ids = entity_dao::get('user_acl_role')->by_user($this->vars['id']);
 
                 // Get user's groups
-                if ($group_ids = acl_group_user_dao::by_user($this->vars['id'])) {
+                if ($group_ids = entity_dao::get('acl_group_user')->by_user($this->vars['id'])) {
                     // Get those group's roles
-                    foreach (acl_group_role_dao::by_acl_group_multi($group_ids) as $group_role_ids) {
+                    foreach (entity_dao::get('acl_group_role')->by_acl_group_multi($group_ids) as $group_role_ids) {
                         foreach ($group_role_ids as $group_role_id) {
                             $role_ids[] = $group_role_id;
                         }
@@ -128,7 +128,7 @@
                 }
 
                 $role_resource_ids = [];
-                foreach (acl_role_resource_dao::by_acl_role_multi($role_ids) as $ids) {
+                foreach (entity_dao::get('acl_role_resource')->by_acl_role_multi($role_ids) as $ids) {
                     if ($ids) {
                         foreach ($ids as $role_resource_id) {
                             $role_resource_ids[] = (int) $role_resource_id;
@@ -150,7 +150,7 @@
         public function auth_collection() {
             if (! array_key_exists('auth_collection', $this->_vars)) {
                 $this->_vars['auth_collection'] = new auth_collection(
-                    auth_dao::by_user($this->vars['id'])
+                    entity_dao::get('auth')->by_user($this->vars['id'])
                 );
             }
             return $this->_vars['auth_collection'];
@@ -195,7 +195,7 @@
         public function acl_role_collection() {
             if (! array_key_exists('acl_role_collection', $this->_vars)) {
                 $this->_vars['acl_role_collection'] = new acl_role_collection(
-                    user_acl_role_dao::by_user($this->vars['id'])
+                    entity_dao::get('user_acl_role')->by_user($this->vars['id'])
                 );
             }
             return $this->_vars['acl_role_collection'];
@@ -209,7 +209,7 @@
         public function acl_group_collection() {
             if (! array_key_exists('acl_group_collection', $this->_vars)) {
                 $this->_vars['acl_group_collection'] = new acl_group_collection(
-                    acl_group_user_dao::by_user($this->vars['id'])
+                    entity_dao::get('acl_group_user')->by_user($this->vars['id'])
                 );
             }
             return $this->_vars['acl_group_collection'];
@@ -223,7 +223,7 @@
         public function site_collection() {
             if (! array_key_exists('site_collection', $this->_vars)) {
                 $this->_vars['site_collection'] = new site_collection(
-                    user_site_dao::by_user($this->vars['id'])
+                    entity_dao::get('user_site')->by_user($this->vars['id'])
                 );
             }
             return $this->_vars['site_collection'];

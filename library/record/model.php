@@ -20,8 +20,8 @@
         public function __construct($pk=null, array $info=null) {
 
             if ($pk !== null) {
-                $dao = static::ENTITY_NAME . '_dao';
-                if ($this->vars = $dao::by_pk($pk)) {
+                $dao = entity_dao::get(static::ENTITY_NAME);
+                if ($this->vars = $dao->by_pk($pk)) {
                     return;
                 }
             } else if ($info !== null) {
@@ -88,11 +88,10 @@
          *
          * @return record_model
          */
-        public static function __callstatic($name, $args) {
+        public static function __callstatic($name, array $args) {
             $model = static::ENTITY_NAME . '_model';
-            $dao   = static::ENTITY_NAME . '_dao';
             return new $model(current(
-                call_user_func_array("$dao::$name", $args)
+                call_user_func_array([entity_dao::get(static::ENTITY_NAME), $name], $args)
             ));
         }
 

@@ -15,15 +15,6 @@
             ];
         }
 
-        /**
-         * Caching engines used by this entity
-         *
-         * @return int
-         */
-        protected static function _cache_engines() {
-            return cache_lib::MC;
-        }
-
         // READS
 
         /**
@@ -219,5 +210,4 @@
 
             return $return;
         }
-
     }

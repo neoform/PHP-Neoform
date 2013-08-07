@@ -9,22 +9,18 @@
         const BY_PASSWORD_HASHMETHOD = 'by_password_hashmethod';
         const BY_STATUS              = 'by_status';
 
-        /**
-         * Get the generic bindings of the table columns
-         *
-         * @return array
+        /*
+         * @var array \$pdo_bindings list of fields and their corresponding PDO bindings
          */
-        public static function bindings() {
-            return [
-                'id'                  => 'int',
-                'email'               => 'string',
-                'password_hash'       => 'binary',
-                'password_hashmethod' => 'int',
-                'password_cost'       => 'int',
-                'password_salt'       => 'binary',
-                'status_id'           => 'int',
-            ];
-        }
+        protected $pdo_bindings = [
+            'id'                  => PDO::PARAM_INT,
+            'email'               => PDO::PARAM_STR,
+            'password_hash'       => PDO::PARAM_LOB,
+            'password_hashmethod' => PDO::PARAM_INT,
+            'password_cost'       => PDO::PARAM_INT,
+            'password_salt'       => PDO::PARAM_LOB,
+            'status_id'           => PDO::PARAM_INT,
+        ];
 
         // READS
 
@@ -35,8 +31,8 @@
          *
          * @return array of User ids
          */
-        public static function by_email($email) {
-            return self::_by_fields(
+        public function by_email($email) {
+            return parent::_by_fields(
                 self::BY_EMAIL,
                 [
                     'email' => (string) $email,
@@ -51,8 +47,8 @@
          *
          * @return array of User ids
          */
-        public static function by_password_hashmethod($password_hashmethod) {
-            return self::_by_fields(
+        public function by_password_hashmethod($password_hashmethod) {
+            return parent::_by_fields(
                 self::BY_PASSWORD_HASHMETHOD,
                 [
                     'password_hashmethod' => (int) $password_hashmethod,
@@ -67,8 +63,8 @@
          *
          * @return array of User ids
          */
-        public static function by_status($status_id) {
-            return self::_by_fields(
+        public function by_status($status_id) {
+            return parent::_by_fields(
                 self::BY_STATUS,
                 [
                     'status_id' => (int) $status_id,
@@ -83,7 +79,7 @@
          *
          * @return array of arrays containing User ids
          */
-        public static function by_password_hashmethod_multi($user_hashmethod_list) {
+        public function by_password_hashmethod_multi($user_hashmethod_list) {
             $keys = [];
             if ($user_hashmethod_list instanceof user_hashmethod_collection) {
                 foreach ($user_hashmethod_list as $k => $user_hashmethod) {
@@ -98,7 +94,7 @@
                     ];
                 }
             }
-            return self::_by_fields_multi(self::BY_PASSWORD_HASHMETHOD, $keys);
+            return parent::_by_fields_multi(self::BY_PASSWORD_HASHMETHOD, $keys);
         }
 
         /**
@@ -108,7 +104,7 @@
          *
          * @return array of arrays containing User ids
          */
-        public static function by_status_multi($user_status_list) {
+        public function by_status_multi($user_status_list) {
             $keys = [];
             if ($user_status_list instanceof user_status_collection) {
                 foreach ($user_status_list as $k => $user_status) {
@@ -123,7 +119,7 @@
                     ];
                 }
             }
-            return self::_by_fields_multi(self::BY_STATUS, $keys);
+            return parent::_by_fields_multi(self::BY_STATUS, $keys);
         }
 
         /**
@@ -133,41 +129,15 @@
          *
          * @return array of arrays of User ids
          */
-        public static function by_email_multi(array $email_arr) {
+        public function by_email_multi(array $email_arr) {
             $keys_arr = [];
             foreach ($email_arr as $k => $email) {
                 $keys_arr[$k] = [ 'email' => (string) $email, ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_EMAIL,
                 $keys_arr
             );
-        }
-
-        /**
-         * Get a paginated list of user ids
-         *
-         * @param string  $order_by
-         * @param string  $direction
-         * @param integer $offset
-         * @param integer $limit
-         *
-         * @return array
-         */
-        public static function pagination($order_by, $direction, $offset, $limit) {
-            $users = core::sql(core::config()['sql']['default_pool_read'])->prepare("
-                SELECT id
-                FROM " . sql_lib::quote_field_name('user') . "
-                ORDER BY " . sql_lib::quote_field_name($order_by) . " {$direction}
-                LIMIT {$limit}
-                OFFSET {$offset}
-            ");
-            $users->execute();
-            $ids = [];
-            foreach ($users->fetchAll() as $user) {
-                $ids[] = (int) $user['id'];
-            }
-            return $ids;
         }
 
         // WRITES
@@ -179,7 +149,7 @@
          *
          * @return user_model
          */
-        public static function insert(array $info) {
+        public function insert(array $info) {
 
             // Insert record
             $return = parent::_insert($info);
@@ -237,7 +207,7 @@
          *
          * @return user_collection
          */
-        public static function inserts(array $infos) {
+        public function inserts(array $infos) {
 
             // Insert records
             $return = parent::_inserts($infos);
@@ -299,7 +269,7 @@
          *
          * @return user_model updated model
          */
-        public static function update(user_model $user, array $info) {
+        public function update(user_model $user, array $info) {
 
             // Update record
             $updated_model = parent::_update($user, $info);
@@ -381,7 +351,7 @@
          *
          * @return bool
          */
-        public static function delete(user_model $user) {
+        public function delete(user_model $user) {
 
             // Delete record
             $return = parent::_delete($user);
@@ -433,7 +403,7 @@
          *
          * @return bool
          */
-        public static function deletes(user_collection $user_collection) {
+        public function deletes(user_collection $user_collection) {
 
             // Delete records
             $return = parent::_deletes($user_collection);

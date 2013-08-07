@@ -9,7 +9,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return country_dao::insert([
+                return entity_dao::get('country')->insert([
                     'name'            => $input->name->val(),
                     'name_normalized' => $input->name_normalized->val(),
                     'iso2'            => $input->iso2->val(),
@@ -26,7 +26,7 @@
             self::_validate_update($country, $input);
 
             if ($input->is_valid()) {
-                return country_dao::update(
+                return entity_dao::get('country')->update(
                     $country,
                     $input->vals(
                         [
@@ -43,35 +43,35 @@
         }
 
         public static function delete(country_model $country) {
-            return country_dao::delete($country);
+            return entity_dao::get('country')->delete($country);
         }
 
         public static function _validate_insert(input_collection $input) {
 
             // name
             $input->name->cast('string')->length(1, 255)->callback(function($name) {
-                if (country_dao::by_name($name->val())) {
+                if (entity_dao::get('country')->by_name($name->val())) {
                     $name->errors('already in use');
                 }
             });
 
             // name_normalized
             $input->name_normalized->cast('string')->length(1, 255)->callback(function($name_normalized) {
-                if (country_dao::by_name_normalized($name_normalized->val())) {
+                if (entity_dao::get('country')->by_name_normalized($name_normalized->val())) {
                     $name_normalized->errors('already in use');
                 }
             });
 
             // iso2
             $input->iso2->cast('string')->length(1, 2)->callback(function($iso2) {
-                if (country_dao::by_iso2($iso2->val())) {
+                if (entity_dao::get('country')->by_iso2($iso2->val())) {
                     $iso2->errors('already in use');
                 }
             });
 
             // iso3
             $input->iso3->cast('string')->length(1, 3)->callback(function($iso3) {
-                if (country_dao::by_iso3($iso3->val())) {
+                if (entity_dao::get('country')->by_iso3($iso3->val())) {
                     $iso3->errors('already in use');
                 }
             });
@@ -81,7 +81,7 @@
 
             // name
             $input->name->cast('string')->optional()->length(1, 255)->callback(function($name) use ($country) {
-                $id_arr = country_dao::by_name($name->val());
+                $id_arr = entity_dao::get('country')->by_name($name->val());
                 if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $country->id) {
                     $name->errors('already in use');
                 }
@@ -89,7 +89,7 @@
 
             // name_normalized
             $input->name_normalized->cast('string')->optional()->length(1, 255)->callback(function($name_normalized) use ($country) {
-                $id_arr = country_dao::by_name_normalized($name_normalized->val());
+                $id_arr = entity_dao::get('country')->by_name_normalized($name_normalized->val());
                 if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $country->id) {
                     $name_normalized->errors('already in use');
                 }
@@ -97,7 +97,7 @@
 
             // iso2
             $input->iso2->cast('string')->optional()->length(1, 2)->callback(function($iso2) use ($country) {
-                $id_arr = country_dao::by_iso2($iso2->val());
+                $id_arr = entity_dao::get('country')->by_iso2($iso2->val());
                 if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $country->id) {
                     $iso2->errors('already in use');
                 }
@@ -105,7 +105,7 @@
 
             // iso3
             $input->iso3->cast('string')->optional()->length(1, 3)->callback(function($iso3) use ($country) {
-                $id_arr = country_dao::by_iso3($iso3->val());
+                $id_arr = entity_dao::get('country')->by_iso3($iso3->val());
                 if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $country->id) {
                     $iso3->errors('already in use');
                 }

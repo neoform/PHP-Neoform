@@ -11,12 +11,6 @@
         const PRIMARY_KEY         = 'id';
         const BINARY_PK           = false;
         const ENTITY_NAME         = 'user';
-        const CACHE_ENGINE        = null;
-        const CACHE_ENGINE_READ   = null;
-        const CACHE_ENGINE_WRITE  = null;
-        const SOURCE_ENGINE       = null;
-        const SOURCE_ENGINE_READ  = null;
-        const SOURCE_ENGINE_WRITE = null;
         const USING_LIMIT         = true;
         const USING_COUNT         = true;
     }

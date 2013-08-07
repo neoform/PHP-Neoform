@@ -9,7 +9,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return user_acl_role_dao::insert([
+                return entity_dao::get('user_acl_role')->insert([
                     'user_id'     => $input->user_id->val(),
                     'acl_role_id' => $input->acl_role_id->val(),
                 ]);
@@ -25,7 +25,7 @@
                     'acl_role_id' => (int) $acl_role->id,
                 ];
             }
-            return user_acl_role_dao::deletes($keys);
+            return entity_dao::get('user_acl_role')->deletes($keys);
         }
 
         public static function delete_by_acl_role(acl_role_model $acl_role, user_collection $user_collection) {
@@ -36,7 +36,7 @@
                     'user_id'     => (int) $user->id,
                 ];
             }
-            return user_acl_role_dao::deletes($keys);
+            return entity_dao::get('user_acl_role')->deletes($keys);
         }
 
         public static function _validate_insert(input_collection $input) {

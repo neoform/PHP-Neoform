@@ -12,8 +12,8 @@
             $driver_class = "cache_{$driver}_driver";
 
             // Delete cache
-            cache_lib::delete($driver, "{$key}:111", $pool_write);
-            cache_lib::delete($driver, "{$key}:222", $pool_write);
+            cache_lib::delete($driver, $pool_write, "{$key}:111");
+            cache_lib::delete($driver, $pool_write, "{$key}:222");
 
 
 
@@ -22,9 +22,9 @@
             $pulled = false;
             $result = cache_lib::single(
                 $driver,
-                "{$key}:111",
                 $pool_read,
                 $pool_write,
+                "{$key}:111",
                 function() use (& $pulled) {
                     $pulled = true;
                     return "Hey sexy pants";
@@ -41,9 +41,9 @@
             $pulled = false;
             $result = cache_lib::single(
                 $driver,
-                "{$key}:111",
                 $pool_read,
                 $pool_write,
+                "{$key}:111",
                 function() use (& $pulled) {
                     $pulled = true;
                     return "Uh oh...";
@@ -65,6 +65,8 @@
             $pulled = 0;
             $result = cache_lib::multi(
                 $driver,
+                $pool_read,
+                $pool_write,
                 [
                     3 => 111,
                     9 => 222,
@@ -72,8 +74,6 @@
                 function($id) use ($key) {
                     return "{$key}:{$id}";
                 },
-                $pool_read,
-                $pool_write,
                 function($ids) use (& $pulled) {
                     foreach ($ids as $k => & $v) {
                         $pulled++;
@@ -100,6 +100,8 @@
             $pulled = 0;
             $result = cache_lib::multi(
                 $driver,
+                $pool_read,
+                $pool_write,
                 [
                     3 => 111,
                     9 => 222,
@@ -107,8 +109,6 @@
                 function($id) use ($key) {
                     return "{$key}:{$id}";
                 },
-                $pool_read,
-                $pool_write,
                 function($ids) use (& $pulled) {
                     foreach ($ids as $k => & $v) {
                         $pulled++;
@@ -150,6 +150,8 @@
             $pulled = 0;
             $result = cache_lib::multi(
                 $driver,
+                $pool_read,
+                $pool_write,
                 [
                     3 => 111,
                     9 => 222,
@@ -157,8 +159,6 @@
                 function($id) use ($key) {
                     return "{$key}:{$id}";
                 },
-                $pool_read,
-                $pool_write,
                 function($ids) use (& $pulled) {
                     foreach ($ids as $k => & $v) {
                         $pulled++;

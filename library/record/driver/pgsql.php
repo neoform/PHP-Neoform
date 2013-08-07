@@ -24,22 +24,21 @@
         /**
          * Get full record by primary key
          *
-         * @param string          $self
+         * @param record_dao      $self
+         * @param string          $pool which source engine pool to use
          * @param int|string|null $pk
          *
          * @return mixed
          */
-        public static function by_pk($self, $pk) {
+        public static function by_pk(record_dao $self, $pool, $pk) {
 
-            $info = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            )->prepare("
+            $info = core::sql($pool)->prepare("
                 SELECT *
                 FROM \"" . self::table($self::TABLE) . "\"
                 WHERE \"" . $self::PRIMARY_KEY . "\" = ?
             ");
 
-            $info->bindValue(1, $pk, sql_pdo::pdo_binding($self::bindings(), $self::PRIMARY_KEY));
+            $info->bindValue(1, $pk, $self->pdo_binding($self::PRIMARY_KEY));
             $info->execute();
 
             if ($info = $info->fetch()) {
@@ -51,22 +50,21 @@
         /**
          * Get full records by primary key
          *
-         * @param string $self the name of the DAO
-         * @param array  $pks
+         * @param record_dao $self the name of the DAO
+         * @param string     $pool which source engine pool to use
+         * @param array      $pks
          *
          * @return array
          */
-        public static function by_pks($self, array $pks) {
+        public static function by_pks(record_dao $self, $pool, array $pks) {
 
-            $infos_rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            )->prepare("
+            $infos_rs = core::sql($pool)->prepare("
                 SELECT *
                 FROM \"" . self::table($self::TABLE) . "\"
                 WHERE \"" . $self::PRIMARY_KEY . "\" IN (" . join(',', array_fill(0, count($pks), '?')) . ")
             ");
 
-            $pdo_binding = sql_pdo::pdo_binding($self::bindings(), $self::PRIMARY_KEY);
+            $pdo_binding = $self->pdo_binding($self::PRIMARY_KEY);
             foreach (array_values($pks) as $i => $pk) {
                 $infos_rs->bindValue($i + 1, $pk, $pdo_binding);
             }
@@ -88,20 +86,19 @@
         /**
          * Get a list of PKs, with a limit, offset and order by
          *
-         * @param string  $self
-         * @param integer $limit     max number of PKs to return
-         * @param string  $order_by  field name
-         * @param string  $direction ASC|DESC
-         * @param string  $after_pk  A PK offset to be used (it's more efficient to use PK offsets than an SQL 'OFFSET')
+         * @param record_dao $self
+         * @param string     $pool which source engine pool to use
+         * @param integer    $limit     max number of PKs to return
+         * @param string     $order_by  field name
+         * @param string     $direction ASC|DESC
+         * @param string     $after_pk  A PK offset to be used (it's more efficient to use PK offsets than an SQL 'OFFSET')
          *
          * @return array
          */
-        public static function limit($self, $limit, $order_by, $direction, $after_pk) {
+        public static function limit(record_dao $self, $pool, $limit, $order_by, $direction, $after_pk) {
             $pk = $self::PRIMARY_KEY;
 
-            $rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            )->prepare("
+            $rs = core::sql($pool)->prepare("
                 SELECT \"{$pk}\"
                 FROM \"" . self::table($self::TABLE) . "\"
                 " . ($after_pk !== null ? "WHERE \"{$pk}\" " . ($direction === 'ASC' ? '>' : '<') . ' ?' : '') . "
@@ -123,19 +120,18 @@
         /**
          * Get a paginated list of entity PKs
          *
-         * @param string  $self
-         * @param string  $order_by
-         * @param string  $direction
-         * @param integer $offset
-         * @param integer $limit
+         * @param record_dao $self
+         * @param string     $pool which source engine pool to use
+         * @param string     $order_by
+         * @param string     $direction
+         * @param integer    $offset
+         * @param integer    $limit
          *
          * @return array
          */
-        public static function paginated($self, $order_by, $direction, $offset, $limit) {
+        public static function paginated(record_dao $self, $pool, $order_by, $direction, $offset, $limit) {
             $pk = $self::PRIMARY_KEY;
-            $rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            )->prepare("
+            $rs = core::sql($pool)->prepare("
                 SELECT \"{$pk}\"
                 FROM \"" . self::table($self::TABLE) . "\"
                 ORDER BY \"{$order_by}\" {$direction}
@@ -150,14 +146,13 @@
         /**
          * Get full count of rows in a table
          *
-         * @param string $self
+         * @param record_dao $self
+         * @param string     $pool which source engine pool to use
          *
          * @return int
          */
-        public static function count($self) {
-            $rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            )->prepare("
+        public static function count(record_dao $self, $pool) {
+            $rs = core::sql($pool)->prepare("
                 SELECT COUNT(0) \"num\"
                 FROM \"" . self::table($self::TABLE) . "\"
             ");
@@ -170,13 +165,14 @@
         /**
          * Get all records in the table
          *
-         * @param string     $self the name of the DAO
+         * @param record_dao $self the name of the DAO
+         * @param string     $pool which source engine pool to use
          * @param int|string $pk
          * @param array      $keys
          *
          * @return array
          */
-        public static function all($self, $pk, array $keys=null) {
+        public static function all(record_dao $self, $pool, $pk, array $keys=null) {
             $where = [];
             $vals  = [];
 
@@ -198,20 +194,19 @@
                 }
             }
 
-            $info = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            )->prepare("
+            $info = core::sql($pool)->prepare("
                 SELECT *
                 FROM \"" . self::table($self::TABLE) . "\"
                 " . ($where ? " WHERE " . join(" AND ", $where) : "") . "
                 ORDER BY \"{$pk}\" ASC
             ");
 
-            sql_pdo::bind_by_casting(
-                $info,
-                $self::bindings(),
-                $vals
-            );
+            $bindings = $self->pdo_bindings();
+
+            // do NOT remove this reference, it will break the bindParam() function
+            foreach ($vals as $k => &$v) {
+                $info->bindParam($k, $v, $bindings[$k]);
+            }
 
             $info->execute();
 
@@ -224,13 +219,14 @@
         /**
          * Get record primary key by fields
          *
-         * @param string     $self the name of the DAO
+         * @param record_dao $self the name of the DAO
+         * @param string     $pool which source engine pool to use
          * @param array      $keys
          * @param int|string $pk
          *
          * @return array
          */
-        public static function by_fields($self, array $keys, $pk) {
+        public static function by_fields(record_dao $self, $pool, array $keys, $pk) {
             $where = [];
             $vals  = [];
 
@@ -245,19 +241,18 @@
                 }
             }
 
-            $rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            )->prepare("
+            $rs = core::sql($pool)->prepare("
                 SELECT \"{$pk}\"
                 FROM \"" . self::table($self::TABLE) . "\"
                 " . ($where ? " WHERE " . join(" AND ", $where) : "") . "
             ");
 
-            sql_pdo::bind_by_casting(
-                $rs,
-                $self::bindings(),
-                $vals
-            );
+            $bindings = $self->pdo_bindings();
+
+            // do NOT remove this reference, it will break the bindParam() function
+            foreach ($vals as $k => &$v) {
+                $rs->bindParam($k, $v, $bindings[$k]);
+            }
 
             $rs->execute();
 
@@ -272,13 +267,14 @@
         /**
          * Get multiple record primary keys by fields
          *
-         * @param string     $self the name of the DAO
+         * @param record_dao $self the name of the DAO
+         * @param string     $pool which source engine pool to use
          * @param array      $keys_arr
          * @param int|string $pk
          *
          * @return array
          */
-        public static function by_fields_multi($self, array $keys_arr, $pk) {
+        public static function by_fields_multi(record_dao $self, $pool, array $keys_arr, $pk) {
             $key_fields     = array_keys(reset($keys_arr));
             $reverse_lookup = [];
             $return         = [];
@@ -300,9 +296,7 @@
                 $where[] = '(' . join(" AND ", $w) . ')';
             }
 
-            $rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            )->prepare("
+            $rs = core::sql($pool)->prepare("
                 SELECT
                     \"{$pk}\",
                     CONCAT(" . join(", ':', ", $key_fields) . ") \"__cache_key__\"
@@ -310,11 +304,12 @@
                 WHERE " . join(' OR ', $where) . "
             ");
 
-            sql_pdo::bind_by_casting(
-                $rs,
-                $self::bindings(),
-                $vals
-            );
+            $bindings = $self->pdo_bindings();
+
+            // do NOT remove this reference, it will break the bindParam() function
+            foreach ($vals as $k => &$v) {
+                $rs->bindParam($k, $v, $bindings[$k]);
+            }
 
             $rs->execute();
 
@@ -331,13 +326,14 @@
         /**
          * Get specific fields from a record, by keys
          *
-         * @param string $self the name of the DAO
-         * @param array  $select_fields
-         * @param array  $keys
+         * @param record_dao $self the name of the DAO
+         * @param string     $pool which source engine pool to use
+         * @param array      $select_fields
+         * @param array      $keys
          *
          * @return array
          */
-        public static function by_fields_select($self, array $select_fields, array $keys) {
+        public static function by_fields_select(record_dao $self, $pool, array $select_fields, array $keys) {
             $where = [];
             $vals  = [];
 
@@ -352,19 +348,18 @@
                 }
             }
 
-            $rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            )->prepare("
+            $rs = core::sql($pool)->prepare("
                 SELECT " . join(',', $select_fields) . "
                 FROM \"" . self::table($self::TABLE) . "\"
                 " . ($where ? "WHERE " . join(" AND ", $where) : "") . "
             ");
 
-            sql_pdo::bind_by_casting(
-                $rs,
-                $self::bindings(),
-                $vals
-            );
+            $bindings = $self->pdo_bindings();
+
+            // do NOT remove this reference, it will break the bindParam() function
+            foreach ($vals as $k => &$v) {
+                $rs->bindParam($k, $v, $bindings[$k]);
+            }
 
             $rs->execute();
 
@@ -382,22 +377,21 @@
         /**
          * Insert record
          *
-         * @param string $self the name of the DAO
-         * @param array  $info
-         * @param bool   $autoincrement
-         * @param bool   $replace
+         * @param record_dao $self the name of the DAO
+         * @param string     $pool which source engine pool to use
+         * @param array      $info
+         * @param bool       $autoincrement
+         * @param bool       $replace
          *
          * @return array
          */
-        public static function insert($self, array $info, $autoincrement, $replace) {
+        public static function insert(record_dao $self, $pool, array $info, $autoincrement, $replace) {
             $insert_fields = [];
             foreach (array_keys($info) as $key) {
                 $insert_fields[] = "\"$key\"";
             }
 
-            $insert = core::sql(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']
-            )->prepare("
+            $insert = core::sql($pool)->prepare("
                 INSERT INTO
                     \"" . self::table($self::TABLE) . "\"
                     ( " . join(', ', $insert_fields) . " )
@@ -406,11 +400,12 @@
                     " . ($autoincrement ? "RETURNING \"". $self::PRIMARY_KEY . "\"" : '') . "
             ");
 
-            sql_pdo::bind_by_casting(
-                $insert,
-                $self::bindings(),
-                $info
-            );
+            $bindings = $self->pdo_bindings();
+
+            // do NOT remove this reference, it will break the bindParam() function
+            foreach ($info as $k => &$v) {
+                $insert->bindParam($k, $v, $bindings[$k]);
+            }
 
             $insert->execute();
 
@@ -424,15 +419,16 @@
         /**
          * Insert multiple records
          *
-         * @param string $self the name of the DAO
-         * @param array $infos
-         * @param bool  $keys_match
-         * @param bool  $autoincrement
-         * @param bool  $replace
+         * @param record_dao $self the name of the DAO
+         * @param string     $pool which source engine pool to use
+         * @param array      $infos
+         * @param bool       $keys_match
+         * @param bool       $autoincrement
+         * @param bool       $replace
          *
          * @return array
          */
-        public static function inserts($self, array $infos, $keys_match, $autoincrement, $replace) {
+        public static function inserts(record_dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace) {
 
             if ($keys_match) {
                 $insert_fields = [];
@@ -444,9 +440,7 @@
                 // If the table is auto increment, we cannot lump all inserts into one query
                 // since we need the returned IDs for cache-busting and to return a model
                 if ($autoincrement) {
-                    $sql = core::sql(
-                        $self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']
-                    );
+                    $sql = core::sql($pool);
                     $sql->beginTransaction();
                     $pk = $self::PRIMARY_KEY;
 
@@ -459,13 +453,14 @@
                             RETURNING \"{$pk}\"
                     ");
 
+                    $bindings = $self->pdo_bindings();
+
                     foreach ($infos as $info) {
 
-                        sql_pdo::bind_by_casting(
-                            $insert,
-                            $self::bindings(),
-                            $info
-                        );
+                        // do NOT remove this reference, it will break the bindParam() function
+                        foreach ($info as $k => &$v) {
+                            $insert->bindParam($k, $v, $bindings[$k]);
+                        }
 
                         $insert->execute();
 
@@ -484,9 +479,7 @@
                         }
                     }
 
-                    $inserts = core::sql(
-                        $self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']
-                    )->prepare("
+                    $inserts = core::sql($pool)->prepare("
                         INSERT INTO
                             \"" . self::table($self::TABLE) . "\"
                             ( " . implode(', ', $insert_fields) . " )
@@ -494,21 +487,22 @@
                             " . join(', ', array_fill(0, count($infos), '( ' . join(',', array_fill(0, count($insert_fields), '?')) . ')')) . "
                     ");
 
-                    sql_pdo::bind_by_casting(
-                        $inserts,
-                        $self::bindings(),
-                        $insert_vals
-                    );
+                    $bindings = $self->pdo_bindings();
+
+                    // do NOT remove this reference, it will break the bindParam() function
+                    foreach ($insert_vals as $k => &$v) {
+                        $inserts->bindParam($k, $v, $bindings[$k]);
+                    }
 
                     $inserts->execute();
                 }
             } else {
-                $sql   = core::sql(
-                    $self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']
-                );
+                $sql   = core::sql($pool);
                 $table = self::table($self::TABLE);
 
                 $sql->beginTransaction();
+
+                $bindings = $self->pdo_bindings();
 
                 foreach ($infos as $info) {
                     $insert_fields = [];
@@ -526,11 +520,10 @@
                             " . ($autoincrement ? "RETURNING \"". $self::PRIMARY_KEY . "\"" : '') . "
                     ");
 
-                    sql_pdo::bind_by_casting(
-                        $insert,
-                        $self::bindings(),
-                        $info
-                    );
+                    // do NOT remove this reference, it will break the bindParam() function
+                    foreach ($info as $k => &$v) {
+                        $insert->bindParam($k, $v, $bindings[$k]);
+                    }
 
                     $insert->execute();
 
@@ -548,15 +541,14 @@
         /**
          * Update a record
          *
-         * @param string       $self the name of the DAO
+         * @param record_dao   $self the name of the DAO
+         * @param string       $pool which source engine pool to use
          * @param int|string   $pk
          * @param record_model $model
          * @param array        $info
          */
-        public static function update($self, $pk, record_model $model, array $info) {
-            $sql = core::sql(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']
-            );
+        public static function update(record_dao $self, $pool, $pk, record_model $model, array $info) {
+            $sql = core::sql($pool);
 
             $update_fields = [];
             foreach (array_keys($info) as $key) {
@@ -570,12 +562,13 @@
 
             $info[$pk] = $model->$pk;
 
-            sql_pdo::bind_by_casting(
-                $update,
-                $self::bindings(),
-                $info,
-                true
-            );
+            $bindings = $self->pdo_bindings();
+
+            $i = 1;
+            // do NOT remove this reference, it will break the bindParam() function
+            foreach ($info as $k => &$v) {
+                $update->bindParam($i++, $v, $bindings[$k]);
+            }
 
             $update->execute();
         }
@@ -583,38 +576,36 @@
         /**
          * Delete a record
          *
-         * @param string       $self the name of the DAO
+         * @param record_dao   $self the name of the DAO
+         * @param string       $pool which source engine pool to use
          * @param int|string   $pk
          * @param record_model $model
          */
-        public static function delete($self, $pk, record_model $model) {
-            $delete = core::sql(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']
-            )->prepare("
+        public static function delete(record_dao $self, $pool, $pk, record_model $model) {
+            $delete = core::sql($pool)->prepare("
                 DELETE FROM \"" . self::table($self::TABLE) . "\"
                 WHERE \"{$pk}\" = ?
             ");
-            $delete->bindValue(1, $model->$pk, sql_pdo::pdo_binding($self::bindings(), $self::PRIMARY_KEY));
+            $delete->bindValue(1, $model->$pk, $self->pdo_binding($self::PRIMARY_KEY));
             $delete->execute();
         }
 
         /**
          * Delete multiple records
          *
-         * @param string            $self the name of the DAO
+         * @param record_dao        $self the name of the DAO
+         * @param string            $pool which source engine pool to use
          * @param int|string        $pk
          * @param record_collection $collection
          */
-        public static function deletes($self, $pk, record_collection $collection) {
+        public static function deletes(record_dao $self, $pool, $pk, record_collection $collection) {
             $pks = $collection->field($pk);
-            $delete = core::sql(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']
-            )->prepare("
+            $delete = core::sql($pool)->prepare("
                 DELETE FROM \"" . self::table($self::TABLE) . "\"
                 WHERE \"{$pk}\" IN (" . join(',', array_fill(0, count($collection), '?')) . ")
             ");
 
-            $pdo_binding = sql_pdo::pdo_binding($self::bindings(), $self::PRIMARY_KEY);
+            $pdo_binding = $self->pdo_binding($self::PRIMARY_KEY);
             $i = 0;
             foreach ($pks as $pk) {
                 $delete->bindValue($i++, $pk, $pdo_binding);

@@ -9,7 +9,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return locale_dao::insert([
+                return entity_dao::get('locale')->insert([
                     'iso2' => $input->iso2->val(),
                     'name' => $input->name->val(),
                 ]);
@@ -24,7 +24,7 @@
             self::_validate_update($locale, $input);
 
             if ($input->is_valid()) {
-                return locale_dao::update(
+                return entity_dao::get('locale')->update(
                     $locale,
                     $input->vals(
                         [
@@ -39,7 +39,7 @@
         }
 
         public static function delete(locale_model $locale) {
-            return locale_dao::delete($locale);
+            return entity_dao::get('locale')->delete($locale);
         }
 
         public static function _validate_insert(input_collection $input) {

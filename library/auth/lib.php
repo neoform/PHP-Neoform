@@ -21,7 +21,7 @@
             }
 
             // Create session
-            $return = auth_dao::insert([
+            $return = entity_dao::get('auth')->insert([
                 'user_id'    => $user->id,
                 'expires_on' => $expires->format('Y-m-d H:i:s'),
                 'hash'       => self::get_hash_cookie(),
@@ -29,7 +29,7 @@
 
             // Update last login
             $now = new type_date();
-            user_date_dao::update(
+            entity_dao::get('user_date')->update(
                 $user->user_date(),
                 [
                     'last_login' => $now->datetime(),

@@ -8,7 +8,7 @@
     * @var string $locale
     * @var int $namespace_id
     */
-    class locale_key_model extends record_model implements locale_key_definition {
+    class locale_key_model extends entity_record_model implements locale_key_definition {
 
         public function __get($k) {
 

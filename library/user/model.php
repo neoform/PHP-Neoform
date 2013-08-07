@@ -11,7 +11,7 @@
     * @var string $password_salt
     * @var int $status_id
     */
-    class user_model extends record_model implements user_definition {
+    class user_model extends entity_record_model implements user_definition {
 
         public function __get($k) {
 

@@ -3,7 +3,7 @@
     /**
      * Record Blob Model
      */
-    class record_blob_model extends record_model {
+    class entity_record_blob_model extends entity_record_model {
 
         public function __get($k) {
             if (isset($this->vars[$k])) {

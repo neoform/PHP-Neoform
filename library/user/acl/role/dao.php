@@ -3,7 +3,7 @@
     /**
      * User Acl Role link DAO
      */
-    class user_acl_role_dao extends link_dao implements user_acl_role_definition {
+    class user_acl_role_dao extends entity_link_dao implements user_acl_role_definition {
 
         const BY_USER          = 'by_user';
         const BY_USER_ACL_ROLE = 'by_user_acl_role';

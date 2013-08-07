@@ -3,7 +3,7 @@
     /**
      * Region collection
      */
-    class region_collection extends record_collection implements region_definition {
+    class region_collection extends entity_record_collection implements region_definition {
 
         /**
          * Preload the City models in this collection

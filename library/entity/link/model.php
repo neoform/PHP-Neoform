@@ -3,7 +3,7 @@
     /**
      * Link model - this class is not commonly used, but included for consistency
      */
-    abstract class link_model implements arrayaccess {
+    abstract class entity_link_model implements arrayaccess {
 
         /**
          * @var array of entity data
@@ -60,7 +60,7 @@
          * @param string $model name of model to load
          * @param mixed $default
          *
-         * @return record_model|link_model|mixed
+         * @return entity_record_model|entity_link_model|mixed
          */
         protected function _model($key, $pk, $model, $default=null) {
             if (! array_key_exists($key, $this->_vars)) {

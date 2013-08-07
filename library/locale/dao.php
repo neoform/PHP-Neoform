@@ -3,7 +3,7 @@
     /**
      * Locale DAO
      */
-    class locale_dao extends record_dao implements locale_definition {
+    class locale_dao extends entity_record_dao implements locale_definition {
 
         const BY_ALL = 'by_all';
 

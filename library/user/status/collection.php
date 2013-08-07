@@ -3,7 +3,7 @@
     /**
      * User Status collection
      */
-    class user_status_collection extends record_collection implements user_status_definition {
+    class user_status_collection extends entity_record_collection implements user_status_definition {
 
         /**
          * Preload the User models in this collection

@@ -3,7 +3,7 @@
     /**
      * Acl Role collection
      */
-    class acl_role_collection extends record_collection implements acl_role_definition {
+    class acl_role_collection extends entity_record_collection implements acl_role_definition {
 
         /**
          * Preload the Acl Group models in this collection

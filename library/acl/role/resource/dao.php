@@ -3,7 +3,7 @@
     /**
      * Acl Role Resource link DAO
      */
-    class acl_role_resource_dao extends link_dao implements acl_role_resource_definition {
+    class acl_role_resource_dao extends entity_link_dao implements acl_role_resource_definition {
 
         const BY_ACL_ROLE              = 'by_acl_role';
         const BY_ACL_ROLE_ACL_RESOURCE = 'by_acl_role_acl_resource';

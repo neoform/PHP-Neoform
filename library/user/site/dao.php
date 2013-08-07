@@ -3,7 +3,7 @@
     /**
      * User Site link DAO
      */
-    class user_site_dao extends link_dao implements user_site_definition {
+    class user_site_dao extends entity_link_dao implements user_site_definition {
 
         const BY_SITE      = 'by_site';
         const BY_SITE_USER = 'by_site_user';

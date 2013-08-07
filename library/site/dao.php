@@ -3,7 +3,7 @@
     /**
      * Site DAO
      */
-    class site_dao extends record_dao implements site_definition {
+    class site_dao extends entity_record_dao implements site_definition {
 
         const BY_ALL  = 'by_all';
         const BY_NAME = 'by_name';

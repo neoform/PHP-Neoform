@@ -3,7 +3,7 @@
     /**
      * City DAO
      */
-    class city_dao extends record_dao implements city_definition {
+    class city_dao extends entity_record_dao implements city_definition {
 
         const BY_REGION                 = 'by_region';
         const BY_REGION_NAME_NORMALIZED = 'by_region_name_normalized';

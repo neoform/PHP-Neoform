@@ -7,7 +7,7 @@
     * @var int|null $parent_id
     * @var string $name
     */
-    class acl_resource_model extends record_model implements acl_resource_definition {
+    class acl_resource_model extends entity_record_model implements acl_resource_definition {
 
         public function __get($k) {
 

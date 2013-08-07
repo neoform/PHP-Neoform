@@ -3,7 +3,7 @@
     /**
      * Acl Resource collection
      */
-    class acl_resource_collection extends record_collection implements acl_resource_definition {
+    class acl_resource_collection extends entity_record_collection implements acl_resource_definition {
 
         /**
          * Preload the child Acl Resource models in this collection

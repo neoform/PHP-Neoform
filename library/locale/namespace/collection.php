@@ -3,7 +3,7 @@
     /**
      * Locale Namespace collection
      */
-    class locale_namespace_collection extends record_collection implements locale_namespace_definition {
+    class locale_namespace_collection extends entity_record_collection implements locale_namespace_definition {
 
         /**
          * Preload the Locale Key models in this collection

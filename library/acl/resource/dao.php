@@ -3,7 +3,7 @@
     /**
      * Acl Resource DAO
      */
-    class acl_resource_dao extends record_dao implements acl_resource_definition {
+    class acl_resource_dao extends entity_record_dao implements acl_resource_definition {
 
         const BY_ALL    = 'by_all';
         const BY_NAME   = 'by_name';

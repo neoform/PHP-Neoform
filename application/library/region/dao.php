@@ -3,7 +3,7 @@
     /**
      * Region DAO
      */
-    class region_dao extends record_dao implements region_definition {
+    class region_dao extends entity_record_dao implements region_definition {
 
         const BY_COUNTRY                 = 'by_country';
         const BY_COUNTRY_NAME_NORMALIZED = 'by_country_name_normalized';

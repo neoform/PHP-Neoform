@@ -3,7 +3,7 @@
     /**
      * Acl Group Role link DAO
      */
-    class acl_group_role_dao extends link_dao implements acl_group_role_definition {
+    class acl_group_role_dao extends entity_link_dao implements acl_group_role_definition {
 
         const BY_ACL_GROUP          = 'by_acl_group';
         const BY_ACL_GROUP_ACL_ROLE = 'by_acl_group_acl_role';

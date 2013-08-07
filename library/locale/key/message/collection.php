@@ -3,7 +3,7 @@
     /**
      * Locale Key Message collection
      */
-    class locale_key_message_collection extends record_collection implements locale_key_message_definition {
+    class locale_key_message_collection extends entity_record_collection implements locale_key_message_definition {
 
         /**
          * Preload the Locale Key models in this collection

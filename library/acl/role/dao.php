@@ -3,7 +3,7 @@
     /**
      * Acl Role DAO
      */
-    class acl_role_dao extends record_dao implements acl_role_definition {
+    class acl_role_dao extends entity_record_dao implements acl_role_definition {
 
         const BY_ALL  = 'by_all';
         const BY_NAME = 'by_name';

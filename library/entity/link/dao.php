@@ -12,7 +12,7 @@
      *    string ENTITY_NAME the base name of the entity (usually the same as TABLE unless different for a specific reason)
      *    string ENTITY_POOL must have a corresponding entry in the config file for the caching engine being used, eg (core::config()->memcache['pools'] = 'entities')
      */
-    abstract class link_dao {
+    abstract class entity_link_dao {
 
         protected $source_engine;
         protected $source_engine_pool_read;
@@ -57,7 +57,7 @@
          * @access protected
          * @static
          * @final
-         * @param string   $key full cache key with namespace - it's recomended that record_dao::_build_key() is used to create this key
+         * @param string   $key full cache key with namespace - it's recomended that entity_record_dao::_build_key() is used to create this key
          * @param callable $get closure function that retreieves the recordset from its origin
          * @return array   the cached recordset
          */
@@ -99,7 +99,7 @@
          * @access protected
          * @static
          * @final
-         * @param string   $key full cache key with namespace - it's recomended that record_dao::_build_key() is used to create this key
+         * @param string   $key full cache key with namespace - it's recomended that entity_record_dao::_build_key() is used to create this key
          */
         final protected function _cache_delete($key) {
             cache_lib::delete(
@@ -154,7 +154,7 @@
                 $this->cache_engine_pool_write,
                 self::_build_key($cache_key_name, $keys),
                 function() use ($self, $select_fields, $keys) {
-                    $source_driver = "link_driver_{$self->source_engine}";
+                    $source_driver = "entity_link_driver_{$self->source_engine}";
                     return $source_driver::by_fields($self, $self->source_engine_pool_read, $select_fields, $keys);
                 }
             );
@@ -182,10 +182,10 @@
                 $this->cache_engine_pool_write,
                 $keys_arr,
                 function($fields) use ($self, $cache_key_name) {
-                    return record_dao::_build_key($cache_key_name, $fields, $self::ENTITY_NAME);
+                    return entity_record_dao::_build_key($cache_key_name, $fields, $self::ENTITY_NAME);
                 },
                 function($keys_arr) use ($self, $select_fields) {
-                    $source_driver = "link_driver_{$self->source_engine}";
+                    $source_driver = "entity_link_driver_{$self->source_engine}";
                     return $source_driver::by_fields_multi($self, $self->source_engine_pool_read, $select_fields, $keys_arr);
                 }
             );
@@ -202,7 +202,7 @@
          * @throws model_exception
          */
         protected function _insert(array $info, $replace=false) {
-            $source_driver = "link_driver_{$this->source_engine}";
+            $source_driver = "entity_link_driver_{$this->source_engine}";
             return $source_driver::insert($this, $this->source_engine_pool_write, $info, $replace);
         }
 
@@ -221,7 +221,7 @@
                 return;
             }
 
-            $source_driver = "link_driver_{$this->source_engine}";
+            $source_driver = "entity_link_driver_{$this->source_engine}";
             return $source_driver::inserts($this, $this->source_engine_pool_write, $infos, $replace);
         }
 
@@ -237,7 +237,7 @@
          */
         protected function _update(array $new_info, array $where) {
             if ($new_info) {
-                $source_driver = "link_driver_{$this->source_engine}";
+                $source_driver = "entity_link_driver_{$this->source_engine}";
                 return $source_driver::update($this, $this->source_engine_pool_write, $new_info, $where);
             }
         }
@@ -252,7 +252,7 @@
          * @throws model_exception
          */
         protected function _delete(array $keys) {
-            $source_driver = "link_driver_{$this->source_engine}";
+            $source_driver = "entity_link_driver_{$this->source_engine}";
             return $source_driver::delete($this, $this->source_engine_pool_write, $keys);
         }
 
@@ -266,7 +266,7 @@
          * @throws model_exception
          */
         protected function _deletes(array $keys_arr) {
-            $source_driver = "link_driver_{$this->source_engine}";
+            $source_driver = "entity_link_driver_{$this->source_engine}";
             return $source_driver::deletes($this, $this->source_engine_pool_write, $keys_arr);
         }
     }

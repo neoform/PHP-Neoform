@@ -3,7 +3,7 @@
     /**
      * Auth DAO
      */
-    class auth_dao extends record_dao implements auth_definition {
+    class auth_dao extends entity_record_dao implements auth_definition {
 
         const BY_USER = 'by_user';
 

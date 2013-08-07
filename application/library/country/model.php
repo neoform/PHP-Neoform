@@ -9,7 +9,7 @@
     * @var string $iso2
     * @var string $iso3
     */
-    class country_model extends record_model implements country_definition {
+    class country_model extends entity_record_model implements country_definition {
 
         public function __get($k) {
 

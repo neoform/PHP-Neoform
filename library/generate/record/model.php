@@ -6,7 +6,7 @@
 
             $this->code .= '<?php'."\n\n";
             $this->class_comments();
-            $this->code .= "\tclass " . $this->table->name . "_model extends record_model implements " . $this->table->name . "_definition {\n\n";
+            $this->code .= "\tclass " . $this->table->name . "_model extends entity_record_model implements " . $this->table->name . "_definition {\n\n";
 
             //$this->constants();
             $this->get();

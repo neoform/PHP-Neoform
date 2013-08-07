@@ -3,7 +3,7 @@
     /**
      * Locale Namespace DAO
      */
-    class locale_namespace_dao extends record_dao implements locale_namespace_definition {
+    class locale_namespace_dao extends entity_record_dao implements locale_namespace_definition {
 
         const BY_ALL  = 'by_all';
         const BY_NAME = 'by_name';

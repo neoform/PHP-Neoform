@@ -3,7 +3,7 @@
     /**
      * User Hashmethod DAO
      */
-    class user_hashmethod_dao extends record_dao implements user_hashmethod_definition {
+    class user_hashmethod_dao extends entity_record_dao implements user_hashmethod_definition {
 
         const BY_ALL  = 'by_all';
         const BY_NAME = 'by_name';

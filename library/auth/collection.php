@@ -3,7 +3,7 @@
     /**
      * Auth collection
      */
-    class auth_collection extends record_collection implements auth_definition {
+    class auth_collection extends entity_record_collection implements auth_definition {
 
         /**
          * Preload the User models in this collection

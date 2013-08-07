@@ -6,7 +6,7 @@
     * @var int $id
     * @var string $name
     */
-    class user_status_model extends record_model implements user_status_definition {
+    class user_status_model extends entity_record_model implements user_status_definition {
 
         public function __get($k) {
 

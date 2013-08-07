@@ -33,7 +33,7 @@
          *
          * @return array of Locale Key ids
          */
-        public static function by_locale($locale) {
+        public function by_locale($locale) {
             return self::_by_fields(
                 self::BY_LOCALE,
                 [
@@ -49,7 +49,7 @@
          *
          * @return array of Locale Key ids
          */
-        public static function by_body($body) {
+        public function by_body($body) {
             return self::_by_fields(
                 self::BY_BODY,
                 [
@@ -65,7 +65,7 @@
          *
          * @return array of Locale Key ids
          */
-        public static function by_namespace($namespace_id) {
+        public function by_namespace($namespace_id) {
             return self::_by_fields(
                 self::BY_NAMESPACE,
                 [
@@ -81,7 +81,7 @@
          *
          * @return array of arrays containing Locale Key ids
          */
-        public static function by_locale_multi($locale_list) {
+        public function by_locale_multi($locale_list) {
             $keys = [];
             if ($locale_list instanceof locale_collection) {
                 foreach ($locale_list as $k => $locale) {
@@ -106,7 +106,7 @@
          *
          * @return array of arrays containing Locale Key ids
          */
-        public static function by_namespace_multi($locale_namespace_list) {
+        public function by_namespace_multi($locale_namespace_list) {
             $keys = [];
             if ($locale_namespace_list instanceof locale_namespace_collection) {
                 foreach ($locale_namespace_list as $k => $locale_namespace) {
@@ -131,7 +131,7 @@
          *
          * @return array of arrays of Locale Key ids
          */
-        public static function by_body_multi(array $body_arr) {
+        public function by_body_multi(array $body_arr) {
             $keys_arr = [];
             foreach ($body_arr as $k => $body) {
                 $keys_arr[$k] = [ 'body' => (string) $body, ];
@@ -160,7 +160,7 @@
          *
          * @return locale_key_model
          */
-        public static function insert(array $info) {
+        public function insert(array $info) {
 
             // Insert record
             $return = parent::_insert($info);
@@ -223,7 +223,7 @@
          *
          * @return locale_key_collection
          */
-        public static function inserts(array $infos) {
+        public function inserts(array $infos) {
 
             // Insert records
             $return = parent::_inserts($infos);
@@ -290,7 +290,7 @@
          *
          * @return locale_key_model updated model
          */
-        public static function update(locale_key_model $locale_key, array $info) {
+        public function update(locale_key_model $locale_key, array $info) {
 
             // Update record
             $updated_model = parent::_update($locale_key, $info);
@@ -377,7 +377,7 @@
          *
          * @return bool
          */
-        public static function delete(locale_key_model $locale_key) {
+        public function delete(locale_key_model $locale_key) {
 
             // Delete record
             $return = parent::_delete($locale_key);
@@ -434,7 +434,7 @@
          *
          * @return bool
          */
-        public static function deletes(locale_key_collection $locale_key_collection) {
+        public function deletes(locale_key_collection $locale_key_collection) {
 
             // Delete records
             $return = parent::_deletes($locale_key_collection);

@@ -29,7 +29,7 @@
          *
          * @return user_date_model
          */
-        public static function insert(array $info) {
+        public function insert(array $info) {
 
             // Insert record
             return parent::_insert($info);
@@ -42,7 +42,7 @@
          *
          * @return user_date_collection
          */
-        public static function inserts(array $infos) {
+        public function inserts(array $infos) {
 
             // Insert record
             return parent::_inserts($infos);
@@ -57,7 +57,7 @@
          *
          * @return user_date_model updated model
          */
-        public static function update(user_date_model $user_date, array $info) {
+        public function update(user_date_model $user_date, array $info) {
 
             // Update record
             return parent::_update($user_date, $info);
@@ -70,7 +70,7 @@
          *
          * @return bool
          */
-        public static function delete(user_date_model $user_date) {
+        public function delete(user_date_model $user_date) {
 
             // Delete record
             return parent::_delete($user_date);
@@ -83,7 +83,7 @@
          *
          * @return bool
          */
-        public static function deletes(user_date_collection $user_date_collection) {
+        public function deletes(user_date_collection $user_date_collection) {
 
             // Delete records
             return parent::_deletes($user_date_collection);

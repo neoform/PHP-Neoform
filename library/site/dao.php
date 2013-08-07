@@ -24,7 +24,7 @@
          *
          * @return array of Site ids
          */
-        public static function by_name($name) {
+        public function by_name($name) {
             return self::_by_fields(
                 self::BY_NAME,
                 [
@@ -51,7 +51,7 @@
          *
          * @return site_model
          */
-        public static function insert(array $info) {
+        public function insert(array $info) {
             $return = parent::_insert($info);
 
             // Delete Cache
@@ -82,7 +82,7 @@
          *
          * @return site_collection
          */
-        public static function inserts(array $infos) {
+        public function inserts(array $infos) {
             $return = parent::_inserts($infos);
 
             // Delete Cache
@@ -118,7 +118,7 @@
          *
          * @return site_model updated model
          */
-        public static function update(site_model $site, array $info) {
+        public function update(site_model $site, array $info) {
             $updated_model = parent::_update($site, $info);
 
             // Delete Cache
@@ -157,7 +157,7 @@
          *
          * @return bool
          */
-        public static function delete(site_model $site) {
+        public function delete(site_model $site) {
             $return = parent::_delete($site);
 
             // Delete Cache
@@ -186,7 +186,7 @@
          *
          * @return bool
          */
-        public static function deletes(site_collection $site_collection) {
+        public function deletes(site_collection $site_collection) {
             $return = parent::_deletes($site_collection);
 
             // Delete Cache

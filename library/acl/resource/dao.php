@@ -31,7 +31,7 @@
          *
          * @return array of Acl Resource ids
          */
-        public static function by_name($name) {
+        public function by_name($name) {
             return self::_by_fields(
                 self::BY_NAME,
                 [
@@ -47,7 +47,7 @@
          *
          * @return array of Acl Resource ids
          */
-        public static function by_parent($parent_id) {
+        public function by_parent($parent_id) {
             return self::_by_fields(
                 self::BY_PARENT,
                 [
@@ -63,7 +63,7 @@
          *
          * @return array of arrays containing Acl Resource ids
          */
-        public static function by_parent_multi($acl_resource_list) {
+        public function by_parent_multi($acl_resource_list) {
             $keys = [];
             if ($acl_resource_list instanceof acl_resource_collection) {
                 foreach ($acl_resource_list as $k => $acl_resource) {
@@ -88,7 +88,7 @@
          *
          * @return array of arrays of Acl Resource ids
          */
-        public static function by_name_multi(array $name_arr) {
+        public function by_name_multi(array $name_arr) {
             $keys_arr = [];
             foreach ($name_arr as $k => $name) {
                 $keys_arr[$k] = [ 'name' => (string) $name, ];
@@ -117,7 +117,7 @@
          *
          * @return acl_resource_model
          */
-        public static function insert(array $info) {
+        public function insert(array $info) {
 
             // Insert record
             $return = parent::_insert($info);
@@ -168,7 +168,7 @@
          *
          * @return acl_resource_collection
          */
-        public static function inserts(array $infos) {
+        public function inserts(array $infos) {
 
             // Insert records
             $return = parent::_inserts($infos);
@@ -223,7 +223,7 @@
          *
          * @return acl_resource_model updated model
          */
-        public static function update(acl_resource_model $acl_resource, array $info) {
+        public function update(acl_resource_model $acl_resource, array $info) {
 
             // Update record
             $updated_model = parent::_update($acl_resource, $info);
@@ -290,7 +290,7 @@
          *
          * @return bool
          */
-        public static function delete(acl_resource_model $acl_resource) {
+        public function delete(acl_resource_model $acl_resource) {
 
             // Delete record
             $return = parent::_delete($acl_resource);
@@ -337,7 +337,7 @@
          *
          * @return bool
          */
-        public static function deletes(acl_resource_collection $acl_resource_collection) {
+        public function deletes(acl_resource_collection $acl_resource_collection) {
 
             // Delete records
             $return = parent::_deletes($acl_resource_collection);

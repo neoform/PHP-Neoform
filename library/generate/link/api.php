@@ -36,7 +36,7 @@
             $this->code .= "\t\t\t\t\t'" . str_pad($field2->name . "'", $length +1) . " => (" . $field2->referenced_field->casting . ") $" . $field2->referenced_field->table->name . "->" . $field2->referenced_field->name . ",\n";
             $this->code .= "\t\t\t\t];\n";
             $this->code .= "\t\t\t}\n";
-            $this->code .= "\t\t\treturn " . $this->table->name . "_dao::deletes(\$keys);\n";
+            $this->code .= "\t\t\treturn entity_dao::get('" . $this->table->name . "')->deletes(\$keys);\n";
             $this->code .= "\t\t}\n\n";
 
             $this->code .= "\t\tpublic static function delete_by_" . $field2->referenced_field->table->name . "(" . $field2->referenced_field->table->name . "_model $" . $field2->referenced_field->table->name . ", " . $field1->referenced_field->table->name . "_collection $" . $field1->referenced_field->table->name . "_collection) {\n";
@@ -47,7 +47,7 @@
             $this->code .= "\t\t\t\t\t'" . str_pad($field1->name . "'", $length +1) . " => (" . $field1->referenced_field->casting . ") $" . $field1->referenced_field->table->name . "->" . $field1->referenced_field->name . ",\n";
             $this->code .= "\t\t\t\t];\n";
             $this->code .= "\t\t\t}\n";
-            $this->code .= "\t\t\treturn " . $this->table->name . "_dao::deletes(\$keys);\n";
+            $this->code .= "\t\t\treturn entity_dao::get('" . $this->table->name . "')->deletes(\$keys);\n";
             $this->code .= "\t\t}\n\n";
 
         }

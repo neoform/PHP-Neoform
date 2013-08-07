@@ -29,7 +29,7 @@
          *
          * @return array of Acl Group ids
          */
-        public static function by_name($name) {
+        public function by_name($name) {
             return self::_by_fields(
                 self::BY_NAME,
                 [
@@ -45,7 +45,7 @@
          *
          * @return array of arrays of Acl Group ids
          */
-        public static function by_name_multi(array $name_arr) {
+        public function by_name_multi(array $name_arr) {
             $keys_arr = [];
             foreach ($name_arr as $k => $name) {
                 $keys_arr[$k] = [ 'name' => (string) $name, ];
@@ -100,7 +100,7 @@
          *
          * @return acl_group_model
          */
-        public static function insert(array $info) {
+        public function insert(array $info) {
 
             // Insert record
             $return = parent::_insert($info);
@@ -139,7 +139,7 @@
          *
          * @return acl_group_collection
          */
-        public static function inserts(array $infos) {
+        public function inserts(array $infos) {
 
             // Insert records
             $return = parent::_inserts($infos);
@@ -182,7 +182,7 @@
          *
          * @return acl_group_model updated model
          */
-        public static function update(acl_group_model $acl_group, array $info) {
+        public function update(acl_group_model $acl_group, array $info) {
 
             // Update record
             $updated_model = parent::_update($acl_group, $info);
@@ -229,7 +229,7 @@
          *
          * @return bool
          */
-        public static function delete(acl_group_model $acl_group) {
+        public function delete(acl_group_model $acl_group) {
 
             // Delete record
             $return = parent::_delete($acl_group);
@@ -266,7 +266,7 @@
          *
          * @return bool
          */
-        public static function deletes(acl_group_collection $acl_group_collection) {
+        public function deletes(acl_group_collection $acl_group_collection) {
 
             // Delete records
             $return = parent::_deletes($acl_group_collection);

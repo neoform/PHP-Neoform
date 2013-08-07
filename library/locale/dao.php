@@ -39,7 +39,7 @@
          *
          * @return locale_model
          */
-        public static function insert(array $info) {
+        public function insert(array $info) {
 
             // Insert record
             $return = parent::_insert($info);
@@ -60,7 +60,7 @@
          *
          * @return locale_collection
          */
-        public static function inserts(array $infos) {
+        public function inserts(array $infos) {
 
             // Insert records
             $return = parent::_inserts($infos);
@@ -83,7 +83,7 @@
          *
          * @return locale_model updated model
          */
-        public static function update(locale_model $locale, array $info) {
+        public function update(locale_model $locale, array $info) {
 
             // Update record
             $updated_model = parent::_update($locale, $info);
@@ -104,7 +104,7 @@
          *
          * @return bool
          */
-        public static function delete(locale_model $locale) {
+        public function delete(locale_model $locale) {
 
             // Delete record
             $return = parent::_delete($locale);
@@ -125,7 +125,7 @@
          *
          * @return bool
          */
-        public static function deletes(locale_collection $locale_collection) {
+        public function deletes(locale_collection $locale_collection) {
 
             // Delete records
             $return = parent::_deletes($locale_collection);

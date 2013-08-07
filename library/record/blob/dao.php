@@ -11,7 +11,7 @@
          * @return array cached record data
          * @throws model_exception
          */
-        public static function by_pk($pk) {
+        public function by_pk($pk) {
             $info = parent::by_pk($pk);
             $info[static::BLOB] = json_decode($info[static::BLOB], true);
             return $info;
@@ -25,7 +25,7 @@
          * @param array  $pks primary key of a records
          * @return array cached records data - with preserved key names from $pks.
          */
-        public static function by_pks(array $pks) {
+        public function by_pks(array $pks) {
             $infos = parent::by_pks($pks);
             foreach ($infos as & $info) {
                 $info[static::BLOB] = json_decode($info[static::BLOB], true);

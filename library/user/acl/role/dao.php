@@ -30,7 +30,7 @@
          *
          * @return array result set containing acl_role_id
          */
-        public static function by_user($user_id) {
+        public function by_user($user_id) {
             return self::_by_fields(
                 self::BY_USER,
                 [
@@ -50,7 +50,7 @@
          *
          * @return array result set containing user_id and acl_role_id
          */
-        public static function by_user_acl_role($user_id, $acl_role_id) {
+        public function by_user_acl_role($user_id, $acl_role_id) {
             return self::_by_fields(
                 self::BY_USER_ACL_ROLE,
                 [
@@ -71,7 +71,7 @@
          *
          * @return array result set containing user_id
          */
-        public static function by_acl_role($acl_role_id) {
+        public function by_acl_role($acl_role_id) {
             return self::_by_fields(
                 self::BY_ACL_ROLE,
                 [
@@ -90,7 +90,7 @@
          *
          * @return array of result sets containing acl_role_id
          */
-        public static function by_user_multi($user_list) {
+        public function by_user_multi($user_list) {
             $keys = [];
             if ($user_list instanceof user_collection) {
                 foreach ($user_list as $k => $user) {
@@ -124,7 +124,7 @@
          *
          * @return array of result sets containing user_id
          */
-        public static function by_acl_role_multi($acl_role_list) {
+        public function by_acl_role_multi($acl_role_list) {
             $keys = [];
             if ($acl_role_list instanceof acl_role_collection) {
                 foreach ($acl_role_list as $k => $acl_role) {
@@ -160,7 +160,7 @@
          *
          * @return boolean
          */
-        public static function insert(array $info) {
+        public function insert(array $info) {
 
             // Insert link
             $return = parent::_insert($info);
@@ -219,7 +219,7 @@
          *
          * @return boolean
          */
-        public static function inserts(array $infos) {
+        public function inserts(array $infos) {
 
             // Insert links
             $return = parent::_inserts($infos);
@@ -281,7 +281,7 @@
          *
          * @return bool
          */
-        public static function update(array $new_info, array $where) {
+        public function update(array $new_info, array $where) {
 
             // Update link
             $return = parent::_update($new_info, $where);

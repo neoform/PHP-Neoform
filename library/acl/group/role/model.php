@@ -6,7 +6,7 @@
     * @var int $acl_group_id
     * @var int $acl_role_id
     */
-    class acl_group_role_model extends link_model implements acl_group_role_definition {
+    class acl_group_role_model extends entity_link_model implements acl_group_role_definition {
 
         public function __get($k) {
 

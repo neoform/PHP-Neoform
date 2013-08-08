@@ -11,7 +11,7 @@
             $this->code .= "\t * " . ucwords(str_replace('_', ' ', $this->table->name)) . " DAO\n";
             $this->code .= "\t */\n";
 
-            $this->code .= "\tclass " . $this->table->name . "_dao extends record_dao implements " . $this->table->name . "_definition {\n\n";
+            $this->code .= "\tclass " . $this->table->name . "_dao extends entity_record_dao implements " . $this->table->name . "_definition {\n\n";
 
             $this->constants();
             $this->bindings();
@@ -95,8 +95,8 @@
                     $this->code .= "\t\t * @return array of " . ucwords(str_replace('_', ' ', $this->table->name)) . " " . $this->table->primary_key->name . "s\n";
                     $this->code .= "\t\t */\n";
 
-                    $this->code .= "\t\tpublic static function by_" . $name . "(" . join(', ', $vars) . ") {\n";
-                    $this->code .= "\t\t\treturn self::_by_fields(\n";
+                    $this->code .= "\t\tpublic function by_" . $name . "(" . join(', ', $vars) . ") {\n";
+                    $this->code .= "\t\t\treturn parent::_by_fields(\n";
                     $this->code .= "\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
                     $this->code .= "\t\t\t\t[\n";
                     foreach ($fields as $field) {
@@ -138,7 +138,7 @@
                 $this->code .= "\t\t * @return array of arrays containing " . ucwords(str_replace('_', ' ', $this->table->name)) . " " . $this->table->primary_key->name . "s\n";
                 $this->code .= "\t\t */\n";
 
-                $this->code .= "\t\tpublic static function by_" . $field->name_idless . "_multi($" . $field->referenced_field->table->name . "_list) {\n";
+                $this->code .= "\t\tpublic function by_" . $field->name_idless . "_multi($" . $field->referenced_field->table->name . "_list) {\n";
                 $this->code .= "\t\t\t\$keys = [];\n";
 
                 $this->code .= "\t\t\tif (\$" . $field->referenced_field->table->name . "_list instanceof " . $field->referenced_field->table->name . "_collection) {\n";
@@ -167,7 +167,7 @@
 
                 $this->code .= "\t\t\t}\n";
 
-                $this->code .= "\t\t\treturn self::_by_fields_multi(self::BY_" . strtoupper($field->name_idless) . ", \$keys);\n";
+                $this->code .= "\t\t\treturn parent::_by_fields_multi(self::BY_" . strtoupper($field->name_idless) . ", \$keys);\n";
                 $this->code .= "\t\t}\n\n";
             }
 
@@ -210,7 +210,7 @@
                     $this->code .= "\t\t * @return array of arrays of " . ucwords(str_replace('_', ' ', $this->table->name)) . " " . $this->table->primary_key->name . "s\n";
                     $this->code .= "\t\t */\n";
 
-                    $this->code .= "\t\tpublic static function by_" . $name . "_multi(array $" . $name . "_arr) {\n";
+                    $this->code .= "\t\tpublic function by_" . $name . "_multi(array $" . $name . "_arr) {\n";
                     $this->code .= "\t\t\t\$keys_arr = [];\n";
                     $this->code .= "\t\t\tforeach (\$" . $name . "_arr as \$k => \$" . $name . ") {\n";
                     if (count($fields) === 1) {
@@ -225,7 +225,7 @@
                     }
                     $this->code .= "\t\t\t}\n";
 
-                    $this->code .= "\t\t\treturn self::_by_fields_multi(\n";
+                    $this->code .= "\t\t\treturn parent::_by_fields_multi(\n";
                     $this->code .= "\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
                     $this->code .= "\t\t\t\t\$keys_arr\n";
                     $this->code .= "\t\t\t);\n";
@@ -242,7 +242,7 @@
                 $this->code .= "\t\t * @return array containing all " . ucwords(str_replace('_', ' ', $this->table->name)) . " records\n";
                 $this->code .= "\t\t */\n";
 
-                $this->code .= "\t\tpublic static function all() {\n";
+                $this->code .= "\t\tpublic function all() {\n";
                 $this->code .= "\t\t\treturn parent::_all(self::BY_ALL);\n";
                 $this->code .= "\t\t}\n\n";
             }
@@ -268,7 +268,7 @@
             $this->code .= "\t\t * @return " . $this->table->name . "_model\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function insert(array \$info) {\n\n";
+            $this->code .= "\t\tpublic function insert(array \$info) {\n\n";
 
             if ($this->table->is_tiny() || count($this->table->all_non_pk_indexes) || $this->all) {
 
@@ -359,7 +359,7 @@
             $this->code .= "\t\t * @return " . $this->table->name . "_collection\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function inserts(array \$infos) {\n\n";
+            $this->code .= "\t\tpublic function inserts(array \$infos) {\n\n";
 
             if ($this->table->is_tiny() || count($this->table->all_non_pk_indexes) || $this->all) {
 
@@ -458,7 +458,7 @@
             $this->code .= "\t\t * @return " . $this->table->name . "_model updated model\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function update(" . $this->table->name . "_model $" . $this->table->name . ", array \$info) {\n\n";
+            $this->code .= "\t\tpublic function update(" . $this->table->name . "_model $" . $this->table->name . ", array \$info) {\n\n";
 
             if ($this->table->is_tiny() || $this->table->all_non_pk_indexes || $this->all) {
 
@@ -567,7 +567,7 @@
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function delete(" . $this->table->name . "_model $" . $this->table->name . ") {\n\n";
+            $this->code .= "\t\tpublic function delete(" . $this->table->name . "_model $" . $this->table->name . ") {\n\n";
 
             if ($this->table->is_tiny() || $this->table->all_non_pk_indexes || $this->all) {
 
@@ -652,7 +652,7 @@
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function deletes(" . $this->table->name . "_collection $" . $this->table->name . "_collection) {\n\n";
+            $this->code .= "\t\tpublic function deletes(" . $this->table->name . "_collection $" . $this->table->name . "_collection) {\n\n";
 
             if ($this->table->is_tiny() || $this->table->all_non_pk_indexes || $this->all) {
 

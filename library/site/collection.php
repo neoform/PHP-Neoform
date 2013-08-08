@@ -3,7 +3,7 @@
     /**
      * Site collection
      */
-    class site_collection extends record_collection implements site_definition {
+    class site_collection extends entity_record_collection implements site_definition {
 
         /**
          * Preload the User models in this collection

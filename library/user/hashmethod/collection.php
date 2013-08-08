@@ -3,7 +3,7 @@
     /**
      * User Hashmethod collection
      */
-    class user_hashmethod_collection extends record_collection implements user_hashmethod_definition {
+    class user_hashmethod_collection extends entity_record_collection implements user_hashmethod_definition {
 
         /**
          * Preload the User models in this collection

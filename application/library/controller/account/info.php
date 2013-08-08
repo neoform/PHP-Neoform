@@ -13,10 +13,10 @@
             $view->contact = $contact = core::auth()->contact();
             $view->address = $address = $contact->address();
 
-            $view->provinces = new geo_province_collection(null, geo_province_dao::all());
+            $view->provinces = new geo_province_collection(null, entity::dao('geo_province')->all());
 
             if ($address && $address->province_id) {
-                $view->cities = geo_city_dao::by_province_full(new geo_province_model($address->province_id));
+                $view->cities = entity::dao('geo_city')->by_province_full(new geo_province_model($address->province_id));
             }
 
             $view->render('account/info');

@@ -14,7 +14,7 @@
                 $salt            = user_lib::generate_salt();
                 $hash            = $hashmethod->hash($input->password1->val(), $salt, $hashmethod_cost);
 
-                $user = user_dao::insert([
+                $user = entity::dao('user')->insert([
                     'email'               => $input->email->val(),
                     'password_hash'       => $hash,
                     'password_hashmethod' => $hashmethod->id,
@@ -23,7 +23,7 @@
                     'status_id'           => user_lib::default_status()->id,
                 ]);
 
-                user_date_dao::insert([
+                entity::dao('user_date')->insert([
                     'user_id' => $user->id,
                 ]);
 
@@ -39,7 +39,7 @@
             self::_validate_update_email($user, $input);
 
             if ($input->is_valid()) {
-                return user_dao::update(
+                return entity::dao('user')->update(
                     $user,
                     [
                         'email' => $input->email->val(),
@@ -61,7 +61,7 @@
                 $password_cost = user_lib::default_hashmethod_cost();
                 $hash_method   = user_lib::default_hashmethod();
 
-                return user_dao::update(
+                return entity::dao('user')->update(
                     $user,
                     [
                         'password_salt'       => $salt,
@@ -85,7 +85,7 @@
             self::_validate_admin_update($user, $input);
 
             if ($input->is_valid()) {
-                return user_dao::update(
+                return entity::dao('user')->update(
                     $user,
                     [
                         'email'     => $input->email->val(),
@@ -104,7 +104,7 @@
 
             if ($input->is_valid()) {
 
-                return user_dao::update(
+                return entity::dao('user')->update(
                     $user,
                     [
                         'password_salt'       => $input->password_salt->val(),
@@ -127,7 +127,7 @@
 
             $input->email->cast('string')->trim()->tolower()->is_email();
             if ($input->is_valid()) {
-                return ! (bool) current(user_dao::by_email($input->email->val()));
+                return ! (bool) current(entity::dao('user')->by_email($input->email->val()));
             } else {
                 throw $input->exception();
             }
@@ -137,7 +137,7 @@
 
             // email
             $input->email->cast('string')->length(1, 255)->is_email()->callback(function($email) {
-                if (user_dao::by_email($email->val())) {
+                if (entity::dao('user')->by_email($email->val())) {
                     $email->errors('already in use');
                 }
             });
@@ -157,8 +157,8 @@
 
             // email
             $input->email->cast('string')->length(1, 255)->is_email()->callback(function($email) use ($user) {
-                $id_arr = user_dao::by_email($email->val());
-                if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $user->id) {
+                $id_arr = entity::dao('user')->by_email($email->val());
+                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $user->id) {
                     $email->errors('already in use');
                 }
             });
@@ -188,7 +188,7 @@
 
             // email
             $input->email->cast('string')->length(1, 255)->callback(function($email) {
-                if (user_dao::by_email($email->val())) {
+                if (entity::dao('user')->by_email($email->val())) {
                     $email->errors('already in use');
                 }
             });
@@ -225,8 +225,8 @@
 
             // email
             $input->email->cast('string')->length(1, 255)->callback(function($email) use ($user) {
-                $id_arr = user_dao::by_email($email->val());
-                if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $user->id) {
+                $id_arr = entity::dao('user')->by_email($email->val());
+                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $user->id) {
                     $email->errors('already in use');
                 }
             });

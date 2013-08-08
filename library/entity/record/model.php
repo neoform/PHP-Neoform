@@ -1,6 +1,6 @@
 <?php
 
-    abstract class record_model implements arrayaccess {
+    abstract class entity_record_model implements arrayaccess {
 
         /**
          * @var array of values representing the entity
@@ -20,8 +20,8 @@
         public function __construct($pk=null, array $info=null) {
 
             if ($pk !== null) {
-                $dao = static::ENTITY_NAME . '_dao';
-                if ($this->vars = $dao::by_pk($pk)) {
+                $dao = entity::dao(static::ENTITY_NAME);
+                if ($this->vars = $dao->by_pk($pk)) {
                     return;
                 }
             } else if ($info !== null) {
@@ -86,13 +86,12 @@
          * @param string $name
          * @param array $args
          *
-         * @return record_model
+         * @return entity_record_model
          */
-        public static function __callstatic($name, $args) {
+        public static function __callstatic($name, array $args) {
             $model = static::ENTITY_NAME . '_model';
-            $dao   = static::ENTITY_NAME . '_dao';
             return new $model(current(
-                call_user_func_array("$dao::$name", $args)
+                call_user_func_array([entity::dao(static::ENTITY_NAME), $name], $args)
             ));
         }
 
@@ -130,7 +129,7 @@
          * @param string         $model_name Name of model being loaded
          * @param mixed          $default    If model does not exist, store this value instead
          *
-         * @return record_model|mixed
+         * @return entity_record_model|mixed
          */
         protected function _model($key, $pk, $model_name, $default=null) {
             if (! array_key_exists($key, $this->_vars)) {

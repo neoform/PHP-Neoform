@@ -25,47 +25,47 @@
         /**
          * Increment the value of a cached entry (only works if the value is an int)
          *
-         * @param string  $key
          * @param string  $pool
+         * @param string  $key
          * @param integer $offset
          */
-        public static function increment($key, $pool, $offset=1) {
+        public static function increment($pool, $key, $offset=1) {
             core::redis($pool)->incrBy($key, $offset);
         }
 
         /**
          * Decrement the value of a cached entry (only works if the value is an int)
          *
-         * @param string  $key
          * @param string  $pool
+         * @param string  $key
          * @param integer $offset
          */
-        public static function decrement($key, $pool, $offset=1) {
+        public static function decrement($pool, $key, $offset=1) {
             core::redis($pool)->incrBy($key, -$offset);
         }
 
         /**
          * Checks if cached record exists.
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          *
          * @return boolean
          */
-        public static function exists($key, $pool) {
+        public static function exists($pool, $key) {
             return (bool) core::redis($pool)->exists($key);
         }
 
         /**
          * Create a list and/or Add a value to a list
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          * @param mixed  $value
          *
          * @return bool
          */
-        public static function list_add($key, $pool, $value) {
+        public static function list_add($pool, $key, $value) {
             if ($return = core::redis($pool)->sAdd($key, $value)) {
                 return $return;
             } else {
@@ -85,13 +85,13 @@
         /**
          * Get all members of a list or get matching members of a list (via filter array)
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          * @param array  $filter list of keys, an intersection is done
          *
          * @return array
          */
-        public static function list_get($key, $pool, array $filter = null) {
+        public static function list_get($pool, $key, array $filter = null) {
             if ($filter) {
                 return array_values(array_intersect(core::redis($pool)->sMembers($key), $filter));
             } else {
@@ -102,13 +102,13 @@
         /**
          * Get all members of multiple list or get matching members of multiple lists (via filter array)
          *
-         * @param array  $keys
          * @param string $pool
+         * @param array  $keys
          * @param array  $filter list of keys, an intersection is done
          *
          * @return array
          */
-        public static function list_get_union(array $keys, $pool, array $filter = null) {
+        public static function list_get_union($pool, array $keys, array $filter = null) {
             if ($filter) {
                 return array_values(array_intersect(core::redis($pool)->sUnion($keys), $filter));
             } else {
@@ -119,11 +119,11 @@
         /**
          * Remove values from a list
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          * @param array  $remove_keys
          */
-        public static function list_remove($key, $pool, array $remove_keys) {
+        public static function list_remove($pool, $key, array $remove_keys) {
             $redis = core::redis($pool);
             // Batch execute the deletes
             $redis->multi();
@@ -141,12 +141,12 @@
          *  if record does exist, an array with a single element, containing the data.
          *  returns null if record does not exist
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          *
          * @return array|null returns null if record does not exist.
          */
-        public static function get($key, $pool) {
+        public static function get($pool, $key) {
             $redis = core::redis($pool);
 
             // Batch execute since phpredis returns false if the key doesn't exist on a GET command, which might actually
@@ -160,26 +160,26 @@
         }
 
         /**
-         * @param string       $key
          * @param string       $pool
+         * @param string       $key
          * @param mixed        $data
          * @param integer|null $ttl
          *
          * @return mixed
          */
-        public static function set($key, $pool, $data, $ttl=null) {
+        public static function set($pool, $key, $data, $ttl=null) {
             return core::redis($pool)->set($key, $data, $ttl);
         }
 
         /**
          * Fetch multiple rows from redis
          *
-         * @param array  $keys
          * @param string $pool
+         * @param array  $keys
          *
          * @return array
          */
-        public static function get_multi(array $keys, $pool) {
+        public static function get_multi($pool, array $keys) {
             $redis = core::redis($pool);
 
             // Redis returns the results in order - if the key doesn't exist, false is returned - this problematic
@@ -209,13 +209,13 @@
         /**
          * Set multiple records at the same time
          *
-         * @param array        $rows
          * @param string       $pool
+         * @param array        $rows
          * @param integer|null $ttl
          *
          * @return mixed
          */
-        public static function set_multi(array $rows, $pool, $ttl=null) {
+        public static function set_multi($pool, array $rows, $ttl=null) {
             if ($ttl) {
                 $redis = core::redis($pool);
                 $redis->multi();
@@ -231,24 +231,24 @@
         /**
          * Delete a single record
          *
-         * @param string $key
          * @param string $pool
+         * @param string $key
          *
          * @return integer the number of keys deleted
          */
-        public static function delete($key, $pool) {
+        public static function delete($pool, $key) {
             return core::redis($pool)->delete($key);
         }
 
         /**
          * Delete multiple entries from cache
          *
-         * @param array  $keys
          * @param string $pool
+         * @param array  $keys
          *
          * @return integer the number of keys deleted
          */
-        public static function delete_multi(array $keys, $pool) {
+        public static function delete_multi($pool, array $keys) {
             if (count($keys)) {
                 reset($keys);
                 return core::redis($pool)->delete($keys);

@@ -10,7 +10,7 @@
             $this->code .= "\t * " . ucwords(str_replace('_', ' ', $this->table->name)) . " collection\n";
             $this->code .= "\t */\n";
 
-            $this->code .= "\tclass " . $this->table->name . "_collection extends record_collection implements " . $this->table->name . "_definition {\n\n";
+            $this->code .= "\tclass " . $this->table->name . "_collection extends entity_record_collection implements " . $this->table->name . "_definition {\n\n";
 
             $this->preloaders();
 

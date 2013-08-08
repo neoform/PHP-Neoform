@@ -9,7 +9,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return acl_group_user_dao::insert([
+                return entity::dao('acl_group_user')->insert([
                     'acl_group_id' => $input->acl_group_id->val(),
                     'user_id'      => $input->user_id->val(),
                 ]);
@@ -25,7 +25,7 @@
                     'user_id'      => (int) $user->id,
                 ];
             }
-            return acl_group_user_dao::deletes($keys);
+            return entity::dao('acl_group_user')->deletes($keys);
         }
 
         public static function delete_by_user(user_model $user, acl_group_collection $acl_group_collection) {
@@ -36,7 +36,7 @@
                     'acl_group_id' => (int) $acl_group->id,
                 ];
             }
-            return acl_group_user_dao::deletes($keys);
+            return entity::dao('acl_group_user')->deletes($keys);
         }
 
         public static function _validate_insert(input_collection $input) {

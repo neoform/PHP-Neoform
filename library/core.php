@@ -216,7 +216,7 @@
             // Uncaught exception handler
             set_exception_handler(function(exception $e) {
 
-                error_lib::log($e, false);
+                error_lib::log($e);
 
                 switch ((string) core::context()) {
                     case 'web':

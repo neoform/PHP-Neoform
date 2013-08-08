@@ -58,9 +58,9 @@
 
             return cache_lib::single(
                 $config['cache_engine'],
-                self::by_locale_namespace_key($locale_iso2, $namespace_id),
                 $config['cache_engine_read'],
                 $config['cache_engine_write'],
+                self::by_locale_namespace_key($locale_iso2, $namespace_id),
                 $get
             );
         }
@@ -77,9 +77,9 @@
 
             cache_lib::delete(
                 $config['cache_engine'],
-                self::by_locale_namespace_key($locale_iso2, $namespace->id),
                 $config['cache_engine_read'],
-                $config['cache_engine_write']
+                $config['cache_engine_write'],
+                self::by_locale_namespace_key($locale_iso2, $namespace->id)
             );
         }
     }

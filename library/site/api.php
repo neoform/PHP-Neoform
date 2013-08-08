@@ -9,7 +9,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return site_dao::insert([
+                return entity::dao('site')->insert([
                     'id'   => $input->id->val(),
                     'name' => $input->name->val(),
                 ]);
@@ -24,7 +24,7 @@
             self::_validate_update($site, $input);
 
             if ($input->is_valid()) {
-                return site_dao::update(
+                return entity::dao('site')->update(
                     $site,
                     $input->vals(
                         [
@@ -45,8 +45,8 @@
 
             // name
             $input->name->cast('string')->length(1, 64)->callback(function($name) {
-                $id_arr = site_dao::by_name($name->val());
-                if (is_array($id_arr) && count($id_arr)) {
+                $id_arr = entity::dao('site')->by_name($name->val());
+                if (is_array($id_arr) && $id_arr) {
                     $name->errors('already in use');
                 }
             });
@@ -59,8 +59,8 @@
 
             // name
             $input->name->cast('string')->optional()->length(1, 64)->callback(function($name) use ($site) {
-                $id_arr = site_dao::by_name($name->val());
-                if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $site->id) {
+                $id_arr = entity::dao('site')->by_name($name->val());
+                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $site->id) {
                     $name->errors('already in use');
                 }
             });

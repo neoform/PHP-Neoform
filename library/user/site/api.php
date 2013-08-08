@@ -9,7 +9,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return user_site_dao::insert([
+                return entity::dao('user_site')->insert([
                     'user_id' => $input->user_id->val(),
                     'site_id' => $input->site_id->val(),
                 ]);
@@ -25,7 +25,7 @@
                     'user_id' => (int) $user->id,
                 ];
             }
-            return user_site_dao::deletes($keys);
+            return entity::dao('user_site')->deletes($keys);
         }
 
         public static function delete_by_user(user_model $user, site_collection $site_collection) {
@@ -36,7 +36,7 @@
                     'site_id' => (int) $site->id,
                 ];
             }
-            return user_site_dao::deletes($keys);
+            return entity::dao('user_site')->deletes($keys);
         }
 
         public static function _validate_insert(input_collection $input) {

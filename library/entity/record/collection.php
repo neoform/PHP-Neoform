@@ -91,7 +91,7 @@
         /**
          * Remove a model from the collection
          *
-         * @param $k Key
+         * @param mixed $k Key
          *
          * @return entity_record_collection $this
          */
@@ -114,8 +114,14 @@
          */
         public function remap($field, $ignore_null=false) {
             $new = [];
-            foreach ($this as $record) {
-                if (! $ignore_null || $record->$field !== null) {
+            if ($ignore_null) {
+                foreach ($this as $record) {
+                    if ($record->$field !== null) {
+                        $new[$record->$field] = $record;
+                    }
+                }
+            } else {
+                foreach ($this as $record) {
                     $new[$record->$field] = $record;
                 }
             }
@@ -132,10 +138,11 @@
          */
         public function field($field) {
             if (! array_key_exists($field, $this->_vars)) {
-                $this->_vars[$field] = [];
+                $arr = [];
                 foreach ($this as $k => $record) {
-                    $this->_vars[$field][$k] = $record->$field;
+                    $arr[$k] = $record->$field;
                 }
+                $this->_vars[$field] = $arr;
             }
             return $this->_vars[$field];
         }
@@ -325,7 +332,6 @@
          */
         protected function _preload_one_to_one($entity, $field, $method_override=null) {
 
-            $dao             = entity::dao($entity);
             $model_name      = "{$entity}_model";
             $collection_name = "{$entity}_collection";
 
@@ -334,7 +340,7 @@
             foreach ($this as $model) {
                 $pks[$model->$field] = $model->$field;
             }
-            $infos  = $dao->by_pks($pks);
+            $infos  = entity::dao($entity)->by_pks($pks);
             $models = [];
 
             foreach ($this as $key => $model) {

@@ -5,7 +5,7 @@
         public function default_action() {
 
             if (core::auth()->logged_in()) {
-                core::output()->redirect(core::flash()->get('login_bounce'));
+                core::output()->redirect(core::http_flash()->get('login_bounce'));
             } else {
                 list($user, $new_password) = user_lostpassword_api::find(
                     new site_model(core::config()['core']['site_id']),

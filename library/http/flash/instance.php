@@ -4,7 +4,7 @@
      * Short term data storage - useful for very short lived sessions, data is highly volatile and not guarantied to
      * exist on read. Best uses are for redirect session data.
      */
-    class flash_instance {
+    class http_flash_instance {
 
         use core_instance;
 

@@ -8,9 +8,9 @@
                 $json = new render_json();
                 $json->status = 'close';
 
-                if ($bounce = core::flash()->get('login_bounce')) {
+                if ($bounce = core::http_flash()->get('login_bounce')) {
                     $json->bounce = current($bounce);
-                    core::flash()->del('login_bounce');
+                    core::http_flash()->del('login_bounce');
                 }
 
                 $json->render();

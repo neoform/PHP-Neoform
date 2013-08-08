@@ -8,9 +8,9 @@
         const BY_USER = 'by_user';
 
         protected $pdo_bindings = [
-            'hash'       => 'binary',
-            'user_id'    => 'int',
-            'expires_on' => 'string',
+            'hash'       => PDO::PARAM_LOB,
+            'user_id'    => PDO::PARAM_INT,
+            'expires_on' => PDO::PARAM_STR,
         ];
 
         // READS

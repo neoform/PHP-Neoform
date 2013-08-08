@@ -10,16 +10,12 @@
         const BY_USER           = 'by_user';
 
         /**
-         * Get the generic bindings of the table columns
-         *
-         * @return array
+         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
          */
-        public static function bindings() {
-            return [
-                'acl_group_id' => 'int',
-                'user_id'      => 'int',
-            ];
-        }
+        protected $pdo_bindings = [
+            'acl_group_id' => PDO::PARAM_INT,
+            'user_id'      => PDO::PARAM_INT,
+        ];
 
         // READS
 

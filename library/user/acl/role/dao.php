@@ -10,16 +10,12 @@
         const BY_ACL_ROLE      = 'by_acl_role';
 
         /**
-         * Get the generic bindings of the table columns
-         *
-         * @return array
+         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
          */
-        public static function bindings() {
-            return [
-                'user_id'     => 'int',
-                'acl_role_id' => 'int',
-            ];
-        }
+        protected $pdo_bindings = [
+            'user_id'     => PDO::PARAM_INT,
+            'acl_role_id' => PDO::PARAM_INT,
+        ];
 
         // READS
 

@@ -8,16 +8,12 @@
         const BY_ALL = 'by_all';
 
         /**
-         * Get the generic bindings of the table columns
-         *
-         * @return array
+         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
          */
-        public static function bindings() {
-            return [
-                'iso2' => 'string',
-                'name' => 'string',
-            ];
-        }
+        protected $pdo_bindings = [
+            'iso2' => PDO::PARAM_STR,
+            'name' => PDO::PARAM_STR,
+        ];
 
         // READS
 

@@ -11,18 +11,14 @@
         const BY_NAMESPACE = 'by_namespace';
 
         /**
-         * Get the generic bindings of the table columns
-         *
-         * @return array
+         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
          */
-        public static function bindings() {
-            return [
-                'id'           => 'int',
-                'body'         => 'string',
-                'locale'       => 'string',
-                'namespace_id' => 'int',
-            ];
-        }
+        protected $pdo_bindings = [
+            'id'           => PDO::PARAM_INT,
+            'body'         => PDO::PARAM_STR,
+            'locale'       => PDO::PARAM_STR,
+            'namespace_id' => PDO::PARAM_INT,
+        ];
 
         // READS
 

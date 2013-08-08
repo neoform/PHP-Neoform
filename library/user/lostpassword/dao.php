@@ -8,17 +8,13 @@
         const BY_USER = 'by_user';
 
         /**
-         * Get the generic bindings of the table columns
-         *
-         * @return array
+         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
          */
-        public static function bindings() {
-            return [
-                'hash'      => 'string',
-                'user_id'   => 'int',
-                'posted_on' => 'string',
-            ];
-        }
+        protected $pdo_bindings = [
+            'hash'      => PDO::PARAM_STR,
+            'user_id'   => PDO::PARAM_INT,
+            'posted_on' => PDO::PARAM_STR,
+        ];
 
         // READS
 

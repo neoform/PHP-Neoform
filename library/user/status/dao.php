@@ -9,16 +9,12 @@
         const BY_NAME = 'by_name';
 
         /**
-         * Get the generic bindings of the table columns
-         *
-         * @return array
+         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
          */
-        public static function bindings() {
-            return [
-                'id'   => 'int',
-                'name' => 'string',
-            ];
-        }
+        protected $pdo_bindings = [
+            'id'   => PDO::PARAM_INT,
+            'name' => PDO::PARAM_STR,
+        ];
 
         // READS
 

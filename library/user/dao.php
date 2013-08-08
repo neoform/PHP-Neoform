@@ -9,8 +9,8 @@
         const BY_PASSWORD_HASHMETHOD = 'by_password_hashmethod';
         const BY_STATUS              = 'by_status';
 
-        /*
-         * @var array \$pdo_bindings list of fields and their corresponding PDO bindings
+        /**
+         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
          */
         protected $pdo_bindings = [
             'id'                  => PDO::PARAM_INT,

@@ -40,7 +40,7 @@
         public function region_collection() {
             if (! array_key_exists('region_collection', $this->_vars)) {
                 $this->_vars['region_collection'] = new region_collection(
-                    entity_dao::get('region')->by_country($this->vars['id'])
+                    entity::dao('region')->by_country($this->vars['id'])
                 );
             }
             return $this->_vars['region_collection'];

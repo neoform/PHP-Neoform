@@ -35,7 +35,7 @@
         public function user_collection() {
             if (! array_key_exists('user_collection', $this->_vars)) {
                 $this->_vars['user_collection'] = new user_collection(
-                    entity_dao::get('user')->by_status($this->vars['id'])
+                    entity::dao('user')->by_status($this->vars['id'])
                 );
             }
             return $this->_vars['user_collection'];

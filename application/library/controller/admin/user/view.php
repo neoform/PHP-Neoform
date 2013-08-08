@@ -9,10 +9,10 @@
             $view->meta_title = 'User Info';
             $view->user = $user;
 
-            $view->password_hashmethods = new user_hashmethod_collection(null, entity_dao::get('user_hashmethod')->all());
-            $view->all_roles            = new acl_role_collection(null, entity_dao::get('acl_role')->all(), 'id');
-            $view->all_groups           = new acl_group_collection(null, entity_dao::get('acl_group')->all(), 'id');
-            $view->all_statuses         = new user_status_collection(null, entity_dao::get('user_status')->all(), 'id');
+            $view->password_hashmethods = new user_hashmethod_collection(null, entity::dao('user_hashmethod')->all());
+            $view->all_roles            = new acl_role_collection(null, entity::dao('acl_role')->all(), 'id');
+            $view->all_groups           = new acl_group_collection(null, entity::dao('acl_group')->all(), 'id');
+            $view->all_statuses         = new user_status_collection(null, entity::dao('user_status')->all(), 'id');
 
             $view->render('admin/user/view');
         }

@@ -12,9 +12,9 @@
 
             $input->email->cast('string')->trim()->length(1,255)->is_email()->callback(function($email) use ($site) {
                 if (! $email->errors()) {
-                    if ($user_id = current(entity_dao::get('user')->by_email($email->val()))) {
+                    if ($user_id = current(entity::dao('user')->by_email($email->val()))) {
                         $user = new user_model($user_id);
-                        if (count(entity_dao::get('user_site')->by_site_user($site->id, $user->id))) {
+                        if (count(entity::dao('user_site')->by_site_user($site->id, $user->id))) {
                             return $email->data('model', $user);
                         }
                     }
@@ -27,16 +27,16 @@
                 $user = $input->email->data('model');
 
                 //delete all previous reset keys
-                entity_dao::get('user_lostpassword')->deletes(
+                entity::dao('user_lostpassword')->deletes(
                     new user_lostpassword_collection(
-                        entity_dao::get('user_lostpassword')->by_user($user->id)
+                        entity::dao('user_lostpassword')->by_user($user->id)
                     )
                 );
 
                 // Generate random hash
                 $hash = type_string_lib::random_chars(40);
 
-                entity_dao::get('user_lostpassword')->insert([
+                entity::dao('user_lostpassword')->insert([
                     'user_id' => $user->id,
                     'hash'    => $hash,
                 ]);
@@ -74,7 +74,7 @@
             $hash_method   = user_lib::default_hashmethod();
             $user          = $lost_password->user();
 
-            entity_dao::get('user')->update(
+            entity::dao('user')->update(
                 $user,
                 [
                     'password_salt'       => $salt,
@@ -84,7 +84,7 @@
                 ]
             );
 
-            entity_dao::get('user_lostpassword')->delete($lost_password);
+            entity::dao('user_lostpassword')->delete($lost_password);
 
             return [$user, $password];
         }
@@ -96,7 +96,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity_dao::get('user_lostpassword')->insert([
+                return entity::dao('user_lostpassword')->insert([
                     'hash'      => $input->hash->val(),
                     'user_id'   => $input->user_id->val(),
                     'posted_on' => $input->posted_on->val(),
@@ -112,7 +112,7 @@
             self::_validate_update($user_lostpassword, $input);
 
             if ($input->is_valid()) {
-                return entity_dao::get('user_lostpassword')->update(
+                return entity::dao('user_lostpassword')->update(
                     $user_lostpassword,
                     $input->vals(
                         [
@@ -134,7 +134,7 @@
 
             // user_id
             $input->user_id->cast('int')->digit(0, 4294967295)->callback(function($user_id) {
-                if (entity_dao::get('user_lostpassword')->by_user($user_id->val())) {
+                if (entity::dao('user_lostpassword')->by_user($user_id->val())) {
                     $user_id->errors('already in use');
                 }
             })->callback(function($user_id){
@@ -156,7 +156,7 @@
 
             // user_id
             $input->user_id->cast('int')->optional()->digit(0, 4294967295)->callback(function($user_id) use ($user_lostpassword) {
-                $hash_arr = entity_dao::get('user_lostpassword')->by_user($user_id->val());
+                $hash_arr = entity::dao('user_lostpassword')->by_user($user_id->val());
                 if (is_array($hash_arr) && count($hash_arr) && (string) current($hash_arr) !== $user_lostpassword->hash) {
                     $user_id->errors('already in use');
                 }

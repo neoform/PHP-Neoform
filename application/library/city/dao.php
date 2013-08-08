@@ -38,7 +38,7 @@
          * @return array of City ids
          */
         public function by_region($region_id) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_REGION,
                 [
                     'region_id'       => (int) $region_id,
@@ -55,7 +55,7 @@
          * @return array of City ids
          */
         public function by_region_name_normalized($region_id, $name_normalized) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_REGION_NAME_NORMALIZED,
                 [
                     'region_id'       => (int) $region_id,
@@ -72,7 +72,7 @@
          * @return array of City ids
          */
         public function by_name_normalized($name_normalized) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_NAME_NORMALIZED,
                 [
                     'name_normalized' => (string) $name_normalized,
@@ -88,7 +88,7 @@
          * @return array of City ids
          */
         public function by_name_soundex($name_soundex) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_NAME_SOUNDEX,
                 [
                     'name_soundex' => (string) $name_soundex,
@@ -118,7 +118,7 @@
                     ];
                 }
             }
-            return self::_by_fields_multi(self::BY_REGION, $keys);
+            return parent::_by_fields_multi(self::BY_REGION, $keys);
         }
 
         /**
@@ -136,7 +136,7 @@
                     'name_normalized' => (string) $region_name_normalized['name_normalized'],
                 ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_REGION_NAME_NORMALIZED,
                 $keys_arr
             );
@@ -154,7 +154,7 @@
             foreach ($name_normalized_arr as $k => $name_normalized) {
                 $keys_arr[$k] = [ 'name_normalized' => (string) $name_normalized, ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_NAME_NORMALIZED,
                 $keys_arr
             );
@@ -172,7 +172,7 @@
             foreach ($name_soundex_arr as $k => $name_soundex) {
                 $keys_arr[$k] = [ 'name_soundex' => (string) $name_soundex, ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_NAME_SOUNDEX,
                 $keys_arr
             );

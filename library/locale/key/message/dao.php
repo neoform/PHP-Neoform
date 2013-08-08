@@ -34,7 +34,7 @@
          * @return array of Locale Key Message ids
          */
         public function by_locale($locale) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_LOCALE,
                 [
                     'locale' => (string) $locale,
@@ -51,7 +51,7 @@
          * @return array of Locale Key Message ids
          */
         public function by_locale_key($locale, $key_id) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_LOCALE_KEY,
                 [
                     'locale' => (string) $locale,
@@ -68,7 +68,7 @@
          * @return array of Locale Key Message ids
          */
         public function by_body($body) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_BODY,
                 [
                     'body' => (string) $body,
@@ -84,7 +84,7 @@
          * @return array of Locale Key Message ids
          */
         public function by_key($key_id) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_KEY,
                 [
                     'key_id' => (int) $key_id,
@@ -114,7 +114,7 @@
                     ];
                 }
             }
-            return self::_by_fields_multi(self::BY_KEY, $keys);
+            return parent::_by_fields_multi(self::BY_KEY, $keys);
         }
 
         /**
@@ -139,7 +139,7 @@
                     ];
                 }
             }
-            return self::_by_fields_multi(self::BY_LOCALE, $keys);
+            return parent::_by_fields_multi(self::BY_LOCALE, $keys);
         }
 
         /**
@@ -157,7 +157,7 @@
                     'key_id' => (int) $locale_key['key_id'],
                 ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_LOCALE_KEY,
                 $keys_arr
             );
@@ -175,7 +175,7 @@
             foreach ($body_arr as $k => $body) {
                 $keys_arr[$k] = [ 'body' => (string) $body, ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_BODY,
                 $keys_arr
             );

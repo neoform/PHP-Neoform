@@ -32,7 +32,7 @@
          * @return array of Acl Resource ids
          */
         public function by_name($name) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_NAME,
                 [
                     'name' => (string) $name,
@@ -48,7 +48,7 @@
          * @return array of Acl Resource ids
          */
         public function by_parent($parent_id) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_PARENT,
                 [
                     'parent_id' => $parent_id === null ? null : (int) $parent_id,
@@ -78,7 +78,7 @@
                     ];
                 }
             }
-            return self::_by_fields_multi(self::BY_PARENT, $keys);
+            return parent::_by_fields_multi(self::BY_PARENT, $keys);
         }
 
         /**
@@ -93,7 +93,7 @@
             foreach ($name_arr as $k => $name) {
                 $keys_arr[$k] = [ 'name' => (string) $name, ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_NAME,
                 $keys_arr
             );
@@ -104,7 +104,7 @@
          *
          * @return array containing all Acl Resource records
          */
-        public static function all() {
+        public function all() {
             return parent::_all(self::BY_ALL);
         }
 

@@ -20,7 +20,7 @@
         public function __construct($pk=null, array $info=null) {
 
             if ($pk !== null) {
-                $dao = entity_dao::get(static::ENTITY_NAME);
+                $dao = entity::dao(static::ENTITY_NAME);
                 if ($this->vars = $dao->by_pk($pk)) {
                     return;
                 }
@@ -91,7 +91,7 @@
         public static function __callstatic($name, array $args) {
             $model = static::ENTITY_NAME . '_model';
             return new $model(current(
-                call_user_func_array([entity_dao::get(static::ENTITY_NAME), $name], $args)
+                call_user_func_array([entity::dao(static::ENTITY_NAME), $name], $args)
             ));
         }
 

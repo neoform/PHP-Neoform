@@ -9,7 +9,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity_dao::get('user_date')->insert([
+                return entity::dao('user_date')->insert([
                     'user_id'             => $input->user_id->val(),
                     'created_on'          => $input->created_on->val(),
                     'last_login'          => $input->last_login->val(),
@@ -27,7 +27,7 @@
             self::_validate_update($user_date, $input);
 
             if ($input->is_valid()) {
-                return entity_dao::get('user_date')->update(
+                return entity::dao('user_date')->update(
                     $user_date,
                     $input->vals(
                         [
@@ -45,7 +45,7 @@
         }
 
         public static function delete(user_date_model $user_date) {
-            return entity_dao::get('user_date')->delete($user_date);
+            return entity::dao('user_date')->delete($user_date);
         }
 
         public static function _validate_insert(input_collection $input) {

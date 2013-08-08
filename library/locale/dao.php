@@ -26,7 +26,7 @@
          *
          * @return array containing all Locale records
          */
-        public static function all() {
+        public function all() {
             return parent::_all(self::BY_ALL);
         }
 

@@ -30,7 +30,7 @@
          * @return array of Acl Group ids
          */
         public function by_name($name) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_NAME,
                 [
                     'name' => (string) $name,
@@ -50,7 +50,7 @@
             foreach ($name_arr as $k => $name) {
                 $keys_arr[$k] = [ 'name' => (string) $name, ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_NAME,
                 $keys_arr
             );
@@ -61,34 +61,8 @@
          *
          * @return array containing all Acl Group records
          */
-        public static function all() {
+        public function all() {
             return parent::_all(self::BY_ALL);
-        }
-
-        /**
-         * Get a paginated list of group ids
-         *
-         * @param string  $order_by
-         * @param string  $direction
-         * @param integer $offset
-         * @param integer $limit
-         *
-         * @return array
-         */
-        public static function pagination($order_by, $direction, $offset, $limit) {
-            $users = core::sql(core::config()['sql']['default_pool_read'])->prepare("
-                SELECT id
-                FROM " . sql_lib::quote_field_name('acl_group') . "
-                ORDER BY " . sql_lib::quote_field_name($order_by) . " {$direction}
-                LIMIT {$limit}
-                OFFSET {$offset}
-            ");
-            $users->execute();
-            $ids = [];
-            foreach ($users->fetchAll() as $user) {
-                $ids[] = (int) $user['id'];
-            }
-            return $ids;
         }
 
         // WRITES

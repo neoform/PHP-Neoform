@@ -9,7 +9,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity_dao::get('city')->insert([
+                return entity::dao('city')->insert([
                     'region_id'       => $input->region_id->val(),
                     'name'            => $input->name->val(),
                     'name_normalized' => $input->name_normalized->val(),
@@ -29,7 +29,7 @@
             self::_validate_update($city, $input);
 
             if ($input->is_valid()) {
-                return entity_dao::get('city')->update(
+                return entity::dao('city')->update(
                     $city,
                     $input->vals(
                         [
@@ -49,7 +49,7 @@
         }
 
         public static function delete(city_model $city) {
-            return entity_dao::get('city')->delete($city);
+            return entity::dao('city')->delete($city);
         }
 
         public static function _validate_insert(input_collection $input) {

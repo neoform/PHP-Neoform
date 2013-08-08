@@ -10,7 +10,7 @@
 
             $namespace = new locale_namespace_model(core::http()->parameter('id'));
 
-            $keys = new locale_key_collection(entity_dao::get('locale_key')->by_namespace($namespace->id));
+            $keys = new locale_key_collection(entity::dao('locale_key')->by_namespace($namespace->id));
 
             $translations = [];
             foreach ($keys as $key) {
@@ -19,7 +19,7 @@
                     'messages' => [],
                 ];
 
-                foreach (entity_dao::get('locale')->all() as $locale) {
+                foreach (entity::dao('locale')->all() as $locale) {
                     if ($locale['iso2'] !== $key->locale) {
                         try {
                             $translations[$key->id]['messages'][$locale['iso2']] = htmlspecialchars($key->message($locale['iso2'])->body);
@@ -31,9 +31,9 @@
             }
 
             $view->namespace    = $namespace;
-            $view->locales      = array_column(entity_dao::get('locale')->all(), 'name', 'iso2');
+            $view->locales      = array_column(entity::dao('locale')->all(), 'name', 'iso2');
             $view->translations = $translations;
-            $view->namespaces   = array_column(entity_dao::get('locale_namespace')->all(), 'name', 'id');
+            $view->namespaces   = array_column(entity::dao('locale_namespace')->all(), 'name', 'id');
 
             $view->render('admin/locale/messages');
         }

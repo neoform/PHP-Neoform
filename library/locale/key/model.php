@@ -38,7 +38,7 @@
         public function locale_key_message_collection() {
             if (! array_key_exists('locale_key_message_collection', $this->_vars)) {
                 $this->_vars['locale_key_message_collection'] = new locale_key_message_collection(
-                    entity_dao::get('locale_key_message')->by_key($this->vars['id'])
+                    entity::dao('locale_key_message')->by_key($this->vars['id'])
                 );
             }
             return $this->_vars['locale_key_message_collection'];
@@ -52,7 +52,7 @@
         public function locale_collection() {
             if (! array_key_exists('locale_collection', $this->_vars)) {
                 $this->_vars['locale_collection'] = new locale_collection(
-                    entity_dao::get('locale_key_message')->by_key($this->vars['id'])
+                    entity::dao('locale_key_message')->by_key($this->vars['id'])
                 );
             }
             return $this->_vars['locale_collection'];
@@ -87,7 +87,7 @@
             $k = "message:{$locale}";
             if (! array_key_exists($k, $this->_vars)) {
                 $this->_vars[$k] = new locale_key_message_model(
-                    current(entity_dao::get('locale_key_message')->by_locale_key($locale, $this->id))
+                    current(entity::dao('locale_key_message')->by_locale_key($locale, $this->id))
                 );
             }
             return $this->_vars[$k];

@@ -17,14 +17,14 @@
          */
         public static function bindings() {
             return [
-                'id'              => 'int',
-                'region_id'       => 'int',
-                'name'            => 'string',
-                'name_normalized' => 'string',
-                'name_soundex'    => 'string',
-                'top'             => 'string',
-                'longitude'       => 'float',
-                'latitude'        => 'float',
+                'id'              => PDO::PARAM_INT,
+                'region_id'       => PDO::PARAM_INT,
+                'name'            => PDO::PARAM_STR,
+                'name_normalized' => PDO::PARAM_STR,
+                'name_soundex'    => PDO::PARAM_STR,
+                'top'             => PDO::PARAM_STR,
+                'longitude'       => PDO::PARAM_STR,
+                'latitude'        => PDO::PARAM_STR,
             ];
         }
 

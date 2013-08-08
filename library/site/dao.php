@@ -10,8 +10,8 @@
 
         public static function bindings() {
             return [
-                'id'   => 'int',
-                'name' => 'string',
+                'id'   => PDO::PARAM_INT,
+                'name' => PDO::PARAM_STR,
             ];
         }
 

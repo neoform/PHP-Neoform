@@ -10,16 +10,12 @@
         const BY_ACL_RESOURCE          = 'by_acl_resource';
 
         /**
-         * Get the generic bindings of the table columns
-         *
-         * @return array
+         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
          */
-        public static function bindings() {
-            return [
-                'acl_role_id'     => 'int',
-                'acl_resource_id' => 'int',
-            ];
-        }
+        protected $pdo_bindings = [
+            'acl_role_id'     => PDO::PARAM_INT,
+            'acl_resource_id' => PDO::PARAM_INT,
+        ];
 
         // READS
 

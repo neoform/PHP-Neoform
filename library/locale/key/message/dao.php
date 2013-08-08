@@ -11,18 +11,14 @@
         const BY_KEY        = 'by_key';
 
         /**
-         * Get the generic bindings of the table columns
-         *
-         * @return array
+         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
          */
-        public static function bindings() {
-            return [
-                'id'     => 'int',
-                'key_id' => 'int',
-                'body'   => 'string',
-                'locale' => 'string',
-            ];
-        }
+        protected $pdo_bindings = [
+            'id'     => PDO::PARAM_INT,
+            'key_id' => PDO::PARAM_INT,
+            'body'   => PDO::PARAM_STR,
+            'locale' => PDO::PARAM_STR,
+        ];
 
         // READS
 

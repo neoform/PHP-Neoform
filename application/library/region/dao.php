@@ -12,22 +12,18 @@
         const BY_NAME_SOUNDEX            = 'by_name_soundex';
 
         /**
-         * Get the generic bindings of the table columns
-         *
-         * @return array
+         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
          */
-        public static function bindings() {
-            return [
-                'id'              => 'int',
-                'country_id'      => 'int',
-                'name'            => 'string',
-                'name_normalized' => 'string',
-                'name_soundex'    => 'string',
-                'iso2'            => 'string',
-                'longitude'       => 'float',
-                'latitude'        => 'float',
-            ];
-        }
+        protected $pdo_bindings = [
+            'id'              => PDO::PARAM_INT,
+            'country_id'      => PDO::PARAM_INT,
+            'name'            => PDO::PARAM_STR,
+            'name_normalized' => PDO::PARAM_STR,
+            'name_soundex'    => PDO::PARAM_STR,
+            'iso2'            => PDO::PARAM_STR,
+            'longitude'       => PDO::PARAM_STR,
+            'latitude'        => PDO::PARAM_STR,
+        ];
 
         // READS
 

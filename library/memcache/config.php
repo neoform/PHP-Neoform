@@ -15,6 +15,11 @@
             ];
         }
 
+        /**
+         * Validate the config values
+         *
+         * @throws config_exception
+         */
         public function validate() {
 
             if (empty($this->config['default_pool'])) {

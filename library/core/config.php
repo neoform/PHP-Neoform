@@ -16,4 +16,13 @@
                 'encoding' => 'utf-8',
             ];
         }
+
+        /**
+         * Validate the config values
+         *
+         * @throws config_exception
+         */
+        public function validate() {
+
+        }
     }

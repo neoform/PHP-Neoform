@@ -54,6 +54,10 @@
             } catch (error_exception $e) {
                 core::output()->error($e->message(), $e->description());
 
+            } catch (user_status_exception $e) {
+                auth_api::logout(core::auth());
+                core::output()->redirect();
+
             // Model Exception
             } catch (model_exception $e) {
                 core::output()->error($e->message(), $e->description());

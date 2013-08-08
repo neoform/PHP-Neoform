@@ -22,6 +22,11 @@
             ];
         }
 
+        /**
+         * Validate the config values
+         *
+         * @throws config_exception
+         */
         public function validate() {
 
             if ($this->config['active']) {

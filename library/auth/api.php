@@ -82,7 +82,7 @@
                     $password->errors('Your email address or password is incorrect.');
 
                 // Make sure account is active
-                } else if ($attemtped_user && ! in_array($attemtped_user->user_status()->name, core::config()['auth']['login_account_statuses'])) {
+                } else if ($attemtped_user && ! $attemtped_user->is_active()) {
                     $password->errors('You cannot log in with this account at this time');
                 }
             });

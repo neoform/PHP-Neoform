@@ -10,6 +10,11 @@
             ];
         }
 
+        /**
+         * Validate the config values
+         *
+         * @throws config_exception
+         */
         public function validate() {
             if (empty($this->config['unsubscribe_secret'])) {
                 throw new config_exception('"unsubscribe_secret" must be set');

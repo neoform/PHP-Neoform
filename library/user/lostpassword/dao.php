@@ -30,7 +30,7 @@
          * @return array of User Lostpassword hashs
          */
         public function by_user($user_id) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_USER,
                 [
                     'user_id' => (int) $user_id,
@@ -60,7 +60,7 @@
                     ];
                 }
             }
-            return self::_by_fields_multi(self::BY_USER, $keys);
+            return parent::_by_fields_multi(self::BY_USER, $keys);
         }
 
         // WRITES

@@ -18,7 +18,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity_dao::get('auth')->insert([
+                return entity::dao('auth')->insert([
                     'hash'       => $input->hash->val(),
                     'user_id'    => $input->user_id->val(),
                     'expires_on' => $input->expires_on->val(),
@@ -42,7 +42,7 @@
             self::_validate_update($auth, $input);
 
             if ($input->is_valid()) {
-                return entity_dao::get('auth')->update(
+                return entity::dao('auth')->update(
                     $auth,
                     $input->vals(
                         [
@@ -65,8 +65,8 @@
 
             $input->email->cast('string')->trim()->tolower()->length(1, 255)->is_email()->callback(function($email) use (& $attemtped_user, $site) {
                 try {
-                    if ($user_id = current(entity_dao::get('user')->by_email($email->val()))) {
-                        if (count(entity_dao::get('user_site')->by_site_user($site->id, $user_id))) {
+                    if ($user_id = current(entity::dao('user')->by_email($email->val()))) {
+                        if (count(entity::dao('user_site')->by_site_user($site->id, $user_id))) {
                             return $attemtped_user = new user_model($user_id);
                         }
                     }
@@ -99,7 +99,7 @@
         }
 
         public static function logout(auth_model $auth) {
-            entity_dao::get('auth')->delete($auth);
+            entity::dao('auth')->delete($auth);
             $auth->reset();
             return true;
         }

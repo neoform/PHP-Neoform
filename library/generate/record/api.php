@@ -20,7 +20,7 @@
 
         public function delete() {
             $this->code .= "\t\tpublic static function delete(" . $this->table->name . "_model $" . $this->table->name . ") {\n";
-            $this->code .= "\t\t\treturn entity_dao::get('" . $this->table->name . "')->delete($" . $this->table->name . ");\n";
+            $this->code .= "\t\t\treturn entity::dao('" . $this->table->name . "')->delete($" . $this->table->name . ");\n";
             $this->code .= "\t\t}\n\n";
         }
     }

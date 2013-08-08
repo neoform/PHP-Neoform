@@ -12,12 +12,12 @@
 
                 try {
                     $message = new locale_key_message_model(
-                        current(entity_dao::get('locale_key_message')->by_locale_key(
+                        current(entity::dao('locale_key_message')->by_locale_key(
                             $input->locale->val(),
                             $input->key_id->val()
                         ))
                     );
-                    $locale_key_message = entity_dao::get('locale_key_message')->update(
+                    $locale_key_message = entity::dao('locale_key_message')->update(
                         $message,
                         array(
                             'key_id' => $input->key_id->val(),
@@ -27,7 +27,7 @@
                     );
                 } catch (locale_key_message_exception $e) {
 
-                    $locale_key_message = entity_dao::get('locale_key_message')->insert(array(
+                    $locale_key_message = entity::dao('locale_key_message')->insert(array(
                         'key_id' => $input->key_id->val(),
                         'body'   => $input->body->val(),
                         'locale' => $input->locale->val(),
@@ -48,12 +48,12 @@
         }
 
         public static function delete(locale_key_message_model $message) {
-            return entity_dao::get('locale_key_message')->delete($message);
+            return entity::dao('locale_key_message')->delete($message);
         }
 
         public static function _validate(input_collection $input) {
             $locales = [];
-            foreach (entity_dao::get('locale')->all() as $locale) {
+            foreach (entity::dao('locale')->all() as $locale) {
                 $locales[] = $locale['iso2'];
             }
 

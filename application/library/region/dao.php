@@ -39,7 +39,7 @@
          * @return array of Region ids
          */
         public function by_country($country_id) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_COUNTRY,
                 [
                     'country_id'      => (int) $country_id,
@@ -56,7 +56,7 @@
          * @return array of Region ids
          */
         public function by_country_name_normalized($country_id, $name_normalized) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_COUNTRY_NAME_NORMALIZED,
                 [
                     'country_id'      => (int) $country_id,
@@ -73,7 +73,7 @@
          * @return array of Region ids
          */
         public function by_iso2($iso2) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_ISO2,
                 [
                     'iso2' => (string) $iso2,
@@ -90,7 +90,7 @@
          * @return array of Region ids
          */
         public function by_country_name($country_id, $name) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_COUNTRY_NAME,
                 [
                     'country_id' => (int) $country_id,
@@ -107,7 +107,7 @@
          * @return array of Region ids
          */
         public function by_name_soundex($name_soundex) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_NAME_SOUNDEX,
                 [
                     'name_soundex' => (string) $name_soundex,
@@ -137,7 +137,7 @@
                     ];
                 }
             }
-            return self::_by_fields_multi(self::BY_COUNTRY, $keys);
+            return parent::_by_fields_multi(self::BY_COUNTRY, $keys);
         }
 
         /**
@@ -155,7 +155,7 @@
                     'name_normalized' => (string) $country_name_normalized['name_normalized'],
                 ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_COUNTRY_NAME_NORMALIZED,
                 $keys_arr
             );
@@ -173,7 +173,7 @@
             foreach ($iso2_arr as $k => $iso2) {
                 $keys_arr[$k] = [ 'iso2' => (string) $iso2, ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_ISO2,
                 $keys_arr
             );
@@ -194,7 +194,7 @@
                     'name'       => (string) $country_name['name'],
                 ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_COUNTRY_NAME,
                 $keys_arr
             );
@@ -212,7 +212,7 @@
             foreach ($name_soundex_arr as $k => $name_soundex) {
                 $keys_arr[$k] = [ 'name_soundex' => (string) $name_soundex, ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_NAME_SOUNDEX,
                 $keys_arr
             );

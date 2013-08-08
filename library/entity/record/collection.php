@@ -20,7 +20,7 @@
         public function __construct(array $pks=null, array $infos=null, $map_field=null) {
 
             if ($pks !== null) {
-                $infos = entity_dao::get(static::ENTITY_NAME)->by_pks($pks);
+                $infos = entity::dao(static::ENTITY_NAME)->by_pks($pks);
             }
 
             if ($infos !== null && count($infos)) {
@@ -42,7 +42,7 @@
         /**
          * Get a collection by a given field or fields
          * folder_collection::by_parent(5) will return a folder collection.
-         * this is just a shortcut for new folder_collection(entity_dao::get('folder')->by_parent(5));
+         * this is just a shortcut for new folder_collection(entity::dao('folder')->by_parent(5));
          *
          * @param string $name
          * @param array $args
@@ -52,9 +52,9 @@
         public static function __callstatic($name, array $args) {
             $collection = static::ENTITY_NAME . '_collection';
             if ($name === 'by_all') {
-                return new $collection(null, call_user_func_array([entity_dao::get(static::ENTITY_NAME), $name], $args));
+                return new $collection(null, call_user_func_array([entity::dao(static::ENTITY_NAME), $name], $args));
             } else {
-                return new $collection(call_user_func_array([entity_dao::get(static::ENTITY_NAME), $name], $args));
+                return new $collection(call_user_func_array([entity::dao(static::ENTITY_NAME), $name], $args));
             }
         }
 
@@ -214,7 +214,7 @@
         protected function _preload_one_to_many($entity, $by_function, $method_override=null) {
 
             $collection_name  = "{$entity}_collection";
-            $dao              = entity_dao::get($entity);
+            $dao              = entity::dao($entity);
             $by_function     .= '_multi';
 
             // Get the ids for those
@@ -274,7 +274,7 @@
             $foreign_collection  = "{$foreign_type}_collection";
 
             // Get the ids for those
-            $pks_groups = entity_dao::get($entity)->$by_function($this);
+            $pks_groups = entity::dao($entity)->$by_function($this);
             $pks        = [];
 
             // make a flat array of all keys, removing dupes along the way.
@@ -285,7 +285,7 @@
             }
 
             // get all the records all in one shot
-            $models = new $foreign_collection(null, entity_dao::get($foreign_type)->by_pks($pks));
+            $models = new $foreign_collection(null, entity::dao($foreign_type)->by_pks($pks));
 
             // sort flat array back into grouped data again
             foreach ($pks_groups as & $pks_group) {
@@ -325,7 +325,7 @@
          */
         protected function _preload_one_to_one($entity, $field, $method_override=null) {
 
-            $dao             = entity_dao::get($entity);
+            $dao             = entity::dao($entity);
             $model_name      = "{$entity}_model";
             $collection_name = "{$entity}_collection";
 

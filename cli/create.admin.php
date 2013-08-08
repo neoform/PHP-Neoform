@@ -8,10 +8,10 @@
         'extension'   => 'php',
         'environment' => 'sling',
 
-        'application' => $root . '/application/',
-        'external'    => $root . '/external/',
-        'logs'        => $root . '/logs/',
-        'website'     => $root . '/www/',
+        'application' => "{$root}/application/",
+        'external'    => "{$root}/external/",
+        'logs'        => "{$root}/logs/",
+        'website'     => "{$root}/www/",
     ]);
 
     class create_admin extends cli_model {
@@ -60,7 +60,7 @@
 
             } while (1);
 
-            $roles = new acl_role_collection(null, entity_dao::get('acl_role')->all());
+            $roles = new acl_role_collection(null, entity::dao('acl_role')->all());
 
             $user_acl_roles = [];
             foreach ($roles as $role) {
@@ -70,7 +70,7 @@
                 ];
             }
 
-            entity_dao::get('user_acl_role')->inserts($user_acl_roles);
+            entity::dao('user_acl_role')->inserts($user_acl_roles);
 
             echo self::color_text('Done', 'green', true) . "\n";
         }

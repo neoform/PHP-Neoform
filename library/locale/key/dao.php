@@ -34,7 +34,7 @@
          * @return array of Locale Key ids
          */
         public function by_locale($locale) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_LOCALE,
                 [
                     'locale' => (string) $locale,
@@ -50,7 +50,7 @@
          * @return array of Locale Key ids
          */
         public function by_body($body) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_BODY,
                 [
                     'body' => (string) $body,
@@ -66,7 +66,7 @@
          * @return array of Locale Key ids
          */
         public function by_namespace($namespace_id) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_NAMESPACE,
                 [
                     'namespace_id' => (int) $namespace_id,
@@ -96,7 +96,7 @@
                     ];
                 }
             }
-            return self::_by_fields_multi(self::BY_LOCALE, $keys);
+            return parent::_by_fields_multi(self::BY_LOCALE, $keys);
         }
 
         /**
@@ -121,7 +121,7 @@
                     ];
                 }
             }
-            return self::_by_fields_multi(self::BY_NAMESPACE, $keys);
+            return parent::_by_fields_multi(self::BY_NAMESPACE, $keys);
         }
 
         /**
@@ -136,7 +136,7 @@
             foreach ($body_arr as $k => $body) {
                 $keys_arr[$k] = [ 'body' => (string) $body, ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_BODY,
                 $keys_arr
             );
@@ -147,7 +147,7 @@
          *
          * @return array containing all Locale Key records
          */
-        public static function all() {
+        public function all() {
             return parent::_all(self::BY_ALL);
         }
 

@@ -36,7 +36,7 @@
          * @return array of Country ids
          */
         public function by_name_normalized($name_normalized) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_NAME_NORMALIZED,
                 [
                     'name_normalized' => (string) $name_normalized,
@@ -52,7 +52,7 @@
          * @return array of Country ids
          */
         public function by_iso2($iso2) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_ISO2,
                 [
                     'iso2' => (string) $iso2,
@@ -68,7 +68,7 @@
          * @return array of Country ids
          */
         public function by_iso3($iso3) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_ISO3,
                 [
                     'iso3' => (string) $iso3,
@@ -84,7 +84,7 @@
          * @return array of Country ids
          */
         public function by_name($name) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_NAME,
                 [
                     'name' => (string) $name,
@@ -104,7 +104,7 @@
             foreach ($name_normalized_arr as $k => $name_normalized) {
                 $keys_arr[$k] = [ 'name_normalized' => (string) $name_normalized, ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_NAME_NORMALIZED,
                 $keys_arr
             );
@@ -122,7 +122,7 @@
             foreach ($iso2_arr as $k => $iso2) {
                 $keys_arr[$k] = [ 'iso2' => (string) $iso2, ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_ISO2,
                 $keys_arr
             );
@@ -140,7 +140,7 @@
             foreach ($iso3_arr as $k => $iso3) {
                 $keys_arr[$k] = [ 'iso3' => (string) $iso3, ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_ISO3,
                 $keys_arr
             );
@@ -158,7 +158,7 @@
             foreach ($name_arr as $k => $name) {
                 $keys_arr[$k] = [ 'name' => (string) $name, ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_NAME,
                 $keys_arr
             );
@@ -169,7 +169,7 @@
          *
          * @return array containing all Country records
          */
-        public static function all() {
+        public function all() {
             return parent::_all(self::BY_ALL);
         }
 

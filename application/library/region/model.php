@@ -49,7 +49,7 @@
         public function city_collection() {
             if (! array_key_exists('city_collection', $this->_vars)) {
                 $this->_vars['city_collection'] = new city_collection(
-                    entity_dao::get('city')->by_region($this->vars['id'])
+                    entity::dao('city')->by_region($this->vars['id'])
                 );
             }
             return $this->_vars['city_collection'];

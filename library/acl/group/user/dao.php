@@ -31,7 +31,7 @@
          * @return array result set containing user_id
          */
         public function by_acl_group($acl_group_id) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_ACL_GROUP,
                 [
                     'user_id',
@@ -51,7 +51,7 @@
          * @return array result set containing acl_group_id and user_id
          */
         public function by_acl_group_user($acl_group_id, $user_id) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_ACL_GROUP_USER,
                 [
                     'acl_group_id',
@@ -72,7 +72,7 @@
          * @return array result set containing acl_group_id
          */
         public function by_user($user_id) {
-            return self::_by_fields(
+            return parent::_by_fields(
                 self::BY_USER,
                 [
                     'acl_group_id',
@@ -108,7 +108,7 @@
 
             }
 
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_ACL_GROUP,
                 [
                     'user_id',
@@ -142,7 +142,7 @@
 
             }
 
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_USER,
                 [
                     'acl_group_id',
@@ -371,7 +371,7 @@
          *
          * @return bool
          */
-        public static function delete(array $keys) {
+        public function delete(array $keys) {
 
             // Delete link
             $return = parent::_delete($keys);
@@ -424,7 +424,7 @@
          *
          * @return bool
          */
-        public static function deletes(array $keys_arr) {
+        public function deletes(array $keys_arr) {
 
             // Delete links
             $return = parent::_deletes($keys_arr);

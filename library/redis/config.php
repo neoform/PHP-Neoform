@@ -1,6 +1,6 @@
 <?php
 
-    class redis_config extends config_defaults {
+    class redis_config extends entity_config_defaults {
 
         protected function defaults() {
             return [

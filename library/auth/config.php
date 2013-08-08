@@ -1,6 +1,6 @@
 <?php
 
-    class auth_config extends config_defaults {
+    class auth_config extends entity_config_defaults {
 
         protected function defaults() {
             return [
@@ -33,5 +33,14 @@
                     'active',
                 ],
             ];
+        }
+
+        public function get_array() {
+
+            //$statuses = user_status_collection::by_name_multi($this->config['login_account_statuses']);
+            //core::debug($this->config['login_account_statuses']);
+            //die;
+
+            return $this->config;
         }
     }

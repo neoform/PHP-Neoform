@@ -1,6 +1,9 @@
 <?php
 
-    abstract class config_defaults {
+    /**
+     * Default config object - extend this to define config values for an entity
+     */
+    abstract class entity_config_defaults {
 
         protected $config;
 
@@ -15,10 +18,20 @@
 
         abstract protected function defaults();
 
+        /**
+         * Validate the config values
+         *
+         * @throws config_exception
+         */
         public function validate() {
 
         }
 
+        /**
+         * Returns the config values as an array
+         *
+         * @return array
+         */
         public function get_array() {
             return $this->config;
         }

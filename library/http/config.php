@@ -1,6 +1,6 @@
 <?php
 
-    class http_config extends config_defaults {
+    class http_config extends entity_config_defaults {
 
         protected function defaults() {
             return [

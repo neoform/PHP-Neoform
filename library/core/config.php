@@ -1,6 +1,6 @@
 <?php
 
-    class core_config extends config_defaults {
+    class core_config extends entity_config_defaults {
 
         protected function defaults() {
             return [

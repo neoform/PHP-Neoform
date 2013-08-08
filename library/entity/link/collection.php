@@ -3,7 +3,7 @@
     /**
      * Link Collection
      */
-    class link_collection extends ArrayObject {
+    class entity_link_collection extends ArrayObject {
 
         protected $_vars = []; //caching
         protected $type;
@@ -50,7 +50,7 @@
          * @param array       $info
          * @param string|null $map_field
          *
-         * @return link_collection
+         * @return entity_link_collection
          */
         public function add(array $info, $map_field=null) {
             if ($this->type === 'model') {
@@ -79,7 +79,7 @@
          *
          * @param $k Key
          *
-         * @return link_collection
+         * @return entity_link_collection
          */
         public function del($k) {
             unset($this[$k]);
@@ -95,7 +95,7 @@
          *
          * @param string $field
          *
-         * @return link_collection
+         * @return entity_link_collection
          * @throws exception
          */
         public function remap($field) {

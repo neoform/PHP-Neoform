@@ -3,7 +3,7 @@
     /**
      * Locale Key Message DAO
      */
-    class locale_key_message_dao extends record_dao implements locale_key_message_definition {
+    class locale_key_message_dao extends entity_record_dao implements locale_key_message_definition {
 
         const BY_LOCALE     = 'by_locale';
         const BY_LOCALE_KEY = 'by_locale_key';
@@ -33,8 +33,8 @@
          *
          * @return array of Locale Key Message ids
          */
-        public static function by_locale($locale) {
-            return self::_by_fields(
+        public function by_locale($locale) {
+            return parent::_by_fields(
                 self::BY_LOCALE,
                 [
                     'locale' => (string) $locale,
@@ -50,8 +50,8 @@
          *
          * @return array of Locale Key Message ids
          */
-        public static function by_locale_key($locale, $key_id) {
-            return self::_by_fields(
+        public function by_locale_key($locale, $key_id) {
+            return parent::_by_fields(
                 self::BY_LOCALE_KEY,
                 [
                     'locale' => (string) $locale,
@@ -67,8 +67,8 @@
          *
          * @return array of Locale Key Message ids
          */
-        public static function by_body($body) {
-            return self::_by_fields(
+        public function by_body($body) {
+            return parent::_by_fields(
                 self::BY_BODY,
                 [
                     'body' => (string) $body,
@@ -83,8 +83,8 @@
          *
          * @return array of Locale Key Message ids
          */
-        public static function by_key($key_id) {
-            return self::_by_fields(
+        public function by_key($key_id) {
+            return parent::_by_fields(
                 self::BY_KEY,
                 [
                     'key_id' => (int) $key_id,
@@ -99,7 +99,7 @@
          *
          * @return array of arrays containing Locale Key Message ids
          */
-        public static function by_key_multi($locale_key_list) {
+        public function by_key_multi($locale_key_list) {
             $keys = [];
             if ($locale_key_list instanceof locale_key_collection) {
                 foreach ($locale_key_list as $k => $locale_key) {
@@ -114,7 +114,7 @@
                     ];
                 }
             }
-            return self::_by_fields_multi(self::BY_KEY, $keys);
+            return parent::_by_fields_multi(self::BY_KEY, $keys);
         }
 
         /**
@@ -124,7 +124,7 @@
          *
          * @return array of arrays containing Locale Key Message ids
          */
-        public static function by_locale_multi($locale_list) {
+        public function by_locale_multi($locale_list) {
             $keys = [];
             if ($locale_list instanceof locale_collection) {
                 foreach ($locale_list as $k => $locale) {
@@ -139,7 +139,7 @@
                     ];
                 }
             }
-            return self::_by_fields_multi(self::BY_LOCALE, $keys);
+            return parent::_by_fields_multi(self::BY_LOCALE, $keys);
         }
 
         /**
@@ -149,7 +149,7 @@
          *
          * @return array of arrays of Locale Key Message ids
          */
-        public static function by_locale_key_multi(array $locale_key_arr) {
+        public function by_locale_key_multi(array $locale_key_arr) {
             $keys_arr = [];
             foreach ($locale_key_arr as $k => $locale_key) {
                 $keys_arr[$k] = [
@@ -157,7 +157,7 @@
                     'key_id' => (int) $locale_key['key_id'],
                 ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_LOCALE_KEY,
                 $keys_arr
             );
@@ -170,12 +170,12 @@
          *
          * @return array of arrays of Locale Key Message ids
          */
-        public static function by_body_multi(array $body_arr) {
+        public function by_body_multi(array $body_arr) {
             $keys_arr = [];
             foreach ($body_arr as $k => $body) {
                 $keys_arr[$k] = [ 'body' => (string) $body, ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_BODY,
                 $keys_arr
             );
@@ -190,7 +190,7 @@
          *
          * @return locale_key_message_model
          */
-        public static function insert(array $info) {
+        public function insert(array $info) {
 
             // Insert record
             $return = parent::_insert($info);
@@ -261,7 +261,7 @@
          *
          * @return locale_key_message_collection
          */
-        public static function inserts(array $infos) {
+        public function inserts(array $infos) {
 
             // Insert records
             $return = parent::_inserts($infos);
@@ -336,7 +336,7 @@
          *
          * @return locale_key_message_model updated model
          */
-        public static function update(locale_key_message_model $locale_key_message, array $info) {
+        public function update(locale_key_message_model $locale_key_message, array $info) {
 
             // Update record
             $updated_model = parent::_update($locale_key_message, $info);
@@ -440,7 +440,7 @@
          *
          * @return bool
          */
-        public static function delete(locale_key_message_model $locale_key_message) {
+        public function delete(locale_key_message_model $locale_key_message) {
 
             // Delete record
             $return = parent::_delete($locale_key_message);
@@ -503,7 +503,7 @@
          *
          * @return bool
          */
-        public static function deletes(locale_key_message_collection $locale_key_message_collection) {
+        public function deletes(locale_key_message_collection $locale_key_message_collection) {
 
             // Delete records
             $return = parent::_deletes($locale_key_message_collection);

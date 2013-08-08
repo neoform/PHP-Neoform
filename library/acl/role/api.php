@@ -9,7 +9,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return acl_role_dao::insert([
+                return entity::dao('acl_role')->insert([
                     'name' => $input->name->val(),
                 ]);
             }
@@ -23,7 +23,7 @@
             self::_validate_update($acl_role, $input);
 
             if ($input->is_valid()) {
-                return acl_role_dao::update(
+                return entity::dao('acl_role')->update(
                     $acl_role,
                     $input->vals(
                         [
@@ -37,14 +37,14 @@
         }
 
         public static function delete(acl_role_model $acl_role) {
-            return acl_role_dao::delete($acl_role);
+            return entity::dao('acl_role')->delete($acl_role);
         }
 
         public static function _validate_insert(input_collection $input) {
 
             // name
             $input->name->cast('string')->length(1, 64)->callback(function($name) {
-                if (acl_role_dao::by_name($name->val())) {
+                if (entity::dao('acl_role')->by_name($name->val())) {
                     $name->errors('already in use');
                 }
             });
@@ -54,8 +54,8 @@
 
             // name
             $input->name->cast('string')->optional()->length(1, 64)->callback(function($name) use ($acl_role) {
-                $id_arr = acl_role_dao::by_name($name->val());
-                if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $acl_role->id) {
+                $id_arr = entity::dao('acl_role')->by_name($name->val());
+                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $acl_role->id) {
                     $name->errors('already in use');
                 }
             });

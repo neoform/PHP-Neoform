@@ -8,7 +8,7 @@
     * @var string $body
     * @var string $locale
     */
-    class locale_key_message_model extends record_model implements locale_key_message_definition {
+    class locale_key_message_model extends entity_record_model implements locale_key_message_definition {
 
         public function __get($k) {
 

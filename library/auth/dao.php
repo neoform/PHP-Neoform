@@ -3,22 +3,15 @@
     /**
      * Auth DAO
      */
-    class auth_dao extends record_dao implements auth_definition {
+    class auth_dao extends entity_record_dao implements auth_definition {
 
         const BY_USER = 'by_user';
 
-        /**
-         * Get the generic bindings of the table columns
-         *
-         * @return array
-         */
-        public static function bindings() {
-            return [
-                'hash'       => 'binary',
-                'user_id'    => 'int',
-                'expires_on' => 'string',
-            ];
-        }
+        protected $pdo_bindings = [
+            'hash'       => 'binary',
+            'user_id'    => 'int',
+            'expires_on' => 'string',
+        ];
 
         // READS
 
@@ -29,8 +22,8 @@
          *
          * @return array of Auth hashs
          */
-        public static function by_user($user_id) {
-            return self::_by_fields(
+        public function by_user($user_id) {
+            return parent::_by_fields(
                 self::BY_USER,
                 [
                     'user_id' => (int) $user_id,
@@ -45,14 +38,14 @@
          *
          * @return array of arrays containing Auth hashs
          */
-        public static function by_user_multi(user_collection $user_collection) {
+        public function by_user_multi(user_collection $user_collection) {
             $keys = [];
             foreach ($user_collection as $k => $user) {
                 $keys[$k] = [
                     'user_id' => (int) $user->id,
                 ];
             }
-            return self::_by_fields_multi(self::BY_USER, $keys);
+            return parent::_by_fields_multi(self::BY_USER, $keys);
         }
 
         // WRITES
@@ -64,7 +57,7 @@
          *
          * @return auth_model
          */
-        public static function insert(array $info) {
+        public function insert(array $info) {
 
             // Insert record
             $return = parent::_insert($info);
@@ -92,7 +85,7 @@
          *
          * @return auth_collection
          */
-        public static function inserts(array $infos) {
+        public function inserts(array $infos) {
 
             // Insert records
             $return = parent::_inserts($infos);
@@ -130,7 +123,7 @@
          *
          * @return auth_model updated model
          */
-        public static function update(auth_model $auth, array $info) {
+        public function update(auth_model $auth, array $info) {
 
             // Update record
             $updated_model = parent::_update($auth, $info);
@@ -173,7 +166,7 @@
          *
          * @return bool
          */
-        public static function delete(auth_model $auth) {
+        public function delete(auth_model $auth) {
 
             // Delete record
             $return = parent::_delete($auth);
@@ -199,7 +192,7 @@
          *
          * @return bool
          */
-        public static function deletes(auth_collection $auth_collection) {
+        public function deletes(auth_collection $auth_collection) {
 
             // Delete records
             $return = parent::_deletes($auth_collection);

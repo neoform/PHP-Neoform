@@ -3,7 +3,7 @@
     /**
      * Record Collection
      */
-    class record_collection extends ArrayObject {
+    class entity_record_collection extends ArrayObject {
 
         /**
          * @var array locally cached data
@@ -14,14 +14,13 @@
          * Construct
          *
          * @param array              $pks       Primary keys
-         * @param array|record_model $infos     Preloaded data array
+         * @param array|entity_record_model $infos     Preloaded data array
          * @param string|null        $map_field Assign collection keys based on this field (taken from the models)
          */
         public function __construct(array $pks=null, array $infos=null, $map_field=null) {
 
             if ($pks !== null) {
-                $dao   = static::ENTITY_NAME . '_dao';
-                $infos = $dao::by_pks($pks);
+                $infos = entity::dao(static::ENTITY_NAME)->by_pks($pks);
             }
 
             if ($infos !== null && count($infos)) {
@@ -42,31 +41,30 @@
 
         /**
          * Get a collection by a given field or fields
-         * folder_collection::by_parent(5) will return a folder model.
-         * this is just a shortcut for new folder_model(folder_dao::by_parent(5));
+         * folder_collection::by_parent(5) will return a folder collection.
+         * this is just a shortcut for new folder_collection(entity::dao('folder')->by_parent(5));
          *
          * @param string $name
          * @param array $args
          *
-         * @return record_collection
+         * @return entity_record_collection
          */
-        public static function __callstatic($name, $args) {
+        public static function __callstatic($name, array $args) {
             $collection = static::ENTITY_NAME . '_collection';
-            $dao        = static::ENTITY_NAME . '_dao';
             if ($name === 'by_all') {
-                return new $collection(null, call_user_func_array("{$dao}::{$name}", $args));
+                return new $collection(null, call_user_func_array([entity::dao(static::ENTITY_NAME), $name], $args));
             } else {
-                return new $collection(call_user_func_array("{$dao}::{$name}", $args));
+                return new $collection(call_user_func_array([entity::dao(static::ENTITY_NAME), $name], $args));
             }
         }
 
         /**
          * Add a model to the collection
          *
-         * @param array|record_model $info
+         * @param array|entity_record_model $info
          * @param string|null        $map_field Assign collection keys based on this field (taken from the models)
          *
-         * @return record_collection $this
+         * @return entity_record_collection $this
          */
         public function add($info, $map_field=null) {
             $model = static::ENTITY_NAME . '_model';
@@ -93,9 +91,9 @@
         /**
          * Remove a model from the collection
          *
-         * @param $k Key
+         * @param mixed $k Key
          *
-         * @return record_collection $this
+         * @return entity_record_collection $this
          */
         public function del($k) {
             unset($this[$k]);
@@ -112,12 +110,18 @@
          * @param string $field
          * @param bool   $ignore_null
          *
-         * @return record_collection $this
+         * @return entity_record_collection $this
          */
         public function remap($field, $ignore_null=false) {
             $new = [];
-            foreach ($this as $record) {
-                if (! $ignore_null || $record->$field !== null) {
+            if ($ignore_null) {
+                foreach ($this as $record) {
+                    if ($record->$field !== null) {
+                        $new[$record->$field] = $record;
+                    }
+                }
+            } else {
+                foreach ($this as $record) {
                     $new[$record->$field] = $record;
                 }
             }
@@ -134,10 +138,11 @@
          */
         public function field($field) {
             if (! array_key_exists($field, $this->_vars)) {
-                $this->_vars[$field] = [];
+                $arr = [];
                 foreach ($this as $k => $record) {
-                    $this->_vars[$field][$k] = $record->$field;
+                    $arr[$k] = $record->$field;
                 }
+                $this->_vars[$field] = $arr;
             }
             return $this->_vars[$field];
         }
@@ -163,7 +168,7 @@
          * @param callable|string $f
          * @param string          $order
          *
-         * @return record_collection
+         * @return entity_record_collection
          */
         public function sort($f, $order='asc') {
             if (is_callable($f)) {
@@ -211,16 +216,16 @@
          * @param string      $by_function     eg, by_comments
          * @param string|null $method_override Override the name of the model function being preloaded
          *
-         * @return record_collection
+         * @return entity_record_collection
          */
         protected function _preload_one_to_many($entity, $by_function, $method_override=null) {
 
             $collection_name  = "{$entity}_collection";
-            $dao_name         = "{$entity}_dao";
+            $dao              = entity::dao($entity);
             $by_function     .= '_multi';
 
             // Get the ids for those
-            $pks_groups = $dao_name::$by_function($this);
+            $pks_groups = $dao->$by_function($this);
             $pks        = [];
 
             // make a flat array of all keys, removing dupes along the way.
@@ -231,7 +236,7 @@
             }
 
             // get all the records all in one shot
-            $models = new $collection_name(null, $dao_name::by_pks($pks));
+            $models = new $collection_name(null, $dao->by_pks($pks));
 
             // sort flat array back into grouped data again
             foreach ($pks_groups as & $pks_group) {
@@ -268,17 +273,15 @@
          * @param string      $foreign_type    eg, permission
          * @param string|null $method_override Override the name of the model function being preloaded
          *
-         * @return record_collection
+         * @return entity_record_collection
          */
         protected function _preload_many_to_many($entity, $by_function, $foreign_type, $method_override=null) {
 
-            $dao                 = "{$entity}_dao";
             $by_function        .= '_multi';
-            $foreign_dao         = "{$foreign_type}_dao";
             $foreign_collection  = "{$foreign_type}_collection";
 
             // Get the ids for those
-            $pks_groups = $dao::$by_function($this);
+            $pks_groups = entity::dao($entity)->$by_function($this);
             $pks        = [];
 
             // make a flat array of all keys, removing dupes along the way.
@@ -289,7 +292,7 @@
             }
 
             // get all the records all in one shot
-            $models = new $foreign_collection(null, $foreign_dao::by_pks($pks));
+            $models = new $foreign_collection(null, entity::dao($foreign_type)->by_pks($pks));
 
             // sort flat array back into grouped data again
             foreach ($pks_groups as & $pks_group) {
@@ -325,11 +328,10 @@
          * @param string      $field           Corresponding field for that entity
          * @param string|null $method_override Override the name of the model function being preloaded
          *
-         * @return record_collection
+         * @return entity_record_collection
          */
         protected function _preload_one_to_one($entity, $field, $method_override=null) {
 
-            $dao_name        = "{$entity}_dao";
             $model_name      = "{$entity}_model";
             $collection_name = "{$entity}_collection";
 
@@ -338,7 +340,7 @@
             foreach ($this as $model) {
                 $pks[$model->$field] = $model->$field;
             }
-            $infos  = $dao_name::by_pks($pks);
+            $infos  = entity::dao($entity)->by_pks($pks);
             $models = [];
 
             foreach ($this as $key => $model) {

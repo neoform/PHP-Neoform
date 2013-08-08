@@ -7,7 +7,7 @@
     * @var int $user_id
     * @var string $posted_on
     */
-    class user_lostpassword_model extends record_model implements user_lostpassword_definition {
+    class user_lostpassword_model extends entity_record_model implements user_lostpassword_definition {
 
         public function __get($k) {
 

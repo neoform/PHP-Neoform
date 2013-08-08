@@ -3,7 +3,7 @@
     /**
      * Region DAO
      */
-    class region_dao extends record_dao implements region_definition {
+    class region_dao extends entity_record_dao implements region_definition {
 
         const BY_COUNTRY                 = 'by_country';
         const BY_COUNTRY_NAME_NORMALIZED = 'by_country_name_normalized';
@@ -38,8 +38,8 @@
          *
          * @return array of Region ids
          */
-        public static function by_country($country_id) {
-            return self::_by_fields(
+        public function by_country($country_id) {
+            return parent::_by_fields(
                 self::BY_COUNTRY,
                 [
                     'country_id'      => (int) $country_id,
@@ -55,8 +55,8 @@
          *
          * @return array of Region ids
          */
-        public static function by_country_name_normalized($country_id, $name_normalized) {
-            return self::_by_fields(
+        public function by_country_name_normalized($country_id, $name_normalized) {
+            return parent::_by_fields(
                 self::BY_COUNTRY_NAME_NORMALIZED,
                 [
                     'country_id'      => (int) $country_id,
@@ -72,8 +72,8 @@
          *
          * @return array of Region ids
          */
-        public static function by_iso2($iso2) {
-            return self::_by_fields(
+        public function by_iso2($iso2) {
+            return parent::_by_fields(
                 self::BY_ISO2,
                 [
                     'iso2' => (string) $iso2,
@@ -89,8 +89,8 @@
          *
          * @return array of Region ids
          */
-        public static function by_country_name($country_id, $name) {
-            return self::_by_fields(
+        public function by_country_name($country_id, $name) {
+            return parent::_by_fields(
                 self::BY_COUNTRY_NAME,
                 [
                     'country_id' => (int) $country_id,
@@ -106,8 +106,8 @@
          *
          * @return array of Region ids
          */
-        public static function by_name_soundex($name_soundex) {
-            return self::_by_fields(
+        public function by_name_soundex($name_soundex) {
+            return parent::_by_fields(
                 self::BY_NAME_SOUNDEX,
                 [
                     'name_soundex' => (string) $name_soundex,
@@ -122,7 +122,7 @@
          *
          * @return array of arrays containing Region ids
          */
-        public static function by_country_multi($country_list) {
+        public function by_country_multi($country_list) {
             $keys = [];
             if ($country_list instanceof country_collection) {
                 foreach ($country_list as $k => $country) {
@@ -137,7 +137,7 @@
                     ];
                 }
             }
-            return self::_by_fields_multi(self::BY_COUNTRY, $keys);
+            return parent::_by_fields_multi(self::BY_COUNTRY, $keys);
         }
 
         /**
@@ -147,7 +147,7 @@
          *
          * @return array of arrays of Region ids
          */
-        public static function by_country_name_normalized_multi(array $country_name_normalized_arr) {
+        public function by_country_name_normalized_multi(array $country_name_normalized_arr) {
             $keys_arr = [];
             foreach ($country_name_normalized_arr as $k => $country_name_normalized) {
                 $keys_arr[$k] = [
@@ -155,7 +155,7 @@
                     'name_normalized' => (string) $country_name_normalized['name_normalized'],
                 ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_COUNTRY_NAME_NORMALIZED,
                 $keys_arr
             );
@@ -168,12 +168,12 @@
          *
          * @return array of arrays of Region ids
          */
-        public static function by_iso2_multi(array $iso2_arr) {
+        public function by_iso2_multi(array $iso2_arr) {
             $keys_arr = [];
             foreach ($iso2_arr as $k => $iso2) {
                 $keys_arr[$k] = [ 'iso2' => (string) $iso2, ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_ISO2,
                 $keys_arr
             );
@@ -186,7 +186,7 @@
          *
          * @return array of arrays of Region ids
          */
-        public static function by_country_name_multi(array $country_name_arr) {
+        public function by_country_name_multi(array $country_name_arr) {
             $keys_arr = [];
             foreach ($country_name_arr as $k => $country_name) {
                 $keys_arr[$k] = [
@@ -194,7 +194,7 @@
                     'name'       => (string) $country_name['name'],
                 ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_COUNTRY_NAME,
                 $keys_arr
             );
@@ -207,12 +207,12 @@
          *
          * @return array of arrays of Region ids
          */
-        public static function by_name_soundex_multi(array $name_soundex_arr) {
+        public function by_name_soundex_multi(array $name_soundex_arr) {
             $keys_arr = [];
             foreach ($name_soundex_arr as $k => $name_soundex) {
                 $keys_arr[$k] = [ 'name_soundex' => (string) $name_soundex, ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_NAME_SOUNDEX,
                 $keys_arr
             );
@@ -227,7 +227,7 @@
          *
          * @return region_model
          */
-        public static function insert(array $info) {
+        public function insert(array $info) {
 
             // Insert record
             $return = parent::_insert($info);
@@ -311,7 +311,7 @@
          *
          * @return region_collection
          */
-        public static function inserts(array $infos) {
+        public function inserts(array $infos) {
 
             // Insert records
             $return = parent::_inserts($infos);
@@ -399,7 +399,7 @@
          *
          * @return region_model updated model
          */
-        public static function update(region_model $region, array $info) {
+        public function update(region_model $region, array $info) {
 
             // Update record
             $updated_model = parent::_update($region, $info);
@@ -525,7 +525,7 @@
          *
          * @return bool
          */
-        public static function delete(region_model $region) {
+        public function delete(region_model $region) {
 
             // Delete record
             $return = parent::_delete($region);
@@ -599,7 +599,7 @@
          *
          * @return bool
          */
-        public static function deletes(region_collection $region_collection) {
+        public function deletes(region_collection $region_collection) {
 
             // Delete records
             $return = parent::_deletes($region_collection);

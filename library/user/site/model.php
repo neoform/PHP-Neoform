@@ -6,7 +6,7 @@
     * @var int $user_id
     * @var int $site_id
     */
-    class user_site_model extends link_model implements user_site_definition {
+    class user_site_model extends entity_link_model implements user_site_definition {
 
         public function __get($k) {
 

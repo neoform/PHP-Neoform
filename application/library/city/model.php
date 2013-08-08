@@ -12,7 +12,7 @@
     * @var float $longitude
     * @var float $latitude
     */
-    class city_model extends record_model implements city_definition {
+    class city_model extends entity_record_model implements city_definition {
 
         public function __get($k) {
 

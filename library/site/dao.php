@@ -3,7 +3,7 @@
     /**
      * Site DAO
      */
-    class site_dao extends record_dao implements site_definition {
+    class site_dao extends entity_record_dao implements site_definition {
 
         const BY_ALL  = 'by_all';
         const BY_NAME = 'by_name';
@@ -15,15 +15,6 @@
             ];
         }
 
-        /**
-         * Caching engines used by this entity
-         *
-         * @return int
-         */
-        protected static function _cache_engines() {
-            return cache_lib::MC;
-        }
-
         // READS
 
         /**
@@ -33,8 +24,8 @@
          *
          * @return array of Site ids
          */
-        public static function by_name($name) {
-            return self::_by_fields(
+        public function by_name($name) {
+            return parent::_by_fields(
                 self::BY_NAME,
                 [
                     'name' => (string) $name,
@@ -47,7 +38,7 @@
          *
          * @return array containing all Site records
          */
-        public static function all() {
+        public function all() {
             return parent::_all(self::BY_ALL);
         }
 
@@ -60,7 +51,7 @@
          *
          * @return site_model
          */
-        public static function insert(array $info) {
+        public function insert(array $info) {
             $return = parent::_insert($info);
 
             // Delete Cache
@@ -91,7 +82,7 @@
          *
          * @return site_collection
          */
-        public static function inserts(array $infos) {
+        public function inserts(array $infos) {
             $return = parent::_inserts($infos);
 
             // Delete Cache
@@ -127,7 +118,7 @@
          *
          * @return site_model updated model
          */
-        public static function update(site_model $site, array $info) {
+        public function update(site_model $site, array $info) {
             $updated_model = parent::_update($site, $info);
 
             // Delete Cache
@@ -166,7 +157,7 @@
          *
          * @return bool
          */
-        public static function delete(site_model $site) {
+        public function delete(site_model $site) {
             $return = parent::_delete($site);
 
             // Delete Cache
@@ -195,7 +186,7 @@
          *
          * @return bool
          */
-        public static function deletes(site_collection $site_collection) {
+        public function deletes(site_collection $site_collection) {
             $return = parent::_deletes($site_collection);
 
             // Delete Cache
@@ -219,5 +210,4 @@
 
             return $return;
         }
-
     }

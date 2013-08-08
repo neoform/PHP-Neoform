@@ -3,7 +3,7 @@
     /**
      * Acl Role Resource link DAO
      */
-    class acl_role_resource_dao extends link_dao implements acl_role_resource_definition {
+    class acl_role_resource_dao extends entity_link_dao implements acl_role_resource_definition {
 
         const BY_ACL_ROLE              = 'by_acl_role';
         const BY_ACL_ROLE_ACL_RESOURCE = 'by_acl_role_acl_resource';
@@ -30,8 +30,8 @@
          *
          * @return array result set containing acl_resource_id
          */
-        public static function by_acl_role($acl_role_id) {
-            return self::_by_fields(
+        public function by_acl_role($acl_role_id) {
+            return parent::_by_fields(
                 self::BY_ACL_ROLE,
                 [
                     'acl_resource_id',
@@ -50,8 +50,8 @@
          *
          * @return array result set containing acl_role_id and acl_resource_id
          */
-        public static function by_acl_role_acl_resource($acl_role_id, $acl_resource_id) {
-            return self::_by_fields(
+        public function by_acl_role_acl_resource($acl_role_id, $acl_resource_id) {
+            return parent::_by_fields(
                 self::BY_ACL_ROLE_ACL_RESOURCE,
                 [
                     'acl_role_id',
@@ -71,8 +71,8 @@
          *
          * @return array result set containing acl_role_id
          */
-        public static function by_acl_resource($acl_resource_id) {
-            return self::_by_fields(
+        public function by_acl_resource($acl_resource_id) {
+            return parent::_by_fields(
                 self::BY_ACL_RESOURCE,
                 [
                     'acl_role_id',
@@ -90,7 +90,7 @@
          *
          * @return array of result sets containing acl_resource_id
          */
-        public static function by_acl_role_multi($acl_role_list) {
+        public function by_acl_role_multi($acl_role_list) {
             $keys = [];
             if ($acl_role_list instanceof acl_role_collection) {
                 foreach ($acl_role_list as $k => $acl_role) {
@@ -108,7 +108,7 @@
 
             }
 
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_ACL_ROLE,
                 [
                     'acl_resource_id',
@@ -124,7 +124,7 @@
          *
          * @return array of result sets containing acl_role_id
          */
-        public static function by_acl_resource_multi($acl_resource_list) {
+        public function by_acl_resource_multi($acl_resource_list) {
             $keys = [];
             if ($acl_resource_list instanceof acl_resource_collection) {
                 foreach ($acl_resource_list as $k => $acl_resource) {
@@ -142,7 +142,7 @@
 
             }
 
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_ACL_RESOURCE,
                 [
                     'acl_role_id',
@@ -160,7 +160,7 @@
          *
          * @return boolean
          */
-        public static function insert(array $info) {
+        public function insert(array $info) {
 
             // Insert link
             $return = parent::_insert($info);
@@ -219,7 +219,7 @@
          *
          * @return boolean
          */
-        public static function inserts(array $infos) {
+        public function inserts(array $infos) {
 
             // Insert links
             $return = parent::_inserts($infos);
@@ -281,7 +281,7 @@
          *
          * @return bool
          */
-        public static function update(array $new_info, array $where) {
+        public function update(array $new_info, array $where) {
 
             // Update link
             $return = parent::_update($new_info, $where);
@@ -371,7 +371,7 @@
          *
          * @return bool
          */
-        public static function delete(array $keys) {
+        public function delete(array $keys) {
 
             // Delete link
             $return = parent::_delete($keys);
@@ -424,7 +424,7 @@
          *
          * @return bool
          */
-        public static function deletes(array $keys_arr) {
+        public function deletes(array $keys_arr) {
 
             // Delete links
             $return = parent::_deletes($keys_arr);

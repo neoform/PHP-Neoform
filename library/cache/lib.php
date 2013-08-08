@@ -15,12 +15,12 @@
          * Activate a pipelined (batch) query
          *
          * @param string $engine
-         * @param string $pool
+         * @param string $engine_pool
          */
-        public static function pipeline_start($engine, $pool) {
+        public static function pipeline_start($engine, $engine_pool) {
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
-                $engine_driver::pipeline_start($pool);
+                $engine_driver::pipeline_start($engine_pool);
             }
         }
 
@@ -28,14 +28,14 @@
          * Execute pipelined (batch) queries and return result
          *
          * @param string $engine
-         * @param string $pool
+         * @param string $engine_pool
          *
          * @return mixed result of batch operation
          */
-        public static function pipeline_execute($engine, $pool) {
+        public static function pipeline_execute($engine, $engine_pool) {
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
-                return $engine_driver::pipeline_execute($pool);
+                return $engine_driver::pipeline_execute($engine_pool);
             }
         }
 
@@ -43,12 +43,12 @@
          * Get a record from cache
          *
          * @param string $engine
+         * @param string $engine_pool
          * @param string $key
-         * @param string $pool_read
          *
          * @return mixed|null
          */
-        public static function get($engine, $key, $pool_read) {
+        public static function get($engine, $engine_pool, $key) {
 
             // Memory
             if (cache_memory_dao::exists($key)) {
@@ -57,7 +57,7 @@
 
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
-                if ( $data = $engine_driver::get($key, $pool_read)) {
+                if ( $data = $engine_driver::get($engine_pool, $key)) {
                     return current($data);
                 }
             }
@@ -67,13 +67,13 @@
          * Get a segment of a list/array
          *
          * @param string     $engine
+         * @param string     $engine_pool
          * @param string     $list_key
-         * @param string     $pool_read
          * @param array|null $filter
          *
          * @return array|null
          */
-        public static function list_get($engine, $list_key, $pool_read, array $filter=null) {
+        public static function list_get($engine, $engine_pool, $list_key, array $filter=null) {
 
             // Memory
             // This cannot be used until it's properly set up. There are bugs that happen when a new list is created
@@ -85,7 +85,7 @@
 
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
-                return $engine_driver::list_get($list_key, $pool_read, $filter);
+                return $engine_driver::list_get($engine_pool, $list_key, $filter);
             }
         }
 
@@ -93,16 +93,16 @@
          * Get a segment of multiple joined lists/arrays (via union)
          *
          * @param string     $engine
+         * @param string     $engine_pool
          * @param array      $list_keys
-         * @param string     $pool_read
          * @param array|null $filter
          *
          * @return array|null
          */
-        public static function list_get_union($engine, array $list_keys, $pool_read, array $filter=null) {
+        public static function list_get_union($engine, $engine_pool, array $list_keys, array $filter=null) {
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
-                return $engine_driver::list_get_union($list_keys, $pool_read, $filter);
+                return $engine_driver::list_get_union($engine_pool, $list_keys, $filter);
             }
         }
 
@@ -111,17 +111,17 @@
          *
          * @param string $engine
          * @param string $list_key
-         * @param string $pool_write
+         * @param string $engine_pool
          * @param mixed  $value
          */
-        public static function list_add($engine, $list_key, $pool_write, $value) {
+        public static function list_add($engine, $engine_pool, $list_key, $value) {
 
             // Memory
             //cache_memory_dao::list_add($list_key, $value);
 
             if ($engine) {
                 $engine = "cache_{$engine}_driver";
-                $engine::list_add($list_key, $pool_write, $value);
+                $engine::list_add($engine_pool, $list_key, $value);
             }
         }
 
@@ -129,18 +129,18 @@
          * Remove values from a list
          *
          * @param string $engine
+         * @param string $engine_pool
          * @param string $list_key
-         * @param string $pool_write
          * @param array  $remove_keys
          */
-        public static function list_remove($engine, $list_key, $pool_write, $remove_keys) {
+        public static function list_remove($engine, $engine_pool, $list_key, $remove_keys) {
 
             // Memory
             //cache_memory_dao::list_remove($list_key, $remove_keys);
 
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
-                $engine_driver::list_remove($list_key, $pool_write, $remove_keys);
+                $engine_driver::list_remove($engine_pool, $list_key, $remove_keys);
             }
         }
 
@@ -148,18 +148,18 @@
          * Increment the value of a cached entry (only works if the value is an int)
          *
          * @param string  $engine
+         * @param string  $engine_pool
          * @param string  $key
-         * @param string  $pool_write
          * @param integer $offset
          */
-        public static function increment($engine, $key, $pool_write, $offset=1){
+        public static function increment($engine, $engine_pool, $key, $offset=1){
 
             // Memory
             cache_memory_dao::increment($key, $offset);
 
             if ($engine) {
                 $engine = "cache_{$engine}_driver";
-                $engine::increment($key, $pool_write, $offset);
+                $engine::increment($engine_pool, $key, $offset);
             }
         }
 
@@ -167,18 +167,18 @@
          * Decrement the value of a cached entry (only works if the value is an int)
          *
          * @param string  $engine
+         * @param string  $engine_pool
          * @param string  $key
-         * @param string  $pool_write
          * @param integer $offset
          */
-        public static function decrement($engine, $key, $pool_write, $offset=1) {
+        public static function decrement($engine, $engine_pool, $key, $offset=1) {
 
             // Memory
             cache_memory_dao::decrement($key, $offset);
 
             if ($engine) {
                 $engine = "cache_{$engine}_driver";
-                $engine::decrement($key, $pool_write, $offset);
+                $engine::decrement($engine_pool, $key, $offset);
             }
         }
 
@@ -186,9 +186,9 @@
          * Checks cache for an entry, pulls from source $data_func() if not present in cache
          *
          * @param string       $engine              Which caching engines to use
+         * @param string       $engine_pool_read   Caching pool
+         * @param string       $engine_pool_write   Caching pool
          * @param string       $key                 Cache key
-         * @param string       $pool_read           Caching pool
-         * @param string       $pool_write          Caching pool
          * @param callable     $data_func           Source data function
          * @param mixed|null   $args                Args to pass to $data_func($args)
          * @param integer|null $ttl                 Cache length
@@ -196,7 +196,11 @@
          *
          * @return mixed returns the value from $data_func()
          */
-        public static function single($engine, $key, $pool_read, $pool_write, callable $data_func, $args=null, $ttl=null, $cache_empty_results=true) {
+
+        // re-arrange order of params, $key shouldn't be there.
+
+        public static function single($engine, $engine_pool_read, $engine_pool_write, $key, callable $data_func,
+                                      $args=null, $ttl=null, $cache_empty_results=true) {
 
             // Memory
             if (cache_memory_dao::exists($key)) {
@@ -205,7 +209,7 @@
 
             $engine_driver = "cache_{$engine}_driver";
 
-            if ($engine && $data = $engine_driver::get($key, $pool_read)) {
+            if ($engine && $data = $engine_driver::get($engine_pool_read, $key)) {
                 $data = current($data);
             } else {
                 //get the data from it's original source
@@ -219,7 +223,7 @@
 
                 // cache data to engine
                 if ($engine) {
-                    $engine_driver::set($key, $pool_write, $data, $ttl);
+                    $engine_driver::set($engine_pool_write, $key, $data, $ttl);
                 }
             }
 
@@ -238,10 +242,10 @@
          * $data_func must preserve the indexes in the associative array passed to it. the array merging wont work otherwise.
          *
          * @param string       $engine              Which caching engines to use
+         * @param string       $engine_pool_read    Which caching pool to use
+         * @param string       $engine_pool_write   Which caching pool to use
          * @param array        $rows                Rows to look up in cache
          * @param callable     $key_func            generates the cache key based on data from $rows
-         * @param string       $pool_read           Which caching pool to use
-         * @param string       $pool_write          Which caching pool to use
          * @param callable     $data_func           Source data function(array $keys [, array $args])
          * @param mixed|null   $args                args to pass to the $data_func
          * @param integer|null $ttl                 How long to cache
@@ -249,11 +253,10 @@
          *
          * @return array of mixed values from $data_func() calls
          */
-        public static function multi($engine, array $rows, callable $key_func, $pool_read, $pool_write, callable $data_func, $args=null, $ttl=null, $cache_empty_results=true) {
+        public static function multi($engine, $engine_pool_read, $engine_pool_write, array $rows, callable $key_func,
+                                     callable $data_func, $args=null, $ttl=null, $cache_empty_results=true) {
 
-            //this function will preserve the order of the rows
-
-            if (! count($rows)) {
+            if (! $rows) {
                 return [];
             }
 
@@ -278,7 +281,7 @@
                 }
             }
 
-            if (! count($missing_rows)) {
+            if (! $missing_rows) {
                 return $matched_rows;
             }
 
@@ -286,7 +289,7 @@
 
             if ($engine && $missing_rows) {
                 $engine = "cache_{$engine}_driver";
-                foreach ($engine::get_multi($missing_rows, $pool_read) as $key => $row) {
+                foreach ($engine::get_multi($engine_pool_read, $missing_rows) as $key => $row) {
                     $matched_rows[$key] = $row;
                     unset($missing_rows[$key]);
                 }
@@ -306,7 +309,7 @@
                 }
 
                 // still missing? doesn't exist then.. null it
-                if (count($missing_rows)) {
+                if ($missing_rows) {
                     foreach (array_keys($missing_rows) as $index) {
                         $matched_rows[$index] = null;
                     }
@@ -340,7 +343,7 @@
                     }
                 }
 
-                $engine::set_multi($save_to_cache, $pool_write, $ttl);
+                $engine::set_multi($engine_pool_write, $save_to_cache, $ttl);
             }
 
             return $matched_rows;
@@ -350,17 +353,17 @@
          * Delete a cache entry
          *
          * @param string $engine
+         * @param string $engine_pool
          * @param string $key
-         * @param string $pool_write
          */
-        public static function delete($engine, $key, $pool_write) {
+        public static function delete($engine, $engine_pool, $key) {
 
             // Memory
             cache_memory_dao::delete($key);
 
             if ($engine) {
                 $engine = "cache_{$engine}_driver";
-                $engine::delete($key, $pool_write);
+                $engine::delete($engine_pool, $key);
             }
         }
 
@@ -368,10 +371,10 @@
          * Delete multiple entries from cache
          *
          * @param string $engine
+         * @param string $engine_pool
          * @param array  $keys
-         * @param string $pool_write
          */
-        public static function delete_multi($engine, array $keys, $pool_write){
+        public static function delete_multi($engine, $engine_pool, array $keys){
 
             if (count($keys)) {
 
@@ -382,7 +385,7 @@
 
                 if ($engine) {
                     $engine = "cache_{$engine}_driver";
-                    $engine::delete_multi($keys, $pool_write);
+                    $engine::delete_multi($engine_pool, $keys);
                 }
             }
         }
@@ -391,16 +394,16 @@
          * Delete all cache entries being stored by a list (from the list as well), by applying filters
          *
          * @param string            $engine
+         * @param string            $engine_pool
          * @param string            $list_key
-         * @param string            $pool_write
          * @param string|array|null $filter
          */
-        public static function delete_cache_filter_list($engine, $list_key, $pool_write, $filter=null) {
+        public static function delete_cache_filter_list($engine, $engine_pool, $list_key, $filter=null) {
 
             $keys = self::list_get(
                 $engine,
-                $list_key,
-                $pool_write
+                $engine_pool,
+                $list_key
             );
 
             if ($keys) {
@@ -432,7 +435,7 @@
                 // The downside to not deleting this, is the cache key is basically permanent.
                 // However, there is only one such key per entity, so it's not a big deal.
 
-                self::pipeline_start($engine, $pool_write);
+                self::pipeline_start($engine, $engine_pool);
 
                 // Even though these commands are pipelined, they are not necessarily atomic (as is the case with redis)
                 // So we delete from the list before we delete from the actual cache key, incase that cache key somehow
@@ -441,19 +444,19 @@
                 // Remove the all keys from the list
                 self::list_remove(
                     $engine,
+                    $engine_pool,
                     $list_key,
-                    $pool_write,
                     $keys
                 );
 
                 // Delete keys
                 self::delete_multi(
                     $engine,
-                    $keys,
-                    $pool_write
+                    $engine_pool,
+                    $keys
                 );
 
-                self::pipeline_execute($engine, $pool_write);
+                self::pipeline_execute($engine, $engine_pool);
             }
         }
     }

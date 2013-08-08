@@ -10,7 +10,7 @@
             $view->meta_title = 'Group';
             $view->group      = $group;
 
-            $view->roles = new acl_role_collection(null, acl_role_dao::all(), 'id');
+            $view->roles = new acl_role_collection(null, entity::dao('acl_role')->all(), 'id');
 
             $view->render('admin/group/view');
         }

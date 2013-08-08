@@ -6,7 +6,7 @@
     * @var int $acl_group_id
     * @var int $user_id
     */
-    class acl_group_user_model extends link_model implements acl_group_user_definition {
+    class acl_group_user_model extends entity_link_model implements acl_group_user_definition {
 
         public function __get($k) {
 

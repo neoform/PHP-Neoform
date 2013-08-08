@@ -3,7 +3,7 @@
     /**
      * User Date collection
      */
-    class user_date_collection extends record_collection implements user_date_definition {
+    class user_date_collection extends entity_record_collection implements user_date_definition {
 
         /**
          * Preload the User models in this collection

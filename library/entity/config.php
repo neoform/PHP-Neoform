@@ -4,23 +4,28 @@
 
         protected function defaults() {
             return [
-                // When no entity source engine is defined in definition file, use this engine
-                'default_source_engine' => null,
 
-                // Default source engine read connection name
-                'default_source_engine_pool_read' => null,
+                'defaults' => [
+                    // When no entity source engine is defined in definition file, use this engine
+                    'source_engine' => null,
 
-                // Default source engine write connection name
-                'default_source_engine_pool_write' => null,
+                    // Default source engine read connection name
+                    'source_engine_pool_read' => null,
 
-                // When no entity cache engine is defined in definition file, use this engine
-                'default_cache_engine' => null,
+                    // Default source engine write connection name
+                    'source_engine_pool_write' => null,
 
-                // Default cache engine read connection name
-                'default_cache_engine_pool_read' => null,
+                    // When no entity cache engine is defined in definition file, use this engine
+                    'cache_engine' => null,
 
-                // Default cache engine write connection name
-                'default_cache_engine_pool_write' => null,
+                    // Default cache engine read connection name
+                    'cache_engine_pool_read' => null,
+
+                    // Default cache engine write connection name
+                    'cache_engine_pool_write' => null,
+                ],
+
+                'overrides' => [],
             ];
         }
     }

@@ -61,10 +61,10 @@
             // Force user to login exception
             } catch (redirect_login_exception $e) {
                 if ($e->url() !== null) {
-                    core::flash()->set('login_bounce', $e->url());
+                    core::http_flash()->set('login_bounce', $e->url());
                 }
                 if ($e->message() !== null) {
-                    core::flash()->set('login_message', $e->message());
+                    core::http_flash()->set('login_message', $e->message());
                 }
                 if (core::output()->output_type() === output_instance::JSON) {
                     $json = new render_json;

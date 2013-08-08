@@ -21,14 +21,14 @@
 
         //only run this once the user has entered a valid captcha - validity of session is 60 seconds
         public static function session_make() {
-            core::flash()->set('captcha', 1, 60);
+            core::http_flash()->set('captcha', 1, 60);
         }
 
         public static function session_validate() {
 
-            $return = (bool) core::flash()->get('captcha');
+            $return = (bool) core::http_flash()->get('captcha');
             if ($return) {
-                core::flash()->del('captcha');
+                core::http_flash()->del('captcha');
             }
 
             return $return;

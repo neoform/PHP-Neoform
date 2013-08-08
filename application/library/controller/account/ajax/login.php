@@ -17,9 +17,9 @@
 
             if (core::auth()->logged_in()) {
                 $json->status = 'good';
-                if ($bounce = core::flash()->get('login_bounce')) {
+                if ($bounce = core::http_flash()->get('login_bounce')) {
                     $json->bounce = current($bounce);
-                    core::flash()->del('login_bounce');
+                    core::http_flash()->del('login_bounce');
                 }
             } else {
                 try {
@@ -29,9 +29,9 @@
                     );
                     $json->status = 'good';
 
-                    if ($bounce = core::flash()->get('login_bounce')) {
+                    if ($bounce = core::http_flash()->get('login_bounce')) {
                         $json->bounce = current($bounce);
-                        core::flash()->del('login_bounce');
+                        core::http_flash()->del('login_bounce');
                     }
                 } catch (input_exception $e) {
                     sleep(1);

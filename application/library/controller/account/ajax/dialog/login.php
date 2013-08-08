@@ -12,9 +12,9 @@
 
                 $dialog = new render_dialog('account/login');
 
-                if ($message = core::flash()->get('login_message')) {
+                if ($message = core::http_flash()->get('login_message')) {
                     $dialog->message = current($message);
-                    core::flash()->del('login_message');
+                    core::http_flash()->del('login_message');
                 }
 
                 $dialog

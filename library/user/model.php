@@ -75,6 +75,15 @@
         }
 
         /**
+         * Is the account active?
+         *
+         * @return bool
+         */
+        public function is_active() {
+            return isset(core::config()['auth']['login_account_statuses'][$this->status_id]);
+        }
+
+        /**
          * This is not a particularly efficient function - it should not be used excessively
          *
          * @param string $resource_name

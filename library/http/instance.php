@@ -450,10 +450,24 @@
 
                 // If permissions set, make sure user has matching permissions
                 if ($controller['resource_ids']) {
+
+                    // Authentication
+                    if (! isset($auth)) {
+                        $auth = core::auth();
+                        $logged_in = $auth->logged_in();
+
+                        if ($logged_in) {
+                            $user = $auth->user();
+                            if (! $user->is_active()) {
+                                throw new user_status_exception('User account is not active');
+                            }
+                        }
+                    }
+
                     // If user is logged in
-                    if (core::auth()->logged_in()) {
+                    if ($logged_in) {
                         // And does not have permission - access denied
-                        if (! core::auth()->user()->has_access($controller['resource_ids'])) {
+                        if (! $user->has_access($controller['resource_ids'])) {
                             if (! $this->config['silent_acccess_denied']) {
                                 controller::show403();
                                 return;

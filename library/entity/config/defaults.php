@@ -16,6 +16,11 @@
             $this->config = array_replace_recursive($this->defaults(), $config);
         }
 
+        /**
+         * Get the default config values
+         *
+         * @return array
+         */
         abstract protected function defaults();
 
         /**
@@ -23,9 +28,7 @@
          *
          * @throws config_exception
          */
-        public function validate() {
-
-        }
+        abstract public function validate();
 
         /**
          * Returns the config values as an array

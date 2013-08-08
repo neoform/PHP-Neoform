@@ -7,4 +7,13 @@
                 'key_prefix' => null,
             ];
         }
+
+        /**
+         * Validate the config values
+         *
+         * @throws config_exception
+         */
+        public function validate() {
+
+        }
     }

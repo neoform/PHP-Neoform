@@ -28,19 +28,21 @@
                 // Which site does this user account belong to
                 'site' => 'main',
 
-                // What user_statuses can a user log in with
+                // What user_statuses can a user log in with - key is the ID, value is the name
                 'login_account_statuses' => [
-                    'active',
+                    1 => 'active',
                 ],
             ];
         }
 
-        public function get_array() {
-
-            //$statuses = user_status_collection::by_name_multi($this->config['login_account_statuses']);
-            //core::debug($this->config['login_account_statuses']);
-            //die;
-
-            return $this->config;
+        /**
+         * Validate the config values
+         *
+         * @throws config_exception
+         */
+        public function validate() {
+            if (empty($this->config['login_account_statuses'])) {
+                throw new config_exception('"login_account_statuses" must have at least one status');
+            }
         }
     }

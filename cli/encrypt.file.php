@@ -7,10 +7,10 @@
         'extension'   => 'php',
         'environment' => 'sling',
 
-        'application' => $root . '/application/',
-        'external'    => $root . '/external/',
-        'logs'        => $root . '/logs/',
-        'website'     => $root . '/www/',
+        'application' => "{$root}/application/",
+        'external'    => "{$root}/external/",
+        'logs'        => "{$root}/logs/",
+        'website'     => "{$root}/www/",
     ]);
 
     class encrypt_file extends cli_model {

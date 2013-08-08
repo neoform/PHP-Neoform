@@ -3,7 +3,7 @@
     /**
      * Locale collection
      */
-    class locale_collection extends record_collection implements locale_definition {
+    class locale_collection extends entity_record_collection implements locale_definition {
 
         /**
          * Preload the Locale Key models in this collection

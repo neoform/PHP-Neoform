@@ -1,6 +1,6 @@
 <?php
 
-    class generate_link_dao extends generate_dao {
+    class generate_entity_link_dao extends generate_dao {
 
         public function code() {
 
@@ -9,7 +9,7 @@
             $this->code .= "\t/**\n";
             $this->code .= "\t * " . ucwords(str_replace('_', ' ', $this->table->name)) . " link DAO\n";
             $this->code .= "\t */\n";
-            $this->code .= "\tclass " . $this->table->name . "_dao extends link_dao implements " . $this->table->name . "_definition {\n\n";
+            $this->code .= "\tclass " . $this->table->name . "_dao extends entity_link_dao implements " . $this->table->name . "_definition {\n\n";
 
             $this->constants();
             $this->bindings();
@@ -81,8 +81,8 @@
                     $function_params[] = '$' . $field->name;
                 }
 
-                $this->code .= "\t\tpublic static function by_" . $name . "(" . join(', ', $function_params) . ") {\n";
-                $this->code .= "\t\t\treturn self::_by_fields(\n";
+                $this->code .= "\t\tpublic function by_" . $name . "(" . join(', ', $function_params) . ") {\n";
+                $this->code .= "\t\t\treturn parent::_by_fields(\n";
                 $this->code .= "\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
 
                 // fields selected
@@ -136,7 +136,7 @@
 
                 // end comments
 
-                $this->code .= "\t\tpublic static function by_" . $foreign_key_field->name_idless . "_multi($" . $foreign_key_field->referenced_field->table->name . "_list) {\n";
+                $this->code .= "\t\tpublic function by_" . $foreign_key_field->name_idless . "_multi($" . $foreign_key_field->referenced_field->table->name . "_list) {\n";
 
                 $this->code .= "\t\t\t\$keys = [];\n";
 
@@ -166,7 +166,7 @@
 
                 $this->code .= "\t\t\t}\n\n";
 
-                $this->code .= "\t\t\treturn self::_by_fields_multi(\n";
+                $this->code .= "\t\t\treturn parent::_by_fields_multi(\n";
                 $this->code .= "\t\t\t\tself::BY_" . strtoupper($foreign_key_field->name_idless) . ",\n";
 
                 // fields selected
@@ -204,7 +204,7 @@
             $this->code .= "\t\t * @return boolean\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function insert(array \$info) {\n\n";
+            $this->code .= "\t\tpublic function insert(array \$info) {\n\n";
 
             if ($this->table->is_tiny() || count($this->table->all_index_combinations) || $this->all) {
 
@@ -283,7 +283,7 @@
             $this->code .= "\t\t * @return boolean\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function inserts(array \$infos) {\n\n";
+            $this->code .= "\t\tpublic function inserts(array \$infos) {\n\n";
 
             if ($this->table->is_tiny() || count($this->table->all_index_combinations) || $this->all) {
 
@@ -369,7 +369,7 @@
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function update(array \$new_info, array \$where) {\n\n";
+            $this->code .= "\t\tpublic function update(array \$new_info, array \$where) {\n\n";
 
             $this->code .= "\t\t\t// Update link\n";
             $this->code .= "\t\t\t\$return = parent::_update(\$new_info, \$where);\n\n";
@@ -459,7 +459,7 @@
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function delete(array \$keys) {\n\n";
+            $this->code .= "\t\tpublic function delete(array \$keys) {\n\n";
 
             $this->code .= "\t\t\t// Delete link\n";
             $this->code .= "\t\t\t\$return = parent::_delete(\$keys);\n\n";
@@ -515,7 +515,7 @@
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic static function deletes(array \$keys_arr) {\n\n";
+            $this->code .= "\t\tpublic function deletes(array \$keys_arr) {\n\n";
 
             $this->code .= "\t\t\t// Delete links\n";
             $this->code .= "\t\t\t\$return = parent::_deletes(\$keys_arr);\n\n";

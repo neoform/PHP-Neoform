@@ -3,7 +3,7 @@
     /**
      * User Lostpassword DAO
      */
-    class user_lostpassword_dao extends record_dao implements user_lostpassword_definition {
+    class user_lostpassword_dao extends entity_record_dao implements user_lostpassword_definition {
 
         const BY_USER = 'by_user';
 
@@ -29,8 +29,8 @@
          *
          * @return array of User Lostpassword hashs
          */
-        public static function by_user($user_id) {
-            return self::_by_fields(
+        public function by_user($user_id) {
+            return parent::_by_fields(
                 self::BY_USER,
                 [
                     'user_id' => (int) $user_id,
@@ -45,7 +45,7 @@
          *
          * @return array of arrays containing User Lostpassword hashs
          */
-        public static function by_user_multi($user_list) {
+        public function by_user_multi($user_list) {
             $keys = [];
             if ($user_list instanceof user_collection) {
                 foreach ($user_list as $k => $user) {
@@ -60,7 +60,7 @@
                     ];
                 }
             }
-            return self::_by_fields_multi(self::BY_USER, $keys);
+            return parent::_by_fields_multi(self::BY_USER, $keys);
         }
 
         // WRITES
@@ -72,7 +72,7 @@
          *
          * @return user_lostpassword_model
          */
-        public static function insert(array $info) {
+        public function insert(array $info) {
 
             // Insert record
             $return = parent::_insert($info);
@@ -106,7 +106,7 @@
          *
          * @return user_lostpassword_collection
          */
-        public static function inserts(array $infos) {
+        public function inserts(array $infos) {
 
             // Insert records
             $return = parent::_inserts($infos);
@@ -144,7 +144,7 @@
          *
          * @return user_lostpassword_model updated model
          */
-        public static function update(user_lostpassword_model $user_lostpassword, array $info) {
+        public function update(user_lostpassword_model $user_lostpassword, array $info) {
 
             // Update record
             $updated_model = parent::_update($user_lostpassword, $info);
@@ -186,7 +186,7 @@
          *
          * @return bool
          */
-        public static function delete(user_lostpassword_model $user_lostpassword) {
+        public function delete(user_lostpassword_model $user_lostpassword) {
 
             // Delete record
             $return = parent::_delete($user_lostpassword);
@@ -218,7 +218,7 @@
          *
          * @return bool
          */
-        public static function deletes(user_lostpassword_collection $user_lostpassword_collection) {
+        public function deletes(user_lostpassword_collection $user_lostpassword_collection) {
 
             // Delete records
             $return = parent::_deletes($user_lostpassword_collection);

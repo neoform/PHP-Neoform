@@ -3,7 +3,7 @@
     /**
      * User Site link DAO
      */
-    class user_site_dao extends link_dao implements user_site_definition {
+    class user_site_dao extends entity_link_dao implements user_site_definition {
 
         const BY_SITE      = 'by_site';
         const BY_SITE_USER = 'by_site_user';
@@ -30,8 +30,8 @@
          *
          * @return array result set containing user_id
          */
-        public static function by_site($site_id) {
-            return self::_by_fields(
+        public function by_site($site_id) {
+            return parent::_by_fields(
                 self::BY_SITE,
                 [
                     'user_id',
@@ -50,8 +50,8 @@
          *
          * @return array result set containing user_id and site_id
          */
-        public static function by_site_user($site_id, $user_id) {
-            return self::_by_fields(
+        public function by_site_user($site_id, $user_id) {
+            return parent::_by_fields(
                 self::BY_SITE_USER,
                 [
                     'user_id',
@@ -71,8 +71,8 @@
          *
          * @return array result set containing site_id
          */
-        public static function by_user($user_id) {
-            return self::_by_fields(
+        public function by_user($user_id) {
+            return parent::_by_fields(
                 self::BY_USER,
                 [
                     'site_id',
@@ -90,7 +90,7 @@
          *
          * @return array of result sets containing site_id
          */
-        public static function by_user_multi($user_list) {
+        public function by_user_multi($user_list) {
             $keys = [];
             if ($user_list instanceof user_collection) {
                 foreach ($user_list as $k => $user) {
@@ -108,7 +108,7 @@
 
             }
 
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_USER,
                 [
                     'site_id',
@@ -124,7 +124,7 @@
          *
          * @return array of result sets containing user_id
          */
-        public static function by_site_multi($site_list) {
+        public function by_site_multi($site_list) {
             $keys = [];
             if ($site_list instanceof site_collection) {
                 foreach ($site_list as $k => $site) {
@@ -142,7 +142,7 @@
 
             }
 
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_SITE,
                 [
                     'user_id',
@@ -160,7 +160,7 @@
          *
          * @return boolean
          */
-        public static function insert(array $info) {
+        public function insert(array $info) {
 
             // Insert link
             $return = parent::_insert($info);
@@ -219,7 +219,7 @@
          *
          * @return boolean
          */
-        public static function inserts(array $infos) {
+        public function inserts(array $infos) {
 
             // Insert links
             $return = parent::_inserts($infos);
@@ -281,7 +281,7 @@
          *
          * @return bool
          */
-        public static function update(array $new_info, array $where) {
+        public function update(array $new_info, array $where) {
 
             // Update link
             $return = parent::_update($new_info, $where);
@@ -371,7 +371,7 @@
          *
          * @return bool
          */
-        public static function delete(array $keys) {
+        public function delete(array $keys) {
 
             // Delete link
             $return = parent::_delete($keys);
@@ -424,7 +424,7 @@
          *
          * @return bool
          */
-        public static function deletes(array $keys_arr) {
+        public function deletes(array $keys_arr) {
 
             // Delete links
             $return = parent::_deletes($keys_arr);

@@ -20,7 +20,7 @@
                     $site = new site_model(core::config()['core']['site_id']);
 
                     // Create user-site link
-                    user_site_dao::insert([
+                    entity::dao('user_site')->insert([
                         'user_id' => $user->id,
                         'site_id' => $site->id,
                     ]);

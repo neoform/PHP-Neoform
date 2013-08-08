@@ -9,7 +9,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return acl_resource_dao::insert([
+                return entity::dao('acl_resource')->insert([
                     'parent_id' => $input->parent_id->val(),
                     'name'      => $input->name->val(),
                 ]);
@@ -24,7 +24,7 @@
             self::_validate_update($acl_resource, $input);
 
             if ($input->is_valid()) {
-                return acl_resource_dao::update(
+                return entity::dao('acl_resource')->update(
                     $acl_resource,
                     $input->vals(
                         [
@@ -39,7 +39,7 @@
         }
 
         public static function delete(acl_resource_model $acl_resource) {
-            return acl_resource_dao::delete($acl_resource);
+            return entity::dao('acl_resource')->delete($acl_resource);
         }
 
         public static function _validate_insert(input_collection $input) {
@@ -57,7 +57,7 @@
 
             // name
             $input->name->cast('string')->length(1, 32)->callback(function($name) {
-                if (acl_resource_dao::by_name($name->val())) {
+                if (entity::dao('acl_resource')->by_name($name->val())) {
                     $name->errors('already in use');
                 }
             });
@@ -78,8 +78,8 @@
 
             // name
             $input->name->cast('string')->optional()->length(1, 32)->callback(function($name) use ($acl_resource) {
-                $id_arr = acl_resource_dao::by_name($name->val());
-                if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $acl_resource->id) {
+                $id_arr = entity::dao('acl_resource')->by_name($name->val());
+                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $acl_resource->id) {
                     $name->errors('already in use');
                 }
             });

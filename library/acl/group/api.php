@@ -9,7 +9,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return acl_group_dao::insert([
+                return entity::dao('acl_group')->insert([
                     'id'   => $input->id->val(),
                     'name' => $input->name->val(),
                 ]);
@@ -24,7 +24,7 @@
             self::_validate_update($acl_group, $input);
 
             if ($input->is_valid()) {
-                return acl_group_dao::update(
+                return entity::dao('acl_group')->update(
                     $acl_group,
                     $input->vals(
                         [
@@ -39,21 +39,21 @@
         }
 
         public static function delete(acl_group_model $acl_group) {
-            return acl_group_dao::delete($acl_group);
+            return entity::dao('acl_group')->delete($acl_group);
         }
 
         public static function _validate_insert(input_collection $input) {
 
             // id
             $input->id->cast('int')->digit(0, 4294967295)->callback(function($id) {
-                if (acl_group_dao::by_pk($id->val())) {
+                if (entity::dao('acl_group')->by_pk($id->val())) {
                     $id->errors('already in use');
                 }
             });
 
             // name
             $input->name->cast('string')->length(1, 64)->callback(function($name) {
-                if (acl_group_dao::by_name($name->val())) {
+                if (entity::dao('acl_group')->by_name($name->val())) {
                     $name->errors('already in use');
                 }
             });
@@ -63,7 +63,7 @@
 
             // id
             $input->id->cast('int')->digit(0, 4294967295)->callback(function($id) use ($acl_group) {
-                $acl_group_info = acl_group_dao::by_pk($id->val());
+                $acl_group_info = entity::dao('acl_group')->by_pk($id->val());
                 if ($acl_group_info && (int) $acl_group_info['id'] !== $acl_group->id) {
                     $id->errors('already in use');
                 }
@@ -71,8 +71,8 @@
 
             // name
             $input->name->cast('string')->length(1, 64)->callback(function($name) use ($acl_group) {
-                $id_arr = acl_group_dao::by_name($name->val());
-                if (is_array($id_arr) && count($id_arr) && (int) current($id_arr) !== $acl_group->id) {
+                $id_arr = entity::dao('acl_group')->by_name($name->val());
+                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $acl_group->id) {
                     $name->errors('already in use');
                 }
             });

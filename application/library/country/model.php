@@ -9,7 +9,7 @@
     * @var string $iso2
     * @var string $iso3
     */
-    class country_model extends record_model implements country_definition {
+    class country_model extends entity_record_model implements country_definition {
 
         public function __get($k) {
 
@@ -40,7 +40,7 @@
         public function region_collection() {
             if (! array_key_exists('region_collection', $this->_vars)) {
                 $this->_vars['region_collection'] = new region_collection(
-                    region_dao::by_country($this->vars['id'])
+                    entity::dao('region')->by_country($this->vars['id'])
                 );
             }
             return $this->_vars['region_collection'];

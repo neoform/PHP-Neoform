@@ -82,7 +82,7 @@
 
             // All other exceptions - 500 error
             } catch (exception $e) {
-                error_lib::log($e, false);
+                error_lib::log($e);
                 controller::error(500);
             }
 

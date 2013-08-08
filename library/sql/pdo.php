@@ -17,103 +17,6 @@
         }
 
         /**
-         * Fetch the PDO binding
-         *
-         * @param array  $bindings
-         * @param string $name
-         *
-         * @return int PDO param val
-         */
-        public static function pdo_binding(array $bindings, $name) {
-           switch ($bindings[$name]) {
-                case 'int':
-                    return PDO::PARAM_INT;
-
-                case 'string':
-                    return PDO::PARAM_STR;
-
-                case 'binary':
-                    return PDO::PARAM_LOB;
-
-                case 'bool':
-                    return PDO::PARAM_BOOL;
-
-                case 'null':
-                    return PDO::PARAM_NULL;
-            }
-        }
-
-        /**
-         * Bind values to a query based on the bindings.
-         * This is needed because of binary data fields, which need to be specially bound as PDO::PARAM_LOB in Postgres
-         *
-         * @param PDOStatement $query
-         * @param array        $bindings
-         * @param array        $vals
-         * @param bool         $bind_as_param
-         */
-        public static function bind_by_casting(PDOStatement $query, array $bindings, array $vals, $bind_as_param=false) {
-            if ($bind_as_param) {
-                foreach ($vals as $k => &$v) { // do NOT remove this reference, it will break the bindParam() function
-                    switch ($bindings[$k]) {
-                        case 'int':
-                            $query->bindParam($k, $v, PDO::PARAM_INT);
-                            break;
-
-                        case 'string':
-                            $query->bindParam($k, $v, PDO::PARAM_STR);
-                            break;
-
-                        case 'binary':
-                            $query->bindParam($k, $v, PDO::PARAM_LOB);
-                            break;
-
-                        case 'bool':
-                            $query->bindParam($k, $v, PDO::PARAM_BOOL);
-                            break;
-
-                        case 'null':
-                            $query->bindParam($k, $v, PDO::PARAM_NULL);
-                            break;
-
-                        default:
-                            $query->bindParam($k, $v);
-                            break;
-                    }
-                }
-            } else {
-                $i = 1;
-                foreach ($vals as $k => &$v) { // do NOT remove this reference, it will break the bindParam() function
-                    switch ($bindings[$k]) {
-                        case 'int':
-                            $query->bindParam($i++, $v, PDO::PARAM_INT);
-                            break;
-
-                        case 'string':
-                            $query->bindParam($i++, $v, PDO::PARAM_STR);
-                            break;
-
-                        case 'binary':
-                            $query->bindParam($i++, $v, PDO::PARAM_LOB);
-                            break;
-
-                        case 'bool':
-                            $query->bindParam($i++, $v, PDO::PARAM_BOOL);
-                            break;
-
-                        case 'null':
-                            $query->bindParam($i++, $v, PDO::PARAM_NULL);
-                            break;
-
-                        default:
-                            $query->bindParam($i++, $v);
-                            break;
-                    }
-                }
-            }
-        }
-
-        /**
          * Converts binary string resource into a string
          *
          * @param $mixed
@@ -136,7 +39,7 @@
          * @return string
          * @throws Exception
          */
-        public static function dump_query(PDOStatement$query) {
+        public static function dump_query(PDOStatement $query) {
             ob_start();
 
             $query->debugDumpParams();

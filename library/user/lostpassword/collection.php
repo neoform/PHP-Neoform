@@ -3,7 +3,7 @@
     /**
      * User Lostpassword collection
      */
-    class user_lostpassword_collection extends record_collection implements user_lostpassword_definition {
+    class user_lostpassword_collection extends entity_record_collection implements user_lostpassword_definition {
 
         /**
          * Preload the User models in this collection

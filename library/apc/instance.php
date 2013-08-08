@@ -8,6 +8,12 @@
 
         use core_instance;
 
+        protected $key_prefix;
+
+        public function __construct(array $config) {
+            $this->key_prefix = "{$config['key_prefix']}:";
+        }
+
         /**
          * Gets a record from APC
          *
@@ -17,7 +23,7 @@
          * @throws apc_exception
          */
         public function __get($key) {
-            $data = apc_fetch($key, $success);
+            $data = apc_fetch("{$this->key_prefix}{$key}", $success);
             if ($success) {
                 return $data;
             } else {
@@ -34,7 +40,7 @@
          * @throws apc_exception
          */
         public function get($key) {
-            $data = apc_fetch($key, $success);
+            $data = apc_fetch("{$this->key_prefix}{$key}", $success);
             if ($success) {
                 return $data;
             } else {
@@ -52,7 +58,7 @@
          * @return bool
          */
         public function set($key, $val, $ttl=0) {
-            return apc_store($key, $val, $ttl);
+            return apc_store("{$this->key_prefix}{$key}", $val, $ttl);
         }
 
         /**
@@ -63,7 +69,7 @@
          * @return bool|string[]
          */
         public function __unset($key) {
-            return apc_delete($key);
+            return apc_delete("{$this->key_prefix}{$key}");
         }
 
         /**
@@ -74,7 +80,7 @@
          * @return bool|string[]
          */
         public function del($key) {
-            return apc_delete($key);
+            return apc_delete("{$this->key_prefix}{$key}");
         }
 
         /**
@@ -85,7 +91,7 @@
          * @return bool|string[]
          */
         public function __isset($key) {
-            return apc_exists($key);
+            return apc_exists("{$this->key_prefix}{$key}");
         }
 
         /**
@@ -97,7 +103,7 @@
          * @return bool|int
          */
         public function increment($key, $step=1) {
-            return apc_inc($key, $step);
+            return apc_inc("{$this->key_prefix}{$key}", $step);
         }
 
         /**
@@ -109,7 +115,7 @@
          * @return bool|int
          */
         public function decrement($key, $step=1) {
-            return apc_dec($key, $step);
+            return apc_dec("{$this->key_prefix}{$key}", $step);
         }
 
         /**

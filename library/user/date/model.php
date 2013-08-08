@@ -9,7 +9,7 @@
     * @var string $email_verified_on
     * @var string $password_updated_on
     */
-    class user_date_model extends record_model implements user_date_definition {
+    class user_date_model extends entity_record_model implements user_date_definition {
 
         public function __get($k) {
 

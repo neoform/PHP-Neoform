@@ -1,6 +1,6 @@
 <?php
 
-    class record_driver_mysql implements record_driver {
+    class entity_record_driver_mysql implements entity_record_driver {
 
         /**
          * Parse the table name into a properly escaped table string
@@ -21,15 +21,14 @@
         /**
          * Get full record by primary key
          *
-         * @param string          $self the name of the DAO
+         * @param entity_record_dao      $self the name of the DAO
+         * @param string          $pool which source engine pool to use
          * @param int|string|null $pk
          *
          * @return mixed
          */
-        public static function by_pk($self, $pk) {
-            $info = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            )->prepare("
+        public static function by_pk(entity_record_dao $self, $pool, $pk) {
+            $info = core::sql($pool)->prepare("
                 SELECT *
                 FROM `" . self::table($self::TABLE) . "`
                 WHERE `" . $self::PRIMARY_KEY . "` = ?
@@ -47,15 +46,14 @@
         /**
          * Get full records by primary key
          *
-         * @param string $self the name of the DAO
-         * @param array  $pks
+         * @param entity_record_dao $self the name of the DAO
+         * @param string     $pool which source engine pool to use
+         * @param array      $pks
          *
          * @return array
          */
-        public static function by_pks($self, array $pks) {
-            $infos_rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            )->prepare("
+        public static function by_pks(entity_record_dao $self, $pool, array $pks) {
+            $infos_rs = core::sql($pool)->prepare("
                 SELECT *
                 FROM `" . self::table($self::TABLE) . "`
                 WHERE `" . $self::PRIMARY_KEY . "` IN (" . join(',', array_fill(0, count($pks), '?')) . ")
@@ -76,7 +74,8 @@
         /**
          * Get a list of PKs, with a limit, offset and order by
          *
-         * @param string     $self
+         * @param entity_record_dao $self
+         * @param string     $pool which source engine pool to use
          * @param integer    $limit     max number of PKs to return
          * @param string     $order_by  field name
          * @param string     $direction asc|desc
@@ -84,12 +83,10 @@
          *
          * @return array
          */
-        public static function limit($self, $limit, $order_by, $direction, $after_pk) {
+        public static function limit(entity_record_dao $self, $pool, $limit, $order_by, $direction, $after_pk) {
             $pk = $self::PRIMARY_KEY;
 
-            $rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            )->prepare("
+            $rs = core::sql($pool)->prepare("
                 SELECT `{$pk}`
                 FROM `" . self::table($self::TABLE) . "`
                 " . ($after_pk !== null ? "WHERE `{$pk}` " . ($direction === 'ASC' ? '>' : '<') . ' ?' : '') . "
@@ -108,19 +105,18 @@
         /**
          * Get a paginated list of entity PKs
          *
-         * @param string  $self
-         * @param string  $order_by
-         * @param string  $direction
-         * @param integer $offset
-         * @param integer $limit
+         * @param entity_record_dao $self
+         * @param string     $pool which source engine pool to use
+         * @param string     $order_by
+         * @param string     $direction
+         * @param integer    $offset
+         * @param integer    $limit
          *
          * @return array
          */
-        public static function paginated($self, $order_by, $direction, $offset, $limit) {
+        public static function paginated(entity_record_dao $self, $pool, $order_by, $direction, $offset, $limit) {
             $pk = $self::PRIMARY_KEY;
-            $rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            )->prepare("
+            $rs = core::sql($pool)->prepare("
                 SELECT `{$pk}`
                 FROM `" . self::table($self::TABLE) . "`
                 ORDER BY `{$order_by}` {$direction}
@@ -135,14 +131,13 @@
         /**
          * Get full count of rows in a table
          *
-         * @param string $self
+         * @param entity_record_dao $self
+         * @param string     $pool which source engine pool to use
          *
          * @return int
          */
-        public static function count($self) {
-            $rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            )->prepare("
+        public static function count(entity_record_dao $self, $pool) {
+            $rs = core::sql($pool)->prepare("
                 SELECT COUNT(0) `num`
                 FROM `" . self::table($self::TABLE) . "`
             ");
@@ -153,13 +148,14 @@
         /**
          * Get all records in the table
          *
-         * @param string     $self the name of the DAO
+         * @param entity_record_dao $self the name of the DAO
+         * @param string     $pool which source engine pool to use
          * @param int|string $pk
          * @param array      $keys
          *
          * @return array
          */
-        public static function all($self, $pk, array $keys=null) {
+        public static function all(entity_record_dao $self, $pool, $pk, array $keys=null) {
             $where = [];
             $vals  = [];
 
@@ -181,9 +177,7 @@
                 }
             }
 
-            $info = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            )->prepare("
+            $info = core::sql($pool)->prepare("
                 SELECT *
                 FROM `" . self::table($self::TABLE) . "`
                 " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
@@ -198,13 +192,14 @@
         /**
          * Get record primary key by fields
          *
-         * @param string     $self the name of the DAO
+         * @param entity_record_dao $self the name of the DAO
+         * @param string     $pool which source engine pool to use
          * @param array      $keys
          * @param int|string $pk
          *
          * @return array
          */
-        public static function by_fields($self, array $keys, $pk) {
+        public static function by_fields(entity_record_dao $self, $pool, array $keys, $pk) {
             $where = [];
             $vals  = [];
 
@@ -219,9 +214,7 @@
                 }
             }
 
-            $rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            )->prepare("
+            $rs = core::sql($pool)->prepare("
                 SELECT `{$pk}`
                 FROM `" . self::table($self::TABLE) . "`
                 " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
@@ -234,16 +227,15 @@
         /**
          * Get multiple record primary keys by fields
          *
-         * @param string     $self the name of the DAO
+         * @param entity_record_dao $self the name of the DAO
+         * @param string     $pool which source engine pool to use
          * @param array      $keys_arr
          * @param int|string $pk
          *
          * @return array
          */
-        public static function by_fields_multi($self, array $keys_arr, $pk) {
-            $sql = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            );
+        public static function by_fields_multi(entity_record_dao $self, $pool, array $keys_arr, $pk) {
+            $sql = core::sql($pool);
 
             $key_fields     = array_keys(reset($keys_arr));
             $reverse_lookup = [];
@@ -286,13 +278,14 @@
         /**
          * Get specific fields from a record, by keys
          *
-         * @param string $self
-         * @param array  $select_fields
-         * @param array  $keys
+         * @param entity_record_dao $self
+         * @param string     $pool which source engine pool to use
+         * @param array      $select_fields
+         * @param array      $keys
          *
          * @return array
          */
-        public static function by_fields_select($self, array $select_fields, array $keys) {
+        public static function by_fields_select(entity_record_dao $self, $pool, array $select_fields, array $keys) {
             $where = [];
             $vals  = [];
 
@@ -307,9 +300,7 @@
                 }
             }
 
-            $rs = core::sql(
-                $self::SOURCE_ENGINE_READ ?: core::config()['entity']['default_source_engine_pool_read']
-            )->prepare("
+            $rs = core::sql($pool)->prepare("
                 SELECT " . join(',', $select_fields) . "
                 FROM `" . self::table($self::TABLE) . "`
                 " . (count($where) ? "WHERE " . join(" AND ", $where) : '') . "
@@ -327,22 +318,21 @@
         /**
          * Insert record
          *
-         * @param string $self the name of the DAO
-         * @param array  $info
-         * @param bool   $autoincrement
-         * @param boo    $replace
+         * @param entity_record_dao $self the name of the DAO
+         * @param string     $pool which source engine pool to use
+         * @param array      $info
+         * @param bool       $autoincrement
+         * @param bool       $replace
          *
          * @return array
          */
-        public static function insert($self, array $info, $autoincrement, $replace) {
+        public static function insert(entity_record_dao $self, $pool, array $info, $autoincrement, $replace) {
             $insert_fields = [];
             foreach (array_keys($info) as $key) {
                 $insert_fields[] = "`$key`";
             }
 
-            $sql = core::sql(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']
-            );
+            $sql = core::sql($pool);
             $insert = $sql->prepare("
                 " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO `" . self::table($self::TABLE) . "`
                     ( " . join(', ', $insert_fields) . " )
@@ -362,18 +352,17 @@
         /**
          * Insert multiple records
          *
-         * @param string $self the name of the DAO
-         * @param array $infos
-         * @param bool  $keys_match
-         * @param bool  $autoincrement
-         * @param bool  $replace
+         * @param entity_record_dao $self the name of the DAO
+         * @param string     $pool which source engine pool to use
+         * @param array      $infos
+         * @param bool       $keys_match
+         * @param bool       $autoincrement
+         * @param bool       $replace
          *
          * @return array
          */
-        public static function inserts($self, array $infos, $keys_match, $autoincrement, $replace) {
-            $sql = core::sql(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']
-            );
+        public static function inserts(entity_record_dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace) {
+            $sql = core::sql($pool);
 
             if ($keys_match) {
                 $insert_fields = [];
@@ -452,19 +441,18 @@
         /**
          * Update a record
          *
-         * @param string       $self the name of the DAO
+         * @param entity_record_dao   $self the name of the DAO
+         * @param string       $pool which source engine pool to use
          * @param int|string   $pk
-         * @param record_model $model
+         * @param entity_record_model $model
          * @param array        $info
          */
-        public static function update($self, $pk, record_model $model, array $info) {
+        public static function update(entity_record_dao $self, $pool, $pk, entity_record_model $model, array $info) {
             $update_fields = [];
             foreach (array_keys($info) as $key) {
                 $update_fields[] = "`{$key}` = :{$key}";
             }
-            $update = core::sql(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']
-            )->prepare("
+            $update = core::sql($pool)->prepare("
                 UPDATE `" . self::table($self::TABLE) . "`
                 SET " . join(", \n", $update_fields) . "
                 WHERE `{$pk}` = :{$pk}
@@ -477,14 +465,13 @@
         /**
          * Delete a record
          *
-         * @param string       $self the name of the DAO
+         * @param entity_record_dao   $self the name of the DAO
+         * @param string       $pool which source engine pool to use
          * @param int|string   $pk
-         * @param record_model $model
+         * @param entity_record_model $model
          */
-        public static function delete($self, $pk, record_model $model) {
-            $delete = core::sql(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']
-            )->prepare("
+        public static function delete(entity_record_dao $self, $pool, $pk, entity_record_model $model) {
+            $delete = core::sql($pool)->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE `{$pk}` = ?
             ");
@@ -496,14 +483,13 @@
         /**
          * Delete multiple records
          *
-         * @param string            $self the name of the DAO
+         * @param entity_record_dao        $self the name of the DAO
+         * @param string            $pool which source engine pool to use
          * @param int|string        $pk
-         * @param record_collection $collection
+         * @param entity_record_collection $collection
          */
-        public static function deletes($self, $pk, record_collection $collection) {
-            $delete = core::sql(
-                $self::SOURCE_ENGINE_WRITE ?: core::config()['entity']['default_source_engine_pool_write']
-            )->prepare("
+        public static function deletes(entity_record_dao $self, $pool, $pk, entity_record_collection $collection) {
+            $delete = core::sql($pool)->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE `{$pk}` IN (" . join(',', array_fill(0, count($collection), '?')) . ")
             ");

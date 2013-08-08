@@ -3,7 +3,7 @@
     /**
      * Acl Role DAO
      */
-    class acl_role_dao extends record_dao implements acl_role_definition {
+    class acl_role_dao extends entity_record_dao implements acl_role_definition {
 
         const BY_ALL  = 'by_all';
         const BY_NAME = 'by_name';
@@ -29,8 +29,8 @@
          *
          * @return array of Acl Role ids
          */
-        public static function by_name($name) {
-            return self::_by_fields(
+        public function by_name($name) {
+            return parent::_by_fields(
                 self::BY_NAME,
                 [
                     'name' => (string) $name,
@@ -45,12 +45,12 @@
          *
          * @return array of arrays of Acl Role ids
          */
-        public static function by_name_multi(array $name_arr) {
+        public function by_name_multi(array $name_arr) {
             $keys_arr = [];
             foreach ($name_arr as $k => $name) {
                 $keys_arr[$k] = [ 'name' => (string) $name, ];
             }
-            return self::_by_fields_multi(
+            return parent::_by_fields_multi(
                 self::BY_NAME,
                 $keys_arr
             );
@@ -61,7 +61,7 @@
          *
          * @return array containing all Acl Role records
          */
-        public static function all() {
+        public function all() {
             return parent::_all(self::BY_ALL);
         }
 
@@ -74,7 +74,7 @@
          *
          * @return acl_role_model
          */
-        public static function insert(array $info) {
+        public function insert(array $info) {
 
             // Insert record
             $return = parent::_insert($info);
@@ -113,7 +113,7 @@
          *
          * @return acl_role_collection
          */
-        public static function inserts(array $infos) {
+        public function inserts(array $infos) {
 
             // Insert records
             $return = parent::_inserts($infos);
@@ -156,7 +156,7 @@
          *
          * @return acl_role_model updated model
          */
-        public static function update(acl_role_model $acl_role, array $info) {
+        public function update(acl_role_model $acl_role, array $info) {
 
             // Update record
             $updated_model = parent::_update($acl_role, $info);
@@ -203,7 +203,7 @@
          *
          * @return bool
          */
-        public static function delete(acl_role_model $acl_role) {
+        public function delete(acl_role_model $acl_role) {
 
             // Delete record
             $return = parent::_delete($acl_role);
@@ -240,7 +240,7 @@
          *
          * @return bool
          */
-        public static function deletes(acl_role_collection $acl_role_collection) {
+        public function deletes(acl_role_collection $acl_role_collection) {
 
             // Delete records
             $return = parent::_deletes($acl_role_collection);

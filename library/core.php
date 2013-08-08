@@ -338,7 +338,7 @@
                 // This only happens when we have an error within this function.
             }
 
-            echo 'Could not write to: ' . $log_path;
+            echo "Could not write to: {$log_path}";
             die;
         }
     }

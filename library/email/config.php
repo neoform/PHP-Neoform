@@ -1,6 +1,6 @@
 <?php
 
-    class email_config extends config_defaults {
+    class email_config extends entity_config_defaults {
 
         protected function defaults() {
             return [

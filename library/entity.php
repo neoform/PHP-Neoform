@@ -22,7 +22,6 @@
                     self::$daos[$name] = new $class_name($config['defaults']);
                 }
             }
-
             return self::$daos[$name];
         }
     }

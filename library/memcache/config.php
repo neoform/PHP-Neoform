@@ -1,6 +1,6 @@
 <?php
 
-    class memcache_config extends config_defaults {
+    class memcache_config extends entity_config_defaults {
 
         protected function defaults() {
             return [

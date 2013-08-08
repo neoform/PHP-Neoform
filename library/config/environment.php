@@ -12,12 +12,11 @@
         public function to_array() {
             $arr = [];
             foreach ($this->config as $k => $config) {
-                if ($config instanceof config_defaults) {
+                if ($config instanceof entity_config_defaults) {
                     $config->validate();
                     $arr[$k] = $config->get_array();
                 }
             }
-
             return $arr;
         }
 

@@ -178,7 +178,7 @@
 
             if ($keys) {
                 foreach ($keys as $k => $v) {
-                    if (is_array($v) && count($v)) {
+                    if (is_array($v) && $v) {
                         foreach ($v as $arr_v) {
                             $vals[] = $arr_v;
                         }
@@ -230,7 +230,7 @@
             $where = [];
             $vals  = [];
 
-            if (count($keys)) {
+            if ($keys) {
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
                         $where[] = "\"{$k}\" IS NULL";
@@ -337,7 +337,7 @@
             $where = [];
             $vals  = [];
 
-            if (count($keys)) {
+            if ($keys) {
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
                         $where[] = "\"{$k}\" IS NULL";

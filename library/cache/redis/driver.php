@@ -69,16 +69,7 @@
             if ($return = core::redis($pool)->sAdd($key, $value)) {
                 return $return;
             } else {
-                // if for some reason this key is holding a non-list delete it and create a list (this should never happen)
-                // this is here just for fault tolerance
-                $redis = core::redis($pool);
-
-                $redis->multi();
-                $redis->delete($key);
-                $redis->sAdd($key, $value);
-                $return = $redis->exec();
-
-                return $return[1];
+                return core::redis($pool)->sAdd($key, $value);
             }
         }
 
@@ -125,15 +116,15 @@
          */
         public static function list_remove($pool, $key, array $remove_keys) {
             $redis = core::redis($pool);
-            // Batch execute the deletes
-            $redis->multi();
-            foreach ($remove_keys as $remove_key) {
-                $redis->sRemove($key, $remove_key);
-            }
-            $redis->exec();
 
-            // bug in the documentation makes it seem like you can delete multiple keys at the same time. Nope!
-            //call_user_func_array([core::redis($pool), 'sRemove'], array_merge([ $key, ], $remove_keys))
+            // @todo Redis >=2.4 can do multiple removes in one command.
+            if (1) {
+                foreach ($remove_keys as $remove_key) {
+                    $redis->sRemove($key, $remove_key);
+                }
+            } else {
+                $redis->sRemove($key, $remove_keys);
+            }
         }
 
         /**
@@ -249,7 +240,7 @@
          * @return integer the number of keys deleted
          */
         public static function delete_multi($pool, array $keys) {
-            if (count($keys)) {
+            if ($keys) {
                 reset($keys);
                 return core::redis($pool)->delete($keys);
             }

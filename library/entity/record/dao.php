@@ -143,7 +143,7 @@
          * @return string a cache key that is unqiue to the application
          */
         final public static function _build_key($cache_key_name, array $params=[], $entity_name=null) {
-            // each key is namespaced with the name of the class
+            // each key is namespaced with the name of the class, then the name of the function ($cache_key_name)
             $param_count = count($params);
             if ($param_count === 1) {
                 return ($entity_name ?: static::ENTITY_NAME) . ":{$cache_key_name}:" . md5(reset($params));
@@ -154,6 +154,7 @@
                 foreach ($params as & $param) {
                     $param = base64_encode($param);
                 }
+                // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
                 return ($entity_name ?: static::ENTITY_NAME) . ":{$cache_key_name}:" . md5(json_encode(array_values($params)));
             }
         }
@@ -460,6 +461,11 @@
          * @throws model_exception
          */
         final protected function _by_fields_select($cache_key_name, array $select_fields, array $keys) {
+
+            /**
+             * @todo uhhhh, why is there caching in this function? You cannot cache this in a record...
+             * @todo fortunately this function is never used it seems...
+            */
 
             $self = $this;
 

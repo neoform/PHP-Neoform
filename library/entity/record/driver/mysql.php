@@ -203,7 +203,7 @@
             $where = [];
             $vals  = [];
 
-            if (count($keys)) {
+            if ($keys) {
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
                         $where[] = "`{$k}` IS NULL";
@@ -289,7 +289,7 @@
             $where = [];
             $vals  = [];
 
-            if (count($keys)) {
+            if ($keys) {
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
                         $where[] = "`{$k}` IS NULL";
@@ -303,7 +303,7 @@
             $rs = core::sql($pool)->prepare("
                 SELECT " . join(',', $select_fields) . "
                 FROM `" . self::table($self::TABLE) . "`
-                " . (count($where) ? "WHERE " . join(" AND ", $where) : '') . "
+                " . ($where ? "WHERE " . join(" AND ", $where) : '') . "
             ");
 
             $rs->execute($vals);

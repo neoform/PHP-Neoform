@@ -114,7 +114,7 @@
          * @return array
          */
         public function export(array $fields=null) {
-            if ($fields !== null && count($fields)) {
+            if ($fields) {
                 return array_intersect_key($this->vars, array_flip($fields));
             } else {
                 return $this->vars;

@@ -57,8 +57,8 @@
 
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
-                if ( $data = $engine_driver::get($engine_pool, $key)) {
-                    return current($data);
+                if ($data = $engine_driver::get($engine_pool, $key)) {
+                    return reset($data);
                 }
             }
         }
@@ -152,7 +152,7 @@
          * @param string  $key
          * @param integer $offset
          */
-        public static function increment($engine, $engine_pool, $key, $offset=1){
+        public static function increment($engine, $engine_pool, $key, $offset=1) {
 
             // Memory
             cache_memory_dao::increment($key, $offset);
@@ -210,7 +210,7 @@
             $engine_driver = "cache_{$engine}_driver";
 
             if ($engine && $data = $engine_driver::get($engine_pool_read, $key)) {
-                $data = current($data);
+                $data = reset($data);
             } else {
                 //get the data from it's original source
                 $data = $data_func($args);

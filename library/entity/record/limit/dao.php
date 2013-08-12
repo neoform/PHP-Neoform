@@ -111,6 +111,17 @@
             }
         }
 
+        /**
+         * Get fields by an integer offset
+         *
+         * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
+         * @param array   $keys           array of fields/values being looked up in the table
+         * @param array   $order_by       array of fields to order by - key = field, val = order direction
+         * @param integer $offset         records starting at what offset
+         * @param integer $limit          max number of record to return
+         *
+         * @return mixed
+         */
         final protected function _by_fields_offset($cache_key_name, array $keys, array $order_by, $offset, $limit) {
 
             $pk   = static::PRIMARY_KEY;
@@ -118,10 +129,10 @@
 
             $cache_key = self::_build_key_offset(
                 $cache_key_name,
-                $keys,
                 $order_by,
                 $offset,
-                $limit
+                $limit,
+                $keys
             );
 
             return cache_lib::single(
@@ -131,79 +142,10 @@
                 $cache_key,
                 function() use ($self, $cache_key, $keys, $pk, $order_by, $offset, $limit) {
 
-                    $self->cache_batch_start();
-
-                    /**
-                     * Build lists of keys for deletion - when it's time to delete/modify the record
-                     */
-
-                    /**
-                     * Order by - goes first, since it's wider reaching, if there is overlap between $order_by fields
-                     * and $keys fields, we wont use those fields in $keys. (since they'll both contain the same cache
-                     * keys to destroy.
-                     *
-                     * An entry for each $order_by field must be created (linking back to this set's $cache_key)
-                     */
-                    foreach ($order_by as $field => $direction) {
-                        // Create list key for order by field
-                        $order_by_list_key = entity_record_limit_dao::_build_key_order($field);
-
-                        // Store the cache key in $order_by_list_key list
-                        cache_lib::list_add(
-                            $this->cache_engine,
-                            $this->cache_engine_pool_write,
-                            $order_by_list_key,
-                            $cache_key
-                        );
-
-                        // Add the $order_by_list_key key to the field list key - if it doesn't already exist
-                        cache_lib::list_add(
-                            $this->cache_engine,
-                            $this->cache_engine_pool_write,
-                            entity_record_limit_dao::_build_key_list($field),
-                            $order_by_list_key
-                        );
-                    }
-
-                    /**
-                     * Keys - An entry for each key and value must be created (linking back to this set's $cache_key)
-                     *
-                     * array_diff_key() is used to avoid doubling the deletion of keys when it's completely unnecessary.
-                     * If we're going to clear a field (because it's used in the order by), there's no point in also
-                     * clearing if because it's used as a field/value. (yes, I realize this is complicated and possibly confusing)
-                     *
-                     * Example: If you get records where id = 10 and you order by that same 'id' field, then every cached
-                     * result set that uses id for anything needs to be destroyed when any id changes in the table. Since
-                     * ordering by a field might be affected by any id, all resulting sets that involve that 'id' field,
-                     * must be cleared out.
-                     *
-                     * If foo_id = 10 and order by 'id' was used, then only cached result sets with foo_id = 10 would
-                     * need to be destroyed (along with all 'id' cached result sets).
-                     */
-                    foreach (array_diff_key($keys, $order_by) as $field => $value) {
-                        // Create a list key for the field/value
-                        $list_key = entity_record_limit_dao::_build_key_list($field, $value);
-
-                        // Store the cache key in the $list_key list
-                        cache_lib::list_add(
-                            $this->cache_engine,
-                            $this->cache_engine_pool_write,
-                            $list_key,
-                            $cache_key
-                        );
-
-                        // Add the $list_key key to field list key - if it doesn't already exist
-                        cache_lib::list_add(
-                            $this->cache_engine,
-                            $this->cache_engine_pool_write,
-                            entity_record_limit_dao::_build_key_list($field),
-                            $list_key
-                        );
-                    }
-
-                    $self->cache_batch_execute();
+                    $self->_set_delete_limit_cache_lists($self, $cache_key, $keys, $order_by);
 
                     $source_driver = "entity_record_limit_driver_{$self->source_engine}";
+                    //                                      $self, $pool,                    array $keys, $pk, array $order_by, $offset, $limit
                     return $source_driver::by_fields_offset($self, $self->source_engine_pool_read, $keys, $pk, $order_by, $offset, $limit);
                 }
             );
@@ -275,6 +217,11 @@
             self::_delete_limit_cache_by_fields($new_info, $old_info);
 
             if ($return_model) {
+
+
+                // @todo this updated model being loaded should actually be done before the cache busting. that way we bust all keys (even auto updated ones like dates)
+
+
                 // Reload model from source based on current (or newly updated) PK
                 return new $model(array_key_exists($pk, $new_info) ? $new_info[$pk] : $model->$pk);
             } else {
@@ -310,6 +257,91 @@
         }
 
         /**
+         * Create the
+         *
+         * @param entity_record_limit_dao $self
+         * @param string                  $cache_key
+         * @param array                   $keys
+         * @param array                   $order_by
+         */
+        final protected function _set_delete_limit_cache_lists(entity_record_limit_dao $self, $cache_key, array $keys, array $order_by) {
+
+            $this->cache_batch_start();
+
+            /**
+             * Build lists of keys for deletion - when it's time to delete/modify the record
+             */
+
+            $entity_name = $self::ENTITY_NAME;
+
+            /**
+             * Order by - goes first, since it's wider reaching, if there is overlap between $order_by fields
+             * and $keys fields, we wont use those fields in $keys. (since they'll both contain the same cache
+             * keys to destroy.
+             *
+             * An entry for each $order_by field must be created (linking back to this set's $cache_key)
+             */
+            foreach ($order_by as $field => $direction) {
+                // Create list key for order by field
+                $order_by_list_key = entity_record_limit_dao::_build_key_order($field, $entity_name);
+
+                // Store the cache key in $order_by_list_key list
+                cache_lib::list_add(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    $order_by_list_key,
+                    $cache_key
+                );
+
+                // Add the $order_by_list_key key to the field list key - if it doesn't already exist
+                cache_lib::list_add(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    entity_record_limit_dao::_build_key_list($field, null, $entity_name),
+                    $order_by_list_key
+                );
+            }
+
+            /**
+             * Keys - An entry for each key and value must be created (linking back to this set's $cache_key)
+             *
+             * array_diff_key() is used to avoid doubling the deletion of keys when it's completely unnecessary.
+             * If we're going to clear a field (because it's used in the order by), there's no point in also
+             * clearing if because it's used as a field/value. (yes, I realize this is complicated and possibly confusing)
+             *
+             * Example: If you get records where id = 10 and you order by that same 'id' field, then every cached
+             * result set that uses id for anything needs to be destroyed when any id changes in the table. Since
+             * ordering by a field might be affected by any id, all resulting sets that involve that 'id' field,
+             * must be cleared out.
+             *
+             * If foo_id = 10 and order by 'id' was used, then only cached result sets with foo_id = 10 would
+             * need to be destroyed (along with all 'id' cached result sets).
+             */
+            foreach (array_diff_key($keys, $order_by) as $field => $value) {
+                // Create a list key for the field/value
+                $list_key = entity_record_limit_dao::_build_key_list($field, $value, $entity_name);
+
+                // Store the cache key in the $list_key list
+                cache_lib::list_add(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    $list_key,
+                    $cache_key
+                );
+
+                // Add the $list_key key to field list key - if it doesn't already exist
+                cache_lib::list_add(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    entity_record_limit_dao::_build_key_list($field, null, $entity_name),
+                    $list_key
+                );
+            }
+
+            $this->cache_batch_execute();
+        }
+
+        /**
          * Delete all cache keys and field/value and field order lists - by fields
          *
          * Do not wrap a batch execution around this function
@@ -317,7 +349,7 @@
          * @param array $fields           list of fields and values - key = field
          * @param array $secondary_fields list of fields and values - key = field
          */
-        protected function _delete_limit_cache_by_fields(array $fields, array $secondary_fields=null) {
+        final protected function _delete_limit_cache_by_fields(array $fields, array $secondary_fields=null) {
             $field_list_keys      = [];
             $list_keys            = [];
             $list_items_to_remove = [];
@@ -383,6 +415,8 @@
                 array_merge($cache_keys, $list_keys, $field_list_keys)
             );
 
+            core::debug(array_merge($cache_keys, $list_keys, $field_list_keys));
+
             /**
              * Since we just deleted $field_list_keys, we now remove those values from their parent lists
              * (Remove list field/value keys and order by keys from field lists)
@@ -395,6 +429,8 @@
                     $remove_keys
                 );
             }
+
+            core::debug(array_unique($list_items_to_remove));
 
             $this->cache_batch_execute();
         }

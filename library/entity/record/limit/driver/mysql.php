@@ -2,6 +2,21 @@
 
     class entity_record_limit_driver_mysql implements entity_record_limit_driver {
 
+        /**
+         * Parse the table name into a properly escaped table string
+         *
+         * @param string $table
+         *
+         * @return string
+         */
+        protected static function table($table) {
+            if (strpos($table, '.') !== false) {
+                $table = explode('.', $table);
+                return "{$table[0]}`.`{$table[1]}";
+            } else {
+                return $table;
+            }
+        }
 
         public static function by_pk(entity_record_dao $self, $pool, $pk) {
 
@@ -11,7 +26,41 @@
 
         }
 
-        public static function by_fields_offset(entity_record_dao $self, $pool, array $keys, $pk, array $keys, array $order_by, $offset, $limit) {
+        public static function by_fields_offset(entity_record_dao $self, $pool, array $keys, $pk, array $order_by, $offset, $limit) {
+            $where = [];
+            $vals  = [];
+
+            if ($keys) {
+                foreach ($keys as $k => $v) {
+                    if ($v === null) {
+                        $where[] = "`{$k}` IS NULL";
+                    } else {
+                        $vals[]  = $v;
+                        $where[] = "`{$k}` = ?";
+                    }
+                }
+            }
+
+            $limit = $limit ? "{$limit} OFFSET {$offset}" : $offset;
+
+            $order = [];
+            foreach ($order_by as $field => $sort_direction) {
+                $order[] = "`{$field}` " . (entity_record_limit_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
+            }
+            $order_by = join(', ', $order);
+            $rs = core::sql($pool)->prepare("
+                SELECT `{$pk}`
+                FROM `" . self::table($self::TABLE) . "`
+                " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
+                ORDER BY {$order_by}
+                LIMIT {$limit}
+            ");
+            $rs->execute($vals);
+
+            return array_column($rs->fetchAll(), $pk);
+        }
+
+        public static function by_fields_after(entity_record_dao $self, $pool, array $keys, $pk, array $order_by, $after_pk, $limit) {
             $where = [];
             $vals  = [];
 
@@ -46,42 +95,7 @@
             return array_column($rs->fetchAll(), $pk);
         }
 
-        public static function by_fields_after(entity_record_dao $self, $pool, array $keys, $pk, array $keys, array $order_by, $after_pk, $limit) {
-            $where = [];
-            $vals  = [];
-
-            if ($keys) {
-                foreach ($keys as $k => $v) {
-                    if ($v === null) {
-                        $where[] = "`{$k}` IS NULL";
-                    } else {
-                        $vals[]  = $v;
-                        $where[] = "`{$k}` = ?";
-                    }
-                }
-            }
-
-            $limit = $limit ? "{$limit} OFFSET {$offset}" : $offset;
-
-            $order = [];
-            foreach ($order_by as $field => $order) {
-                $order[] = "`{$field}` " . (strtoupper($order) === 'DESC' ? 'DESC' : 'ASC');
-            }
-            $order_by = join(', ', $order);
-
-            $rs = core::sql($pool)->prepare("
-                SELECT `{$pk}`
-                FROM `" . self::table($self::TABLE) . "`
-                " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
-                ORDER BY {$order_by}
-                LIMIT {$limit}
-            ");
-            $rs->execute($vals);
-
-            return array_column($rs->fetchAll(), $pk);
-        }
-
-        public static function by_fields_multi(entity_record_dao $self, $pool, array $keys_arr, $pk, array $keys, array $order_by, $offset, $limit) {
+        public static function by_fields_multi(entity_record_dao $self, $pool, array $keys_arr, $pk, array $order_by, $offset, $limit) {
 
         }
 

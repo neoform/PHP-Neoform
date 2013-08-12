@@ -3,7 +3,7 @@
     /**
      * Region DAO
      */
-    class region_dao extends entity_record_dao implements region_definition {
+    class region_dao extends entity_record_limit_dao implements region_definition {
 
         const BY_COUNTRY                 = 'by_country';
         const BY_COUNTRY_NAME_NORMALIZED = 'by_country_name_normalized';
@@ -38,8 +38,32 @@
             return parent::_by_fields(
                 self::BY_COUNTRY,
                 [
-                    'country_id'      => (int) $country_id,
+                    'country_id' => (int) $country_id,
                 ]
+            );
+        }
+
+        public function by_country_offset($country_id, array $order_by, $offset, $limit) {
+            return parent::_by_fields_offset(
+                self::BY_COUNTRY,
+                [
+                    'country_id' => (int) $country_id,
+                ],
+                $order_by,
+                (int) $offset,
+                (int) $limit
+            );
+        }
+
+        public function by_country_after($country_id, array $order_by, $after_pk, $limit) {
+            return parent::_by_fields_after(
+                self::BY_COUNTRY,
+                [
+                    'country_id' => (int) $country_id,
+                ],
+                $order_by,
+                $after_pk,
+                (int) $limit
             );
         }
 

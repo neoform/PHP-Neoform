@@ -415,8 +415,6 @@
                 array_merge($cache_keys, $list_keys, $field_list_keys)
             );
 
-            core::debug(array_merge($cache_keys, $list_keys, $field_list_keys));
-
             /**
              * Since we just deleted $field_list_keys, we now remove those values from their parent lists
              * (Remove list field/value keys and order by keys from field lists)
@@ -429,8 +427,6 @@
                     $remove_keys
                 );
             }
-
-            core::debug(array_unique($list_items_to_remove));
 
             $this->cache_batch_execute();
         }

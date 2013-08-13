@@ -158,14 +158,14 @@
          * @access protected
          * @static
          * @param entity_record_model $model  the model that is to be updated
-         * @param array        $info          the new info to be put into the model
+         * @param array        $new_info      the new info to be put into the model
          * @param boolean      $return_model  optional - return a model of the new record
          * @return entity_record_model|true if $return_model is true, an updated model is returned
          * @throws model_exception
          */
-        protected function _update(entity_record_model $model, array $info, $return_model = true) {
+        protected function _update(entity_record_model $model, array $new_info, $return_model = true) {
 
-            if (! $info) {
+            if (! $new_info) {
                 return $return_model ? $model : false;
             }
 
@@ -173,15 +173,7 @@
              * Filter out any fields that have no actually changed - no point in updating the record and destroying
              * cache if nothing actually changed
              */
-            $old_info = $model->export(array_keys($info));
-            $new_info = [];
-            foreach ($info as $k => $v) {
-                if ($old_info[$k] !== $v) {
-                    $new_info[$k] = $v;
-                } else {
-                    unset($old_info[$k]);
-                }
-            }
+            $new_info = array_diff($new_info, $model->export());
 
             if (! $new_info) {
                 return $return_model ? $model : false;
@@ -200,8 +192,10 @@
                 static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
             );
 
-            // If the primary key was changed, bust the cache for that new key too
-            // technically the PK should never change though... that kinda defeats the purpose of a record PK...
+            /**
+             * If the primary key was changed, bust the cache for that new key too
+             * technically the PK should never change though... that kinda defeats the purpose of a record PK...
+             */
             if (array_key_exists($pk, $new_info)) {
                 cache_lib::delete(
                     $this->cache_engine,
@@ -212,17 +206,24 @@
 
             $this->cache_batch_execute();
 
-            // Destroy cache based on the fields that were changed
-            self::_delete_limit_cache_by_fields($new_info, $old_info);
+            /**
+             * Reload model from source based on current (or newly updated) PK
+             * We reload it in case there were any fields updated by an external source during the process (such as a timestamp)
+             */
+            $new_model = new $model(array_key_exists($pk, $new_info) ? $new_info[$pk] : $model->$pk);
+
+            // Reload new info from the newly refreshed model
+            $new_info = $new_model->export();
+            $old_info = $model->export();
+
+            // Destroy cache based on the fields that were changed - do not wrap this function in a batch execution
+            self::_delete_limit_cache_by_fields(
+                array_diff($new_info, $old_info),
+                array_diff($old_info, $new_info)
+            );
 
             if ($return_model) {
-
-
-                // @todo this updated model being loaded should actually be done before the cache busting. that way we bust all keys (even auto updated ones like dates)
-
-
-                // Reload model from source based on current (or newly updated) PK
-                return new $model(array_key_exists($pk, $new_info) ? $new_info[$pk] : $model->$pk);
+                return $model;
             } else {
                 return true;
             }
@@ -250,6 +251,7 @@
                 static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
             );
 
+            // Destroy cache based on table fields - do not wrap this function in a batch execution
             self::_delete_limit_cache_by_fields(array_keys(static::pdo_bindings()));
 
             return true;

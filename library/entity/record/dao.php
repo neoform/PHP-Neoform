@@ -194,7 +194,7 @@
          */
         public function by_pks(array $pks) {
 
-            if (! count($pks)) {
+            if (! $pks) {
                 return [];
             }
 

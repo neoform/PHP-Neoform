@@ -48,6 +48,7 @@
                 $order[] = "`{$field}` " . (entity_record_limit_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
             }
             $order_by = join(', ', $order);
+
             $rs = core::sql($pool)->prepare("
                 SELECT `{$pk}`
                 FROM `" . self::table($self::TABLE) . "`

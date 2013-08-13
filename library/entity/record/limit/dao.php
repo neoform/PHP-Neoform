@@ -145,7 +145,6 @@
                     $self->_set_delete_limit_cache_lists($self, $cache_key, $keys, $order_by);
 
                     $source_driver = "entity_record_limit_driver_{$self->source_engine}";
-                    //                                      $self, $pool,                    array $keys, $pk, array $order_by, $offset, $limit
                     return $source_driver::by_fields_offset($self, $self->source_engine_pool_read, $keys, $pk, $order_by, $offset, $limit);
                 }
             );
@@ -419,12 +418,12 @@
              * Since we just deleted $field_list_keys, we now remove those values from their parent lists
              * (Remove list field/value keys and order by keys from field lists)
              */
-            foreach (array_unique($list_items_to_remove) as $field_list_key => $remove_keys) {
+            foreach ($list_items_to_remove as $field_list_key => $remove_keys) {
                 cache_lib::list_remove(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
                     $field_list_key,
-                    $remove_keys
+                    array_unique($remove_keys)
                 );
             }
 

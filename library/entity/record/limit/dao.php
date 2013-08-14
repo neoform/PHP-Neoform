@@ -314,6 +314,19 @@
             $source_driver = "entity_record_driver_{$this->source_engine}";
             $source_driver::update($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $model, $new_info);
 
+            /**
+             * Reload model from source based on current (or newly updated) PK
+             * We reload it in case there were any fields updated by an external source during the process (such as a timestamp)
+             */
+            if ($reload_model_from_source) {
+                // Use master to avoid race condition
+                $new_info = $source_driver::by_pk(
+                    $this,
+                    $this->source_engine_pool_write,
+                    array_key_exists($pk, $new_info) ? $new_info[$pk] : $model->$pk
+                );
+            }
+
             $this->cache_batch_start();
 
             cache_lib::delete(
@@ -336,39 +349,22 @@
 
             $this->cache_batch_execute();
 
-            if ($reload_model_from_source) {
-                /**
-                 * Reload model from source based on current (or newly updated) PK
-                 * We reload it in case there were any fields updated by an external source during the process (such as a timestamp)
-                 */
-                $new_model = new $model(array_key_exists($pk, $new_info) ? $new_info[$pk] : $model->$pk);
+            // Destroy cache based on the fields that were changed - do not wrap this function in a batch execution
+            self::_delete_limit_cache_by_fields(
+                array_diff($new_info, $old_info),
+                array_diff($old_info, $new_info)
+            );
 
-                // Reload new info from the newly refreshed model
-                $new_info = $new_model->export();
-
-                // Destroy cache based on the fields that were changed - do not wrap this function in a batch execution
-                self::_delete_limit_cache_by_fields(
-                    array_diff($new_info, $old_info),
-                    array_diff($old_info, $new_info)
-                );
-
-                return $return_model ? $new_model : true;
-
-            } else {
-
-                // Destroy cache based on the fields that were changed - do not wrap this function in a batch execution
-                self::_delete_limit_cache_by_fields(
-                    array_diff($new_info, $old_info),
-                    array_diff($old_info, $new_info)
-                );
-
-                if ($return_model) {
+            if ($return_model) {
+                if ($reload_model_from_source) {
+                    return new $model(null, $new_info);
+                } else {
                     $updated_model = clone $model;
                     $updated_model->_update($new_info);
                     return $updated_model;
-                } else {
-                    return true;
                 }
+            } else {
+                return true;
             }
         }
 

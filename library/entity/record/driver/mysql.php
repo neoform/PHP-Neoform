@@ -21,9 +21,9 @@
         /**
          * Get full record by primary key
          *
-         * @param entity_record_dao      $self the name of the DAO
-         * @param string          $pool which source engine pool to use
-         * @param int|string|null $pk
+         * @param entity_record_dao $self the name of the DAO
+         * @param string            $pool which source engine pool to use
+         * @param int|string|null   $pk
          *
          * @return mixed
          */
@@ -47,8 +47,8 @@
          * Get full records by primary key
          *
          * @param entity_record_dao $self the name of the DAO
-         * @param string     $pool which source engine pool to use
-         * @param array      $pks
+         * @param string            $pool which source engine pool to use
+         * @param array             $pks
          *
          * @return array
          */
@@ -75,11 +75,11 @@
          * Get a list of PKs, with a limit, offset and order by
          *
          * @param entity_record_dao $self
-         * @param string     $pool which source engine pool to use
-         * @param integer    $limit     max number of PKs to return
-         * @param string     $order_by  field name
-         * @param string     $direction asc|desc
-         * @param string     $after_pk  A PK offset to be used (it's more efficient to use PK offsets than an SQL 'OFFSET')
+         * @param string            $pool which source engine pool to use
+         * @param integer           $limit     max number of PKs to return
+         * @param string            $order_by  field name
+         * @param string            $direction asc|desc
+         * @param string            $after_pk  A PK offset to be used (it's more efficient to use PK offsets than an SQL 'OFFSET')
          *
          * @return array
          */
@@ -106,11 +106,11 @@
          * Get a paginated list of entity PKs
          *
          * @param entity_record_dao $self
-         * @param string     $pool which source engine pool to use
-         * @param string     $order_by
-         * @param string     $direction
-         * @param integer    $offset
-         * @param integer    $limit
+         * @param string            $pool which source engine pool to use
+         * @param string            $order_by
+         * @param string            $direction
+         * @param integer           $offset
+         * @param integer           $limit
          *
          * @return array
          */
@@ -132,7 +132,7 @@
          * Get full count of rows in a table
          *
          * @param entity_record_dao $self
-         * @param string     $pool which source engine pool to use
+         * @param string            $pool which source engine pool to use
          *
          * @return int
          */
@@ -149,9 +149,9 @@
          * Get all records in the table
          *
          * @param entity_record_dao $self the name of the DAO
-         * @param string     $pool which source engine pool to use
-         * @param int|string $pk
-         * @param array      $keys
+         * @param string            $pool which source engine pool to use
+         * @param int|string        $pk
+         * @param array             $keys
          *
          * @return array
          */
@@ -193,9 +193,9 @@
          * Get record primary key by fields
          *
          * @param entity_record_dao $self the name of the DAO
-         * @param string     $pool which source engine pool to use
-         * @param array      $keys
-         * @param int|string $pk
+         * @param string            $pool which source engine pool to use
+         * @param array             $keys
+         * @param int|string        $pk
          *
          * @return array
          */
@@ -228,9 +228,9 @@
          * Get multiple record primary keys by fields
          *
          * @param entity_record_dao $self the name of the DAO
-         * @param string     $pool which source engine pool to use
-         * @param array      $keys_arr
-         * @param int|string $pk
+         * @param string            $pool which source engine pool to use
+         * @param array             $keys_arr
+         * @param int|string        $pk
          *
          * @return array
          */
@@ -279,9 +279,9 @@
          * Get specific fields from a record, by keys
          *
          * @param entity_record_dao $self
-         * @param string     $pool which source engine pool to use
-         * @param array      $select_fields
-         * @param array      $keys
+         * @param string            $pool which source engine pool to use
+         * @param array             $select_fields
+         * @param array             $keys
          *
          * @return array
          */
@@ -319,10 +319,10 @@
          * Insert record
          *
          * @param entity_record_dao $self the name of the DAO
-         * @param string     $pool which source engine pool to use
-         * @param array      $info
-         * @param bool       $autoincrement
-         * @param bool       $replace
+         * @param string            $pool which source engine pool to use
+         * @param array             $info
+         * @param bool              $autoincrement
+         * @param bool              $replace
          *
          * @return array
          */
@@ -353,11 +353,11 @@
          * Insert multiple records
          *
          * @param entity_record_dao $self the name of the DAO
-         * @param string     $pool which source engine pool to use
-         * @param array      $infos
-         * @param bool       $keys_match
-         * @param bool       $autoincrement
-         * @param bool       $replace
+         * @param string            $pool which source engine pool to use
+         * @param array             $infos
+         * @param bool              $keys_match
+         * @param bool              $autoincrement
+         * @param bool              $replace
          *
          * @return array
          */
@@ -370,19 +370,21 @@
                     $insert_fields[] = "`{$k}`";
                 }
 
-                // If the table is auto increment, we cannot lump all inserts into one query
-                // since we need the returned IDs for cache-busting and to return a model
+                /**
+                 * If the table is auto increment, we cannot lump all inserts into one query
+                 * since we need the returned IDs for cache-busting and to return a model
+                 */
                 if ($autoincrement) {
                     $sql->beginTransaction();
 
                     $insert = $sql->prepare("
                         " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO
-                            `" . self::table($self::TABLE) . "`
-                            ( " . join(', ', $insert_fields) . " )
-                            VALUES
-                            ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
+                        `" . self::table($self::TABLE) . "`
+                        ( " . join(', ', $insert_fields) . " )
+                        VALUES
+                        ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
                     ");
-                    foreach ($infos as $info) {
+                    foreach ($infos as &$info) {
                         $insert->execute(array_values($info));
                         if ($autoincrement) {
                             $info[$self::PRIMARY_KEY] = $sql->lastInsertId();
@@ -399,33 +401,30 @@
                         }
                     }
 
-                    $inserts = $sql->prepare("
+                    $sql->prepare("
                         INSERT INTO
-                            `" . self::table($self::TABLE) . "`
-                            ( " . implode(', ', $insert_fields) . " )
-                            VALUES
-                            " . join(', ', array_fill(0, count($infos), '( ' . join(',', array_fill(0, count($insert_fields), '?')) . ')')) . "
-                    ");
-
-                    $inserts->execute($insert_vals);
+                        `" . self::table($self::TABLE) . "`
+                        ( " . join(', ', $insert_fields) . " )
+                        VALUES
+                        " . join(', ', array_fill(0, count($infos), '( ' . join(',', array_fill(0, count($insert_fields), '?')) . ')')) . "
+                    ")->execute($insert_vals);
                 }
             } else {
                 $sql->beginTransaction();
 
-                foreach ($infos as $info) {
+                foreach ($infos as &$info) {
                     $insert_fields = [];
                     foreach (array_keys($info) as $key) {
                         $insert_fields[] = "`{$key}`";
                     }
 
-                    $insert = $sql->prepare("
+                    $sql->prepare("
                         INSERT INTO
-                            `" . self::table($self::TABLE) . "`
-                            ( " . join(', ', $insert_fields) . " )
-                            VALUES
-                            ( " . join(',', array_fill(0, count($info), '?')) . " )
-                    ");
-                    $insert->execute(array_values($info));
+                        `" . self::table($self::TABLE) . "`
+                        ( " . join(', ', $insert_fields) . " )
+                        VALUES
+                        ( " . join(',', array_fill(0, count($info), '?')) . " )
+                    ")->execute(array_values($info));
 
                     if ($autoincrement) {
                         $info[$self::PRIMARY_KEY] = $sql->lastInsertId();
@@ -442,32 +441,32 @@
          * Update a record
          *
          * @param entity_record_dao   $self the name of the DAO
-         * @param string       $pool which source engine pool to use
-         * @param int|string   $pk
+         * @param string              $pool which source engine pool to use
+         * @param int|string          $pk
          * @param entity_record_model $model
-         * @param array        $info
+         * @param array               $info
          */
         public static function update(entity_record_dao $self, $pool, $pk, entity_record_model $model, array $info) {
             $update_fields = [];
             foreach (array_keys($info) as $key) {
                 $update_fields[] = "`{$key}` = :{$key}";
             }
-            $update = core::sql($pool)->prepare("
+
+            $info[$pk] = $model->$pk;
+
+            core::sql($pool)->prepare("
                 UPDATE `" . self::table($self::TABLE) . "`
                 SET " . join(", \n", $update_fields) . "
                 WHERE `{$pk}` = :{$pk}
-            ");
-
-            $info[$pk] = $model->$pk;
-            $update->execute($info);
+            ")->execute($info);
         }
 
         /**
          * Delete a record
          *
          * @param entity_record_dao   $self the name of the DAO
-         * @param string       $pool which source engine pool to use
-         * @param int|string   $pk
+         * @param string              $pool which source engine pool to use
+         * @param int|string          $pk
          * @param entity_record_model $model
          */
         public static function delete(entity_record_dao $self, $pool, $pk, entity_record_model $model) {
@@ -484,8 +483,8 @@
          * Delete multiple records
          *
          * @param entity_record_dao        $self the name of the DAO
-         * @param string            $pool which source engine pool to use
-         * @param int|string        $pk
+         * @param string                   $pool which source engine pool to use
+         * @param int|string               $pk
          * @param entity_record_collection $collection
          */
         public static function deletes(entity_record_dao $self, $pool, $pk, entity_record_collection $collection) {

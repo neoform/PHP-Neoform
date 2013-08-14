@@ -150,20 +150,149 @@
             );
         }
 
+        /**
+         * Inserts a record into the database
+         *
+         * @access protected
+         * @static
+         * @param array   $info                   an associative array of into to be put into the database
+         * @param boolean $replace                optional - user REPLACE INTO instead of INSERT INTO
+         * @param boolean $return_model           optional - return a model of the new record
+         * @param boolean $load_model_from_source optional - after insert, load data from source - this is needed if the DB changes values on insert (eg, timestamps)
+         * @return entity_record_model|boolean    if $return_model is set to true, the model created from the info is returned
+         * @throws model_exception
+         */
+        protected function _insert(array $info, $replace=false, $return_model=true, $load_model_from_source=false) {
 
+            $source_driver = "entity_record_driver_{$this->source_engine}";
+            $info          = $source_driver::insert(
+                $this,
+                $this->source_engine_pool_write,
+                $info,
+                static::AUTOINCREMENT,
+                $replace
+            );
+
+            if ($load_model_from_source) {
+                // Use master to avoid race condition
+                $info = $source_driver::by_pk($this, $this->source_engine_pool_write, $info[static::PRIMARY_KEY]);
+            }
+
+            $this->cache_batch_start();
+
+            // In case a blank record was cached
+            cache_lib::set(
+                $this->cache_engine,
+                $this->cache_engine_pool_write,
+                static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY]),
+                $info
+            );
+
+//            if (static::USING_COUNT) {
+//                cache_lib::delete(
+//                    $this->cache_engine,
+//                    $this->cache_engine_pool_write,
+//                    static::ENTITY_NAME . ':' . self::COUNT
+//                );
+//            }
+
+            $this->cache_batch_execute();
+
+            self::_delete_limit_cache_by_fields($info);
+
+            if ($return_model) {
+                $model = static::ENTITY_NAME . '_model';
+                return new $model(null, $info);
+            } else {
+                return true;
+            }
+        }
+
+        /**
+         * Inserts multiple record into the database
+         *
+         * @access protected
+         * @static
+         * @param array   $infos                    an array of associative arrays of into to be put into the database, if this dao represents multiple tables, the info will be split up across the applicable tables.
+         * @param boolean $keys_match               optional - if all the records being inserted have the same array keys this should be true. it is faster to insert all the records at the same time, but this can only be done if they all have the same keys.
+         * @param boolean $replace                  optional - user REPLACE INTO instead of INSERT INTO
+         * @param boolean $return_collection        optional - return a collection of models created
+         * @param boolean $load_models_from_source  optional - after insert, load data from source - this is needed if the DB changes values on insert (eg, timestamps)
+         * @return entity_record_collection|boolean if $return_collection is true function returns a collection
+         * @throws model_exception
+         */
+        protected function _inserts(array $infos, $keys_match=true, $replace=false, $return_collection=true, $load_models_from_source=false) {
+
+            $source_driver = "entity_record_driver_{$this->source_engine}";
+            $infos         = $source_driver::inserts(
+                $this,
+                $this->source_engine_pool_write,
+                $infos,
+                $keys_match,
+                static::AUTOINCREMENT,
+                $replace
+            );
+
+            if ($load_models_from_source) {
+                $ids = [];
+                foreach ($infos as $k => $info) {
+                    $ids[$k] = $info[static::PRIMARY_KEY];
+                }
+
+                // Use master to avoid race condition
+                $infos = $source_driver::by_pks($this, $this->source_engine_pool_write, $ids);
+            }
+
+            $insert_cache_data = [];
+            foreach ($infos as $info) {
+                $insert_cache_data[static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY])] = $info;
+            }
+
+            $this->cache_batch_start();
+
+            cache_lib::set_multi(
+                $this->cache_engine,
+                $this->cache_engine_pool_write,
+                $insert_cache_data
+            );
+
+//            if (static::USING_COUNT) {
+//                cache_lib::delete(
+//                    $this->cache_engine,
+//                    $this->cache_engine_pool_write,
+//                    static::ENTITY_NAME . ':' . self::COUNT
+//                );
+//            }
+
+            $this->cache_batch_execute();
+
+            self::_delete_limit_cache_by_fields_multi($infos);
+
+            if ($load_models_from_source) {
+                return $return_collection ? new $collection(null, $infos) : true;
+            } else {
+                if ($return_collection) {
+                    $collection = static::ENTITY_NAME . '_collection';
+                    return new $collection(null, $infos);
+                } else {
+                    return true;
+                }
+            }
+        }
 
         /**
          * Updates a record in the database
          *
          * @access protected
          * @static
-         * @param entity_record_model $model  the model that is to be updated
-         * @param array        $new_info      the new info to be put into the model
-         * @param boolean      $return_model  optional - return a model of the new record
-         * @return entity_record_model|true if $return_model is true, an updated model is returned
+         * @param entity_record_model $model                    the model that is to be updated
+         * @param array               $new_info                 the new info to be put into the model
+         * @param boolean             $return_model             optional - return a model of the new record
+         * @param boolean             $reload_model_from_source optional - after update, load data from source - this is needed if the DB changes values on update (eg, timestamps)
+         * @return entity_record_model|bool                     if $return_model is true, an updated model is returned
          * @throws model_exception
          */
-        protected function _update(entity_record_model $model, array $new_info, $return_model = true) {
+        protected function _update(entity_record_model $model, array $new_info, $return_model=true, $reload_model_from_source=false) {
 
             if (! $new_info) {
                 return $return_model ? $model : false;
@@ -173,7 +302,8 @@
              * Filter out any fields that have no actually changed - no point in updating the record and destroying
              * cache if nothing actually changed
              */
-            $new_info = array_diff($new_info, $model->export());
+            $old_info = $model->export();
+            $new_info = array_diff($new_info, $old_info);
 
             if (! $new_info) {
                 return $return_model ? $model : false;
@@ -206,26 +336,39 @@
 
             $this->cache_batch_execute();
 
-            /**
-             * Reload model from source based on current (or newly updated) PK
-             * We reload it in case there were any fields updated by an external source during the process (such as a timestamp)
-             */
-            $new_model = new $model(array_key_exists($pk, $new_info) ? $new_info[$pk] : $model->$pk);
+            if ($reload_model_from_source) {
+                /**
+                 * Reload model from source based on current (or newly updated) PK
+                 * We reload it in case there were any fields updated by an external source during the process (such as a timestamp)
+                 */
+                $new_model = new $model(array_key_exists($pk, $new_info) ? $new_info[$pk] : $model->$pk);
 
-            // Reload new info from the newly refreshed model
-            $new_info = $new_model->export();
-            $old_info = $model->export();
+                // Reload new info from the newly refreshed model
+                $new_info = $new_model->export();
 
-            // Destroy cache based on the fields that were changed - do not wrap this function in a batch execution
-            self::_delete_limit_cache_by_fields(
-                array_diff($new_info, $old_info),
-                array_diff($old_info, $new_info)
-            );
+                // Destroy cache based on the fields that were changed - do not wrap this function in a batch execution
+                self::_delete_limit_cache_by_fields(
+                    array_diff($new_info, $old_info),
+                    array_diff($old_info, $new_info)
+                );
 
-            if ($return_model) {
-                return $model;
+                return $return_model ? $new_model : true;
+
             } else {
-                return true;
+
+                // Destroy cache based on the fields that were changed - do not wrap this function in a batch execution
+                self::_delete_limit_cache_by_fields(
+                    array_diff($new_info, $old_info),
+                    array_diff($old_info, $new_info)
+                );
+
+                if ($return_model) {
+                    $updated_model = clone $model;
+                    $updated_model->_update($new_info);
+                    return $updated_model;
+                } else {
+                    return true;
+                }
             }
         }
 
@@ -347,8 +490,8 @@
          *
          * Do not wrap a batch execution around this function
          *
-         * @param array $fields           list of fields and values - key = field
-         * @param array $secondary_fields list of fields and values - key = field
+         * @param array $fields           list of fields/values - key = field
+         * @param array $secondary_fields list of fields/values - key = field
          */
         final protected function _delete_limit_cache_by_fields(array $fields, array $secondary_fields=null) {
             $field_list_keys      = [];
@@ -376,6 +519,94 @@
                 // This gets used when an update took place - there is a new and old value
                 if ($secondary_fields && array_key_exists($field, $secondary_fields)) {
                     $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $secondary_fields[$field]);
+                }
+            }
+
+            /**
+             * If any $field_list_keys keys need deleting (eg, limit[id]), get all list keys from them (eg, limit[id]:5)
+             */
+            if ($field_list_keys) {
+                $list_keys = array_unique(
+                    array_merge(
+                        $list_keys,
+                        cache_lib::list_get_union(
+                            $this->cache_engine,
+                            $this->cache_engine_pool_write,
+                            $field_list_keys
+                        )
+                    )
+                );
+            }
+
+            /**
+             * Get a union of all field/value list keys - combined
+             * eg, limit[id]:555 + limit[id]:order_by + limit[email]:aaa@aaa.com + limit[email]:order_by
+             */
+            $cache_keys = cache_lib::list_get_union(
+                $this->cache_engine,
+                $this->cache_engine_pool_write,
+                $list_keys
+            );
+
+            $this->cache_batch_start();
+
+            /**
+             * Delete all the keys selected above
+             */
+            cache_lib::delete_multi(
+                $this->cache_engine,
+                $this->cache_engine_pool_write,
+                array_merge($cache_keys, $list_keys, $field_list_keys)
+            );
+
+            /**
+             * Since we just deleted $field_list_keys, we now remove those values from their parent lists
+             * (Remove list field/value keys and order by keys from field lists)
+             */
+            foreach ($list_items_to_remove as $field_list_key => $remove_keys) {
+                cache_lib::list_remove(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    $field_list_key,
+                    array_unique($remove_keys)
+                );
+            }
+
+            $this->cache_batch_execute();
+        }
+
+        /**
+         * Delete all cache keys and field/value and field order lists - by fields
+         *
+         * Do not wrap a batch execution around this function
+         *
+         * @param array $fields_arr array containing lists of fields/values - key = field
+         */
+        final protected function _delete_limit_cache_by_fields_multi(array $fields_arr) {
+            $field_list_keys      = [];
+            $list_keys            = [];
+            $list_items_to_remove = [];
+
+            foreach ($fields_arr as $fields) {
+                foreach ($fields as $field => $value) {
+
+                    // @todo i'm fairly certain this can be made more efficient
+
+                    // Which list does this field/value key belong to - we need to remove it from that list
+                    $field_list_key = self::_build_key_list($field);
+
+                    // Order by list key
+                    $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_order($field);
+
+                    /**
+                     * If the value is null, it means it's a parent $field_list_keys key (eg, limit[id])
+                     * instead of a $list_keys (eg, limit[id]:5 or limit[id]:order_by)
+                     */
+                    if ($value === null) {
+                        $field_list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field);
+                    } else {
+                        $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $value);
+                    }
                 }
             }
 

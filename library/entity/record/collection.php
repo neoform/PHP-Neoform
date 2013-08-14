@@ -23,7 +23,7 @@
                 $infos = entity::dao(static::ENTITY_NAME)->by_pks($pks);
             }
 
-            if ($infos !== null && count($infos)) {
+            if ($infos !== null && $infos) {
                 $model = static::ENTITY_NAME . '_model';
                 foreach ($infos as $key => $info) {
                     try {

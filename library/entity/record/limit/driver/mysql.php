@@ -104,12 +104,126 @@
 
         }
 
+        /**
+         * Insert record
+         *
+         * @param entity_record_dao $self the name of the DAO
+         * @param string            $pool which source engine pool to use
+         * @param array             $info
+         * @param bool              $autoincrement
+         * @param bool              $replace
+         *
+         * @return array
+         */
         public static function insert(entity_record_dao $self, $pool, array $info, $autoincrement, $replace) {
+            $insert_fields = [];
+            foreach (array_keys($info) as $key) {
+                $insert_fields[] = "`$key`";
+            }
 
+            $sql = core::sql($pool);
+            $insert = $sql->prepare("
+                " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO `" . self::table($self::TABLE) . "`
+                ( " . join(', ', $insert_fields) . " )
+                VALUES
+                ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
+            ");
+
+            $insert->execute(array_values($info));
+
+            if ($autoincrement) {
+                $info[$self::PRIMARY_KEY] = $sql->lastInsertId();
+            }
+
+            return $info;
         }
 
+        /**
+         * Insert multiple records
+         *
+         * @param entity_record_dao $self the name of the DAO
+         * @param string            $pool which source engine pool to use
+         * @param array             $infos
+         * @param bool              $keys_match
+         * @param bool              $autoincrement
+         * @param bool              $replace
+         *
+         * @return array
+         */
         public static function inserts(entity_record_dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace) {
+            $sql = core::sql($pool);
 
+            if ($keys_match) {
+                $insert_fields = [];
+                foreach (array_keys(reset($infos)) as $k) {
+                    $insert_fields[] = "`{$k}`";
+                }
+
+                /**
+                 * If the table is auto increment, we cannot lump all inserts into one query
+                 * since we need the returned IDs for cache-busting and to return a model
+                 */
+                if ($autoincrement) {
+                    $sql->beginTransaction();
+
+                    $insert = $sql->prepare("
+                        " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO
+                        `" . self::table($self::TABLE) . "`
+                        ( " . join(', ', $insert_fields) . " )
+                        VALUES
+                        ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
+                    ");
+                    foreach ($infos as &$info) {
+                        $insert->execute(array_values($info));
+                        if ($autoincrement) {
+                            $info[$self::PRIMARY_KEY] = $sql->lastInsertId();
+                        }
+                    }
+
+                    $sql->commit();
+                } else {
+                    // this might explode if $keys_match was a lie
+                    $insert_vals = new splFixedArray(count($insert_fields) * count($infos));
+                    foreach ($infos as $info) {
+                        foreach ($info as $v) {
+                            $insert_vals[] = $v;
+                        }
+                    }
+
+                    $sql->prepare("
+                        INSERT INTO
+                        `" . self::table($self::TABLE) . "`
+                        ( " . join(', ', $insert_fields) . " )
+                        VALUES
+                        " . join(', ', array_fill(0, count($infos), '( ' . join(',', array_fill(0, count($insert_fields), '?')) . ')')) . "
+                    ")->execute($insert_vals);
+                }
+            } else {
+                $sql->beginTransaction();
+
+                foreach ($infos as &$info) {
+                    $insert_fields = [];
+                    foreach (array_keys($info) as $key) {
+                        $insert_fields[] = "`{$key}`";
+                    }
+
+                    $sql->prepare("
+                        INSERT INTO
+                        `" . self::table($self::TABLE) . "`
+                        ( " . join(', ', $insert_fields) . " )
+                        VALUES
+                        ( " . join(',', array_fill(0, count($info), '?')) . " )
+                    ")->execute(array_values($info));
+
+                    if ($autoincrement) {
+                        $info[$self::PRIMARY_KEY] = $sql->lastInsertId();
+                    }
+                }
+
+                $sql->commit();
+            }
+
+            return $infos;
         }
 
         public static function update(entity_record_dao $self, $pool, $pk, entity_record_model $model, array $info) {

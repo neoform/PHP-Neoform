@@ -40,6 +40,45 @@
         }
 
         /**
+         * Set a record in cache
+         *
+         * @param string $engine
+         * @param string $engine_pool
+         * @param string $key
+         * @param mixed  $data
+         *
+         * @return mixed|null
+         */
+        public static function set($engine, $engine_pool, $key, $data) {
+
+            // Memory
+            cache_memory_dao::set($key, $data);
+
+            if ($engine) {
+                $engine_driver = "cache_{$engine}_driver";
+                $engine_driver::set($engine_pool, $key, $data);
+            }
+        }
+
+        /**
+         * Set multiple records in cache
+         *
+         * @param string $engine
+         * @param string $engine_pool
+         * @param array  $rows
+         */
+        public static function set_multi($engine, $engine_pool, array $rows) {
+
+            // Memory
+            cache_memory_dao::set_multi($rows);
+
+            if ($engine) {
+                $engine_driver = "cache_{$engine}_driver";
+                $engine_driver::set_multi($engine_pool, $rows);
+            }
+        }
+
+        /**
          * Get a record from cache
          *
          * @param string $engine

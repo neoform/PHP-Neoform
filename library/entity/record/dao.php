@@ -486,13 +486,14 @@
          *
          * @access protected
          * @static
-         * @param array   $info         an associative array of into to be put into the database
-         * @param boolean $replace      optional - user REPLACE INTO instead of INSERT INTO
-         * @param boolean $return_model optional - return a model of the new record
-         * @return entity_record_model|true if $return_model is set to true, the model created from the info is returned
+         * @param array   $info                   an associative array of into to be put into the database
+         * @param boolean $replace                optional - user REPLACE INTO instead of INSERT INTO
+         * @param boolean $return_model           optional - return a model of the new record
+         * @param boolean $load_model_from_source optional - after insert, load data from source - this is needed if the DB changes values on insert (eg, timestamps)
+         * @return entity_record_model|boolean    if $return_model is set to true, the model created from the info is returned
          * @throws model_exception
          */
-        protected function _insert(array $info, $replace = false, $return_model = true) {
+        protected function _insert(array $info, $replace=false, $return_model=true, $load_model_from_source=true) {
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
             $info          = $source_driver::insert(
@@ -530,6 +531,10 @@
                 $this->_delete_paginated_cache();
             }
 
+            if ($load_model_from_source) {
+                $info = self::by_pk($info[static::PRIMARY_KEY]);
+            }
+
             if ($return_model) {
                 $model = static::ENTITY_NAME . '_model';
                 return new $model(null, $info);
@@ -543,14 +548,15 @@
          *
          * @access protected
          * @static
-         * @param array   $infos             an array of associative arrays of into to be put into the database, if this dao represents multiple tables, the info will be split up across the applicable tables.
-         * @param boolean $keys_match        optional - if all the records being inserted have the same array keys this should be true. it is faster to insert all the records at the same time, but this can only be done if they all have the same keys.
-         * @param boolean $replace           optional - user REPLACE INTO instead of INSERT INTO
-         * @param boolean $return_collection optional - return a collection of models created
-         * @return entity_record_collection|true if $return_collection is true function returns a collection
+         * @param array   $infos                    an array of associative arrays of into to be put into the database, if this dao represents multiple tables, the info will be split up across the applicable tables.
+         * @param boolean $keys_match               optional - if all the records being inserted have the same array keys this should be true. it is faster to insert all the records at the same time, but this can only be done if they all have the same keys.
+         * @param boolean $replace                  optional - user REPLACE INTO instead of INSERT INTO
+         * @param boolean $return_collection        optional - return a collection of models created
+         * @param boolean $load_models_from_source  optional - after insert, load data from source - this is needed if the DB changes values on insert (eg, timestamps)
+         * @return entity_record_collection|boolean if $return_collection is true function returns a collection
          * @throws model_exception
          */
-        protected function _inserts(array $infos, $keys_match = true, $replace = false, $return_collection = true) {
+        protected function _inserts(array $infos, $keys_match=true, $replace=false, $return_collection=true, $load_models_from_source=true) {
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
             $infos         = $source_driver::inserts(
@@ -562,31 +568,9 @@
                 $replace
             );
 
-            if ($return_collection) {
-                $models = [];
-            }
             $delete_keys = [];
-
-            if ($keys_match) {
-                if (static::AUTOINCREMENT || $return_collection) {
-                    foreach ($infos as $k => $info) {
-                        if ($return_collection) {
-                            $models[$k] = new $model(null, $info);
-                        }
-                        $delete_keys[] = static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY]);
-                    }
-                } else {
-                    foreach ($infos as $info) {
-                        $delete_keys[] = static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY]);
-                    }
-                }
-            } else {
-                foreach ($infos as $k => $info) {
-                    if ($return_collection) {
-                        $models[$k] = new $model(null, $info);
-                    }
-                    $delete_keys[] = static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY]);
-                }
+            foreach ($infos as $info) {
+                $delete_keys[] = static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY]);
             }
 
             $this->cache_batch_start();
@@ -615,9 +599,18 @@
                 $this->_delete_paginated_cache();
             }
 
+            if ($load_models_from_source) {
+                $ids = [];
+                foreach ($infos as $k => $info) {
+                    $ids[$k] = $info[static::PRIMARY_KEY];
+                }
+
+                $infos = self::by_pks($ids);
+            }
+
             if ($return_collection) {
                 $collection = static::ENTITY_NAME . '_collection';
-                return new $collection(null, $models);
+                return new $collection(null, $infos);
             } else {
                 return true;
             }
@@ -628,22 +621,23 @@
          *
          * @access protected
          * @static
-         * @param entity_record_model $model         the model that is to be updated
-         * @param array        $info          the new info to be put into the model
-         * @param boolean      $return_model  optional - return a model of the new record
-         * @return entity_record_model|true if $return_model is true, an updated model is returned
+         * @param entity_record_model $model                    the model that is to be updated
+         * @param array               $new_info                 the new info to be put into the model
+         * @param boolean             $return_model             optional - return a model of the new record
+         * @param boolean             $reload_model_from_source optional - after update, load data from source - this is needed if the DB changes values on update (eg, timestamps)
+         * @return entity_record_model|bool                     if $return_model is true, an updated model is returned
          * @throws model_exception
          */
-        protected function _update(entity_record_model $model, array $info, $return_model = true) {
+        protected function _update(entity_record_model $model, array $new_info, $return_model=true, $reload_model_from_source=true) {
 
-            if (! $info) {
+            if (! $new_info) {
                 return $return_model ? $model : false;
             }
 
             $pk = static::PRIMARY_KEY;
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            $source_driver::update($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $model, $info);
+            $source_driver::update($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $model, $new_info);
 
             $this->cache_batch_start();
 
@@ -655,11 +649,11 @@
 
             // if the primary key was changed, bust the cache for that new key too
             // technically the PK should never change though... that kinda defeats the purpose of a record PK...
-            if (isset($info[$pk])) {
+            if (isset($new_info[$pk])) {
                 cache_lib::delete(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($info[$pk]) : $info[$pk])
+                    static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($new_info[$pk]) : $new_info[$pk])
                 );
             }
 
@@ -668,19 +662,33 @@
             // Delete LIMIT cache based on the fields that were changed - this might not be all fields, we so don't
             // necessarily need to delete all LIMIT caches.
             if (static::USING_LIMIT) {
-                self::_delete_limit_cache(array_keys($info));
+                self::_delete_limit_cache(array_keys($new_info));
             }
 
             if (static::USING_PAGINATED) {
-                self::_delete_paginated_cache(array_keys($info));
+                self::_delete_paginated_cache(array_keys($new_info));
             }
 
-            if ($return_model) {
-                $updated_model = clone $model;
-                $updated_model->_update($info);
-                return $updated_model;
+            if ($reload_model_from_source) {
+                /**
+                 * Reload model from source based on current (or newly updated) PK
+                 * We reload it in case there were any fields updated by an external source during the process (such as a timestamp)
+                 */
+                $new_model = new $model(array_key_exists($pk, $new_info) ? $new_info[$pk] : $model->$pk);
+
+                // Reload new info from the newly refreshed model
+                $new_info = $new_model->export();
+
+                return $return_model ? $new_model : true;
+
             } else {
-                return true;
+                if ($return_model) {
+                    $updated_model = clone $model;
+                    $updated_model->_update($new_info);
+                    return $updated_model;
+                } else {
+                    return true;
+                }
             }
         }
 

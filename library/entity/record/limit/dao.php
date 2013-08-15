@@ -329,10 +329,11 @@
 
             $this->cache_batch_start();
 
-            cache_lib::delete(
+            cache_lib::set(
                 $this->cache_engine,
                 $this->cache_engine_pool_write,
-                static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
+                static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk),
+                $new_info + $old_info
             );
 
             /**
@@ -340,11 +341,20 @@
              * technically the PK should never change though... that kinda defeats the purpose of a record PK...
              */
             if (array_key_exists($pk, $new_info)) {
-                cache_lib::delete(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($new_info[$pk]) : $new_info[$pk])
-                );
+                if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
+                    cache_lib::delete(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($new_info[$pk]) : $new_info[$pk]),
+                        $this->cache_delete_expire_ttl
+                    );
+                } else {
+                    cache_lib::delete(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($new_info[$pk]) : $new_info[$pk])
+                    );
+                }
             }
 
             $this->cache_batch_execute();
@@ -384,11 +394,20 @@
             $source_driver = "entity_record_driver_{$this->source_engine}";
             $source_driver::delete($this, $this->source_engine_pool_write, $pk, $model);
 
-            cache_lib::delete(
-                $this->cache_engine,
-                $this->cache_engine_pool_write,
-                static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
-            );
+            if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
+                cache_lib::expire(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk),
+                    $this->cache_delete_expire_ttl
+                );
+            } else {
+                cache_lib::delete(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
+                );
+            }
 
             // Destroy cache based on table fields - do not wrap this function in a batch execution
             self::_delete_limit_cache_by_fields(array_keys(static::pdo_bindings()));
@@ -546,14 +565,26 @@
 
             $this->cache_batch_start();
 
-            /**
-             * Delete all the keys selected above
-             */
-            cache_lib::delete_multi(
-                $this->cache_engine,
-                $this->cache_engine_pool_write,
-                array_merge($cache_keys, $list_keys, $field_list_keys)
-            );
+            if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
+                /**
+                 * Expire all the keys selected above
+                 */
+                cache_lib::expire_multi(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    array_merge($cache_keys, $list_keys, $field_list_keys),
+                    $this->cache_delete_expire_ttl
+                );
+            } else {
+                /**
+                 * Delete all the keys selected above
+                 */
+                cache_lib::delete_multi(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    array_merge($cache_keys, $list_keys, $field_list_keys)
+                );
+            }
 
             /**
              * Since we just deleted $field_list_keys, we now remove those values from their parent lists
@@ -634,25 +665,24 @@
 
             $this->cache_batch_start();
 
-            /**
-             * Delete all the keys selected above
-             */
-            cache_lib::delete_multi(
-                $this->cache_engine,
-                $this->cache_engine_pool_write,
-                array_merge($cache_keys, $list_keys, $field_list_keys)
-            );
-
-            /**
-             * Since we just deleted $field_list_keys, we now remove those values from their parent lists
-             * (Remove list field/value keys and order by keys from field lists)
-             */
-            foreach ($list_items_to_remove as $field_list_key => $remove_keys) {
-                cache_lib::list_remove(
+            if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
+                /**
+                 * Expire all the keys selected above
+                 */
+                cache_lib::expire_multi(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
-                    $field_list_key,
-                    array_unique($remove_keys)
+                    array_merge($cache_keys, $list_keys, $field_list_keys),
+                    $this->cache_delete_expire_ttl
+                );
+            } else {
+                /**
+                 * Delete all the keys selected above
+                 */
+                cache_lib::delete_multi(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    array_merge($cache_keys, $list_keys, $field_list_keys)
                 );
             }
 

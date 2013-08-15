@@ -26,6 +26,14 @@
                 ],
 
                 'overrides' => [],
+
+                // When deleting a cache key, use an expire time in the future instead - this is sometimes necessary
+                // when dealing with master/slave sync lag from the source (eg, SQL) server.
+                // If the slave is unaware of a change to a record that has happened on the master, it's possible
+                // for the source on a slave to be queried, and cached, even if that record has been changed on master
+                // and that change has not yet propagated to the slave, resulting in inaccurate cache.
+                // This value only has effect when the master and slave source is not the same server.
+                'cache_delete_expire_ttl' => 0,
             ];
         }
 

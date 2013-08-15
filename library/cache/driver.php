@@ -17,4 +17,6 @@
         public static function set_multi($pool, array $rows, $ttl=null);
         public static function delete($pool, $key);
         public static function delete_multi($pool, array $keys);
+        public static function expire($pool, $key, $ttl=0);
+        public static function expire_multi($pool, array $keys, $ttl=0);
     }

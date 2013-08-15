@@ -24,6 +24,8 @@
         protected $cache_engine_pool_read;
         protected $cache_engine_pool_write;
 
+        protected $cache_delete_expire_ttl;
+
         // Key name used for primary key lookups
         const BY_PK = 'by_pk';
 
@@ -43,6 +45,7 @@
             $this->cache_engine             = $config['cache_engine'];
             $this->cache_engine_pool_read   = $config['cache_engine_pool_read'];
             $this->cache_engine_pool_write  = $config['cache_engine_pool_write'];
+            $this->cache_delete_expire_ttl  = $config['cache_delete_expire_ttl'];
         }
 
         /**

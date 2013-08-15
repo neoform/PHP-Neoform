@@ -42,39 +42,41 @@
         /**
          * Set a record in cache
          *
-         * @param string $engine
-         * @param string $engine_pool
-         * @param string $key
-         * @param mixed  $data
+         * @param string  $engine
+         * @param string  $engine_pool
+         * @param string  $key
+         * @param mixed   $data
+         * @param integer $ttl seconds
          *
          * @return mixed|null
          */
-        public static function set($engine, $engine_pool, $key, $data) {
+        public static function set($engine, $engine_pool, $key, $data, $ttl=null) {
 
             // Memory
             cache_memory_dao::set($key, $data);
 
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
-                $engine_driver::set($engine_pool, $key, $data);
+                $engine_driver::set($engine_pool, $key, $data, $ttl);
             }
         }
 
         /**
          * Set multiple records in cache
          *
-         * @param string $engine
-         * @param string $engine_pool
-         * @param array  $rows
+         * @param string  $engine
+         * @param string  $engine_pool
+         * @param array   $rows
+         * @param integer $ttl seconds
          */
-        public static function set_multi($engine, $engine_pool, array $rows) {
+        public static function set_multi($engine, $engine_pool, array $rows, $ttl=null) {
 
             // Memory
             cache_memory_dao::set_multi($rows);
 
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
-                $engine_driver::set_multi($engine_pool, $rows);
+                $engine_driver::set_multi($engine_pool, $rows, $ttl);
             }
         }
 
@@ -413,7 +415,7 @@
          * @param string $engine_pool
          * @param array  $keys
          */
-        public static function delete_multi($engine, $engine_pool, array $keys){
+        public static function delete_multi($engine, $engine_pool, array $keys) {
 
             if (count($keys)) {
 
@@ -425,6 +427,49 @@
                 if ($engine) {
                     $engine = "cache_{$engine}_driver";
                     $engine::delete_multi($engine_pool, $keys);
+                }
+            }
+        }
+
+        /**
+         * Expire a cache entry
+         *
+         * @param string  $engine
+         * @param string  $engine_pool
+         * @param string  $key
+         * @param integer $ttl seconds to live
+         */
+        public static function expire($engine, $engine_pool, $key, $ttl) {
+
+            // Memory
+            cache_memory_dao::delete($key);
+
+            if ($engine) {
+                $engine = "cache_{$engine}_driver";
+                $engine::expire($engine_pool, $key, $ttl);
+            }
+        }
+
+        /**
+         * Delete multiple entries from cache
+         *
+         * @param string  $engine
+         * @param string  $engine_pool
+         * @param array   $keys
+         * @param integer $ttl seconds to live
+         */
+        public static function expire_multi($engine, $engine_pool, array $keys, $ttl) {
+
+            if (count($keys)) {
+
+                // Memory
+                foreach ($keys as $key) {
+                    cache_memory_dao::delete($key);
+                }
+
+                if ($engine) {
+                    $engine = "cache_{$engine}_driver";
+                    $engine::expire_multi($engine_pool, $keys, $ttl);
                 }
             }
         }

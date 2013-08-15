@@ -200,6 +200,8 @@
         /**
          * Set multiple records at the same time
          *
+         * It is recommended that this function be wrapped in pipeline_start() and pipeline_execute();
+         *
          * @param string       $pool
          * @param array        $rows
          * @param integer|null $ttl
@@ -209,11 +211,9 @@
         public static function set_multi($pool, array $rows, $ttl=null) {
             if ($ttl) {
                 $redis = core::redis($pool);
-                $redis->multi();
                 foreach ($rows as $k => $v) {
                     $redis->set($k, $v, $ttl);
                 }
-                $redis->exec();
             } else {
                 return core::redis($pool)->mset($rows);
             }

@@ -241,8 +241,35 @@
          */
         public static function delete_multi($pool, array $keys) {
             if ($keys) {
-                reset($keys);
                 return core::redis($pool)->delete($keys);
+            }
+        }
+
+        /**
+         * Expire a single record
+         *
+         * @param string  $pool
+         * @param string  $key
+         * @param integer $ttl how many seconds left for this key to live - if not set, it will expire now
+         *
+         * @return integer the number of keys deleted
+         */
+        public static function expire($pool, $key, $ttl=0) {
+            return core::redis($pool)->expire($key, $ttl);
+        }
+
+        /**
+         * Expire multiple entries
+         *
+         * @param string  $pool
+         * @param array   $keys
+         * @param integer $ttl how many seconds left for this key to live - if not set, it will expire now
+         *
+         * @return integer the number of keys deleted
+         */
+        public static function expire_multi($pool, array $keys, $ttl=0) {
+            foreach ($keys as $key) {
+                core::redis($pool)->delete($key, $ttl);
             }
         }
     }

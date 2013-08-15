@@ -203,4 +203,30 @@
                 }
             }
         }
+
+        /**
+         * Expire a single record
+         *
+         * @param string  $pool
+         * @param string  $key
+         * @param integer $ttl how many seconds left for this key to live - if not set, it will expire now
+         *
+         * @throws cache_disk_exception
+         */
+        public static function expire($pool, $key, $ttl=0) {
+            throw new cache_disk_exception('Expire commands are not supported by disk cache');
+        }
+
+        /**
+         * Expire multiple entries
+         *
+         * @param string  $pool
+         * @param array   $keys
+         * @param integer $ttl how many seconds left for this key to live - if not set, it will expire now
+         *
+         * @throws cache_disk_exception
+         */
+        public static function expire_multi($pool, array $keys, $ttl=0) {
+            throw new cache_disk_exception('Expire commands are not supported by disk cache');
+        }
     }

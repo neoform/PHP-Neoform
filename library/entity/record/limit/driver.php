@@ -4,7 +4,9 @@
         public static function by_pk(entity_record_dao $self, $pool, $pk);
         public static function by_pks(entity_record_dao $self, $pool, array $pks);
         public static function by_fields_offset(entity_record_dao $self, $pool, array $keys, $pk, array $order_by, $offset, $limit);
+        public static function by_fields_offset_multi(entity_record_dao $self, $pool, array $keys_arr, $pk, array $order_by, $offset, $limit);
         public static function by_fields_after(entity_record_dao $self, $pool, array $keys, $pk, array $order_by, $after_pk, $limit);
+        public static function by_fields_after_multi(entity_record_dao $self, $pool, array $keys_arr, $pk, array $order_by, $after_pk, $limit);
         public static function by_fields_multi(entity_record_dao $self, $pool, array $keys_arr, $pk, array $order_by, $offset, $limit);
         public static function by_fields_select(entity_record_dao $self, $pool, array $select_fields, array $keys);
         public static function insert(entity_record_dao $self, $pool, array $info, $autoincrement, $replace);

@@ -30,10 +30,10 @@
         const BY_PK = 'by_pk';
 
         // Limit based lookups
-        const LIMIT = 'limit';
+//        const LIMIT = 'limit';
 
         // Paginated based lookups
-        const PAGINATED = 'paginated';
+//        const PAGINATED = 'paginated';
 
         // Counts
         const COUNT = 'count';
@@ -230,54 +230,54 @@
          * @return array of PKs
          * @throws model_exception
          */
-        public function limit($limit, $order_by, $direction, $after_pk=null) {
-
-            if (! static::USING_LIMIT) {
-                $exception = static::ENTITY_NAME . '_exception';
-                throw new $exception('Limit queries are not active in the ' . static::NAME . ' entity definition');
-            }
-
-            $self      = $this;
-            $direction = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
-
-            $cache_key = self::_build_key(
-                self::LIMIT . ":{$order_by}",
-                [
-                    (int) $limit,
-                    $direction,
-                    $after_pk !== null && static::BINARY_PK ? md5($after_pk) : $after_pk,
-                ]
-            );
-
-            return cache_lib::single(
-                $this->cache_engine,
-                $this->cache_engine_pool_read,
-                $this->cache_engine_pool_write,
-                $cache_key,
-                function() use ($self, $cache_key, $limit, $order_by, $direction, $after_pk) {
-
-                    // create a list entry to store all the LIMIT keys - we need to be able to destroy these
-                    // cache entries when something in the list changes
-                    cache_lib::list_add(
-                        $this->cache_engine,
-                        $this->cache_engine_pool_write,
-                        $self::_build_key($self::LIMIT . '[]'),
-                        $cache_key
-                    );
-
-                    // Pull content from source
-                    $source_driver = "entity_record_driver_{$self->source_engine}";
-                    return $source_driver::limit(
-                        $self,
-                        $self->source_engine_pool_read,
-                        (int) $limit,
-                        $order_by,
-                        $direction,
-                        $after_pk
-                    );
-                }
-            );
-        }
+//        public function limit($limit, $order_by, $direction, $after_pk=null) {
+//
+//            if (! static::USING_LIMIT) {
+//                $exception = static::ENTITY_NAME . '_exception';
+//                throw new $exception('Limit queries are not active in the ' . static::NAME . ' entity definition');
+//            }
+//
+//            $self      = $this;
+//            $direction = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
+//
+//            $cache_key = self::_build_key(
+//                self::LIMIT . ":{$order_by}",
+//                [
+//                    (int) $limit,
+//                    $direction,
+//                    $after_pk !== null && static::BINARY_PK ? md5($after_pk) : $after_pk,
+//                ]
+//            );
+//
+//            return cache_lib::single(
+//                $this->cache_engine,
+//                $this->cache_engine_pool_read,
+//                $this->cache_engine_pool_write,
+//                $cache_key,
+//                function() use ($self, $cache_key, $limit, $order_by, $direction, $after_pk) {
+//
+//                    // create a list entry to store all the LIMIT keys - we need to be able to destroy these
+//                    // cache entries when something in the list changes
+//                    cache_lib::list_add(
+//                        $this->cache_engine,
+//                        $this->cache_engine_pool_write,
+//                        $self::_build_key($self::LIMIT . '[]'),
+//                        $cache_key
+//                    );
+//
+//                    // Pull content from source
+//                    $source_driver = "entity_record_driver_{$self->source_engine}";
+//                    return $source_driver::limit(
+//                        $self,
+//                        $self->source_engine_pool_read,
+//                        (int) $limit,
+//                        $order_by,
+//                        $direction,
+//                        $after_pk
+//                    );
+//                }
+//            );
+//        }
 
         /**
          * Get a paginated list of entity PKs
@@ -293,54 +293,54 @@
          * @return array
          * @throws model_exception
          */
-        public function paginated($order_by, $direction, $offset, $limit) {
-
-            if (! static::USING_PAGINATED) {
-                $exception = static::ENTITY_NAME . '_exception';
-                throw new $exception('Limit queries are not active in the ' . static::NAME . ' entity definition');
-            }
-
-            $self      = $this;
-            $direction = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
-
-            $cache_key = self::_build_key(
-                self::LIMIT . ":{$order_by}",
-                [
-                    (int) $offset,
-                    (int) $limit,
-                    $direction,
-                ]
-            );
-
-            return cache_lib::single(
-                $this->cache_engine,
-                $this->cache_engine_pool_read,
-                $this->cache_engine_pool_write,
-                $cache_key,
-                function() use ($self, $cache_key, $limit, $offset, $order_by, $direction) {
-
-                    // create a list entry to store all the LIMIT keys - we need to be able to destroy these
-                    // cache entries when something in the list changes
-                    cache_lib::list_add(
-                        $this->cache_engine,
-                        $this->cache_engine_pool_write,
-                        $self::_build_key($self::PAGINATED . '[]'),
-                        $cache_key
-                    );
-
-                    // Pull content from source
-                    $source_driver = "entity_record_driver_{$self->source_engine}";
-                    return $source_driver::paginated(
-                        $self,
-                        $self->source_engine_pool_read,
-                        $order_by,
-                        $direction,
-                        (int) $offset,
-                        (int) $limit
-                    );
-                }
-            );
-        }
+//        public function paginated($order_by, $direction, $offset, $limit) {
+//
+//            if (! static::USING_PAGINATED) {
+//                $exception = static::ENTITY_NAME . '_exception';
+//                throw new $exception('Limit queries are not active in the ' . static::NAME . ' entity definition');
+//            }
+//
+//            $self      = $this;
+//            $direction = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
+//
+//            $cache_key = self::_build_key(
+//                self::LIMIT . ":{$order_by}",
+//                [
+//                    (int) $offset,
+//                    (int) $limit,
+//                    $direction,
+//                ]
+//            );
+//
+//            return cache_lib::single(
+//                $this->cache_engine,
+//                $this->cache_engine_pool_read,
+//                $this->cache_engine_pool_write,
+//                $cache_key,
+//                function() use ($self, $cache_key, $limit, $offset, $order_by, $direction) {
+//
+//                    // create a list entry to store all the LIMIT keys - we need to be able to destroy these
+//                    // cache entries when something in the list changes
+//                    cache_lib::list_add(
+//                        $this->cache_engine,
+//                        $this->cache_engine_pool_write,
+//                        $self::_build_key($self::PAGINATED . '[]'),
+//                        $cache_key
+//                    );
+//
+//                    // Pull content from source
+//                    $source_driver = "entity_record_driver_{$self->source_engine}";
+//                    return $source_driver::paginated(
+//                        $self,
+//                        $self->source_engine_pool_read,
+//                        $order_by,
+//                        $direction,
+//                        (int) $offset,
+//                        (int) $limit
+//                    );
+//                }
+//            );
+//        }
 
         /**
          * Gets the full record(s) that match the $keys
@@ -526,14 +526,6 @@
 
             $this->cache_batch_execute();
 
-            if (static::USING_LIMIT) {
-                $this->_delete_limit_cache();
-            }
-
-            if (static::USING_PAGINATED) {
-                $this->_delete_paginated_cache();
-            }
-
             if ($load_model_from_source) {
                 $info = self::by_pk($info[static::PRIMARY_KEY]);
             }
@@ -593,14 +585,6 @@
             }
 
             $this->cache_batch_execute();
-
-            if (static::USING_LIMIT) {
-                $this->_delete_limit_cache();
-            }
-
-            if (static::USING_PAGINATED) {
-                $this->_delete_paginated_cache();
-            }
 
             if ($load_models_from_source) {
                 $ids = [];
@@ -662,16 +646,6 @@
 
             $this->cache_batch_execute();
 
-            // Delete LIMIT cache based on the fields that were changed - this might not be all fields, we so don't
-            // necessarily need to delete all LIMIT caches.
-            if (static::USING_LIMIT) {
-                self::_delete_limit_cache(array_keys($new_info));
-            }
-
-            if (static::USING_PAGINATED) {
-                self::_delete_paginated_cache(array_keys($new_info));
-            }
-
             if ($reload_model_from_source) {
                 /**
                  * Reload model from source based on current (or newly updated) PK
@@ -713,11 +687,20 @@
 
             $this->cache_batch_start();
 
-            cache_lib::delete(
-                $this->cache_engine,
-                $this->cache_engine_pool_write,
-                static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
-            );
+            if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
+                cache_lib::expire(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk),
+                    $this->cache_delete_expire_ttl
+                );
+            } else {
+                cache_lib::delete(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
+                );
+            }
 
             if (static::USING_COUNT) {
                 cache_lib::delete(
@@ -728,14 +711,6 @@
             }
 
             $this->cache_batch_execute();
-
-            if (static::USING_LIMIT) {
-                $this->_delete_limit_cache();
-            }
-
-            if (static::USING_PAGINATED) {
-                $this->_delete_paginated_cache();
-            }
 
             return true;
         }
@@ -765,11 +740,20 @@
 
             $this->cache_batch_start();
 
-            cache_lib::delete_multi(
-                $this->cache_engine,
-                $this->cache_engine_pool_write,
-                $delete_cache_keys
-            );
+            if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
+                cache_lib::expire_multi(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    $delete_cache_keys,
+                    $this->cache_delete_expire_ttl
+                );
+            } else {
+                cache_lib::delete_multi(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    $delete_cache_keys
+                );
+            }
 
             if (static::USING_COUNT) {
                 cache_lib::delete(
@@ -781,79 +765,6 @@
 
             $this->cache_batch_execute();
 
-            if (static::USING_LIMIT) {
-                $this->_delete_limit_cache();
-            }
-
-            if (static::USING_PAGINATED) {
-                $this->_delete_paginated_cache();
-            }
-
             return true;
-        }
-
-        /**
-         * Delete LIMIT caches - with optional field limitation
-         *
-         * @param string|array|null $order_by_field
-         */
-        protected function _delete_limit_cache($order_by_field=null) {
-
-            if ($order_by_field !== null) {
-                if (is_array($order_by_field) && $order_by_field) {
-                    $filter = [];
-                    foreach ($order_by_field as $f) {
-                        $filter[] = static::ENTITY_NAME . ':' . self::LIMIT . ":{$f}:";
-                    }
-                } else {
-                    $filter = static::ENTITY_NAME . ':' . self::LIMIT . ":{$order_by_field}:";
-                }
-            } else {
-                $filter = null;
-            }
-
-            $this->_delete_list_cache(static::LIMIT . '[]', $filter);
-        }
-
-        /**
-         * Delete LIMIT caches - with optional field limitation
-         *
-         * @param string|array|null $order_by_field
-         */
-        protected function _delete_paginated_cache($order_by_field=null) {
-
-            if ($order_by_field !== null) {
-                if (is_array($order_by_field) && $order_by_field) {
-                    $filter = [];
-                    foreach ($order_by_field as $f) {
-                        $filter[] = static::ENTITY_NAME . ':' . self::PAGINATED . ":{$f}:";
-                    }
-                } else {
-                    $filter = static::ENTITY_NAME . ':' . self::PAGINATED . ":{$order_by_field}:";
-                }
-            } else {
-                $filter = null;
-            }
-
-            $this->_delete_list_cache(static::PAGINATED . '[]', $filter);
-        }
-
-        /**
-         * Delete limit caches - with optional filters
-         *
-         * Filters operate by finding all keys that start with the filter string.
-         * Eg, Filter: "user:id:" would match the following keys: "user:id:4", "user:id:5" and delete them
-         *     but "user:email:foo@foo.com" would not be matched. It's the equivalent to an SQL "LIKE '%user:id:%'" query
-         *
-         * @param string            $list_key
-         * @param string|array|null $filter
-         */
-        protected function _delete_list_cache($list_key, $filter=null) {
-            cache_lib::delete_cache_filter_list(
-                $this->cache_engine,
-                $this->cache_engine_pool_write,
-                static::_build_key($list_key),
-                $filter
-            );
         }
     }

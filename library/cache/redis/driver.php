@@ -253,7 +253,11 @@
          * @return integer the number of keys deleted
          */
         public static function expire($pool, $key, $ttl=0) {
-            return core::redis($pool)->expire($key, $ttl);
+            if ($ttl) {
+                return core::redis($pool)->expire($key, $ttl);
+            } else {
+                return core::redis($pool)->delete($key);
+            }
         }
 
         /**
@@ -266,8 +270,13 @@
          * @return integer the number of keys deleted
          */
         public static function expire_multi($pool, array $keys, $ttl=0) {
-            foreach ($keys as $key) {
-                core::redis($pool)->delete($key, $ttl);
+            if ($ttl) {
+                $redis = core::redis($pool);
+                foreach ($keys as $key) {
+                    $redis->expire($key, $ttl);
+                }
+            } else {
+                core::redis($pool)->delete($keys, $ttl);
             }
         }
     }

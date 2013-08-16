@@ -141,11 +141,74 @@
                 $this->cache_engine_pool_write,
                 $cache_key,
                 function() use ($self, $cache_key, $keys, $pk, $order_by, $offset, $limit) {
-
-                    $self->_set_delete_limit_cache_lists($self, $cache_key, $keys, $order_by);
-
                     $source_driver = "entity_record_limit_driver_{$self->source_engine}";
-                    return $source_driver::by_fields_offset($self, $self->source_engine_pool_read, $keys, $pk, $order_by, $offset, $limit);
+                    return $source_driver::by_fields_offset(
+                        $self,
+                        $self->source_engine_pool_read,
+                        $keys,
+                        $pk,
+                        $order_by,
+                        $offset,
+                        $limit
+                    );
+                },
+                function($cache_key) use ($self, $keys, $order_by) {
+                    $self->_set_delete_limit_cache_lists($self, $cache_key, $keys, $order_by);
+                }
+            );
+        }
+
+        /**
+         * Gets the pks of more than one set of key values
+         *
+         * @access protected
+         * @static
+         * @final
+         * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
+         * @param array   $keys_arr       array of arrays of table keys and their values being looked up in the table - each sub-array must have matching keys
+         * @param array   $order_by       array of fields to order by - key = field, val = order direction
+         * @param integer $offset         records starting at what offset
+         * @param integer $limit          max number of record to return
+         * @return array  pks of records from cache
+         * @throws model_exception
+         */
+        final protected function _by_fields_offset_multi($cache_key_name, array $keys_arr, array $order_by, $offset, $limit) {
+
+            $pk   = static::PRIMARY_KEY;
+            $self = $this;
+
+            return cache_lib::multi(
+                $this->cache_engine,
+                $this->cache_engine_pool_read,
+                $this->cache_engine_pool_write,
+                $keys_arr,
+                function($fields) use ($self, $cache_key_name, $order_by, $offset, $limit) {
+                    return $self::_build_key_offset(
+                        $cache_key_name,
+                        $order_by,
+                        $offset,
+                        $limit,
+                        $fields,
+                        $self::ENTITY_NAME
+                    );
+                },
+                function(array $keys_arr) use ($self, $pk, $order_by, $offset, $limit) {
+                    $source_driver = "entity_record_limit_driver_{$self->source_engine}";
+                    return $source_driver::by_fields_offset_multi(
+                        $self,
+                        $self->source_engine_pool_read,
+                        $keys_arr,
+                        $pk,
+                        $order_by,
+                        $offset,
+                        $limit
+                    );
+                },
+                function(array $cache_keys) use ($self, $order_by) {
+
+                    core::Debug($cache_keys);
+die;
+                    $self->_set_delete_limit_cache_lists_multi($self, $cache_keys, $order_by);
                 }
             );
         }
@@ -416,6 +479,62 @@
         }
 
         /**
+         * Deletes a record from the database
+         *
+         * @access protected
+         * @static
+         * @param entity_record_collection $collection the collection of models that is to be deleted
+         * @return boolean returns true on success
+         * @throws model_exception
+         */
+        protected function _deletes(entity_record_collection $collection) {
+
+            if (! count($collection)) {
+                return;
+            }
+
+            $source_driver = "entity_record_driver_{$this->source_engine}";
+            $source_driver::deletes($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $collection);
+
+            $delete_cache_keys = [];
+            foreach ($collection->field(static::PRIMARY_KEY) as $pk) {
+                $delete_cache_keys[] = static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? ':' . md5($pk) : ":{$pk}");
+            }
+
+            $this->cache_batch_start();
+
+            if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
+                cache_lib::expire_multi(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    $delete_cache_keys,
+                    $this->cache_delete_expire_ttl
+                );
+            } else {
+                cache_lib::delete_multi(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    $delete_cache_keys
+                );
+            }
+
+//            if (static::USING_COUNT) {
+//                cache_lib::delete(
+//                    $this->cache_engine,
+//                    $this->cache_engine_pool_write,
+//                    static::ENTITY_NAME . ':' . self::COUNT
+//                );
+//            }
+
+            $this->cache_batch_execute();
+
+            // Destroy cache based on table fields - do not wrap this function in a batch execution
+            self::_delete_limit_cache_by_fields(array_keys(static::pdo_bindings()));
+
+            return true;
+        }
+
+        /**
          * Create the
          *
          * @param entity_record_limit_dao $self
@@ -501,6 +620,15 @@
         }
 
         /**
+         * @param entity_record_limit_dao $self
+         * @param string                  $cache_key
+         * @param array                   $order_by
+         */
+        final protected function _set_delete_limit_cache_lists_multi(entity_record_limit_dao $self, array $cache_keys, array $order_by) {
+
+        }
+
+            /**
          * Delete all cache keys and field/value and field order lists - by fields
          *
          * Do not wrap a batch execution around this function

@@ -227,11 +227,12 @@
          * Checks cache for an entry, pulls from source $data_func() if not present in cache
          *
          * @param string       $engine              Which caching engines to use
-         * @param string       $engine_pool_read   Caching pool
+         * @param string       $engine_pool_read    Caching pool
          * @param string       $engine_pool_write   Caching pool
          * @param string       $key                 Cache key
          * @param callable     $data_func           Source data function
-         * @param mixed|null   $args                Args to pass to $data_func($args)
+         * @param callable     $after_cache_func    After cache function
+         * @param mixed|null   $args                Args to pass to $data_func($key [, array $args])
          * @param integer|null $ttl                 Cache length
          * @param bool         $cache_empty_results cache empty results (eg, null|false) if that is what $data_func() returns
          *
@@ -241,7 +242,7 @@
         // re-arrange order of params, $key shouldn't be there.
 
         public static function single($engine, $engine_pool_read, $engine_pool_write, $key, callable $data_func,
-                                      $args=null, $ttl=null, $cache_empty_results=true) {
+                                      callable $after_cache_func=null, $args=null, $ttl=null, $cache_empty_results=true) {
 
             // Memory
             if (cache_memory_dao::exists($key)) {
@@ -265,6 +266,10 @@
                 // cache data to engine
                 if ($engine) {
                     $engine_driver::set($engine_pool_write, $key, $data, $ttl);
+
+                    if ($after_cache_func) {
+                        $after_cache_func($key);
+                    }
                 }
             }
 
@@ -288,6 +293,7 @@
          * @param array        $rows                Rows to look up in cache
          * @param callable     $key_func            generates the cache key based on data from $rows
          * @param callable     $data_func           Source data function(array $keys [, array $args])
+         * @param callable     $after_cache_func    After cache function
          * @param mixed|null   $args                args to pass to the $data_func
          * @param integer|null $ttl                 How long to cache
          * @param bool         $cache_empty_results cache empty results (eg, null|false) if that is what $data_func() returns
@@ -295,7 +301,7 @@
          * @return array of mixed values from $data_func() calls
          */
         public static function multi($engine, $engine_pool_read, $engine_pool_write, array $rows, callable $key_func,
-                                     callable $data_func, $args=null, $ttl=null, $cache_empty_results=true) {
+                                     callable $data_func, callable $after_cache_func=null, $args=null, $ttl=null, $cache_empty_results=true) {
 
             if (! $rows) {
                 return [];
@@ -311,10 +317,8 @@
             $matched_rows = $key_lookup; // this results in the array keeping the exact order
 
             /*
-             * READS
+             * PHP Memory
              */
-
-            //MEMORY
             if ($found_in_memory = cache_memory_dao::get_multi($missing_rows)) {
                 foreach ($found_in_memory as $index => $key) {
                     $matched_rows[$index] = $key;
@@ -328,6 +332,9 @@
 
             $rows_not_in_memory = $missing_rows;
 
+            /**
+             * Source Engine
+             */
             if ($engine && $missing_rows) {
                 $engine = "cache_{$engine}_driver";
                 foreach ($engine::get_multi($engine_pool_read, $missing_rows) as $key => $row) {
@@ -342,7 +349,7 @@
                 // duplicate the array, so we can know what rows need to be stored in cache
                 $rows_not_in_cache = $missing_rows;
 
-                if ($origin_rows = $data_func(array_intersect_key($rows, $missing_rows), $args)) {
+                if ($origin_rows = $data_func(array_intersect_key($rows, $missing_rows), $missing_rows, $args)) {
                     foreach ($origin_rows as $key => $val) {
                         $matched_rows[$key] = $val;
                         unset($missing_rows[$key]);
@@ -385,6 +392,10 @@
                 }
 
                 $engine::set_multi($engine_pool_write, $save_to_cache, $ttl);
+
+                if ($after_cache_func) {
+                    $after_cache_func(array_intersect_key($rows, $rows_not_in_cache));
+                }
             }
 
             return $matched_rows;

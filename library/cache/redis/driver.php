@@ -115,16 +115,14 @@
          * @param array  $remove_keys
          */
         public static function list_remove($pool, $key, array $remove_keys) {
-            $redis = core::redis($pool);
-
             // @todo Redis >=2.4 can do multiple removes in one command.
-            if (1) {
-                foreach ($remove_keys as $remove_key) {
-                    $redis->sRemove($key, $remove_key);
-                }
-            } else {
-                $redis->sRemove($key, $remove_keys);
+            /*
+            $redis = core::redis($pool);
+            foreach ($remove_keys as $remove_key) {
+                $redis->sRemove($key, $remove_key);
             }
+            */
+            core::redis($pool)->sRemove($key, $remove_keys);
         }
 
         /**

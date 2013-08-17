@@ -82,6 +82,8 @@
          * @param string            $after_pk  A PK offset to be used (it's more efficient to use PK offsets than an SQL 'OFFSET')
          *
          * @return array
+         *
+         * @deprecated
          */
         public static function limit(entity_record_dao $self, $pool, $limit, $order_by, $direction, $after_pk) {
             $pk = $self::PRIMARY_KEY;
@@ -113,6 +115,8 @@
          * @param integer           $limit
          *
          * @return array
+         *
+         * @deprecated
          */
         public static function paginated(entity_record_dao $self, $pool, $order_by, $direction, $offset, $limit) {
             $pk = $self::PRIMARY_KEY;
@@ -235,13 +239,15 @@
          * @return array
          */
         public static function by_fields_multi(entity_record_dao $self, $pool, array $keys_arr, $pk) {
-            $sql = core::sql($pool);
-
-            $key_fields     = array_keys(reset($keys_arr));
+            $key_fields     = [];
             $reverse_lookup = [];
             $return         = [];
             $vals           = [];
             $where          = [];
+
+            foreach (array_keys(reset($keys_arr)) as $k) {
+                $key_fields[] = "`{$k}`";
+            }
 
             foreach ($keys_arr as $k => $keys) {
                 $w = [];
@@ -258,7 +264,7 @@
                 $where[] = '(' . join(" AND ", $w) . ')';
             }
 
-            $rs = $sql->prepare("
+            $rs = core::sql($pool)->prepare("
                 SELECT
                     `{$pk}`,
                     CONCAT(" . join(", ':', ", $key_fields) . ") `__cache_key__`
@@ -273,46 +279,6 @@
             }
 
             return $return;
-        }
-
-        /**
-         * Get specific fields from a record, by keys
-         *
-         * @param entity_record_dao $self
-         * @param string            $pool which source engine pool to use
-         * @param array             $select_fields
-         * @param array             $keys
-         *
-         * @return array
-         */
-        public static function by_fields_select(entity_record_dao $self, $pool, array $select_fields, array $keys) {
-            $where = [];
-            $vals  = [];
-
-            if ($keys) {
-                foreach ($keys as $k => $v) {
-                    if ($v === null) {
-                        $where[] = "`{$k}` IS NULL";
-                    } else {
-                        $vals[]  = $v;
-                        $where[] = "`{$k}` = ?";
-                    }
-                }
-            }
-
-            $rs = core::sql($pool)->prepare("
-                SELECT " . join(',', $select_fields) . "
-                FROM `" . self::table($self::TABLE) . "`
-                " . ($where ? "WHERE " . join(" AND ", $where) : '') . "
-            ");
-
-            $rs->execute($vals);
-
-            if (count($select_fields) === 1) {
-                return array_column($rs->fetchAll(), reset($select_fields));
-            } else {
-                return $rs->fetchAll();
-            }
         }
 
         /**

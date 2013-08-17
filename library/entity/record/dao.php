@@ -450,40 +450,6 @@
             );
         }
 
-
-        /**
-         * Gets records that match the $keys, rather than just getting the pk, this gets the columns specified by $select_fields
-         *
-         * @access protected
-         * @static
-         * @final
-         * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
-         * @param array   $select_fields  array of table fields (table columns) to be selected
-         * @param array   $keys           array of table keys and their values being looked up in the table
-         * @return array  array of records from cache
-         * @throws model_exception
-         */
-        final protected function _by_fields_select($cache_key_name, array $select_fields, array $keys) {
-
-            /**
-             * @todo uhhhh, why is there caching in this function? You cannot cache this in a record...
-             * @todo fortunately this function is never used it seems...
-            */
-
-            $self = $this;
-
-            return cache_lib::single(
-                $this->cache_engine,
-                $this->cache_engine_pool_read,
-                $this->cache_engine_pool_write,
-                self::_build_key($cache_key_name, $keys),
-                function() use ($self, $select_fields, $keys) {
-                    $source_driver = "entity_record_driver_{$self->source_engine}";
-                    return $source_driver::by_fields_select($self, $self->source_engine_pool_read, $select_fields, $keys);
-                }
-            );
-        }
-
         /**
          * Inserts a record into the database
          *

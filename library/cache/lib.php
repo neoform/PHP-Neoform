@@ -394,7 +394,7 @@
                 $engine::set_multi($engine_pool_write, $save_to_cache, $ttl);
 
                 if ($after_cache_func) {
-                    $after_cache_func(array_intersect_key($rows, $rows_not_in_cache));
+                    $after_cache_func(array_combine($rows_not_in_cache, array_intersect_key($rows, $rows_not_in_cache)));
                 }
             }
 

@@ -1,5 +1,15 @@
 <?php
 
+    /**
+     * DAO limit class allows an entity to be looked up the same way as a regular DAO record, however it has the additional
+     * ability to limit and order the lists or PKs that get looked up. Because the cache must always be accurate/fresh
+     * lists of meta-data must be stored for each result set in order to identify which result sets (in cache) to destroy
+     * when a record's field is updated.
+     *
+     * Eg, if a user's email address has changed, we must destroy any list of users that were 'order by email address ASC'
+     * since that list is possibly no longer accurate. Also, since the result sets use limit/offsets, there are often
+     * more than on result set cached away, so *all* cached result sets that used email to be ordered, most be destroyed.
+     */
     abstract class entity_record_limit_dao extends entity_record_dao {
 
         const SORT_ASC  = 0;

@@ -58,6 +58,7 @@
 
         /**
          * Create a list and/or Add a value to a list
+         * It is recommended this function be wrapped in a batch operation
          *
          * @param string $pool
          * @param string $key
@@ -68,10 +69,18 @@
         public static function list_add($pool, $key, $value) {
             // Redis >=2.4 can do multiple adds in one command.
             if (is_array($value)) {
-                call_user_func_array(
-                    [ core::redis($pool), 'sAdd' ],
-                    array_merge([ $key ], $value)
-                );
+                $redis = core::redis($pool);
+                foreach ($value as $v) {
+                    $redis->sAdd($key, $v);
+                }
+
+                // Interestingly, PHP doesn't seem to have a max number of function arguments... so this shouldn't cause
+                // any problems...
+                // However PHPRedis seems to have poor support for this... bah.
+//                return call_user_func_array(
+//                    [ core::redis($pool), 'sAdd' ],
+//                    array_merge([ $key ], $value)
+//                );
             } else {
                 return core::redis($pool)->sAdd($key, $value);
             }
@@ -113,6 +122,7 @@
 
         /**
          * Remove values from a list
+         * It is recommended this function be wrapped in a batch operation
          *
          * @param string $pool
          * @param string $key
@@ -121,10 +131,16 @@
         public static function list_remove($pool, $key, $remove_key) {
             // Redis >=2.4 can do multiple removes in one command.
             if (is_array($remove_key)) {
-                call_user_func_array(
-                    [ core::redis($pool), 'sRemove' ],
-                    array_merge([ $key ], $remove_key)
-                );
+                $redis = core::redis($pool);
+                foreach ($value as $v) {
+                    $redis->sAdd($key, $v);
+                }
+
+                // PHPRedis has poor support for batch removals.
+//                call_user_func_array(
+//                    [ core::redis($pool), 'sRemove' ],
+//                    array_merge([ $key ], $remove_key)
+//                );
             } else {
                 core::redis($pool)->sRemove($key, $remove_key);
             }

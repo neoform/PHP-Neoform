@@ -32,7 +32,7 @@
             $where = [];
             $vals  = [];
 
-            if (count($keys)) {
+            if ($keys) {
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
                         $where[] = "`{$k}` IS NULL";

@@ -162,21 +162,6 @@
         }
 
         /**
-         * Get specific fields from a record, by keys
-         *
-         * @param entity_record_dao $self
-         * @param string     $pool which source engine pool to use
-         * @param array      $select_fields
-         * @param array      $keys
-         *
-         * @return array
-         * @throws redis_exception
-         */
-        public static function by_fields_select(entity_record_dao $self, $pool, array $select_fields, array $keys) {
-            throw new redis_exception('By fields select queries are not supported by redis driver.');
-        }
-
-        /**
          * Insert record
          *
          * @param entity_record_dao $self the name of the DAO

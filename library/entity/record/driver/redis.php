@@ -70,40 +70,6 @@
         }
 
         /**
-         * Get a list of PKs, with a limit, offset and order by
-         *
-         * @param entity_record_dao $self
-         * @param string     $pool which source engine pool to use
-         * @param integer    $limit     max number of PKs to return
-         * @param string     $order_by  field name
-         * @param string     $direction asc|desc
-         * @param string     $after_pk  A PK offset to be used (it's more efficient to use PK offsets than an SQL 'OFFSET')
-         *
-         * @return array
-         * @throws redis_exception
-         */
-        public static function limit(entity_record_dao $self, $pool, $limit, $order_by, $direction, $after_pk) {
-            throw new redis_exception('Limit queries are not supported by redis driver.');
-        }
-
-        /**
-         * Get a paginated list of entity PKs
-         *
-         * @param entity_record_dao $self
-         * @param string     $pool which source engine pool to use
-         * @param string     $order_by
-         * @param string     $direction
-         * @param integer    $offset
-         * @param integer    $limit
-         *
-         * @return array
-         * @throws redis_exception
-         */
-        public static function paginated(entity_record_dao $self, $pool, $order_by, $direction, $offset, $limit) {
-            throw new redis_exception('Paginated queries are not supported by redis driver.');
-        }
-
-        /**
          * Get full count of rows in a table
          *
          * @param entity_record_dao $self

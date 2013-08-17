@@ -84,70 +84,6 @@
         }
 
         /**
-         * Get a list of PKs, with a limit, offset and order by
-         *
-         * @param entity_record_dao $self
-         * @param string     $pool which source engine pool to use
-         * @param integer    $limit     max number of PKs to return
-         * @param string     $order_by  field name
-         * @param string     $direction ASC|DESC
-         * @param string     $after_pk  A PK offset to be used (it's more efficient to use PK offsets than an SQL 'OFFSET')
-         *
-         * @return array
-         *
-         * @deprecated
-         */
-        public static function limit(entity_record_dao $self, $pool, $limit, $order_by, $direction, $after_pk) {
-            $pk = $self::PRIMARY_KEY;
-
-            $rs = core::sql($pool)->prepare("
-                SELECT \"{$pk}\"
-                FROM \"" . self::table($self::TABLE) . "\"
-                " . ($after_pk !== null ? "WHERE \"{$pk}\" " . ($direction === 'ASC' ? '>' : '<') . ' ?' : '') . "
-                ORDER BY \"{$order_by}\" {$direction}
-                LIMIT {$limit}
-            ");
-            if ($after_pk !== null) {
-                $rs->execute($after_pk);
-            } else {
-                $rs->execute();
-            }
-
-            $pks = array_column($rs->fetchAll(), $pk);
-            sql_pdo::unbinary($pks);
-
-            return $pks;
-        }
-
-        /**
-         * Get a paginated list of entity PKs
-         *
-         * @param entity_record_dao $self
-         * @param string     $pool which source engine pool to use
-         * @param string     $order_by
-         * @param string     $direction
-         * @param integer    $offset
-         * @param integer    $limit
-         *
-         * @return array
-         *
-         * @deprecated
-         */
-        public static function paginated(entity_record_dao $self, $pool, $order_by, $direction, $offset, $limit) {
-            $pk = $self::PRIMARY_KEY;
-            $rs = core::sql($pool)->prepare("
-                SELECT \"{$pk}\"
-                FROM \"" . self::table($self::TABLE) . "\"
-                ORDER BY \"{$order_by}\" {$direction}
-                LIMIT {$limit}
-                OFFSET {$offset}
-            ");
-            $rs->execute();
-
-            return array_column($rs->fetchAll(), $pk);
-        }
-
-        /**
          * Get full count of rows in a table
          *
          * @param entity_record_dao $self
@@ -291,6 +227,7 @@
 
             foreach ($keys_arr as $k => $keys) {
                 $w = [];
+                // @todo this is potentially buggy if the field contains a colon
                 $reverse_lookup[join(':', $keys)] = $k;
                 $return[$k] = [];
                 foreach ($keys as $k => $v) {

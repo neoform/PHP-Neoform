@@ -38,20 +38,18 @@
         }
 
         public static function by_fields_offset_multi(entity_record_dao $self, $pool, array $keys_arr, $pk, array $order_by, $offset, $limit) {
-            $key_fields     = [];
+            $select_fields  = [ "`{$pk}`" ];
             $reverse_lookup = [];
             $return         = [];
             $vals           = [];
             $queries        = [];
+            $fields         = array_keys(reset($keys_arr));
 
-            foreach (array_keys(reset($keys_arr)) as $k) {
-                $key_fields[] = "`{$k}`";
+            foreach ($fields as $k) {
+                $select_fields[] = "`{$k}`";
             }
 
-            // @todo, this is potentially problematic, if the field value contains colons... :(
-            $cache_key_field = count($key_fields) === 1 ? reset($key_fields) : " CONCAT(" . join(", ':', ", $key_fields) . ")";
-
-            $limit = $limit ? "{$limit} OFFSET {$offset}" : $offset;
+            $limit = ($limit ? "LIMIT {$limit}" : '') . ($limit !== null && $offset ? "OFFSET {$offset}" : '');
 
             $order = [];
             foreach ($order_by as $field => $sort_direction) {
@@ -60,26 +58,27 @@
             $order_by = join(', ', $order);
 
             foreach ($keys_arr as $k => $keys) {
-                $where = [];
-                $reverse_lookup[join(':', $keys)] = $k;
-                $return[$k] = [];
-                foreach ($keys as $k => $v) {
-                    if ($v === null) {
-                        $where[] = "`{$k}` IS NULL";
+                $where         = [];
+                $return[$k]    = [];
+                $hashed_valued = [];
+                foreach ($keys as $key => $val) {
+                    if ($val === null) {
+                        $where[] = "`{$key}` IS NULL";
+                        $hashed_valued[] = '';
                     } else {
-                        $vals[]  = $v;
-                        $where[] = "`{$k}` = ?";
+                        $vals[]          = $val;
+                        $where[]         = "`{$key}` = ?";
+                        $hashed_valued[] = md5($val);
                     }
                 }
+                $reverse_lookup[join(':', $hashed_valued)] = $k;
 
                 $queries[] = "(
-                    SELECT
-                        `{$pk}`,
-                        {$cache_key_field} `__cache_key__`
+                    SELECT " . join(", ", $select_fields) . "
                     FROM `" . self::table($self::TABLE) . "`
                     WHERE " . join(" AND ", $where) . "
                     ORDER BY {$order_by}
-                    LIMIT {$limit}
+                    {$limit}
                 )";
             }
 
@@ -90,7 +89,11 @@
             $rs->execute($vals);
 
             foreach ($rs->fetchAll() as $row) {
-                $return[$reverse_lookup[$row['__cache_key__']]][] = $row[$pk];
+                $hashed = [];
+                foreach ($fields as $k) {
+                    $hashed[$row[$k]] = md5($row[$k]);
+                }
+                $return[$reverse_lookup[join(':', $hashed)]][] = $row[$pk];
             }
 
             return $return;

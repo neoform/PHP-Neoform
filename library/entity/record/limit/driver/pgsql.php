@@ -18,7 +18,7 @@
             }
 
             if ($limit) {
-                $limit = "LIMIT {$limit}" . ($offset !== null ? "OFFSET {$offset}" : '');
+                $limit = "LIMIT {$limit}" . ($offset !== null ? " OFFSET {$offset}" : '');
             } else {
                 $limit = '';
             }
@@ -54,7 +54,7 @@
             }
 
             if ($limit) {
-                $limit = "LIMIT {$limit}" . ($offset !== null ? "OFFSET {$offset}" : '');
+                $limit = "LIMIT {$limit}" . ($offset !== null ? " OFFSET {$offset}" : '');
             } else {
                 $limit = '';
             }

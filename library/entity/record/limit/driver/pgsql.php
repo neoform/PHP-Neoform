@@ -1,6 +1,6 @@
 <?php
 
-    class entity_record_limit_driver_mysql extends entity_record_driver_mysql implements entity_record_limit_driver {
+    class entity_record_limit_driver_pgsql extends entity_record_driver_pgsql implements entity_record_limit_driver {
 
         public static function by_fields_offset(entity_record_dao $self, $pool, array $keys, $pk, array $order_by, $offset, $limit) {
             $where = [];
@@ -9,10 +9,10 @@
             if ($keys) {
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
-                        $where[] = "`{$k}` IS NULL";
+                        $where[] = "\"{$k}\" IS NULL";
                     } else {
                         $vals[]  = $v;
-                        $where[] = "`{$k}` = ?";
+                        $where[] = "\"{$k}\" = ?";
                     }
                 }
             }
@@ -21,13 +21,13 @@
 
             $order = [];
             foreach ($order_by as $field => $sort_direction) {
-                $order[] = "`{$field}` " . (entity_record_limit_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
+                $order[] = "\"{$field}\" " . (entity_record_limit_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
             }
             $order_by = join(', ', $order);
 
             $rs = core::sql($pool)->prepare("
-                SELECT `{$pk}`
-                FROM `" . self::table($self::TABLE) . "`
+                SELECT \"{$pk}\"
+                FROM \"" . self::table($self::TABLE) . "\"
                 " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
                 ORDER BY {$order_by}
                 LIMIT {$limit}
@@ -45,7 +45,7 @@
             $queries        = [];
 
             foreach (array_keys(reset($keys_arr)) as $k) {
-                $key_fields[] = "`{$k}`";
+                $key_fields[] = "\"{$k}\"";
             }
 
             // @todo, this is potentially problematic, if the field value contains colons... :(
@@ -55,7 +55,7 @@
 
             $order = [];
             foreach ($order_by as $field => $sort_direction) {
-                $order[] = "`{$field}` " . (entity_record_limit_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
+                $order[] = "\"{$field}\" " . (entity_record_limit_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
             }
             $order_by = join(', ', $order);
 
@@ -65,18 +65,18 @@
                 $return[$k] = [];
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
-                        $where[] = "`{$k}` IS NULL";
+                        $where[] = "\"{$k}\" IS NULL";
                     } else {
                         $vals[]  = $v;
-                        $where[] = "`{$k}` = ?";
+                        $where[] = "\"{$k}\" = ?";
                     }
                 }
 
                 $queries[] = "(
                     SELECT
-                        `{$pk}`,
-                        {$cache_key_field} `__cache_key__`
-                    FROM `" . self::table($self::TABLE) . "`
+                        \"{$pk}\",
+                        {$cache_key_field} \"__cache_key__\"
+                    FROM \"" . self::table($self::TABLE) . "\"
                     WHERE " . join(" AND ", $where) . "
                     ORDER BY {$order_by}
                     LIMIT {$limit}
@@ -103,10 +103,10 @@
             if ($keys) {
                 foreach ($keys as $k => $v) {
                     if ($v === null) {
-                        $where[] = "`{$k}` IS NULL";
+                        $where[] = "\"{$k}\" IS NULL";
                     } else {
                         $vals[]  = $v;
-                        $where[] = "`{$k}` = ?";
+                        $where[] = "\"{$k}\" = ?";
                     }
                 }
             }
@@ -115,13 +115,13 @@
 
             $order = [];
             foreach ($order_by as $field => $order) {
-                $order[] = "`{$field}` " . (strtoupper($order) === 'DESC' ? 'DESC' : 'ASC');
+                $order[] = "\"{$field}\" " . (strtoupper($order) === 'DESC' ? 'DESC' : 'ASC');
             }
             $order_by = join(', ', $order);
 
             $rs = core::sql($pool)->prepare("
-                SELECT `{$pk}`
-                FROM `" . self::table($self::TABLE) . "`
+                SELECT \"{$pk}\"
+                FROM \"" . self::table($self::TABLE) . "\"
                 " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
                 ORDER BY {$order_by}
                 LIMIT {$limit}

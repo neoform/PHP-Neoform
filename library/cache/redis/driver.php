@@ -66,8 +66,12 @@
          * @return bool
          */
         public static function list_add($pool, $key, $value) {
-            if ($return = core::redis($pool)->sAdd($key, $value)) {
-                return $return;
+            // Redis >=2.4 can do multiple adds in one command.
+            if (is_array($value)) {
+                call_user_func_array(
+                    [ core::redis($pool), 'sAdd' ],
+                    array_merge([ $key ], $value)
+                );
             } else {
                 return core::redis($pool)->sAdd($key, $value);
             }
@@ -112,17 +116,18 @@
          *
          * @param string $pool
          * @param string $key
-         * @param array  $remove_keys
+         * @param mixed  $remove_key
          */
-        public static function list_remove($pool, $key, array $remove_keys) {
-            // @todo Redis >=2.4 can do multiple removes in one command.
-            /*
-            $redis = core::redis($pool);
-            foreach ($remove_keys as $remove_key) {
-                $redis->sRemove($key, $remove_key);
+        public static function list_remove($pool, $key, $remove_key) {
+            // Redis >=2.4 can do multiple removes in one command.
+            if (is_array($remove_key)) {
+                call_user_func_array(
+                    [ core::redis($pool), 'sRemove' ],
+                    array_merge([ $key ], $remove_key)
+                );
+            } else {
+                core::redis($pool)->sRemove($key, $remove_key);
             }
-            */
-            core::redis($pool)->sRemove($key, $remove_keys);
         }
 
         /**

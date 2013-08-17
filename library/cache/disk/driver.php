@@ -100,11 +100,11 @@
          *
          * @param string $pool
          * @param string $key
-         * @param array  $remove_keys
+         * @param mixed  $remove_key
          *
          * @throws cache_disk_exception
          */
-        public static function list_remove($pool, $key, array $remove_keys) {
+        public static function list_remove($pool, $key, $remove_key) {
             throw new cache_disk_exception('List commands are not supported by disk cache');
         }
 

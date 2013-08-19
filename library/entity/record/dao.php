@@ -29,23 +29,19 @@
         // Key name used for primary key lookups
         const BY_PK = 'by_pk';
 
-        // Limit based lookups
-//        const LIMIT = 'limit';
-
-        // Paginated based lookups
-//        const PAGINATED = 'paginated';
-
         // Counts
         const COUNT = 'count';
 
         public function __construct(array $config) {
-            $this->source_engine            = $config['source_engine'];
-            $this->source_engine_pool_read  = $config['source_engine_pool_read'];
-            $this->source_engine_pool_write = $config['source_engine_pool_write'];
-            $this->cache_engine             = $config['cache_engine'];
-            $this->cache_engine_pool_read   = $config['cache_engine_pool_read'];
-            $this->cache_engine_pool_write  = $config['cache_engine_pool_write'];
-            $this->cache_delete_expire_ttl  = $config['cache_delete_expire_ttl'];
+            $this->source_engine                = $config['source_engine'];
+            $this->source_engine_pool_read      = $config['source_engine_pool_read'];
+            $this->source_engine_pool_write     = $config['source_engine_pool_write'];
+
+            $this->cache_engine                 = $config['cache_engine'];
+            $this->cache_engine_pool_read       = $config['cache_engine_pool_read'];
+            $this->cache_engine_pool_write      = $config['cache_engine_pool_write'];
+
+            $this->cache_delete_expire_ttl      = $config['cache_delete_expire_ttl'];
         }
 
         /**

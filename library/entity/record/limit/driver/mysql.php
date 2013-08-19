@@ -106,47 +106,4 @@
 
             return $return;
         }
-
-        public static function by_fields_after(entity_record_dao $self, $pool, array $keys, $pk, array $order_by, $after_pk, $limit) {
-            $where = [];
-            $vals  = [];
-
-            if ($keys) {
-                foreach ($keys as $k => $v) {
-                    if ($v === null) {
-                        $where[] = "`{$k}` IS NULL";
-                    } else {
-                        $vals[]  = $v;
-                        $where[] = "`{$k}` = ?";
-                    }
-                }
-            }
-
-            if ($limit) {
-                $limit = "LIMIT {$limit}" . ($offset !== null ? " OFFSET {$offset}" : '');
-            } else {
-                $limit = '';
-            }
-
-            $order = [];
-            foreach ($order_by as $field => $sort_direction) {
-                $order[] = "`{$field}` " . (entity_record_limit_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
-            }
-            $order_by = join(', ', $order);
-
-            $rs = core::sql($pool)->prepare("
-                SELECT `{$pk}`
-                FROM `" . self::table($self::TABLE) . "`
-                " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
-                ORDER BY {$order_by}
-                {$limit}
-            ");
-            $rs->execute($vals);
-
-            return array_column($rs->fetchAll(), $pk);
-        }
-
-        public static function by_fields_after_multi(entity_record_dao $self, $pool, array $keys_arr, $pk, array $order_by, $after_pk, $limit) {
-
-        }
     }

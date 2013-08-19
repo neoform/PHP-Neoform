@@ -21,8 +21,40 @@
         // Offset key
         const OFFSET = 'offset';
 
-        // After
-        const AFTER  = 'after';
+        protected $cache_list_engine;
+        protected $cache_list_engine_pool_read;
+        protected $cache_list_engine_pool_write;
+
+        public function __construct(array $config) {
+
+            parent::__construct($config);
+
+            $this->cache_list_engine            = $config['cache_list_engine'];
+            $this->cache_list_engine_pool_read  = $config['cache_list_engine_pool_read'];
+            $this->cache_list_engine_pool_write = $config['cache_list_engine_pool_write'];
+        }
+
+        /**
+         * Start batched query pipeline
+         */
+        final protected function cache_list_batch_start() {
+            cache_lib::pipeline_start(
+                $this->cache_list_engine,
+                $this->cache_list_engine_pool_write
+            );
+        }
+
+        /**
+         * Execute batched cache queries
+         *
+         * @return mixed result from batch execution
+         */
+        final protected function cache_list_batch_execute() {
+            return cache_lib::pipeline_execute(
+                $this->cache_list_engine,
+                $this->cache_list_engine_pool_write
+            );
+        }
 
         /**
          * Build a list cache key with an optional field value
@@ -83,41 +115,6 @@
                 }
                 // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
                 return ($entity_name ?: static::ENTITY_NAME) . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by)) . ':' . md5(json_encode(array_values($params)));
-            }
-        }
-
-        /**
-         * Build a cache key used by the cache_lib by combining the dao class name, the cache key and the variables found in the $params
-         *
-         * @access public
-         * @static
-         * @final
-         * @param string       $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
-         * @param array        $params         optional - array of table keys and their values being looked up in the table
-         * @param array        $order_by       optional - array of order bys
-         * @param mixed|null   $after_pk       what starting after which key (PK)
-         * @param integer|null $limit          how many records to select
-         * @param string       $entity_name    optional - closure function that retreieves the recordset from its origin
-         * @return string a cache key that is unqiue to the application
-         */
-        final public static function _build_key_after($cache_key_name, array $params=[], array $order_by=[], $after_pk=null, $limit=null, $entity_name=null) {
-            ksort($order_by);
-
-            $after_pk = md5($after_pk);
-
-            // each key is namespaced with the name of the class, then the name of the function ($cache_key_name)
-            $param_count = count($params);
-            if ($param_count === 1) {
-                return ($entity_name ?: static::ENTITY_NAME) . ":{$cache_key_name}:{$limit}:{$after_pk}:" . md5(json_encode($order_by)) . ':' . md5(reset($params));
-            } else if ($param_count === 0) {
-                return ($entity_name ?: static::ENTITY_NAME) . ":{$cache_key_name}:{$limit}:{$after_pk}:" . md5(json_encode($order_by)) . ':';
-            } else {
-                ksort($params);
-                foreach ($params as & $param) {
-                    $param = base64_encode($param);
-                }
-                // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
-                return ($entity_name ?: static::ENTITY_NAME) . ":{$cache_key_name}:{$limit}:{$after_pk}:" . md5(json_encode($order_by)) . ':' . md5(json_encode(array_values($params)));
             }
         }
 
@@ -572,16 +569,16 @@
 
                 // Store the cache key in $order_by_list_key list
                 cache_lib::list_add(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
+                    $this->cache_list_engine,
+                    $this->cache_list_engine_pool_write,
                     $order_by_list_key,
                     $cache_key
                 );
 
                 // Add the $order_by_list_key key to the field list key - if it doesn't already exist
                 cache_lib::list_add(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
+                    $this->cache_list_engine,
+                    $this->cache_list_engine_pool_write,
                     entity_record_limit_dao::_build_key_list($field, null, $entity_name),
                     $order_by_list_key
                 );
@@ -608,16 +605,16 @@
 
                 // Store the cache key in the $list_key list
                 cache_lib::list_add(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
+                    $this->cache_list_engine,
+                    $this->cache_list_engine_pool_write,
                     $list_key,
                     $cache_key
                 );
 
                 // Add the $list_key key to field list key - if it doesn't already exist
                 cache_lib::list_add(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
+                    $this->cache_list_engine,
+                    $this->cache_list_engine_pool_write,
                     entity_record_limit_dao::_build_key_list($field, null, $entity_name),
                     $list_key
                 );
@@ -656,16 +653,16 @@
 
                 // Store the cache key in $order_by_list_key list
                 cache_lib::list_add(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
+                    $this->cache_list_engine,
+                    $this->cache_list_engine_pool_write,
                     $order_by_list_key,
                     array_keys($cache_keys)
                 );
 
                 // Add the $order_by_list_key key to the field list key - if it doesn't already exist
                 cache_lib::list_add(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
+                    $this->cache_list_engine,
+                    $this->cache_list_engine_pool_write,
                     entity_record_limit_dao::_build_key_list($field, null, $entity_name),
                     $order_by_list_key
                 );
@@ -693,16 +690,16 @@
 
                     // Store the cache key in the $list_key list
                     cache_lib::list_add(
-                        $this->cache_engine,
-                        $this->cache_engine_pool_write,
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
                         $list_key,
                         $cache_key
                     );
 
                     // Add the $list_key key to field list key - if it doesn't already exist
                     cache_lib::list_add(
-                        $this->cache_engine,
-                        $this->cache_engine_pool_write,
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
                         entity_record_limit_dao::_build_key_list($field, null, $entity_name),
                         $list_key
                     );
@@ -757,8 +754,8 @@
                     array_merge(
                         $list_keys,
                         cache_lib::list_get_union(
-                            $this->cache_engine,
-                            $this->cache_engine_pool_write,
+                            $this->cache_list_engine,
+                            $this->cache_list_engine_pool_write,
                             $field_list_keys
                         )
                     )
@@ -770,32 +767,64 @@
              * eg, limit[id]:555 + limit[id]:order_by + limit[email]:aaa@aaa.com + limit[email]:order_by
              */
             $cache_keys = cache_lib::list_get_union(
-                $this->cache_engine,
-                $this->cache_engine_pool_write,
+                $this->cache_list_engine,
+                $this->cache_list_engine_pool_write,
                 $list_keys
             );
 
             $this->cache_batch_start();
 
+            if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                $this->cache_list_batch_start();
+            }
+
             if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
                 /**
                  * Expire all the keys selected above
                  */
-                cache_lib::expire_multi(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
-                    array_merge($cache_keys, $list_keys, $field_list_keys),
-                    $this->cache_delete_expire_ttl
-                );
+                if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                    cache_lib::expire_multi(
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
+                        array_merge($list_keys, $field_list_keys),
+                        $this->cache_delete_expire_ttl
+                    );
+                    cache_lib::expire_multi(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        $cache_keys,
+                        $this->cache_delete_expire_ttl
+                    );
+                } else {
+                    cache_lib::expire_multi(
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
+                        array_merge($cache_keys, $list_keys, $field_list_keys),
+                        $this->cache_delete_expire_ttl
+                    );
+                }
             } else {
                 /**
                  * Delete all the keys selected above
                  */
-                cache_lib::delete_multi(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
-                    array_merge($cache_keys, $list_keys, $field_list_keys)
-                );
+                if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                    cache_lib::delete_multi(
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
+                        array_merge($list_keys, $field_list_keys)
+                    );
+                    cache_lib::delete_multi(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        $cache_keys
+                    );
+                } else {
+                    cache_lib::delete_multi(
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
+                        array_merge($cache_keys, $list_keys, $field_list_keys)
+                    );
+                }
             }
 
             /**
@@ -804,11 +833,15 @@
              */
             foreach ($list_items_to_remove as $field_list_key => $remove_keys) {
                 cache_lib::list_remove(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
+                    $this->cache_list_engine,
+                    $this->cache_list_engine_pool_write,
                     $field_list_key,
                     array_unique($remove_keys)
                 );
+            }
+
+            if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                $this->cache_list_batch_execute();
             }
 
             $this->cache_batch_execute();
@@ -857,8 +890,8 @@
                     array_merge(
                         $list_keys,
                         cache_lib::list_get_union(
-                            $this->cache_engine,
-                            $this->cache_engine_pool_write,
+                            $this->cache_list_engine,
+                            $this->cache_list_engine_pool_write,
                             $field_list_keys
                         )
                     )
@@ -870,32 +903,68 @@
              * eg, limit[id]:555 + limit[id]:order_by + limit[email]:aaa@aaa.com + limit[email]:order_by
              */
             $cache_keys = cache_lib::list_get_union(
-                $this->cache_engine,
-                $this->cache_engine_pool_write,
+                $this->cache_list_engine,
+                $this->cache_list_engine_pool_write,
                 $list_keys
             );
 
             $this->cache_batch_start();
 
+            if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                $this->cache_list_batch_start();
+            }
+
             if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
                 /**
                  * Expire all the keys selected above
                  */
-                cache_lib::expire_multi(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
-                    array_merge($cache_keys, $list_keys, $field_list_keys),
-                    $this->cache_delete_expire_ttl
-                );
+                if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                    cache_lib::expire_multi(
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
+                        array_merge($list_keys, $field_list_keys),
+                        $this->cache_delete_expire_ttl
+                    );
+                    cache_lib::expire_multi(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        $cache_keys,
+                        $this->cache_delete_expire_ttl
+                    );
+                } else {
+                    cache_lib::expire_multi(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        array_merge($cache_keys, $list_keys, $field_list_keys),
+                        $this->cache_delete_expire_ttl
+                    );
+                }
             } else {
                 /**
                  * Delete all the keys selected above
                  */
-                cache_lib::delete_multi(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
-                    array_merge($cache_keys, $list_keys, $field_list_keys)
-                );
+                if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                    cache_lib::delete_multi(
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
+                        array_merge($list_keys, $field_list_keys)
+                    );
+                    cache_lib::delete_multi(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        $cache_keys
+                    );
+                } else {
+                    cache_lib::delete_multi(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        array_merge($cache_keys, $list_keys, $field_list_keys)
+                    );
+                }
+            }
+
+            if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                $this->cache_list_batch_execute();
             }
 
             $this->cache_batch_execute();

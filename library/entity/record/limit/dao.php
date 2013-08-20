@@ -15,10 +15,13 @@
         const SORT_ASC  = 0;
         const SORT_DESC = 1;
 
-        // List key
+        // List key - Always clear these keys on every change
+        const ALWAYS  = 'always';
+
+        // List key - Limit lists
         const LIMIT  = 'limit';
 
-        // Offset key
+        // Offset key - Offset related record PK lists
         const OFFSET = 'offset';
 
         protected $cache_list_engine;
@@ -131,14 +134,17 @@
          */
         final protected function _by_fields_offset($cache_key_name, array $keys, array $order_by, $offset, $limit) {
 
+            $limit  = (int) $limit;
+            $offset = $offset === null ? null : (int) $offset;
+
             $pk   = static::PRIMARY_KEY;
             $self = $this;
 
             $cache_key = self::_build_key_offset(
                 $cache_key_name,
                 $order_by,
-                $offset,
-                $limit,
+                (int) $offset,
+                (int) $limit,
                 $keys
             );
 
@@ -181,6 +187,9 @@
          */
         final protected function _by_fields_offset_multi($cache_key_name, array $keys_arr, array $order_by, $offset, $limit) {
 
+            $limit  = (int) $limit;
+            $offset = $offset === null ? null : (int) $offset;
+
             $pk   = static::PRIMARY_KEY;
             $self = $this;
 
@@ -193,8 +202,8 @@
                     return $self::_build_key_offset(
                         $cache_key_name,
                         $order_by,
-                        $offset,
-                        $limit,
+                        (int) $offset,
+                        (int) $limit,
                         $fields,
                         $self::ENTITY_NAME
                     );
@@ -218,6 +227,32 @@
         }
 
         /**
+         * Get a record count
+         *
+         * @param array $keys
+         *
+         * @return integer
+         */
+        public function count(array $keys=null) {
+
+            $self = $this;
+
+            return cache_lib::single(
+                $this->cache_engine,
+                $this->cache_engine_pool_read,
+                $this->cache_engine_pool_write,
+                parent::_build_key(self::COUNT, $keys ?: []),
+                function() use ($self, $keys) {
+                    $source_driver = "entity_record_limit_driver_{$self->source_engine}";
+                    return $source_driver::count($self, $self->source_engine_pool_read, $keys);
+                },
+                function($cache_key) use ($self, $keys) {
+                    $self->_set_delete_count_cache_lists($self, $cache_key, $keys);
+                }
+            );
+        }
+
+        /**
          * Inserts a record into the database
          *
          * @access protected
@@ -231,7 +266,7 @@
          */
         protected function _insert(array $info, $replace=false, $return_model=true, $load_model_from_source=false) {
 
-            $source_driver = "entity_record_driver_{$this->source_engine}";
+            $source_driver = "entity_record_limit_driver_{$this->source_engine}";
             $info          = $source_driver::insert(
                 $this,
                 $this->source_engine_pool_write,
@@ -245,25 +280,13 @@
                 $info = $source_driver::by_pk($this, $this->source_engine_pool_write, $info[static::PRIMARY_KEY]);
             }
 
-            $this->cache_batch_start();
-
             // In case a blank record was cached
             cache_lib::set(
                 $this->cache_engine,
                 $this->cache_engine_pool_write,
-                static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY]),
+                static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY]),
                 $info
             );
-
-//            if (static::USING_COUNT) {
-//                cache_lib::delete(
-//                    $this->cache_engine,
-//                    $this->cache_engine_pool_write,
-//                    static::ENTITY_NAME . ':' . self::COUNT
-//                );
-//            }
-
-            $this->cache_batch_execute();
 
             self::_delete_limit_cache_by_fields($info);
 
@@ -290,7 +313,7 @@
          */
         protected function _inserts(array $infos, $keys_match=true, $replace=false, $return_collection=true, $load_models_from_source=false) {
 
-            $source_driver = "entity_record_driver_{$this->source_engine}";
+            $source_driver = "entity_record_limit_driver_{$this->source_engine}";
             $infos         = $source_driver::inserts(
                 $this,
                 $this->source_engine_pool_write,
@@ -312,26 +335,14 @@
 
             $insert_cache_data = [];
             foreach ($infos as $info) {
-                $insert_cache_data[static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY])] = $info;
+                $insert_cache_data[static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY])] = $info;
             }
-
-            $this->cache_batch_start();
 
             cache_lib::set_multi(
                 $this->cache_engine,
                 $this->cache_engine_pool_write,
                 $insert_cache_data
             );
-
-//            if (static::USING_COUNT) {
-//                cache_lib::delete(
-//                    $this->cache_engine,
-//                    $this->cache_engine_pool_write,
-//                    static::ENTITY_NAME . ':' . self::COUNT
-//                );
-//            }
-
-            $this->cache_batch_execute();
 
             self::_delete_limit_cache_by_fields_multi($infos);
 
@@ -378,7 +389,7 @@
 
             $pk = static::PRIMARY_KEY;
 
-            $source_driver = "entity_record_driver_{$this->source_engine}";
+            $source_driver = "entity_record_limit_driver_{$this->source_engine}";
             $source_driver::update($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $model, $new_info);
 
             /**
@@ -396,32 +407,42 @@
 
             $this->cache_batch_start();
 
-            cache_lib::set(
-                $this->cache_engine,
-                $this->cache_engine_pool_write,
-                static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk),
-                $new_info + $old_info
-            );
-
             /**
              * If the primary key was changed, bust the cache for that new key too
              * technically the PK should never change though... that kinda defeats the purpose of a record PK...
              */
             if (array_key_exists($pk, $new_info)) {
+                // Set the cache record
+                cache_lib::set(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($new_info[$pk]) : $new_info[$pk]),
+                    $new_info + $old_info
+                );
+
+                // Destroy the old key
                 if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
-                    cache_lib::delete(
+                    cache_lib::expire(
                         $this->cache_engine,
                         $this->cache_engine_pool_write,
-                        static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($new_info[$pk]) : $new_info[$pk]),
+                        static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk),
                         $this->cache_delete_expire_ttl
                     );
                 } else {
                     cache_lib::delete(
                         $this->cache_engine,
                         $this->cache_engine_pool_write,
-                        static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($new_info[$pk]) : $new_info[$pk])
+                        static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
                     );
                 }
+            } else {
+                // Update cache record
+                cache_lib::set(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk),
+                    $new_info + $old_info
+                );
             }
 
             $this->cache_batch_execute();
@@ -458,21 +479,21 @@
 
             $pk = static::PRIMARY_KEY;
 
-            $source_driver = "entity_record_driver_{$this->source_engine}";
+            $source_driver = "entity_record_limit_driver_{$this->source_engine}";
             $source_driver::delete($this, $this->source_engine_pool_write, $pk, $model);
 
             if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
                 cache_lib::expire(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk),
+                    static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk),
                     $this->cache_delete_expire_ttl
                 );
             } else {
                 cache_lib::delete(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
+                    static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
                 );
             }
 
@@ -497,12 +518,12 @@
                 return;
             }
 
-            $source_driver = "entity_record_driver_{$this->source_engine}";
+            $source_driver = "entity_record_limit_driver_{$this->source_engine}";
             $source_driver::deletes($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $collection);
 
             $delete_cache_keys = [];
             foreach ($collection->field(static::PRIMARY_KEY) as $pk) {
-                $delete_cache_keys[] = static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? ':' . md5($pk) : ":{$pk}");
+                $delete_cache_keys[] = static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? ':' . md5($pk) : ":{$pk}");
             }
 
             $this->cache_batch_start();
@@ -521,14 +542,6 @@
                     $delete_cache_keys
                 );
             }
-
-//            if (static::USING_COUNT) {
-//                cache_lib::delete(
-//                    $this->cache_engine,
-//                    $this->cache_engine_pool_write,
-//                    static::ENTITY_NAME . ':' . self::COUNT
-//                );
-//            }
 
             $this->cache_batch_execute();
 
@@ -565,7 +578,7 @@
              */
             foreach ($order_by as $field => $direction) {
                 // Create list key for order by field
-                $order_by_list_key = entity_record_limit_dao::_build_key_order($field, $entity_name);
+                $order_by_list_key = self::_build_key_order($field, $entity_name);
 
                 // Store the cache key in $order_by_list_key list
                 cache_lib::list_add(
@@ -579,7 +592,7 @@
                 cache_lib::list_add(
                     $this->cache_list_engine,
                     $this->cache_list_engine_pool_write,
-                    entity_record_limit_dao::_build_key_list($field, null, $entity_name),
+                    self::_build_key_list($field, null, $entity_name),
                     $order_by_list_key
                 );
             }
@@ -601,7 +614,7 @@
              */
             foreach (array_diff_key($keys, $order_by) as $field => $value) {
                 // Create a list key for the field/value
-                $list_key = entity_record_limit_dao::_build_key_list($field, $value, $entity_name);
+                $list_key = self::_build_key_list($field, $value, $entity_name);
 
                 // Store the cache key in the $list_key list
                 cache_lib::list_add(
@@ -615,7 +628,7 @@
                 cache_lib::list_add(
                     $this->cache_list_engine,
                     $this->cache_list_engine_pool_write,
-                    entity_record_limit_dao::_build_key_list($field, null, $entity_name),
+                    self::_build_key_list($field, null, $entity_name),
                     $list_key
                 );
             }
@@ -649,7 +662,7 @@
              */
             foreach ($order_by as $field => $direction) {
                 // Create list key for order by field
-                $order_by_list_key = entity_record_limit_dao::_build_key_order($field, $entity_name);
+                $order_by_list_key = self::_build_key_order($field, $entity_name);
 
                 // Store the cache key in $order_by_list_key list
                 cache_lib::list_add(
@@ -663,7 +676,7 @@
                 cache_lib::list_add(
                     $this->cache_list_engine,
                     $this->cache_list_engine_pool_write,
-                    entity_record_limit_dao::_build_key_list($field, null, $entity_name),
+                    self::_build_key_list($field, null, $entity_name),
                     $order_by_list_key
                 );
             }
@@ -686,7 +699,7 @@
             foreach ($cache_keys as $cache_key => $keys) {
                 foreach (array_diff_key($keys, $order_by) as $field => $value) {
                     // Create a list key for the field/value
-                    $list_key = entity_record_limit_dao::_build_key_list($field, $value, $entity_name);
+                    $list_key = self::_build_key_list($field, $value, $entity_name);
 
                     // Store the cache key in the $list_key list
                     cache_lib::list_add(
@@ -700,7 +713,7 @@
                     cache_lib::list_add(
                         $this->cache_list_engine,
                         $this->cache_list_engine_pool_write,
-                        entity_record_limit_dao::_build_key_list($field, null, $entity_name),
+                        self::_build_key_list($field, null, $entity_name),
                         $list_key
                     );
                 }
@@ -719,7 +732,7 @@
          */
         final protected function _delete_limit_cache_by_fields(array $fields, array $secondary_fields=null) {
             $field_list_keys      = [];
-            $list_keys            = [];
+            $list_keys            = [ parent::_build_key(self::ALWAYS), ];
             $list_items_to_remove = [];
 
             foreach ($fields as $field => $value) {
@@ -856,7 +869,7 @@
          */
         final protected function _delete_limit_cache_by_fields_multi(array $fields_arr) {
             $field_list_keys      = [];
-            $list_keys            = [];
+            $list_keys            = [ parent::_build_key(self::ALWAYS), ];
             $list_items_to_remove = [];
 
             foreach ($fields_arr as $fields) {
@@ -968,5 +981,71 @@
             }
 
             $this->cache_batch_execute();
+        }
+
+        /**
+         * Create the meta data (lists) to identify which cache keys to destroy when the record or field values have been changed
+         *
+         * @param string     $self
+         * @param string     $cache_key
+         * @param array|null $keys
+         */
+        final public function _set_delete_count_cache_lists($self, $cache_key, array $keys=null) {
+
+            /**
+             * Build lists of keys for deletion - when it's time to delete/modify the record
+             */
+
+            $entity_name = $self::ENTITY_NAME;
+
+            if ($keys) {
+                $this->cache_batch_start();
+
+                /**
+                 * Keys - An entry for each key and value must be created (linking back to this set's $cache_key)
+                 *
+                 * array_diff_key() is used to avoid doubling the deletion of keys when it's completely unnecessary.
+                 * If we're going to clear a field (because it's used in the order by), there's no point in also
+                 * clearing if because it's used as a field/value. (yes, I realize this is complicated and possibly confusing)
+                 *
+                 * Example: If you get records where id = 10 and you order by that same 'id' field, then every cached
+                 * result set that uses id for anything needs to be destroyed when any id changes in the table. Since
+                 * ordering by a field might be affected by any id, all resulting sets that involve that 'id' field,
+                 * must be cleared out.
+                 *
+                 * If foo_id = 10 and order by 'id' was used, then only cached result sets with foo_id = 10 would
+                 * need to be destroyed (along with all 'id' cached result sets).
+                 */
+                foreach ($keys as $field => $value) {
+                    // Create a list key for the field/value
+                    $list_key = self::_build_key_list($field, $value, $entity_name);
+
+                    // Store the cache key in the $list_key list
+                    cache_lib::list_add(
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
+                        $list_key,
+                        $cache_key
+                    );
+
+                    // Add the $list_key key to field list key - if it doesn't already exist
+                    cache_lib::list_add(
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
+                        self::_build_key_list($field, null, $entity_name),
+                        $list_key
+                    );
+                }
+
+                $this->cache_batch_execute();
+            } else {
+                // Add the $list_key key to field list key - if it doesn't already exist
+                cache_lib::list_add(
+                    $this->cache_list_engine,
+                    $this->cache_list_engine_pool_write,
+                    parent::_build_key(self::ALWAYS),
+                    $cache_key
+                );
+            }
         }
     }

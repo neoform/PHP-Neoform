@@ -345,28 +345,39 @@
                 $replace
             );
 
+            if ($load_model_from_source) {
+                // Use master to avoid race condition
+                $info = $source_driver::by_pk($this, $this->source_engine_pool_write, $info[static::PRIMARY_KEY]);
+            }
+
             $this->cache_batch_start();
 
             // In case a blank record was cached
-            cache_lib::delete(
+            cache_lib::set(
                 $this->cache_engine,
                 $this->cache_engine_pool_write,
-                static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY])
+                static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY]),
+                $info
             );
 
             if (static::USING_COUNT) {
-                cache_lib::delete(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::COUNT
-                );
+                if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
+                    cache_lib::expire(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        static::ENTITY_NAME . ':' . self::COUNT,
+                        $this->cache_delete_expire_ttl
+                    );
+                } else {
+                    cache_lib::delete(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        static::ENTITY_NAME . ':' . self::COUNT
+                    );
+                }
             }
 
             $this->cache_batch_execute();
-
-            if ($load_model_from_source) {
-                $info = self::by_pk($info[static::PRIMARY_KEY]);
-            }
 
             if ($return_model) {
                 $model = static::ENTITY_NAME . '_model';
@@ -401,43 +412,57 @@
                 $replace
             );
 
-            $delete_keys = [];
-            foreach ($infos as $info) {
-                $delete_keys[] = static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY]);
-            }
-
-            $this->cache_batch_start();
-
-            cache_lib::delete_multi(
-                $this->cache_engine,
-                $this->cache_engine_pool_write,
-                $delete_keys
-            );
-
-            if (static::USING_COUNT) {
-                cache_lib::delete(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::COUNT
-                );
-            }
-
-            $this->cache_batch_execute();
-
             if ($load_models_from_source) {
                 $ids = [];
                 foreach ($infos as $k => $info) {
                     $ids[$k] = $info[static::PRIMARY_KEY];
                 }
 
-                $infos = self::by_pks($ids);
+                // Use master to avoid race condition
+                $infos = $source_driver::by_pks($this, $this->source_engine_pool_write, $ids);
             }
 
-            if ($return_collection) {
-                $collection = static::ENTITY_NAME . '_collection';
-                return new $collection(null, $infos);
+            $insert_cache_data = [];
+            foreach ($infos as $info) {
+                $insert_cache_data[static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY])] = $info;
+            }
+
+            $this->cache_batch_start();
+
+            cache_lib::set_multi(
+                $this->cache_engine,
+                $this->cache_engine_pool_write,
+                $insert_cache_data
+            );
+
+            if (static::USING_COUNT) {
+                if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
+                    cache_lib::expire(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        static::ENTITY_NAME . ':' . self::COUNT,
+                        $this->cache_delete_expire_ttl
+                    );
+                } else {
+                    cache_lib::delete(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        static::ENTITY_NAME . ':' . self::COUNT
+                    );
+                }
+            }
+
+            $this->cache_batch_execute();
+
+            if ($load_models_from_source) {
+                return $return_collection ? new $collection(null, $infos) : true;
             } else {
-                return true;
+                if ($return_collection) {
+                    $collection = static::ENTITY_NAME . '_collection';
+                    return new $collection(null, $infos);
+                } else {
+                    return true;
+                }
             }
         }
 
@@ -459,51 +484,87 @@
                 return $return_model ? $model : false;
             }
 
+            /**
+             * Filter out any fields that have no actually changed - no point in updating the record and destroying
+             * cache if nothing actually changed
+             */
+            $old_info = $model->export();
+            $new_info = array_diff($new_info, $old_info);
+
+            if (! $new_info) {
+                return $return_model ? $model : false;
+            }
+
             $pk = static::PRIMARY_KEY;
 
-            $source_driver = "entity_record_driver_{$this->source_engine}";
+            $source_driver = "entity_record_limit_driver_{$this->source_engine}";
             $source_driver::update($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $model, $new_info);
+
+            /**
+             * Reload model from source based on current (or newly updated) PK
+             * We reload it in case there were any fields updated by an external source during the process (such as a timestamp)
+             */
+            if ($reload_model_from_source) {
+                // Use master to avoid race condition
+                $new_info = $source_driver::by_pk(
+                    $this,
+                    $this->source_engine_pool_write,
+                    array_key_exists($pk, $new_info) ? $new_info[$pk] : $model->$pk
+                );
+            }
 
             $this->cache_batch_start();
 
-            cache_lib::delete(
-                $this->cache_engine,
-                $this->cache_engine_pool_write,
-                static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
-            );
-
-            // if the primary key was changed, bust the cache for that new key too
-            // technically the PK should never change though... that kinda defeats the purpose of a record PK...
-            if (isset($new_info[$pk])) {
-                cache_lib::delete(
+            /**
+             * If the primary key was changed, bust the cache for that new key too
+             * technically the PK should never change though... that kinda defeats the purpose of a record PK...
+             */
+            if (array_key_exists($pk, $new_info)) {
+                // Set the cache record
+                cache_lib::set(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($new_info[$pk]) : $new_info[$pk])
+                    static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($new_info[$pk]) : $new_info[$pk]),
+                    $new_info + $old_info
+                );
+
+                // Destroy the old key
+                if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
+                    cache_lib::expire(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk),
+                        $this->cache_delete_expire_ttl
+                    );
+                } else {
+                    cache_lib::delete(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
+                    );
+                }
+            } else {
+                // Update cache record
+                cache_lib::set(
+                    $this->cache_engine,
+                    $this->cache_engine_pool_write,
+                    static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk),
+                    $new_info + $old_info
                 );
             }
 
             $this->cache_batch_execute();
 
-            if ($reload_model_from_source) {
-                /**
-                 * Reload model from source based on current (or newly updated) PK
-                 * We reload it in case there were any fields updated by an external source during the process (such as a timestamp)
-                 */
-                $new_model = new $model(array_key_exists($pk, $new_info) ? $new_info[$pk] : $model->$pk);
-
-                // Reload new info from the newly refreshed model
-                $new_info = $new_model->export();
-
-                return $return_model ? $new_model : true;
-
-            } else {
-                if ($return_model) {
+            if ($return_model) {
+                if ($reload_model_from_source) {
+                    return new $model(null, $new_info);
+                } else {
                     $updated_model = clone $model;
                     $updated_model->_update($new_info);
                     return $updated_model;
-                } else {
-                    return true;
                 }
+            } else {
+                return true;
             }
         }
 
@@ -520,10 +581,8 @@
 
             $pk = static::PRIMARY_KEY;
 
-            $source_driver = "entity_record_driver_{$this->source_engine}";
+            $source_driver = "entity_record_limit_driver_{$this->source_engine}";
             $source_driver::delete($this, $this->source_engine_pool_write, $pk, $model);
-
-            $this->cache_batch_start();
 
             if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
                 cache_lib::expire(
@@ -541,11 +600,20 @@
             }
 
             if (static::USING_COUNT) {
-                cache_lib::delete(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::COUNT
-                );
+                if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
+                    cache_lib::expire(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        static::ENTITY_NAME . ':' . self::COUNT,
+                        $this->cache_delete_expire_ttl
+                    );
+                } else {
+                    cache_lib::delete(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        static::ENTITY_NAME . ':' . self::COUNT
+                    );
+                }
             }
 
             $this->cache_batch_execute();
@@ -594,11 +662,20 @@
             }
 
             if (static::USING_COUNT) {
-                cache_lib::delete(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::COUNT
-                );
+                if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
+                    cache_lib::expire(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        static::ENTITY_NAME . ':' . self::COUNT,
+                        $this->cache_delete_expire_ttl
+                    );
+                } else {
+                    cache_lib::delete(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        static::ENTITY_NAME . ':' . self::COUNT
+                    );
+                }
             }
 
             $this->cache_batch_execute();

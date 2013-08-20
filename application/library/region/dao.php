@@ -43,7 +43,7 @@
             );
         }
 
-        public function by_country_offset($country_id, array $order_by, $offset, $limit) {
+        public function by_country_offset($country_id, array $order_by, $offset=null, $limit=null) {
             return parent::_by_fields_offset(
                 self::BY_COUNTRY,
                 [
@@ -51,18 +51,6 @@
                 ],
                 $order_by,
                 (int) $offset,
-                (int) $limit
-            );
-        }
-
-        public function by_country_after($country_id, array $order_by, $after_pk, $limit) {
-            return parent::_by_fields_after(
-                self::BY_COUNTRY,
-                [
-                    'country_id' => (int) $country_id,
-                ],
-                $order_by,
-                $after_pk,
                 (int) $limit
             );
         }

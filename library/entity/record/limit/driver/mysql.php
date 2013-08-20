@@ -2,6 +2,19 @@
 
     class entity_record_limit_driver_mysql extends entity_record_driver_mysql implements entity_record_limit_driver {
 
+        /**
+         * Get a set of PKs based on params, in a given order and offset/limit
+         *
+         * @param entity_record_dao $self
+         * @param string            $pool
+         * @param array             $keys
+         * @param mixed             $pk
+         * @param array             $order_by
+         * @param integer|null      $offset
+         * @param integer           $limit
+         *
+         * @return mixed
+         */
         public static function by_fields_offset(entity_record_dao $self, $pool, array $keys, $pk, array $order_by, $offset, $limit) {
             $where = [];
             $vals  = [];
@@ -41,6 +54,19 @@
             return array_column($rs->fetchAll(), $pk);
         }
 
+        /**
+         * Get multiple sets of PKs based on params, in a given order and offset/limit
+         *
+         * @param entity_record_dao $self
+         * @param string            $pool
+         * @param array             $keys_arr
+         * @param mixed             $pk
+         * @param array             $order_by
+         * @param integer|null      $offset
+         * @param integer           $limit
+         *
+         * @return array
+         */
         public static function by_fields_offset_multi(entity_record_dao $self, $pool, array $keys_arr, $pk, array $order_by, $offset, $limit) {
             $select_fields  = [ "`{$pk}`" ];
             $reverse_lookup = [];
@@ -105,5 +131,38 @@
             }
 
             return $return;
+        }
+
+        /**
+         * Get a count
+         *
+         * @param entity_record_dao $self
+         * @param string            $pool
+         * @param array             $keys
+         *
+         * @return integer
+         */
+        public static function count(entity_record_dao $self, $pool, array $keys=null) {
+            $where = [];
+            $vals  = [];
+
+            if ($keys) {
+                foreach ($keys as $k => $v) {
+                    if ($v === null) {
+                        $where[] = "`{$k}` IS NULL";
+                    } else {
+                        $vals[]  = $v;
+                        $where[] = "`{$k}` = ?";
+                    }
+                }
+            }
+
+            $rs = core::sql($pool)->prepare("
+                SELECT COUNT(0) `num`
+                FROM `" . self::table($self::TABLE) . "`
+                " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
+            ");
+            $rs->execute($vals);
+            return (int) $rs->fetch()['num'];
         }
     }

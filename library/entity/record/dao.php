@@ -27,7 +27,7 @@
         protected $cache_delete_expire_ttl;
 
         // Key name used for primary key lookups
-        const BY_PK = 'by_pk';
+        const RECORD = 'record';
 
         // Counts
         const COUNT = 'count';
@@ -174,7 +174,7 @@
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
-                static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($pk) : $pk),
+                static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($pk) : $pk),
                 function() use ($pk, $self) {
                     $source_driver = "entity_record_driver_{$self->source_engine}";
                     return $source_driver::by_pk($self, $self->source_engine_pool_read, $pk);
@@ -205,7 +205,7 @@
                 $this->cache_engine_pool_write,
                 $pks,
                 function($pk) use ($self) {
-                    return $self::ENTITY_NAME . ':' . $self::BY_PK . ':' . ($self::BINARY_PK ? md5($pk) : $pk);
+                    return $self::ENTITY_NAME . ':' . $self::RECORD . ':' . ($self::BINARY_PK ? md5($pk) : $pk);
                 },
                 function(array $pks) use ($self) {
                     $source_driver = "entity_record_driver_{$self->source_engine}";
@@ -213,130 +213,6 @@
                 }
             );
         }
-
-        /**
-         * Get a list of PKs, with a limit, offset and order by - this function should NOT be used with non-persistent
-         * cache engines. If the LIMIT cache key expires, it can cause cache corruption. Eg, do not use memcached with this
-         *
-         * @param integer $limit     max number of PKs to return
-         * @param string  $order_by  field name
-         * @param string  $direction ASC|DESC
-         * @param string  $after_pk  A PK offset to be used (it's more efficient to use PK offsets than an SQL 'OFFSET')
-         *
-         * @return array of PKs
-         * @throws model_exception
-         */
-//        public function limit($limit, $order_by, $direction, $after_pk=null) {
-//
-//            if (! static::USING_LIMIT) {
-//                $exception = static::ENTITY_NAME . '_exception';
-//                throw new $exception('Limit queries are not active in the ' . static::NAME . ' entity definition');
-//            }
-//
-//            $self      = $this;
-//            $direction = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
-//
-//            $cache_key = self::_build_key(
-//                self::LIMIT . ":{$order_by}",
-//                [
-//                    (int) $limit,
-//                    $direction,
-//                    $after_pk !== null && static::BINARY_PK ? md5($after_pk) : $after_pk,
-//                ]
-//            );
-//
-//            return cache_lib::single(
-//                $this->cache_engine,
-//                $this->cache_engine_pool_read,
-//                $this->cache_engine_pool_write,
-//                $cache_key,
-//                function() use ($self, $cache_key, $limit, $order_by, $direction, $after_pk) {
-//
-//                    // create a list entry to store all the LIMIT keys - we need to be able to destroy these
-//                    // cache entries when something in the list changes
-//                    cache_lib::list_add(
-//                        $this->cache_engine,
-//                        $this->cache_engine_pool_write,
-//                        $self::_build_key($self::LIMIT . '[]'),
-//                        $cache_key
-//                    );
-//
-//                    // Pull content from source
-//                    $source_driver = "entity_record_driver_{$self->source_engine}";
-//                    return $source_driver::limit(
-//                        $self,
-//                        $self->source_engine_pool_read,
-//                        (int) $limit,
-//                        $order_by,
-//                        $direction,
-//                        $after_pk
-//                    );
-//                }
-//            );
-//        }
-
-        /**
-         * Get a paginated list of entity PKs
-         * This function does not use any caching, and it's not particularly efficient in the first place.
-         * For performance reasons, you should always try using the entity_record_dao::limit() function instead.
-         * When using large offsets on big tables, mysql tends to grind to a halt.
-         *
-         * @param string  $order_by
-         * @param string  $direction
-         * @param integer $offset
-         * @param integer $limit
-         *
-         * @return array
-         * @throws model_exception
-         */
-//        public function paginated($order_by, $direction, $offset, $limit) {
-//
-//            if (! static::USING_PAGINATED) {
-//                $exception = static::ENTITY_NAME . '_exception';
-//                throw new $exception('Limit queries are not active in the ' . static::NAME . ' entity definition');
-//            }
-//
-//            $self      = $this;
-//            $direction = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
-//
-//            $cache_key = self::_build_key(
-//                self::LIMIT . ":{$order_by}",
-//                [
-//                    (int) $offset,
-//                    (int) $limit,
-//                    $direction,
-//                ]
-//            );
-//
-//            return cache_lib::single(
-//                $this->cache_engine,
-//                $this->cache_engine_pool_read,
-//                $this->cache_engine_pool_write,
-//                $cache_key,
-//                function() use ($self, $cache_key, $limit, $offset, $order_by, $direction) {
-//
-//                    // create a list entry to store all the LIMIT keys - we need to be able to destroy these
-//                    // cache entries when something in the list changes
-//                    cache_lib::list_add(
-//                        $this->cache_engine,
-//                        $this->cache_engine_pool_write,
-//                        $self::_build_key($self::PAGINATED . '[]'),
-//                        $cache_key
-//                    );
-//
-//                    // Pull content from source
-//                    $source_driver = "entity_record_driver_{$self->source_engine}";
-//                    return $source_driver::paginated(
-//                        $self,
-//                        $self->source_engine_pool_read,
-//                        $order_by,
-//                        $direction,
-//                        (int) $offset,
-//                        (int) $limit
-//                    );
-//                }
-//            );
-//        }
 
         /**
          * Gets the full record(s) that match the $keys
@@ -475,7 +351,7 @@
             cache_lib::delete(
                 $this->cache_engine,
                 $this->cache_engine_pool_write,
-                static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY])
+                static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY])
             );
 
             if (static::USING_COUNT) {
@@ -527,7 +403,7 @@
 
             $delete_keys = [];
             foreach ($infos as $info) {
-                $delete_keys[] = static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY]);
+                $delete_keys[] = static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY]);
             }
 
             $this->cache_batch_start();
@@ -593,7 +469,7 @@
             cache_lib::delete(
                 $this->cache_engine,
                 $this->cache_engine_pool_write,
-                static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
+                static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
             );
 
             // if the primary key was changed, bust the cache for that new key too
@@ -602,7 +478,7 @@
                 cache_lib::delete(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($new_info[$pk]) : $new_info[$pk])
+                    static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($new_info[$pk]) : $new_info[$pk])
                 );
             }
 
@@ -653,14 +529,14 @@
                 cache_lib::expire(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk),
+                    static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk),
                     $this->cache_delete_expire_ttl
                 );
             } else {
                 cache_lib::delete(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
+                    static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
                 );
             }
 
@@ -697,7 +573,7 @@
 
             $delete_cache_keys = [];
             foreach ($collection->field(static::PRIMARY_KEY) as $pk) {
-                $delete_cache_keys[] = static::ENTITY_NAME . ':' . self::BY_PK . ':' . (static::BINARY_PK ? ':' . md5($pk) : ":{$pk}");
+                $delete_cache_keys[] = static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? ':' . md5($pk) : ":{$pk}");
             }
 
             $this->cache_batch_start();

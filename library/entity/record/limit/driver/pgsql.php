@@ -106,4 +106,37 @@
 
             return $return;
         }
+
+        /**
+         * Get a count
+         *
+         * @param entity_record_dao $self
+         * @param string            $pool
+         * @param array             $keys
+         *
+         * @return integer
+         */
+        public static function count(entity_record_dao $self, $pool, array $keys=null) {
+            $where = [];
+            $vals  = [];
+
+            if ($keys) {
+                foreach ($keys as $k => $v) {
+                    if ($v === null) {
+                        $where[] = "\"{$k}\" IS NULL";
+                    } else {
+                        $vals[]  = $v;
+                        $where[] = "\"{$k}\" = ?";
+                    }
+                }
+            }
+
+            $rs = core::sql($pool)->prepare("
+                SELECT COUNT(*) \"num\"
+                FROM \"" . self::table($self::TABLE) . "\"
+                " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
+            ");
+            $rs->execute($vals);
+            return (int) $rs->fetch()['num'];
+        }
     }

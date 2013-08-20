@@ -166,7 +166,7 @@
                     );
                 },
                 function($cache_key) use ($self, $keys, $order_by) {
-                    $self->_set_delete_limit_cache_lists($self, $cache_key, $keys, $order_by);
+                    $self->_set_delete_limit_cache_lists($cache_key, $keys, $order_by);
                 }
             );
         }
@@ -221,7 +221,7 @@
                     );
                 },
                 function(array $cache_keys) use ($self, $order_by) {
-                    $self->_set_delete_limit_cache_lists_multi($self, $cache_keys, $order_by);
+                    $self->_set_delete_limit_cache_lists_multi($cache_keys, $order_by);
                 }
             );
         }
@@ -247,7 +247,7 @@
                     return $source_driver::count($self, $self->source_engine_pool_read, $keys);
                 },
                 function($cache_key) use ($self, $keys) {
-                    $self->_set_delete_count_cache_lists($self, $cache_key, $keys);
+                    $self->_set_delete_count_cache_lists($cache_key, $keys);
                 }
             );
         }
@@ -554,20 +554,17 @@
         /**
          * Create the meta data (lists) to identify which cache keys to destroy when the record or field values have been changed
          *
-         * @param entity_record_limit_dao $self
          * @param string                  $cache_key
          * @param array                   $keys
          * @param array                   $order_by
          */
-        final protected function _set_delete_limit_cache_lists(entity_record_limit_dao $self, $cache_key, array $keys, array $order_by) {
+        final protected function _set_delete_limit_cache_lists($cache_key, array $keys, array $order_by) {
 
             $this->cache_batch_start();
 
             /**
              * Build lists of keys for deletion - when it's time to delete/modify the record
              */
-
-            $entity_name = $self::ENTITY_NAME;
 
             /**
              * Order by - goes first, since it's wider reaching, if there is overlap between $order_by fields
@@ -578,7 +575,7 @@
              */
             foreach ($order_by as $field => $direction) {
                 // Create list key for order by field
-                $order_by_list_key = self::_build_key_order($field, $entity_name);
+                $order_by_list_key = self::_build_key_order($field);
 
                 // Store the cache key in $order_by_list_key list
                 cache_lib::list_add(
@@ -592,7 +589,7 @@
                 cache_lib::list_add(
                     $this->cache_list_engine,
                     $this->cache_list_engine_pool_write,
-                    self::_build_key_list($field, null, $entity_name),
+                    self::_build_key_list($field, null),
                     $order_by_list_key
                 );
             }
@@ -614,7 +611,7 @@
              */
             foreach (array_diff_key($keys, $order_by) as $field => $value) {
                 // Create a list key for the field/value
-                $list_key = self::_build_key_list($field, $value, $entity_name);
+                $list_key = self::_build_key_list($field, $value);
 
                 // Store the cache key in the $list_key list
                 cache_lib::list_add(
@@ -628,7 +625,7 @@
                 cache_lib::list_add(
                     $this->cache_list_engine,
                     $this->cache_list_engine_pool_write,
-                    self::_build_key_list($field, null, $entity_name),
+                    self::_build_key_list($field),
                     $list_key
                 );
             }
@@ -639,19 +636,16 @@
         /**
          * Create the meta data (lists) to identify which cache keys to destroy when the record or field values have been changed
          *
-         * @param entity_record_limit_dao $self
-         * @param array                   $cache_keys
-         * @param array                   $order_by
+         * @param array $cache_keys
+         * @param array $order_by
          */
-        final protected function _set_delete_limit_cache_lists_multi(entity_record_limit_dao $self, array $cache_keys, array $order_by) {
+        final protected function _set_delete_limit_cache_lists_multi(array $cache_keys, array $order_by) {
 
             $this->cache_batch_start();
 
             /**
              * Build lists of keys for deletion - when it's time to delete/modify the record
              */
-
-            $entity_name = $self::ENTITY_NAME;
 
             /**
              * Order by - goes first, since it's wider reaching, if there is overlap between $order_by fields
@@ -662,7 +656,7 @@
              */
             foreach ($order_by as $field => $direction) {
                 // Create list key for order by field
-                $order_by_list_key = self::_build_key_order($field, $entity_name);
+                $order_by_list_key = self::_build_key_order($field);
 
                 // Store the cache key in $order_by_list_key list
                 cache_lib::list_add(
@@ -676,7 +670,7 @@
                 cache_lib::list_add(
                     $this->cache_list_engine,
                     $this->cache_list_engine_pool_write,
-                    self::_build_key_list($field, null, $entity_name),
+                    self::_build_key_list($field),
                     $order_by_list_key
                 );
             }
@@ -699,7 +693,7 @@
             foreach ($cache_keys as $cache_key => $keys) {
                 foreach (array_diff_key($keys, $order_by) as $field => $value) {
                     // Create a list key for the field/value
-                    $list_key = self::_build_key_list($field, $value, $entity_name);
+                    $list_key = self::_build_key_list($field, $value);
 
                     // Store the cache key in the $list_key list
                     cache_lib::list_add(
@@ -713,7 +707,7 @@
                     cache_lib::list_add(
                         $this->cache_list_engine,
                         $this->cache_list_engine_pool_write,
-                        self::_build_key_list($field, null, $entity_name),
+                        self::_build_key_list($field),
                         $list_key
                     );
                 }
@@ -732,7 +726,7 @@
          */
         final protected function _delete_limit_cache_by_fields(array $fields, array $secondary_fields=null) {
             $field_list_keys      = [];
-            $list_keys            = [ parent::_build_key(self::ALWAYS), ];
+            $list_keys            = [ static::ENTITY_NAME . ':' . self::ALWAYS, ];
             $list_items_to_remove = [];
 
             foreach ($fields as $field => $value) {
@@ -869,7 +863,7 @@
          */
         final protected function _delete_limit_cache_by_fields_multi(array $fields_arr) {
             $field_list_keys      = [];
-            $list_keys            = [ parent::_build_key(self::ALWAYS), ];
+            $list_keys            = [ static::ENTITY_NAME . ':' . self::ALWAYS, ];
             $list_items_to_remove = [];
 
             foreach ($fields_arr as $fields) {
@@ -986,18 +980,14 @@
         /**
          * Create the meta data (lists) to identify which cache keys to destroy when the record or field values have been changed
          *
-         * @param string     $self
          * @param string     $cache_key
          * @param array|null $keys
          */
-        final public function _set_delete_count_cache_lists($self, $cache_key, array $keys=null) {
+        final public function _set_delete_count_cache_lists($cache_key, array $keys=null) {
 
             /**
              * Build lists of keys for deletion - when it's time to delete/modify the record
              */
-
-            $entity_name = $self::ENTITY_NAME;
-
             if ($keys) {
                 $this->cache_batch_start();
 
@@ -1018,7 +1008,7 @@
                  */
                 foreach ($keys as $field => $value) {
                     // Create a list key for the field/value
-                    $list_key = self::_build_key_list($field, $value, $entity_name);
+                    $list_key = self::_build_key_list($field, $value);
 
                     // Store the cache key in the $list_key list
                     cache_lib::list_add(
@@ -1032,7 +1022,7 @@
                     cache_lib::list_add(
                         $this->cache_list_engine,
                         $this->cache_list_engine_pool_write,
-                        self::_build_key_list($field, null, $entity_name),
+                        self::_build_key_list($field),
                         $list_key
                     );
                 }
@@ -1043,7 +1033,7 @@
                 cache_lib::list_add(
                     $this->cache_list_engine,
                     $this->cache_list_engine_pool_write,
-                    parent::_build_key(self::ALWAYS),
+                    static::ENTITY_NAME . ':' . self::ALWAYS,
                     $cache_key
                 );
             }

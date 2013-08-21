@@ -153,7 +153,14 @@
          * @return array
          */
         public static function get_multi($pool, array $keys) {
-            return core::memcache($pool)->getMulti($keys);
+            $mc_results = core::memcache($pool)->getMulti($keys);
+            $results = [];
+            foreach ($keys as $k => $key) {
+                if (array_key_exists($key, $mc_results)) {
+                    $results[$k] = $mc_results[$key];
+                }
+            }
+            return $results;
         }
 
         /**

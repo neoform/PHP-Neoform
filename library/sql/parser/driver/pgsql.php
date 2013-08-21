@@ -24,7 +24,7 @@
                     if (isset($this->tables[$fk['parent_table']])) {
                         $table->fields[$fk['field']]->_set_referenced_field($this->tables[$fk['parent_table']]->fields[$fk['parent_field']]);
                     } else {
-                        throw new exception('The parent table `' . $fk['parent_table'] . '` was not identified during parsing, is it in this database/schema?');
+                        throw new exception("The parent table `{$fk['parent_table']}` was not identified during parsing, is it in this database/schema?");
                     }
                 }
             }
@@ -136,7 +136,7 @@
                     pg_class,
                     pg_attribute
                 WHERE
-                    pg_class.oid = '" . $table . "'::regclass
+                    pg_class.oid = '{$table}'::regclass
                     AND indrelid = pg_class.oid
                     AND pg_attribute.attrelid = pg_class.oid
                     AND pg_attribute.attnum = any(pg_index.indkey)
@@ -163,7 +163,7 @@
                 ON ccu.constraint_name = tc.constraint_name
                 WHERE
                     constraint_type = 'UNIQUE'
-                    AND tc.table_name='" . $table . "'
+                    AND tc.table_name='{$table}'
                 ORDER BY ordinal_position ASC
             ");
             $sql->execute();
@@ -193,7 +193,7 @@
                     AND a.attrelid = t.oid
                     AND a.attnum = ANY(ix.indkey)
                     AND t.relkind = 'r'
-                    AND t.relname LIKE '" . $table . "'
+                    AND t.relname LIKE '{$table}'
             ");
             $sql->execute();
             $indexes = [];
@@ -219,7 +219,7 @@
                 ON tc.constraint_name = kcu.constraint_name
                 JOIN information_schema.constraint_column_usage ccu
                 ON ccu.constraint_name = tc.constraint_name
-                WHERE constraint_type = 'FOREIGN KEY' AND tc.table_name='" . $table . "';
+                WHERE constraint_type = 'FOREIGN KEY' AND tc.table_name='{$table}'
             ");
             $sql->execute();
             $fks = [];
@@ -375,7 +375,7 @@
 
                 case 'varchar':
                 case 'char':
-                    return "->length(1, " . $field->size . ")";
+                    return "->length(1, {$field->size})";
 
                 case 'timestamp':
                 case 'timestampz':
@@ -386,7 +386,7 @@
                     return "->is_date()";
 
                 case 'enum':
-                    return "->in([" . $field->var_info . "])";
+                    return "->in([{$field->var_info}])";
             }
         }
 

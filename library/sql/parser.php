@@ -10,11 +10,11 @@
             switch (self::driver()) {
 
                 case 'pgsql':
-                    $parser = new sql_parser_driver_postgresql();
+                    $parser = new sql_parser_driver_pgsql;
                     break;
 
                 case 'mysql':
-                    $parser = new sql_parser_driver_mysql();
+                    $parser = new sql_parser_driver_mysql;
                     break;
 
                 default:
@@ -42,7 +42,7 @@
             switch (self::driver()) {
 
                 case 'pgsql':
-                    return sql_parser_driver_postgresql::api_type_validation($field);
+                    return sql_parser_driver_pgsql::api_type_validation($field);
 
                 case 'mysql':
                     return sql_parser_driver_mysql::api_type_validation($field);
@@ -64,7 +64,7 @@
             switch (self::driver()) {
 
                 case 'pgsql':
-                    return sql_parser_driver_postgresql::is_table_tiny($table);
+                    return sql_parser_driver_pgsql::is_table_tiny($table);
 
                 case 'mysql':
                     return sql_parser_driver_mysql::is_table_tiny($table);
@@ -86,7 +86,7 @@
             switch (self::driver()) {
 
                 case 'pgsql':
-                    return sql_parser_driver_postgresql::is_field_lookupable($field);
+                    return sql_parser_driver_pgsql::is_field_lookupable($field);
 
                 case 'mysql':
                     return sql_parser_driver_mysql::is_field_lookupable($field);

@@ -1,6 +1,6 @@
 <?php
 
-    class sql_parser_driver_postgresql extends sql_parser_driver {
+    class sql_parser_driver_pgsql extends sql_parser_driver {
 
         public function __construct() {
             $tables_info = [];

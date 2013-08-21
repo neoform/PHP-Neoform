@@ -39,7 +39,7 @@
             $longest_part = $this->table->longest_non_pk_index_combinations();
 
             if ($this->table->is_tiny() || $this->all) {
-                $this->code .= "\t\tconst " . str_pad('BY_ALL', $longest_part + 3) . " = 'by_all';\n";
+                $this->code .= "\t\tconst " . str_pad('ALL', $longest_part + 3) . " = 'all';\n";
                 $used_names[] = 'all';
             }
 
@@ -91,11 +91,15 @@
                     foreach ($fields as $field) {
                         $this->code .= "\t\t * @param " . $field->casting . " \$" . $field->name . "\n";
                     }
+                    $this->code .= "\t\t * @param array \$order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)\n";
+                    $this->code .= "\t\t * @param integer|null \$offset get PKs starting at this offset\n";
+                    $this->code .= "\t\t * @param integer|null \$limit max number of PKs to return\n";
                     $this->code .= "\t\t *\n";
                     $this->code .= "\t\t * @return array of " . ucwords(str_replace('_', ' ', $this->table->name)) . " " . $this->table->primary_key->name . "s\n";
                     $this->code .= "\t\t */\n";
 
-                    $this->code .= "\t\tpublic function by_" . $name . "(" . join(', ', $vars) . ") {\n";
+                    $this->code .= "\t\tpublic function by_" . $name . "(" . join(', ', $vars) . ", array \$order_by=null, \$offset=null, \$limit=null) {\n";
+
                     $this->code .= "\t\t\treturn parent::_by_fields(\n";
                     $this->code .= "\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
                     $this->code .= "\t\t\t\t[\n";
@@ -106,8 +110,12 @@
                             $this->code .= "\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") $" . $field->name . ",\n";
                         }
                     }
-                    $this->code .= "\t\t\t\t]\n";
+                    $this->code .= "\t\t\t\t],\n";
+                    $this->code .= "\t\t\t\t\$order_by,\n";
+                    $this->code .= "\t\t\t\t\$offset,\n";
+                    $this->code .= "\t\t\t\t\$limit\n";
                     $this->code .= "\t\t\t);\n";
+
                     $this->code .= "\t\t}\n\n";
                 }
             }
@@ -134,11 +142,14 @@
                 $this->code .= "\t\t * Get multiple sets of " . ucwords(str_replace('_', ' ', $this->table->name)) . " " . $this->table->primary_key->name . "s by " . $field->referenced_field->table->name . "\n";
                 $this->code .= "\t\t *\n";
                 $this->code .= "\t\t * @param " . $field->referenced_field->table->name . "_collection|array $" . $field->referenced_field->table->name . "_list\n";
+                $this->code .= "\t\t * @param array \$order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)\n";
+                $this->code .= "\t\t * @param integer|null \$offset get PKs starting at this offset\n";
+                $this->code .= "\t\t * @param integer|null \$limit max number of PKs to return\n";
                 $this->code .= "\t\t *\n";
                 $this->code .= "\t\t * @return array of arrays containing " . ucwords(str_replace('_', ' ', $this->table->name)) . " " . $this->table->primary_key->name . "s\n";
                 $this->code .= "\t\t */\n";
 
-                $this->code .= "\t\tpublic function by_" . $field->name_idless . "_multi($" . $field->referenced_field->table->name . "_list) {\n";
+                $this->code .= "\t\tpublic function by_" . $field->name_idless . "_multi($" . $field->referenced_field->table->name . "_list, array \$order_by=null, \$offset=null, \$limit=null) {\n";
                 $this->code .= "\t\t\t\$keys = [];\n";
 
                 $this->code .= "\t\t\tif (\$" . $field->referenced_field->table->name . "_list instanceof " . $field->referenced_field->table->name . "_collection) {\n";
@@ -167,7 +178,15 @@
 
                 $this->code .= "\t\t\t}\n";
 
-                $this->code .= "\t\t\treturn parent::_by_fields_multi(self::BY_" . strtoupper($field->name_idless) . ", \$keys);\n";
+                $this->code .= "\t\t\treturn parent::_by_fields_multi(\n";
+                $this->code .= "\t\t\t\tself::BY_" . strtoupper($field->name_idless) . ",\n";
+                $this->code .= "\t\t\t\t\$keys,\n";
+                $this->code .= "\t\t\t\t\$order_by,\n";
+                $this->code .= "\t\t\t\t\$offset,\n";
+                $this->code .= "\t\t\t\t\$limit\n";
+                $this->code .= "\t\t\t);\n";
+
+                $this->code .= "\t\t\t}\n";
                 $this->code .= "\t\t}\n\n";
             }
 
@@ -206,11 +225,14 @@
                     } else {
                         $this->code .= "\t\t * @param array \$" . $name . "_arr an array of arrays containing " . self::ander($field_names) . "\n";
                     }
+                    $this->code .= "\t\t * @param array \$order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)\n";
+                    $this->code .= "\t\t * @param integer|null \$offset get PKs starting at this offset\n";
+                    $this->code .= "\t\t * @param integer|null \$limit max number of PKs to return\n";
                     $this->code .= "\t\t *\n";
                     $this->code .= "\t\t * @return array of arrays of " . ucwords(str_replace('_', ' ', $this->table->name)) . " " . $this->table->primary_key->name . "s\n";
                     $this->code .= "\t\t */\n";
 
-                    $this->code .= "\t\tpublic function by_" . $name . "_multi(array $" . $name . "_arr) {\n";
+                    $this->code .= "\t\tpublic function by_" . $name . "_multi(array $" . $name . "_arr, array \$order_by=null, \$offset=null, \$limit=null) {\n";
                     $this->code .= "\t\t\t\$keys_arr = [];\n";
                     $this->code .= "\t\t\tforeach (\$" . $name . "_arr as \$k => \$" . $name . ") {\n";
                     if (count($fields) === 1) {
@@ -227,8 +249,12 @@
 
                     $this->code .= "\t\t\treturn parent::_by_fields_multi(\n";
                     $this->code .= "\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
-                    $this->code .= "\t\t\t\t\$keys_arr\n";
+                    $this->code .= "\t\t\t\t\$keys_arr,\n";
+                    $this->code .= "\t\t\t\t\$order_by,\n";
+                    $this->code .= "\t\t\t\t\$offset,\n";
+                    $this->code .= "\t\t\t\t\$limit\n";
                     $this->code .= "\t\t\t);\n";
+
                     $this->code .= "\t\t}\n\n";
                 }
             }
@@ -243,7 +269,7 @@
                 $this->code .= "\t\t */\n";
 
                 $this->code .= "\t\tpublic function all() {\n";
-                $this->code .= "\t\t\treturn parent::_all(self::BY_ALL);\n";
+                $this->code .= "\t\t\treturn parent::_all(self::ALL);\n";
                 $this->code .= "\t\t}\n\n";
             }
         }
@@ -282,9 +308,9 @@
 
                 // ALL
                 if ($this->table->is_tiny() || $this->all) {
-                    $this->code .= "\t\t\t// BY_ALL\n";
+                    $this->code .= "\t\t\t// ALL\n";
                     $this->code .= "\t\t\tparent::_cache_delete(\n";
-                    $this->code .= "\t\t\t\tparent::_build_key(self::BY_ALL)\n";
+                    $this->code .= "\t\t\t\tparent::_build_key(self::ALL)\n";
                     $this->code .= "\t\t\t);\n\n";
                 }
 
@@ -372,9 +398,9 @@
                 $this->code .= "\t\t\t// Delete Cache\n";
 
                 if ($this->table->is_tiny() || $this->all) {
-                    $this->code .= "\t\t\t// BY_ALL\n";
+                    $this->code .= "\t\t\t// ALL\n";
                     $this->code .= "\t\t\tparent::_cache_delete(\n";
-                    $this->code .= "\t\t\t\tparent::_build_key(self::BY_ALL)\n";
+                    $this->code .= "\t\t\t\tparent::_build_key(self::ALL)\n";
                     $this->code .= "\t\t\t);\n\n";
                 }
 
@@ -471,9 +497,9 @@
                 $this->code .= "\t\t\t// Delete Cache\n";
 
                 if ($this->table->is_tiny() || $this->all) {
-                    $this->code .= "\t\t\t// BY_ALL\n";
+                    $this->code .= "\t\t\t// ALL\n";
                     $this->code .= "\t\t\tparent::_cache_delete(\n";
-                    $this->code .= "\t\t\t\tparent::_build_key(self::BY_ALL)\n";
+                    $this->code .= "\t\t\t\tparent::_build_key(self::ALL)\n";
                     $this->code .= "\t\t\t);\n\n";
                 }
 
@@ -580,9 +606,9 @@
                 $this->code .= "\t\t\t// Delete Cache\n";
 
                 if ($this->table->is_tiny() || $this->all) {
-                    $this->code .= "\t\t\t// BY_ALL\n";
+                    $this->code .= "\t\t\t// ALL\n";
                     $this->code .= "\t\t\tparent::_cache_delete(\n";
-                    $this->code .= "\t\t\t\tparent::_build_key(self::BY_ALL)\n";
+                    $this->code .= "\t\t\t\tparent::_build_key(self::ALL)\n";
                     $this->code .= "\t\t\t);\n\n";
                 }
 
@@ -665,9 +691,9 @@
                 $this->code .= "\t\t\t// Delete Cache\n";
 
                 if ($this->table->is_tiny() || $this->all) {
-                    $this->code .= "\t\t\t// BY_ALL\n";
+                    $this->code .= "\t\t\t// ALL\n";
                     $this->code .= "\t\t\tparent::_cache_delete(\n";
-                    $this->code .= "\t\t\t\tparent::_build_key(self::BY_ALL)\n";
+                    $this->code .= "\t\t\t\tparent::_build_key(self::ALL)\n";
                     $this->code .= "\t\t\t);\n\n";
                 }
 

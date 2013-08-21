@@ -818,7 +818,7 @@
          */
         final protected function _set_limit_cache_lists($cache_key, array $keys, array $order_by=[]) {
 
-            $this->cache_batch_start($this->cache_engine, $this->cache_engine_pool_write);
+            $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
 
             /**
              * Build lists of keys for deletion - when it's time to delete/modify the record
@@ -888,7 +888,7 @@
                 );
             }
 
-            $this->cache_batch_execute($this->cache_engine, $this->cache_engine_pool_write);
+            $this->cache_batch_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
         }
 
         /**
@@ -899,7 +899,7 @@
          */
         final protected function _set_limit_cache_lists_multi(array $cache_keys, array $order_by=[]) {
 
-            $this->cache_batch_start($this->cache_engine, $this->cache_engine_pool_write);
+            $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
 
             /**
              * Build lists of keys for deletion - when it's time to delete/modify the record
@@ -971,7 +971,7 @@
                 }
             }
 
-            $this->cache_batch_execute($this->cache_engine, $this->cache_engine_pool_write);
+            $this->cache_batch_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
         }
 
         /**

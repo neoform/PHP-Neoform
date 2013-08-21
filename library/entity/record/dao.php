@@ -756,7 +756,7 @@
             }
 
             // Destroy cache based on table fields - do not wrap this function in a batch execution
-            self::_delete_limit_cache_by_fields(array_keys(static::pdo_bindings()));
+            self::_delete_limit_cache_by_fields(array_keys(static::field_bindings()));
 
             return true;
         }
@@ -804,7 +804,7 @@
             $this->cache_batch_execute($this->cache_engine, $this->cache_engine_pool_write);
 
             // Destroy cache based on table fields - do not wrap this function in a batch execution
-            self::_delete_limit_cache_by_fields(array_keys(static::pdo_bindings()));
+            self::_delete_limit_cache_by_fields(array_keys(static::field_bindings()));
 
             return true;
         }

@@ -5,6 +5,15 @@
      */
     class entity_record_driver_pgsql implements entity_record_driver {
 
+        protected static $binding_conversions = [
+            entity_record_dao::TYPE_STRING  => PDO::PARAM_STR,
+            entity_record_dao::TYPE_INTEGER => PDO::PARAM_INT,
+            entity_record_dao::TYPE_BINARY  => PDO::PARAM_LOB,
+            entity_record_dao::TYPE_FLOAT   => PDO::PARAM_STR,
+            entity_record_dao::TYPE_DECIMAL => PDO::PARAM_STR,
+            entity_record_dao::TYPE_BOOL    => PDO::PARAM_BOOL,
+        ];
+
         /**
          * Parse the table name into a properly escaped table string
          *
@@ -24,9 +33,9 @@
         /**
          * Get full record by primary key
          *
-         * @param entity_record_dao      $self
-         * @param string          $pool which source engine pool to use
-         * @param int|string|null $pk
+         * @param entity_record_dao $self
+         * @param string            $pool which source engine pool to use
+         * @param int|string|null   $pk
          *
          * @return mixed
          */
@@ -38,7 +47,7 @@
                 WHERE \"" . $self::PRIMARY_KEY . "\" = ?
             ");
 
-            $info->bindValue(1, $pk, $self->pdo_binding($self::PRIMARY_KEY));
+            $info->bindValue(1, $pk, self::$binding_conversions[$self->field_binding($self::PRIMARY_KEY)]);
             $info->execute();
 
             if ($info = $info->fetch()) {
@@ -51,8 +60,8 @@
          * Get full records by primary key
          *
          * @param entity_record_dao $self the name of the DAO
-         * @param string     $pool which source engine pool to use
-         * @param array      $pks
+         * @param string            $pool which source engine pool to use
+         * @param array             $pks
          *
          * @return array
          */
@@ -64,7 +73,7 @@
                 WHERE \"" . $self::PRIMARY_KEY . "\" IN (" . join(',', array_fill(0, count($pks), '?')) . ")
             ");
 
-            $pdo_binding = $self->pdo_binding($self::PRIMARY_KEY);
+            $pdo_binding = self::$binding_conversions[$self->field_binding($self::PRIMARY_KEY)];
             foreach (array_values($pks) as $i => $pk) {
                 $infos_rs->bindValue($i + 1, $pk, $pdo_binding);
             }
@@ -120,9 +129,9 @@
          * Get all records in the table
          *
          * @param entity_record_dao $self the name of the DAO
-         * @param string     $pool which source engine pool to use
-         * @param int|string $pk
-         * @param array      $keys
+         * @param string            $pool which source engine pool to use
+         * @param int|string        $pk
+         * @param array             $keys
          *
          * @return array
          */
@@ -155,11 +164,11 @@
                 ORDER BY \"{$pk}\" ASC
             ");
 
-            $bindings = $self->pdo_bindings();
+            $bindings = $self->field_bindings();
 
             // do NOT remove this reference, it will break the bindParam() function
             foreach ($vals as $k => &$v) {
-                $info->bindParam($k, $v, $bindings[$k]);
+                $info->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
             }
 
             $info->execute();
@@ -174,9 +183,9 @@
          * Get record primary key by fields
          *
          * @param entity_record_dao $self the name of the DAO
-         * @param string     $pool which source engine pool to use
-         * @param array      $keys
-         * @param int|string $pk
+         * @param string            $pool which source engine pool to use
+         * @param array             $keys
+         * @param int|string        $pk
          *
          * @return array
          */
@@ -201,11 +210,11 @@
                 " . ($where ? " WHERE " . join(" AND ", $where) : "") . "
             ");
 
-            $bindings = $self->pdo_bindings();
+            $bindings = $self->field_bindings();
 
             // do NOT remove this reference, it will break the bindParam() function
             foreach ($vals as $k => &$v) {
-                $rs->bindParam($k, $v, $bindings[$k]);
+                $rs->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
             }
 
             $rs->execute();
@@ -263,11 +272,11 @@
                 WHERE " . join(' OR ', $where) . "
             ");
 
-            $bindings = $self->pdo_bindings();
+            $bindings = $self->field_bindings();
 
             // do NOT remove this reference, it will break the bindParam() function
             foreach ($vals as $k => &$v) {
-                $rs->bindParam($k, $v, $bindings[$k]);
+                $rs->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
             }
 
             $rs->execute();
@@ -417,10 +426,10 @@
          * Insert record
          *
          * @param entity_record_dao $self the name of the DAO
-         * @param string     $pool which source engine pool to use
-         * @param array      $info
-         * @param bool       $autoincrement
-         * @param bool       $replace
+         * @param string            $pool which source engine pool to use
+         * @param array             $info
+         * @param bool              $autoincrement
+         * @param bool              $replace
          *
          * @return array
          */
@@ -439,11 +448,11 @@
                     " . ($autoincrement ? "RETURNING \"". $self::PRIMARY_KEY . "\"" : '') . "
             ");
 
-            $bindings = $self->pdo_bindings();
+            $bindings = $self->field_bindings();
 
             // do NOT remove this reference, it will break the bindParam() function
             foreach ($info as $k => &$v) {
-                $insert->bindParam($k, $v, $bindings[$k]);
+                $insert->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
             }
 
             $insert->execute();
@@ -459,11 +468,11 @@
          * Insert multiple records
          *
          * @param entity_record_dao $self the name of the DAO
-         * @param string     $pool which source engine pool to use
-         * @param array      $infos
-         * @param bool       $keys_match
-         * @param bool       $autoincrement
-         * @param bool       $replace
+         * @param string            $pool which source engine pool to use
+         * @param array             $infos
+         * @param bool              $keys_match
+         * @param bool              $autoincrement
+         * @param bool              $replace
          *
          * @return array
          */
@@ -492,13 +501,13 @@
                             RETURNING \"{$pk}\"
                     ");
 
-                    $bindings = $self->pdo_bindings();
+                    $bindings = $self->field_bindings();
 
                     foreach ($infos as $info) {
 
                         // do NOT remove this reference, it will break the bindParam() function
                         foreach ($info as $k => &$v) {
-                            $insert->bindParam($k, $v, $bindings[$k]);
+                            $insert->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
                         }
 
                         $insert->execute();
@@ -526,11 +535,11 @@
                             " . join(', ', array_fill(0, count($infos), '( ' . join(',', array_fill(0, count($insert_fields), '?')) . ')')) . "
                     ");
 
-                    $bindings = $self->pdo_bindings();
+                    $bindings = $self->field_bindings();
 
                     // do NOT remove this reference, it will break the bindParam() function
                     foreach ($insert_vals as $k => &$v) {
-                        $inserts->bindParam($k, $v, $bindings[$k]);
+                        $inserts->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
                     }
 
                     $inserts->execute();
@@ -541,7 +550,7 @@
 
                 $sql->beginTransaction();
 
-                $bindings = $self->pdo_bindings();
+                $bindings = $self->field_bindings();
 
                 foreach ($infos as $info) {
                     $insert_fields = [];
@@ -561,7 +570,7 @@
 
                     // do NOT remove this reference, it will break the bindParam() function
                     foreach ($info as $k => &$v) {
-                        $insert->bindParam($k, $v, $bindings[$k]);
+                        $insert->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
                     }
 
                     $insert->execute();
@@ -581,10 +590,10 @@
          * Update a record
          *
          * @param entity_record_dao   $self the name of the DAO
-         * @param string       $pool which source engine pool to use
-         * @param int|string   $pk
+         * @param string              $pool which source engine pool to use
+         * @param int|string          $pk
          * @param entity_record_model $model
-         * @param array        $info
+         * @param array               $info
          */
         public static function update(entity_record_dao $self, $pool, $pk, entity_record_model $model, array $info) {
             $sql = core::sql($pool);
@@ -601,12 +610,12 @@
 
             $info[$pk] = $model->$pk;
 
-            $bindings = $self->pdo_bindings();
+            $bindings = $self->field_bindings();
 
             $i = 1;
             // do NOT remove this reference, it will break the bindParam() function
             foreach ($info as $k => &$v) {
-                $update->bindParam($i++, $v, $bindings[$k]);
+                $update->bindParam($i++, $v, self::$binding_conversions[$bindings[$k]]);
             }
 
             $update->execute();
@@ -616,8 +625,8 @@
          * Delete a record
          *
          * @param entity_record_dao   $self the name of the DAO
-         * @param string       $pool which source engine pool to use
-         * @param int|string   $pk
+         * @param string              $pool which source engine pool to use
+         * @param int|string          $pk
          * @param entity_record_model $model
          */
         public static function delete(entity_record_dao $self, $pool, $pk, entity_record_model $model) {
@@ -625,7 +634,7 @@
                 DELETE FROM \"" . self::table($self::TABLE) . "\"
                 WHERE \"{$pk}\" = ?
             ");
-            $delete->bindValue(1, $model->$pk, $self->pdo_binding($self::PRIMARY_KEY));
+            $delete->bindValue(1, $model->$pk, self::$binding_conversions[$self->field_binding($self::PRIMARY_KEY)]);
             $delete->execute();
         }
 
@@ -633,8 +642,8 @@
          * Delete multiple records
          *
          * @param entity_record_dao        $self the name of the DAO
-         * @param string            $pool which source engine pool to use
-         * @param int|string        $pk
+         * @param string                   $pool which source engine pool to use
+         * @param int|string               $pk
          * @param entity_record_collection $collection
          */
         public static function deletes(entity_record_dao $self, $pool, $pk, entity_record_collection $collection) {
@@ -644,7 +653,7 @@
                 WHERE \"{$pk}\" IN (" . join(',', array_fill(0, count($collection), '?')) . ")
             ");
 
-            $pdo_binding = $self->pdo_binding($self::PRIMARY_KEY);
+            $pdo_binding = self::$binding_conversions[$self->field_binding($self::PRIMARY_KEY)];
             $i = 0;
             foreach ($pks as $pk) {
                 $delete->bindValue($i++, $pk, $pdo_binding);

@@ -296,79 +296,79 @@
 
             $this->code .= "\t\tpublic function insert(array \$info) {\n\n";
 
-            if ($this->table->is_tiny() || count($this->table->all_non_pk_indexes) || $this->all) {
+//            if ($this->table->is_tiny() || count($this->table->all_non_pk_indexes) || $this->all) {
+//
+//                $this->code .= "\t\t\t// Insert record\n";
+//                $this->code .= "\t\t\t\$return = parent::_insert(\$info);\n\n";
+//
+//                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
+//                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
+//
+//                $this->code .= "\t\t\t// Delete Cache\n";
+//
+//                // ALL
+//                if ($this->table->is_tiny() || $this->all) {
+//                    $this->code .= "\t\t\t// ALL\n";
+//                    $this->code .= "\t\t\tparent::_cache_delete(\n";
+//                    $this->code .= "\t\t\t\tparent::_build_key(self::ALL)\n";
+//                    $this->code .= "\t\t\t);\n\n";
+//                }
+//
+//                foreach ($this->table->all_non_pk_indexes as $index) {
+//                    $idless        = [];
+//                    $issets        = [];
+//                    $fields        = [];
+//                    $longest_index = 0;
+//                    foreach ($index as $field) {
+//
+//                        if (! $field->is_field_lookupable()) {
+//                            continue;
+//                        }
+//
+//                        $fields[] = $field;
+//                        $idless[] = $field->name_idless;
+//                        $issets[] = "array_key_exists('" . $field->name . "', \$info)";
+//                        if (strlen($field->name) > $longest_index) {
+//                            $longest_index = strlen($field->name);
+//                        }
+//                        $name = join('_', $idless);
+//
+//                        // No duplicates
+//                        if (in_array($name, $used_names)) {
+//                            continue;
+//                        }
+//                        $used_names[] = $name;
+//
+//                        $this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
+//                        $this->code .= "\t\t\tif (" . join(' && ', $issets) . ") {\n";
+//                        $this->code .= "\t\t\t\tparent::_cache_delete(\n";
+//                        $this->code .= "\t\t\t\t\tparent::_build_key(\n";
+//                        $this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
+//                        $this->code .= "\t\t\t\t\t\t[\n";
+//                        foreach ($fields as $field) {
+//                            if ($field->allows_null()) {
+//                                $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_index + 1) . " => \$info['" . $field->name . "'] === null ? null : (" . $field->casting . ") \$info['" . $field->name . "'],\n";
+//                            } else {
+//                                $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_index + 1) . " => (" . $field->casting . ") \$info['" . $field->name . "'],\n";
+//                            }
+//                        }
+//                        $this->code .= "\t\t\t\t\t\t]\n";
+//                        $this->code .= "\t\t\t\t\t)\n";
+//                        $this->code .= "\t\t\t\t);\n";
+//                        $this->code .= "\t\t\t}\n\n";
+//                    }
+//                }
+//
+//                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
+//                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
+//
+//                $this->code .= "\t\t\treturn \$return;\n";
+//
+//            } else {
 
                 $this->code .= "\t\t\t// Insert record\n";
-                $this->code .= "\t\t\t\$return = parent::_insert(\$info);\n\n";
-
-                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
-                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
-
-                $this->code .= "\t\t\t// Delete Cache\n";
-
-                // ALL
-                if ($this->table->is_tiny() || $this->all) {
-                    $this->code .= "\t\t\t// ALL\n";
-                    $this->code .= "\t\t\tparent::_cache_delete(\n";
-                    $this->code .= "\t\t\t\tparent::_build_key(self::ALL)\n";
-                    $this->code .= "\t\t\t);\n\n";
-                }
-
-                foreach ($this->table->all_non_pk_indexes as $index) {
-                    $idless        = [];
-                    $issets        = [];
-                    $fields        = [];
-                    $longest_index = 0;
-                    foreach ($index as $field) {
-
-                        if (! $field->is_field_lookupable()) {
-                            continue;
-                        }
-
-                        $fields[] = $field;
-                        $idless[] = $field->name_idless;
-                        $issets[] = "array_key_exists('" . $field->name . "', \$info)";
-                        if (strlen($field->name) > $longest_index) {
-                            $longest_index = strlen($field->name);
-                        }
-                        $name = join('_', $idless);
-
-                        // No duplicates
-                        if (in_array($name, $used_names)) {
-                            continue;
-                        }
-                        $used_names[] = $name;
-
-                        $this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
-                        $this->code .= "\t\t\tif (" . join(' && ', $issets) . ") {\n";
-                        $this->code .= "\t\t\t\tparent::_cache_delete(\n";
-                        $this->code .= "\t\t\t\t\tparent::_build_key(\n";
-                        $this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
-                        $this->code .= "\t\t\t\t\t\t[\n";
-                        foreach ($fields as $field) {
-                            if ($field->allows_null()) {
-                                $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_index + 1) . " => \$info['" . $field->name . "'] === null ? null : (" . $field->casting . ") \$info['" . $field->name . "'],\n";
-                            } else {
-                                $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_index + 1) . " => (" . $field->casting . ") \$info['" . $field->name . "'],\n";
-                            }
-                        }
-                        $this->code .= "\t\t\t\t\t\t]\n";
-                        $this->code .= "\t\t\t\t\t)\n";
-                        $this->code .= "\t\t\t\t);\n";
-                        $this->code .= "\t\t\t}\n\n";
-                    }
-                }
-
-                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
-                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
-
-                $this->code .= "\t\t\treturn \$return;\n";
-
-            } else {
-
-                $this->code .= "\t\t\t// Insert record\n";
-                $this->code .= "\t\t\treturn parent::_insert(\$info);\n\n";
-            }
+                $this->code .= "\t\t\treturn parent::_insert(\$info);\n";
+//            }
 
             $this->code .= "\t\t}\n\n";
         }
@@ -387,85 +387,85 @@
 
             $this->code .= "\t\tpublic function inserts(array \$infos) {\n\n";
 
-            if ($this->table->is_tiny() || count($this->table->all_non_pk_indexes) || $this->all) {
-
-                $this->code .= "\t\t\t// Insert records\n";
-                $this->code .= "\t\t\t\$return = parent::_inserts(\$infos);\n\n";
-
-                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
-                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
-
-                $this->code .= "\t\t\t// Delete Cache\n";
-
-                if ($this->table->is_tiny() || $this->all) {
-                    $this->code .= "\t\t\t// ALL\n";
-                    $this->code .= "\t\t\tparent::_cache_delete(\n";
-                    $this->code .= "\t\t\t\tparent::_build_key(self::ALL)\n";
-                    $this->code .= "\t\t\t);\n\n";
-                }
-
-                if ($this->table->all_non_pk_indexes) {
-                    $this->code .= "\t\t\tforeach (\$infos as \$info) {\n";
-
-                    foreach ($this->table->all_non_pk_indexes as $index) {
-                        $fields        = [];
-                        $idless        = [];
-                        $issets        = [];
-                        $longest_index = 0;
-                        foreach ($index as $field) {
-
-                            if (! $field->is_field_lookupable()) {
-                                continue;
-                            }
-
-                            $fields[] = $field;
-                            $idless[] = $field->name_idless;
-                            $issets[] = "array_key_exists('" . $field->name . "', \$info)";
-                            if (strlen($field->name) > $longest_index) {
-                                $longest_index = strlen($field->name);
-                            }
-                            $name = join('_', $idless);
-
-                            // No duplicates
-                            if (in_array($name, $used_names)) {
-                                continue;
-                            }
-                            $used_names[] = $name;
-
-                            $this->code .= "\t\t\t\t// BY_" . strtoupper($name) . "\n";
-                            $this->code .= "\t\t\t\tif (" . join(' && ', $issets) . ") {\n";
-                            $this->code .= "\t\t\t\t\tparent::_cache_delete(\n";
-                            $this->code .= "\t\t\t\t\t\tparent::_build_key(\n";
-                            $this->code .= "\t\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
-                            $this->code .= "\t\t\t\t\t\t\t[\n";
-                            foreach ($fields as $field) {
-                                if ($field->allows_null()) {
-                                    $this->code .= "\t\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_index + 1) . " => \$info['" . $field->name . "'] === null ? null : (" . $field->casting . ") \$info['" . $field->name . "'],\n";
-                                } else {
-                                    $this->code .= "\t\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_index + 1) . " => (" . $field->casting . ") \$info['" . $field->name . "'],\n";
-                                }
-                            }
-                            $this->code .= "\t\t\t\t\t\t\t]\n";
-                            $this->code .= "\t\t\t\t\t\t)\n";
-                            $this->code .= "\t\t\t\t\t);\n";
-                            $this->code .= "\t\t\t\t}\n\n";
-                        }
-                    }
-
-                    $this->code = substr($this->code, 0, -1);
-                    $this->code .= "\t\t\t}\n\n";
-                }
-
-                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
-                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
-
-                $this->code .= "\t\t\treturn \$return;\n";
-
-            } else {
+//            if ($this->table->is_tiny() || count($this->table->all_non_pk_indexes) || $this->all) {
+//
+//                $this->code .= "\t\t\t// Insert records\n";
+//                $this->code .= "\t\t\t\$return = parent::_inserts(\$infos);\n\n";
+//
+//                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
+//                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
+//
+//                $this->code .= "\t\t\t// Delete Cache\n";
+//
+//                if ($this->table->is_tiny() || $this->all) {
+//                    $this->code .= "\t\t\t// ALL\n";
+//                    $this->code .= "\t\t\tparent::_cache_delete(\n";
+//                    $this->code .= "\t\t\t\tparent::_build_key(self::ALL)\n";
+//                    $this->code .= "\t\t\t);\n\n";
+//                }
+//
+//                if ($this->table->all_non_pk_indexes) {
+//                    $this->code .= "\t\t\tforeach (\$infos as \$info) {\n";
+//
+//                    foreach ($this->table->all_non_pk_indexes as $index) {
+//                        $fields        = [];
+//                        $idless        = [];
+//                        $issets        = [];
+//                        $longest_index = 0;
+//                        foreach ($index as $field) {
+//
+//                            if (! $field->is_field_lookupable()) {
+//                                continue;
+//                            }
+//
+//                            $fields[] = $field;
+//                            $idless[] = $field->name_idless;
+//                            $issets[] = "array_key_exists('" . $field->name . "', \$info)";
+//                            if (strlen($field->name) > $longest_index) {
+//                                $longest_index = strlen($field->name);
+//                            }
+//                            $name = join('_', $idless);
+//
+//                            // No duplicates
+//                            if (in_array($name, $used_names)) {
+//                                continue;
+//                            }
+//                            $used_names[] = $name;
+//
+//                            $this->code .= "\t\t\t\t// BY_" . strtoupper($name) . "\n";
+//                            $this->code .= "\t\t\t\tif (" . join(' && ', $issets) . ") {\n";
+//                            $this->code .= "\t\t\t\t\tparent::_cache_delete(\n";
+//                            $this->code .= "\t\t\t\t\t\tparent::_build_key(\n";
+//                            $this->code .= "\t\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
+//                            $this->code .= "\t\t\t\t\t\t\t[\n";
+//                            foreach ($fields as $field) {
+//                                if ($field->allows_null()) {
+//                                    $this->code .= "\t\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_index + 1) . " => \$info['" . $field->name . "'] === null ? null : (" . $field->casting . ") \$info['" . $field->name . "'],\n";
+//                                } else {
+//                                    $this->code .= "\t\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_index + 1) . " => (" . $field->casting . ") \$info['" . $field->name . "'],\n";
+//                                }
+//                            }
+//                            $this->code .= "\t\t\t\t\t\t\t]\n";
+//                            $this->code .= "\t\t\t\t\t\t)\n";
+//                            $this->code .= "\t\t\t\t\t);\n";
+//                            $this->code .= "\t\t\t\t}\n\n";
+//                        }
+//                    }
+//
+//                    $this->code = substr($this->code, 0, -1);
+//                    $this->code .= "\t\t\t}\n\n";
+//                }
+//
+//                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
+//                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
+//
+//                $this->code .= "\t\t\treturn \$return;\n";
+//
+//            } else {
 
                 $this->code .= "\t\t\t// Insert record\n";
-                $this->code .= "\t\t\treturn parent::_inserts(\$infos);\n\n";
-            }
+                $this->code .= "\t\t\treturn parent::_inserts(\$infos);\n";
+//            }
 
             $this->code .= "\t\t}\n\n";
         }
@@ -486,97 +486,97 @@
 
             $this->code .= "\t\tpublic function update(" . $this->table->name . "_model $" . $this->table->name . ", array \$info) {\n\n";
 
-            if ($this->table->is_tiny() || $this->table->all_non_pk_indexes || $this->all) {
+//            if ($this->table->is_tiny() || $this->table->all_non_pk_indexes || $this->all) {
+//
+//                $this->code .= "\t\t\t// Update record\n";
+//                $this->code .= "\t\t\t\$updated_model = parent::_update($" . $this->table->name . ", \$info);\n\n";
+//
+//                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
+//                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
+//
+//                $this->code .= "\t\t\t// Delete Cache\n";
+//
+//                if ($this->table->is_tiny() || $this->all) {
+//                    $this->code .= "\t\t\t// ALL\n";
+//                    $this->code .= "\t\t\tparent::_cache_delete(\n";
+//                    $this->code .= "\t\t\t\tparent::_build_key(self::ALL)\n";
+//                    $this->code .= "\t\t\t);\n\n";
+//                }
+//
+//                if ($this->table->all_non_pk_indexes) {
+//                    foreach ($this->table->all_non_pk_indexes as $index) {
+//
+//                        $fields       = [];
+//                        $names        = [];
+//                        $issets       = [];
+//                        $longest_part = $this->longest_length($index, false, true);
+//                        foreach ($index as $field) {
+//
+//                            if (! $field->is_field_lookupable()) {
+//                                continue;
+//                            }
+//
+//                            $fields[] = $field;
+//                            $issets[] = "array_key_exists('" . $field->name . "', \$info)";
+//                            $names[] = $field->name_idless;
+//                            $name = join('_', $names);
+//
+//                            // No duplicates
+//                            if (in_array($name, $used_names)) {
+//                                continue;
+//                            }
+//                            $used_names[] = $name;
+//
+//                            $this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
+//                            $this->code .= "\t\t\tif (" . join(' && ', $issets) . ") {\n";
+//
+//                            // $model->field
+//                            $this->code .= "\t\t\t\tparent::_cache_delete(\n";
+//                            $this->code .= "\t\t\t\t\tparent::_build_key(\n";
+//                            $this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
+//                            $this->code .= "\t\t\t\t\t\t[\n";
+//                            foreach ($fields as $field) {
+//                                if ($field->allows_null()) {
+//                                    $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => $" . $field->table->name . "->" . $field->name . " === null ? null : (" . $field->casting . ") $" . $field->table->name . "->" . $field->name . ",\n";
+//                                } else {
+//                                    $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") $" . $field->table->name . "->" . $field->name . ",\n";
+//                                }
+//                            }
+//                            $this->code .= "\t\t\t\t\t\t]\n";
+//                            $this->code .= "\t\t\t\t\t)\n";
+//                            $this->code .= "\t\t\t\t);\n";
+//
+//                            // $info['field']
+//                            $this->code .= "\t\t\t\tparent::_cache_delete(\n";
+//                            $this->code .= "\t\t\t\t\tparent::_build_key(\n";
+//                            $this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
+//                            $this->code .= "\t\t\t\t\t\t[\n";
+//                            foreach ($fields as $field) {
+//                                if ($field->allows_null()) {
+//                                    $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => \$info['" . $field->name . "'] === null ? null : (" . $field->casting . ") \$info['" . $field->name . "'],\n";
+//                                } else {
+//                                    $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") \$info['" . $field->name . "'],\n";
+//                                }
+//                            }
+//                            $this->code .= "\t\t\t\t\t\t]\n";
+//                            $this->code .= "\t\t\t\t\t)\n";
+//                            $this->code .= "\t\t\t\t);\n";
+//
+//                            $this->code .= "\t\t\t}\n\n";
+//                        }
+//                    }
+//                }
+//
+//                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
+//                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
+//
+//                $this->code .= "\t\t\treturn \$updated_model;\n";
+//
+//            } else {
 
                 $this->code .= "\t\t\t// Update record\n";
-                $this->code .= "\t\t\t\$updated_model = parent::_update($" . $this->table->name . ", \$info);\n\n";
-
-                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
-                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
-
-                $this->code .= "\t\t\t// Delete Cache\n";
-
-                if ($this->table->is_tiny() || $this->all) {
-                    $this->code .= "\t\t\t// ALL\n";
-                    $this->code .= "\t\t\tparent::_cache_delete(\n";
-                    $this->code .= "\t\t\t\tparent::_build_key(self::ALL)\n";
-                    $this->code .= "\t\t\t);\n\n";
-                }
-
-                if ($this->table->all_non_pk_indexes) {
-                    foreach ($this->table->all_non_pk_indexes as $index) {
-
-                        $fields       = [];
-                        $names        = [];
-                        $issets       = [];
-                        $longest_part = $this->longest_length($index, false, true);
-                        foreach ($index as $field) {
-
-                            if (! $field->is_field_lookupable()) {
-                                continue;
-                            }
-
-                            $fields[] = $field;
-                            $issets[] = "array_key_exists('" . $field->name . "', \$info)";
-                            $names[] = $field->name_idless;
-                            $name = join('_', $names);
-
-                            // No duplicates
-                            if (in_array($name, $used_names)) {
-                                continue;
-                            }
-                            $used_names[] = $name;
-
-                            $this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
-                            $this->code .= "\t\t\tif (" . join(' && ', $issets) . ") {\n";
-
-                            // $model->field
-                            $this->code .= "\t\t\t\tparent::_cache_delete(\n";
-                            $this->code .= "\t\t\t\t\tparent::_build_key(\n";
-                            $this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
-                            $this->code .= "\t\t\t\t\t\t[\n";
-                            foreach ($fields as $field) {
-                                if ($field->allows_null()) {
-                                    $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => $" . $field->table->name . "->" . $field->name . " === null ? null : (" . $field->casting . ") $" . $field->table->name . "->" . $field->name . ",\n";
-                                } else {
-                                    $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") $" . $field->table->name . "->" . $field->name . ",\n";
-                                }
-                            }
-                            $this->code .= "\t\t\t\t\t\t]\n";
-                            $this->code .= "\t\t\t\t\t)\n";
-                            $this->code .= "\t\t\t\t);\n";
-
-                            // $info['field']
-                            $this->code .= "\t\t\t\tparent::_cache_delete(\n";
-                            $this->code .= "\t\t\t\t\tparent::_build_key(\n";
-                            $this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
-                            $this->code .= "\t\t\t\t\t\t[\n";
-                            foreach ($fields as $field) {
-                                if ($field->allows_null()) {
-                                    $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => \$info['" . $field->name . "'] === null ? null : (" . $field->casting . ") \$info['" . $field->name . "'],\n";
-                                } else {
-                                    $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") \$info['" . $field->name . "'],\n";
-                                }
-                            }
-                            $this->code .= "\t\t\t\t\t\t]\n";
-                            $this->code .= "\t\t\t\t\t)\n";
-                            $this->code .= "\t\t\t\t);\n";
-
-                            $this->code .= "\t\t\t}\n\n";
-                        }
-                    }
-                }
-
-                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
-                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
-
-                $this->code .= "\t\t\treturn \$updated_model;\n";
-
-            } else {
-
-                $this->code .= "\t\t\t// Update record\n";
-                $this->code .= "\t\t\treturn parent::_update($" . $this->table->name . ", \$info);\n\n";
-            }
+                $this->code .= "\t\t\treturn parent::_update($" . $this->table->name . ", \$info);\n";
+//            }
 
             $this->code .= "\t\t}\n\n";
         }
@@ -595,73 +595,73 @@
 
             $this->code .= "\t\tpublic function delete(" . $this->table->name . "_model $" . $this->table->name . ") {\n\n";
 
-            if ($this->table->is_tiny() || $this->table->all_non_pk_indexes || $this->all) {
-
+//            if ($this->table->is_tiny() || $this->table->all_non_pk_indexes || $this->all) {
+//
+//                $this->code .= "\t\t\t// Delete record\n";
+//                $this->code .= "\t\t\t\$return = parent::_delete($" . $this->table->name . ");\n\n";
+//
+//                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
+//                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
+//
+//                $this->code .= "\t\t\t// Delete Cache\n";
+//
+//                if ($this->table->is_tiny() || $this->all) {
+//                    $this->code .= "\t\t\t// ALL\n";
+//                    $this->code .= "\t\t\tparent::_cache_delete(\n";
+//                    $this->code .= "\t\t\t\tparent::_build_key(self::ALL)\n";
+//                    $this->code .= "\t\t\t);\n\n";
+//                }
+//
+//                if ($this->table->all_non_pk_indexes) {
+//                    foreach ($this->table->all_non_pk_indexes as $index) {
+//
+//                        $fields       = [];
+//                        $names        = [];
+//                        $longest_part = $this->longest_length($index, false, true);
+//                        foreach ($index as $field) {
+//
+//                            if (! $field->is_field_lookupable()) {
+//                                continue;
+//                            }
+//
+//                            $fields[] = $field;
+//                            $names[] = $field->name_idless;
+//                            $name = join('_', $names);
+//
+//                            // No duplicates
+//                            if (in_array($name, $used_names)) {
+//                                continue;
+//                            }
+//                            $used_names[] = $name;
+//
+//                            $this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
+//                            $this->code .= "\t\t\tparent::_cache_delete(\n";
+//                            $this->code .= "\t\t\t\tparent::_build_key(\n";
+//                            $this->code .= "\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
+//                            $this->code .= "\t\t\t\t\t[\n";
+//                            foreach ($fields as $field) {
+//                                if ($field->allows_null()) {
+//                                    $this->code .= "\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => $" . $field->table->name . "->" . $field->name . " === null ? null : (" . $field->casting . ") $" . $field->table->name . "->" . $field->name . ",\n";
+//                                } else {
+//                                    $this->code .= "\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") $" . $field->table->name . "->" . $field->name . ",\n";
+//                                }
+//                            }
+//                            $this->code .= "\t\t\t\t\t]\n";
+//                            $this->code .= "\t\t\t\t)\n";
+//                            $this->code .= "\t\t\t);\n\n";
+//                        }
+//                    }
+//                }
+//
+//                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
+//                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
+//
+//                $this->code .= "\t\t\treturn \$return;\n";
+//
+//            } else {
                 $this->code .= "\t\t\t// Delete record\n";
-                $this->code .= "\t\t\t\$return = parent::_delete($" . $this->table->name . ");\n\n";
-
-                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
-                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
-
-                $this->code .= "\t\t\t// Delete Cache\n";
-
-                if ($this->table->is_tiny() || $this->all) {
-                    $this->code .= "\t\t\t// ALL\n";
-                    $this->code .= "\t\t\tparent::_cache_delete(\n";
-                    $this->code .= "\t\t\t\tparent::_build_key(self::ALL)\n";
-                    $this->code .= "\t\t\t);\n\n";
-                }
-
-                if ($this->table->all_non_pk_indexes) {
-                    foreach ($this->table->all_non_pk_indexes as $index) {
-
-                        $fields       = [];
-                        $names        = [];
-                        $longest_part = $this->longest_length($index, false, true);
-                        foreach ($index as $field) {
-
-                            if (! $field->is_field_lookupable()) {
-                                continue;
-                            }
-
-                            $fields[] = $field;
-                            $names[] = $field->name_idless;
-                            $name = join('_', $names);
-
-                            // No duplicates
-                            if (in_array($name, $used_names)) {
-                                continue;
-                            }
-                            $used_names[] = $name;
-
-                            $this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
-                            $this->code .= "\t\t\tparent::_cache_delete(\n";
-                            $this->code .= "\t\t\t\tparent::_build_key(\n";
-                            $this->code .= "\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
-                            $this->code .= "\t\t\t\t\t[\n";
-                            foreach ($fields as $field) {
-                                if ($field->allows_null()) {
-                                    $this->code .= "\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => $" . $field->table->name . "->" . $field->name . " === null ? null : (" . $field->casting . ") $" . $field->table->name . "->" . $field->name . ",\n";
-                                } else {
-                                    $this->code .= "\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") $" . $field->table->name . "->" . $field->name . ",\n";
-                                }
-                            }
-                            $this->code .= "\t\t\t\t\t]\n";
-                            $this->code .= "\t\t\t\t)\n";
-                            $this->code .= "\t\t\t);\n\n";
-                        }
-                    }
-                }
-
-                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
-                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
-
-                $this->code .= "\t\t\treturn \$return;\n";
-
-            } else {
-                $this->code .= "\t\t\t// Delete record\n";
-                $this->code .= "\t\t\treturn parent::_delete($" . $this->table->name . ");\n\n";
-            }
+                $this->code .= "\t\t\treturn parent::_delete($" . $this->table->name . ");\n";
+//            }
 
             $this->code .= "\t\t}\n\n";
         }
@@ -680,79 +680,79 @@
 
             $this->code .= "\t\tpublic function deletes(" . $this->table->name . "_collection $" . $this->table->name . "_collection) {\n\n";
 
-            if ($this->table->is_tiny() || $this->table->all_non_pk_indexes || $this->all) {
+//            if ($this->table->is_tiny() || $this->table->all_non_pk_indexes || $this->all) {
+//
+//                $this->code .= "\t\t\t// Delete records\n";
+//                $this->code .= "\t\t\t\$return = parent::_deletes($" . $this->table->name . "_collection);\n\n";
+//
+//                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
+//                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
+//
+//                $this->code .= "\t\t\t// Delete Cache\n";
+//
+//                if ($this->table->is_tiny() || $this->all) {
+//                    $this->code .= "\t\t\t// ALL\n";
+//                    $this->code .= "\t\t\tparent::_cache_delete(\n";
+//                    $this->code .= "\t\t\t\tparent::_build_key(self::ALL)\n";
+//                    $this->code .= "\t\t\t);\n\n";
+//                }
+//
+//                if ($this->table->all_non_pk_indexes) {
+//                    $this->code .= "\t\t\tforeach (\$" . $this->table->name . "_collection as $" . $this->table->name . ") {\n";
+//
+//                    foreach ($this->table->all_non_pk_indexes as $index) {
+//
+//                        $fields       = [];
+//                        $names        = [];
+//                        $longest_part = $this->longest_length($index, false, true);
+//                        foreach ($index as $field) {
+//
+//                            if (! $field->is_field_lookupable()) {
+//                                continue;
+//                            }
+//
+//                            $fields[] = $field;
+//                            $names[] = $field->name_idless;
+//                            $name = join('_', $names);
+//
+//                            // No duplicates
+//                            if (in_array($name, $used_names)) {
+//                                continue;
+//                            }
+//                            $used_names[] = $name;
+//
+//                            $this->code .= "\t\t\t\t// BY_" . strtoupper($name) . "\n";
+//                            $this->code .= "\t\t\t\tparent::_cache_delete(\n";
+//                            $this->code .= "\t\t\t\t\tparent::_build_key(\n";
+//                            $this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
+//                            $this->code .= "\t\t\t\t\t\t[\n";
+//                            foreach ($fields as $field) {
+//                                if ($field->allows_null()) {
+//                                    $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => $" . $field->table->name . "->" . $field->name . " === null ? null : (" . $field->casting . ") \$" . $field->table->name . "->" . $field->name . ",\n";
+//                                } else {
+//                                    $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") \$" . $field->table->name . "->" . $field->name . ",\n";
+//                                }
+//                            }
+//                            $this->code .= "\t\t\t\t\t\t]\n";
+//                            $this->code .= "\t\t\t\t\t)\n";
+//                            $this->code .= "\t\t\t\t);\n\n";
+//                        }
+//                    }
+//
+//                    $this->code = substr($this->code, 0, -1);
+//                    $this->code .= "\t\t\t}\n\n";
+//                }
+//
+//                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
+//                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
+//
+//                $this->code .= "\t\t\treturn \$return;\n";
+//
+//            } else {
 
                 $this->code .= "\t\t\t// Delete records\n";
-                $this->code .= "\t\t\t\$return = parent::_deletes($" . $this->table->name . "_collection);\n\n";
-
-                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
-                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
-
-                $this->code .= "\t\t\t// Delete Cache\n";
-
-                if ($this->table->is_tiny() || $this->all) {
-                    $this->code .= "\t\t\t// ALL\n";
-                    $this->code .= "\t\t\tparent::_cache_delete(\n";
-                    $this->code .= "\t\t\t\tparent::_build_key(self::ALL)\n";
-                    $this->code .= "\t\t\t);\n\n";
-                }
-
-                if ($this->table->all_non_pk_indexes) {
-                    $this->code .= "\t\t\tforeach (\$" . $this->table->name . "_collection as $" . $this->table->name . ") {\n";
-
-                    foreach ($this->table->all_non_pk_indexes as $index) {
-
-                        $fields       = [];
-                        $names        = [];
-                        $longest_part = $this->longest_length($index, false, true);
-                        foreach ($index as $field) {
-
-                            if (! $field->is_field_lookupable()) {
-                                continue;
-                            }
-
-                            $fields[] = $field;
-                            $names[] = $field->name_idless;
-                            $name = join('_', $names);
-
-                            // No duplicates
-                            if (in_array($name, $used_names)) {
-                                continue;
-                            }
-                            $used_names[] = $name;
-
-                            $this->code .= "\t\t\t\t// BY_" . strtoupper($name) . "\n";
-                            $this->code .= "\t\t\t\tparent::_cache_delete(\n";
-                            $this->code .= "\t\t\t\t\tparent::_build_key(\n";
-                            $this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
-                            $this->code .= "\t\t\t\t\t\t[\n";
-                            foreach ($fields as $field) {
-                                if ($field->allows_null()) {
-                                    $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => $" . $field->table->name . "->" . $field->name . " === null ? null : (" . $field->casting . ") \$" . $field->table->name . "->" . $field->name . ",\n";
-                                } else {
-                                    $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") \$" . $field->table->name . "->" . $field->name . ",\n";
-                                }
-                            }
-                            $this->code .= "\t\t\t\t\t\t]\n";
-                            $this->code .= "\t\t\t\t\t)\n";
-                            $this->code .= "\t\t\t\t);\n\n";
-                        }
-                    }
-
-                    $this->code = substr($this->code, 0, -1);
-                    $this->code .= "\t\t\t}\n\n";
-                }
-
-                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
-                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
-
-                $this->code .= "\t\t\treturn \$return;\n";
-
-            } else {
-
-                $this->code .= "\t\t\t// Delete records\n";
-                $this->code .= "\t\t\treturn parent::_deletes($" . $this->table->name . "_collection);\n\n";
-            }
+                $this->code .= "\t\t\treturn parent::_deletes($" . $this->table->name . "_collection);\n";
+//            }
 
             $this->code .= "\t\t}\n";
         }

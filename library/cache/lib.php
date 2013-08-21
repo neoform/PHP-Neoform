@@ -71,6 +71,10 @@
          */
         public static function set_multi($engine, $engine_pool, array $rows, $ttl=null) {
 
+            if (! $rows) {
+                return;
+            }
+
             // Memory
             cache_memory_dao::set_multi($rows);
 
@@ -116,6 +120,10 @@
          */
         public static function list_get($engine, $engine_pool, $list_key, array $filter=null) {
 
+            if (! $list_key) {
+                return;
+            }
+
             // Memory
             // This cannot be used until it's properly set up. There are bugs that happen when a new list is created
             // before checking the cache driver (eg redis) to see if the list exists or not
@@ -141,6 +149,11 @@
          * @return array|null
          */
         public static function list_get_union($engine, $engine_pool, array $list_keys, array $filter=null) {
+
+            if (! $list_keys) {
+                return;
+            }
+
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
                 return $engine_driver::list_get_union($engine_pool, $list_keys, $filter);
@@ -175,6 +188,10 @@
          * @param array  $remove_keys
          */
         public static function list_remove($engine, $engine_pool, $list_key, $remove_keys) {
+
+            if (! $remove_keys) {
+                return;
+            }
 
             // Memory
             //cache_memory_dao::list_remove($list_key, $remove_keys);
@@ -428,7 +445,7 @@
          */
         public static function delete_multi($engine, $engine_pool, array $keys) {
 
-            if (count($keys)) {
+            if ($keys) {
 
                 // Memory
                 foreach ($keys as $key) {
@@ -471,7 +488,7 @@
          */
         public static function expire_multi($engine, $engine_pool, array $keys, $ttl) {
 
-            if (count($keys)) {
+            if ($keys) {
 
                 // Memory
                 foreach ($keys as $key) {

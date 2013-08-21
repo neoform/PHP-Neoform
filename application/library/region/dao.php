@@ -15,14 +15,14 @@
          * @var array $pdo_bindings list of fields and their corresponding PDO bindings
          */
         protected $pdo_bindings = [
-            'id'              => PDO::PARAM_INT,
-            'country_id'      => PDO::PARAM_INT,
-            'name'            => PDO::PARAM_STR,
-            'name_normalized' => PDO::PARAM_STR,
-            'name_soundex'    => PDO::PARAM_STR,
-            'iso2'            => PDO::PARAM_STR,
-            'longitude'       => PDO::PARAM_STR,
-            'latitude'        => PDO::PARAM_STR,
+            'id'              => self::TYPE_INTEGER,
+            'country_id'      => self::TYPE_INTEGER,
+            'name'            => self::TYPE_STRING,
+            'name_normalized' => self::TYPE_STRING,
+            'name_soundex'    => self::TYPE_STRING,
+            'iso2'            => self::TYPE_STRING,
+            'longitude'       => self::TYPE_DECIMAL,
+            'latitude'        => self::TYPE_DECIMAL,
         ];
 
         // READS
@@ -43,16 +43,33 @@
             );
         }
 
-        public function by_country_offset($country_id, array $order_by, $offset=null, $limit=null) {
-            return parent::_by_fields_offset(
-                self::BY_COUNTRY,
-                [
-                    'country_id' => (int) $country_id,
-                ],
-                $order_by,
-                (int) $offset,
-                (int) $limit
-            );
+        /**
+         * @param       $country_id
+         * @param array        $order_by
+         * @param integer|null $offset
+         * @param integer|null $limit
+         *
+         * @return array|mixed
+         */
+        public function by_country_offset($country_id, array $order_by=null, $offset=null, $limit=null) {
+            if ($order_by) {
+                return parent::_by_fields_offset(
+                    self::BY_COUNTRY,
+                    [
+                        'country_id' => (int) $country_id,
+                    ],
+                    $order_by,
+                    $offset,
+                    $limit
+                );
+            } else {
+                return parent::_by_fields(
+                    self::BY_COUNTRY,
+                    [
+                        'country_id' => (int) $country_id,
+                    ]
+                );
+            }
         }
 
         /**

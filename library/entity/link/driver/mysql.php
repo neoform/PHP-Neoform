@@ -70,28 +70,27 @@
          */
         public static function by_fields_multi(entity_link_dao $self, $pool, array $select_fields, array $keys_arr) {
             $key_fields     = array_keys(reset($keys_arr));
-            $select_fields  = [];
+            $fields         = [];
             $reverse_lookup = [];
             $return         = [];
             $vals           = [];
             $where          = [];
 
             foreach (array_unique(array_merge($select_fields, $key_fields)) as $k) {
-                $select_fields[] = "`{$k}`";
+                $fields[] = "`{$k}`";
             }
 
             foreach ($keys_arr as $k => $keys) {
                 $w = [];
-                $reverse_lookup[join(':', $keys)] = $k;
                 $return[$k] = [];
                 $hashed_valued = [];
                 foreach ($keys as $key => $v) {
                     if ($v === null) {
-                        $w[] = "`{$key}` IS NULL";
+                        $w[]             = "`{$key}` IS NULL";
                         $hashed_valued[] = '';
                     } else {
-                        $vals[] = $v;
-                        $w[] = "`{$key}` = ?";
+                        $vals[]          = $v;
+                        $w[]             = "`{$key}` = ?";
                         $hashed_valued[] = md5($v);
                     }
                 }
@@ -100,8 +99,7 @@
             }
 
             $rs = core::sql($pool)->prepare("
-                SELECT
-                    " . join(',', $select_fields) . "
+                SELECT " . join(',', $fields) . "
                 FROM `" . self::table($self::TABLE) . "`
                 WHERE " . join(' OR ', $where) . "
             ");
@@ -117,12 +115,24 @@
                     $return[$reverse_lookup[join(':', $hashed)]][] = $row[$field];
                 }
             } else {
-                foreach ($rs->fetchAll() as $row) {
-                    $hashed = [];
-                    foreach ($key_fields as $k) {
-                        $hashed[$row[$k]] = md5($row[$k]);
+                // If the selected field count is different than the requested fields, only return the requested fields
+                if (count($select_fields) !== count($fields)) {
+                    $select_fields = array_keys($select_fields);
+                    foreach ($rs->fetchAll() as $row) {
+                        $hashed = [];
+                        foreach ($key_fields as $k) {
+                            $hashed[$row[$k]] = md5($row[$k]);
+                        }
+                        $return[$reverse_lookup[join(':', $hashed)]][] = array_intersect_key($row, $select_fields);
                     }
-                    $return[$reverse_lookup[join(':', $hashed)]][] = $row;
+                } else {
+                    foreach ($rs->fetchAll() as $row) {
+                        $hashed = [];
+                        foreach ($key_fields as $k) {
+                            $hashed[$row[$k]] = md5($row[$k]);
+                        }
+                        $return[$reverse_lookup[join(':', $hashed)]][] = $row;
+                    }
                 }
             }
 
@@ -214,7 +224,7 @@
 
             foreach ($new_info as $k => $v) {
                 $update_fields[] = "`{$k}` = ?";
-                $vals[] = $v;
+                $vals[]          = $v;
             }
 
             $where_fields = [];

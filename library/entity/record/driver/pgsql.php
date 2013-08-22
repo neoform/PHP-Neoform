@@ -238,52 +238,49 @@
          * @return array
          */
         public static function by_fields_multi(entity_record_dao $self, $pool, array $keys_arr, $pk) {
-            $key_fields     = [];
+            $select_fields  = [ "\"{$pk}\"" ];
             $reverse_lookup = [];
             $return         = [];
             $vals           = [];
             $where          = [];
+            $fields         = array_keys(reset($keys_arr));
 
-            foreach (array_keys(reset($keys_arr)) as $k) {
-                $key_fields[] = "`{$k}`";
+            foreach ($fields as $k) {
+                $select_fields[] = "\"{$k}\"";
             }
 
             foreach ($keys_arr as $k => $keys) {
-                $w = [];
-                // @todo this is potentially buggy if the field contains a colon
-                $reverse_lookup[join(':', $keys)] = $k;
-                $return[$k] = [];
-                foreach ($keys as $k => $v) {
-                    if ($v === null) {
-                        $w[] = "\"{$k}\" IS NULL";
+                $w             = [];
+                $return[$k]    = [];
+                $hashed_valued = [];
+                foreach ($keys as $key => $val) {
+                    if ($val === null) {
+                        $w[]             = "\"{$key}\" IS NULL";
+                        $hashed_valued[] = '';
                     } else {
-                        $vals[$k] = $v;
-                        $w[]      = "\"{$k}\" = ?";
+                        $vals[]          = $val;
+                        $w[]             = "\"{$key}\" = ?";
+                        $hashed_valued[] = md5($val);
                     }
                 }
+                $reverse_lookup[join(':', $hashed_valued)] = $k;
                 $where[] = '(' . join(" AND ", $w) . ')';
             }
 
             $rs = core::sql($pool)->prepare("
-                SELECT
-                    \"{$pk}\",
-                    CONCAT(" . join(", ':', ", $key_fields) . ") \"__cache_key__\"
+                SELECT " . join(", ", $select_fields) . "
                 FROM \"" . self::table($self::TABLE) . "\"
-                WHERE " . join(' OR ', $where) . "
+                WHERE " . join(" OR ", $where) . "
             ");
 
-            $bindings = $self->field_bindings();
+            $rs->execute($vals);
 
-            // do NOT remove this reference, it will break the bindParam() function
-            foreach ($vals as $k => &$v) {
-                $rs->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
-            }
-
-            $rs->execute();
-
-            $rows = $rs->fetchAll();
-            foreach ($rows as $row) {
-                $return[$reverse_lookup[$row['__cache_key__']]][] = $row[$pk];
+            foreach ($rs->fetchAll() as $row) {
+                $hashed = [];
+                foreach ($fields as $k) {
+                    $hashed[$row[$k]] = md5($row[$k]);
+                }
+                $return[$reverse_lookup[join(':', $hashed)]][] = $row[$pk];
             }
 
             sql_pdo::unbinary($return);
@@ -365,7 +362,7 @@
             $fields         = array_keys(reset($keys_arr));
 
             foreach ($fields as $k) {
-                $select_fields[] = "`{$k}`";
+                $select_fields[] = "\"{$k}\"";
             }
 
             if ($limit) {

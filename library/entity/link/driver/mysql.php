@@ -69,46 +69,60 @@
          * @return array
          */
         public static function by_fields_multi(entity_link_dao $self, $pool, array $select_fields, array $keys_arr) {
-            $key_fields     = array_keys(current($keys_arr));
+            $key_fields     = array_keys(reset($keys_arr));
+            $select_fields  = [];
             $reverse_lookup = [];
             $return         = [];
             $vals           = [];
             $where          = [];
 
+            foreach (array_unique(array_merge($select_fields, $key_fields)) as $k) {
+                $select_fields[] = "`{$k}`";
+            }
+
             foreach ($keys_arr as $k => $keys) {
                 $w = [];
                 $reverse_lookup[join(':', $keys)] = $k;
                 $return[$k] = [];
-                foreach ($keys as $k => $v) {
+                $hashed_valued = [];
+                foreach ($keys as $key => $v) {
                     if ($v === null) {
-                        $w[] = "`{$k}` IS NULL";
+                        $w[] = "`{$key}` IS NULL";
+                        $hashed_valued[] = '';
                     } else {
                         $vals[] = $v;
-                        $w[] = "`{$k}` = ?";
+                        $w[] = "`{$key}` = ?";
+                        $hashed_valued[] = md5($v);
                     }
                 }
+                $reverse_lookup[join(':', $hashed_valued)] = $k;
                 $where[] = '(' . join(" AND ", $w) . ')';
             }
 
             $rs = core::sql($pool)->prepare("
                 SELECT
-                    " . join(',', $select_fields) . ",
-                    CONCAT(" . join(", ':', ", $key_fields) . ") `__cache_key__`
+                    " . join(',', $select_fields) . "
                 FROM `" . self::table($self::TABLE) . "`
                 WHERE " . join(' OR ', $where) . "
             ");
-
             $rs->execute($vals);
 
-            $rows = $rs->fetchAll();
             if (count($select_fields) === 1) {
-                $field = current($select_fields);
-                foreach ($rows as $row) {
-                    $return[$reverse_lookup[$row['__cache_key__']]][] = $row[$field];
+                $field = reset($select_fields);
+                foreach ($rs->fetchAll() as $row) {
+                    $hashed = [];
+                    foreach ($key_fields as $k) {
+                        $hashed[$row[$k]] = md5($row[$k]);
+                    }
+                    $return[$reverse_lookup[join(':', $hashed)]][] = $row[$field];
                 }
             } else {
-                foreach ($rows as $row) {
-                    $return[$reverse_lookup[$row['__cache_key__']]][] = $row;
+                foreach ($rs->fetchAll() as $row) {
+                    $hashed = [];
+                    foreach ($key_fields as $k) {
+                        $hashed[$row[$k]] = md5($row[$k]);
+                    }
+                    $return[$reverse_lookup[join(':', $hashed)]][] = $row;
                 }
             }
 

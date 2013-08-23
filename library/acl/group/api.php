@@ -46,7 +46,7 @@
 
             // id
             $input->id->cast('int')->digit(0, 4294967295)->callback(function($id) {
-                if (entity::dao('acl_group')->by_pk($id->val())) {
+                if (entity::dao('acl_group')->record($id->val())) {
                     $id->errors('already in use');
                 }
             });
@@ -63,7 +63,7 @@
 
             // id
             $input->id->cast('int')->digit(0, 4294967295)->callback(function($id) use ($acl_group) {
-                $acl_group_info = entity::dao('acl_group')->by_pk($id->val());
+                $acl_group_info = entity::dao('acl_group')->record($id->val());
                 if ($acl_group_info && (int) $acl_group_info['id'] !== $acl_group->id) {
                     $id->errors('already in use');
                 }

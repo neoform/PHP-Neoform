@@ -248,12 +248,11 @@
             register_shutdown_function(function() {
                 //only grab error if there is one
                 if (($error = error_get_last()) !== null) {
-                    //$type    = isset($error['type']) ? $error['type'] : null;
                     $message = isset($error['message']) ? $error['message'] : null;
                     $file    = isset($error['file']) ? $error['file'] : null;
                     $line    = isset($error['line']) ? $error['line'] : null;
 
-                    core::log("{$message} {$file} ({$line})", 'fatal shutdown error');
+                    core::log("{$message} - {$file}:{$line}", 'fatal shutdown error');
 
                     switch ((string) core::context()) {
                         case 'web':

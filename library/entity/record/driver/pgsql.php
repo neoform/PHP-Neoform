@@ -39,7 +39,7 @@
          *
          * @return mixed
          */
-        public static function by_pk(entity_record_dao $self, $pool, $pk) {
+        public static function record(entity_record_dao $self, $pool, $pk) {
 
             $info = core::sql($pool)->prepare("
                 SELECT *
@@ -65,7 +65,7 @@
          *
          * @return array
          */
-        public static function by_pks(entity_record_dao $self, $pool, array $pks) {
+        public static function records(entity_record_dao $self, $pool, array $pks) {
 
             $infos_rs = core::sql($pool)->prepare("
                 SELECT *
@@ -93,7 +93,7 @@
         }
 
         /**
-         * Get a count
+         * Get a count based on key inputs
          *
          * @param entity_record_dao $self
          * @param string            $pool

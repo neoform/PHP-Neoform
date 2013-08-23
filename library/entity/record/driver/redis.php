@@ -12,7 +12,7 @@
          * @return mixed
          * @throws model_exception
          */
-        public static function by_pk(entity_record_dao $self, $pool, $pk) {
+        public static function record(entity_record_dao $self, $pool, $pk) {
 
             $key = 'db:' . $self::TABLE . ":{$pk}";
 
@@ -37,7 +37,7 @@
          *
          * @return array
          */
-        public static function by_pks(entity_record_dao $self, $pool, array $pks) {
+        public static function records(entity_record_dao $self, $pool, array $pks) {
             $keys = [];
             foreach ($pks as $k => $pk) {
                 $keys[$k] = 'db:' . $self::TABLE . ":{$pk}";
@@ -70,15 +70,15 @@
         }
 
         /**
-         * Get full count of rows in a table
+         * Get a count based on key inputs
          *
          * @param entity_record_dao $self
-         * @param string     $pool which source engine pool to use
+         * @param string            $pool
+         * @param array             $keys
          *
-         * @return int
          * @throws redis_exception
          */
-        public static function count(entity_record_dao $self, $pool) {
+        public static function count(entity_record_dao $self, $pool, array $keys=null) {
             throw new redis_exception('Count queries are not supported by redis driver.');
         }
 
@@ -90,7 +90,6 @@
          * @param int|string $pk
          * @param array      $keys
          *
-         * @return array
          * @throws redis_exception
          */
         public static function all(entity_record_dao $self, $pool, $pk, array $keys=null) {
@@ -105,7 +104,6 @@
          * @param array      $keys
          * @param int|string $pk
          *
-         * @return array
          * @throws redis_exception
          */
         public static function by_fields(entity_record_dao $self, $pool, array $keys, $pk) {
@@ -120,11 +118,44 @@
          * @param array      $keys_arr
          * @param int|string $pk
          *
-         * @return array
          * @throws redis_exception
          */
         public static function by_fields_multi(entity_record_dao $self, $pool, array $keys_arr, $pk) {
             throw new redis_exception('By fields multi queries are not supported by redis driver.');
+        }
+
+        /**
+         * Get a set of PKs based on params, in a given order and offset/limit
+         *
+         * @param entity_record_dao $self
+         * @param string            $pool
+         * @param array             $keys
+         * @param mixed             $pk
+         * @param array             $order_by
+         * @param integer|null      $offset
+         * @param integer           $limit
+         *
+         * @throws redis_exception
+         */
+        public static function by_fields_offset(entity_record_dao $self, $pool, array $keys, $pk, array $order_by, $offset, $limit) {
+            throw new redis_exception('By fields offset queries are not supported by redis driver.');
+        }
+
+        /**
+         * Get multiple sets of PKs based on params, in a given order and offset/limit
+         *
+         * @param entity_record_dao $self
+         * @param string            $pool
+         * @param array             $keys_arr
+         * @param mixed             $pk
+         * @param array             $order_by
+         * @param integer|null      $offset
+         * @param integer           $limit
+         *
+         * @throws redis_exception
+         */
+        public static function by_fields_offset_multi(entity_record_dao $self, $pool, array $keys_arr, $pk, array $order_by, $offset, $limit) {
+            throw new redis_exception('By fields multi offset queries are not supported by redis driver.');
         }
 
         /**
@@ -134,7 +165,7 @@
          * @param string     $pool which source engine pool to use
          * @param array      $info
          * @param bool       $autoincrement
-         * @param boo        $replace
+         * @param bool       $replace
          *
          * @return array
          */

@@ -16,7 +16,15 @@
             $view->meta_title = 'Users';
 
             //$users = new user_collection(entity::dao('user')->limit(20, 'id', 'asc', null));
-            $users = new user_collection(entity::dao('user')->paginated('id', 'asc', ($page - 1) * $per_page, $per_page));
+            $users = new user_collection(
+                entity::dao('user')->limit(
+                    [
+                        'id' => entity_record_dao::SORT_ASC
+                    ],
+                    ($page - 1) * $per_page,
+                    $per_page
+                )
+            );
             $users->user_date_collection(); // preload user_dates
 
             $view->users    = $users;

@@ -10,11 +10,13 @@
         const BY_ACL_ROLE           = 'by_acl_role';
 
         /**
-         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
+         * $var array $field_bindings list of fields and their corresponding bindings
+         *
+         * @return array
          */
-        protected $pdo_bindings = [
-            'acl_group_id' => PDO::PARAM_INT,
-            'acl_role_id'  => PDO::PARAM_INT,
+        protected $field_bindings = [
+            'acl_group_id' => self::TYPE_INTEGER,
+            'acl_role_id'  => self::TYPE_INTEGER,
         ];
 
         // READS

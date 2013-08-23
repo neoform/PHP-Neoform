@@ -225,7 +225,11 @@
                         die;
 
                     default:
-                        die("Error - " . $e->getMessage() . "\n");
+                        if ($e instanceof ErrorException) {
+                            die("Uncaught Exception: " . $e->getMessage() . " - " . $e->getFile() . ":" . $e->getLine() . "\n");
+                        } else {
+                            die("Uncaught Exception: " . $e->getMessage() . "\n");
+                        }
                 }
             });
 
@@ -320,7 +324,7 @@
                         $msg = print_r($msg, 1);
                     }
 
-                    $dt = new datetime();
+                    $dt = new datetime;
 
                     if (self::is_loaded('http')) {
                         $message = "\n" . $dt->format('Y-m-d H:i:s') . ' - ' . strtoupper($level) . "\n" . core::http()->server('ip') . ' /' . core::http()->server('query') . "\n{$msg}\n";

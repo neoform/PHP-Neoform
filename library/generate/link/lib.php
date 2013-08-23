@@ -1,5 +1,5 @@
 <?php
 
-    class generate_entity_link_lib extends generate_lib {
+    class generate_link_lib extends generate_lib {
 
     }

@@ -1,6 +1,6 @@
 <?php
 
-    class generate_entity_link_collection extends generate_collection {
+    class generate_link_collection extends generate_collection {
 
         public function code() {
 

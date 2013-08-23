@@ -5,6 +5,5 @@
         const TABLE         = 'locale_key_message';
         const AUTOINCREMENT = true;
         const PRIMARY_KEY   = 'id';
-        const BINARY_PK     = false;
         const ENTITY_NAME   = 'locale_key_message';
     }

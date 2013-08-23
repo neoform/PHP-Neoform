@@ -15,7 +15,7 @@
 
             $view->meta_title = 'ACL Roles';
 
-            $resources = new acl_resource_collection(entity::dao('acl_resource')->limit($per_page, 'id', 'asc', null));
+            $resources = new acl_resource_collection(entity::dao('acl_resource')->limit([ 'id' => entity_record_dao::SORT_ASC ], ($page - 1) * $per_page, $per_page));
             $resources->acl_role_collection();
             $resources->child_acl_resource_collection();
 

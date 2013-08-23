@@ -28,6 +28,8 @@
 
         protected $cache_delete_expire_ttl;
 
+        protected $binary_pk;
+
         /**
          * Order By
          */
@@ -83,6 +85,8 @@
             $this->cache_list_engine_pool_write = $config['cache_list_engine_pool_write'];
 
             $this->cache_delete_expire_ttl      = $config['cache_delete_expire_ttl'];
+
+            $this->binary_pk = $this->field_bindings[static::PRIMARY_KEY] === self::TYPE_BINARY;
         }
 
         /**
@@ -279,7 +283,7 @@
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
-                static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($pk) : $pk),
+                static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($pk) : $pk),
                 function() use ($pk, $self) {
                     $source_driver = "entity_record_driver_{$self->source_engine}";
                     return $source_driver::record($self, $self->source_engine_pool_read, $pk);
@@ -310,7 +314,7 @@
                 $this->cache_engine_pool_write,
                 $pks,
                 function($pk) use ($self) {
-                    return $self::ENTITY_NAME . ':' . $self::RECORD . ':' . ($self::BINARY_PK ? md5($pk) : $pk);
+                    return $self::ENTITY_NAME . ':' . $self::RECORD . ':' . ($self->binary_pk ? md5($pk) : $pk);
                 },
                 function(array $pks) use ($self) {
                     $source_driver = "entity_record_driver_{$self->source_engine}";
@@ -588,7 +592,7 @@
             cache_lib::set(
                 $this->cache_engine,
                 $this->cache_engine_pool_write,
-                static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY]),
+                static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY]),
                 $info
             );
 
@@ -639,7 +643,7 @@
 
             $insert_cache_data = [];
             foreach ($infos as $info) {
-                $insert_cache_data[static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY])] = $info;
+                $insert_cache_data[static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY])] = $info;
             }
 
             cache_lib::set_multi(
@@ -720,7 +724,7 @@
                 cache_lib::set(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($new_info[$pk]) : $new_info[$pk]),
+                    static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($new_info[$pk]) : $new_info[$pk]),
                     $new_info + $old_info
                 );
 
@@ -729,14 +733,14 @@
                     cache_lib::expire(
                         $this->cache_engine,
                         $this->cache_engine_pool_write,
-                        static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk),
+                        static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($model->$pk) : $model->$pk),
                         $this->cache_delete_expire_ttl
                     );
                 } else {
                     cache_lib::delete(
                         $this->cache_engine,
                         $this->cache_engine_pool_write,
-                        static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
+                        static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($model->$pk) : $model->$pk)
                     );
                 }
             } else {
@@ -744,7 +748,7 @@
                 cache_lib::set(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk),
+                    static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($model->$pk) : $model->$pk),
                     $new_info + $old_info
                 );
             }
@@ -790,14 +794,14 @@
                 cache_lib::expire(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk),
+                    static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($model->$pk) : $model->$pk),
                     $this->cache_delete_expire_ttl
                 );
             } else {
                 cache_lib::delete(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($model->$pk) : $model->$pk)
+                    static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($model->$pk) : $model->$pk)
                 );
             }
 
@@ -827,7 +831,7 @@
 
             $delete_cache_keys = [];
             foreach ($collection->field(static::PRIMARY_KEY) as $pk) {
-                $delete_cache_keys[] = static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? ':' . md5($pk) : ":{$pk}");
+                $delete_cache_keys[] = static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? ':' . md5($pk) : ":{$pk}");
             }
 
             $this->cache_batch_start($this->cache_engine, $this->cache_engine_pool_write);
@@ -1290,7 +1294,7 @@
          * @param string     $cache_key
          * @param array|null $keys
          */
-        final public function _set_count_cache_lists($cache_key, array $keys=null) {
+        final protected function _set_count_cache_lists($cache_key, array $keys=null) {
 
             /**
              * Build lists of keys for deletion - when it's time to delete/modify the record
@@ -1351,7 +1355,7 @@
          *
          * @param string $cache_key
          */
-        public function _set_always_cache_lists($cache_key) {
+        final protected function _set_always_cache_lists($cache_key) {
             cache_lib::list_add(
                 $this->cache_list_engine,
                 $this->cache_list_engine_pool_write,

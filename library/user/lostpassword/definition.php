@@ -9,6 +9,5 @@
         const TABLE         = 'user_lostpassword';
         const AUTOINCREMENT = false;
         const PRIMARY_KEY   = 'hash';
-        const BINARY_PK     = false;
         const ENTITY_NAME   = 'user_lostpassword';
     }

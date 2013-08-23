@@ -5,21 +5,22 @@
      */
     class country_dao extends entity_record_dao implements country_definition {
 
-        const BY_ALL             = 'by_all';
         const BY_NAME_NORMALIZED = 'by_name_normalized';
         const BY_ISO2            = 'by_iso2';
         const BY_ISO3            = 'by_iso3';
         const BY_NAME            = 'by_name';
 
         /**
-         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
+         * $var array $field_bindings list of fields and their corresponding bindings
+         *
+         * @return array
          */
-        protected $pdo_bindings = [
-            'id'              => PDO::PARAM_INT,
-            'name'            => PDO::PARAM_STR,
-            'name_normalized' => PDO::PARAM_STR,
-            'iso2'            => PDO::PARAM_STR,
-            'iso3'            => PDO::PARAM_STR,
+        protected $field_bindings = [
+            'id'              => self::TYPE_INTEGER,
+            'name'            => self::TYPE_STRING,
+            'name_normalized' => self::TYPE_STRING,
+            'iso2'            => self::TYPE_STRING,
+            'iso3'            => self::TYPE_STRING,
         ];
 
         // READS
@@ -28,15 +29,21 @@
          * Get Country ids by name_normalized
          *
          * @param string $name_normalized
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of Country ids
          */
-        public function by_name_normalized($name_normalized) {
+        public function by_name_normalized($name_normalized, array $order_by=null, $offset=null, $limit=null) {
             return parent::_by_fields(
                 self::BY_NAME_NORMALIZED,
                 [
                     'name_normalized' => (string) $name_normalized,
-                ]
+                ],
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -44,15 +51,21 @@
          * Get Country ids by iso2
          *
          * @param string $iso2
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of Country ids
          */
-        public function by_iso2($iso2) {
+        public function by_iso2($iso2, array $order_by=null, $offset=null, $limit=null) {
             return parent::_by_fields(
                 self::BY_ISO2,
                 [
                     'iso2' => (string) $iso2,
-                ]
+                ],
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -60,15 +73,21 @@
          * Get Country ids by iso3
          *
          * @param string $iso3
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of Country ids
          */
-        public function by_iso3($iso3) {
+        public function by_iso3($iso3, array $order_by=null, $offset=null, $limit=null) {
             return parent::_by_fields(
                 self::BY_ISO3,
                 [
                     'iso3' => (string) $iso3,
-                ]
+                ],
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -76,15 +95,21 @@
          * Get Country ids by name
          *
          * @param string $name
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of Country ids
          */
-        public function by_name($name) {
+        public function by_name($name, array $order_by=null, $offset=null, $limit=null) {
             return parent::_by_fields(
                 self::BY_NAME,
                 [
                     'name' => (string) $name,
-                ]
+                ],
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -92,17 +117,23 @@
          * Get Country id_arr by an array of name_normalizeds
          *
          * @param array $name_normalized_arr an array containing name_normalizeds
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of arrays of Country ids
          */
-        public function by_name_normalized_multi(array $name_normalized_arr) {
+        public function by_name_normalized_multi(array $name_normalized_arr, array $order_by=null, $offset=null, $limit=null) {
             $keys_arr = [];
             foreach ($name_normalized_arr as $k => $name_normalized) {
                 $keys_arr[$k] = [ 'name_normalized' => (string) $name_normalized, ];
             }
             return parent::_by_fields_multi(
                 self::BY_NAME_NORMALIZED,
-                $keys_arr
+                $keys_arr,
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -110,17 +141,23 @@
          * Get Country id_arr by an array of iso2s
          *
          * @param array $iso2_arr an array containing iso2s
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of arrays of Country ids
          */
-        public function by_iso2_multi(array $iso2_arr) {
+        public function by_iso2_multi(array $iso2_arr, array $order_by=null, $offset=null, $limit=null) {
             $keys_arr = [];
             foreach ($iso2_arr as $k => $iso2) {
                 $keys_arr[$k] = [ 'iso2' => (string) $iso2, ];
             }
             return parent::_by_fields_multi(
                 self::BY_ISO2,
-                $keys_arr
+                $keys_arr,
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -128,17 +165,23 @@
          * Get Country id_arr by an array of iso3s
          *
          * @param array $iso3_arr an array containing iso3s
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of arrays of Country ids
          */
-        public function by_iso3_multi(array $iso3_arr) {
+        public function by_iso3_multi(array $iso3_arr, array $order_by=null, $offset=null, $limit=null) {
             $keys_arr = [];
             foreach ($iso3_arr as $k => $iso3) {
                 $keys_arr[$k] = [ 'iso3' => (string) $iso3, ];
             }
             return parent::_by_fields_multi(
                 self::BY_ISO3,
-                $keys_arr
+                $keys_arr,
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -146,27 +189,24 @@
          * Get Country id_arr by an array of names
          *
          * @param array $name_arr an array containing names
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of arrays of Country ids
          */
-        public function by_name_multi(array $name_arr) {
+        public function by_name_multi(array $name_arr, array $order_by=null, $offset=null, $limit=null) {
             $keys_arr = [];
             foreach ($name_arr as $k => $name) {
                 $keys_arr[$k] = [ 'name' => (string) $name, ];
             }
             return parent::_by_fields_multi(
                 self::BY_NAME,
-                $keys_arr
+                $keys_arr,
+                $order_by,
+                $offset,
+                $limit
             );
-        }
-
-        /**
-         * Get all data for all Country records
-         *
-         * @return array containing all Country records
-         */
-        public function all() {
-            return parent::_all(self::BY_ALL);
         }
 
         // WRITES
@@ -181,69 +221,7 @@
         public function insert(array $info) {
 
             // Insert record
-            $return = parent::_insert($info);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            // BY_NAME_NORMALIZED
-            if (array_key_exists('name_normalized', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME_NORMALIZED,
-                        [
-                            'name_normalized' => (string) $info['name_normalized'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_ISO2
-            if (array_key_exists('iso2', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ISO2,
-                        [
-                            'iso2' => (string) $info['iso2'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_ISO3
-            if (array_key_exists('iso3', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ISO3,
-                        [
-                            'iso3' => (string) $info['iso3'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_NAME
-            if (array_key_exists('name', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME,
-                        [
-                            'name' => (string) $info['name'],
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_insert($info);
         }
 
         /**
@@ -255,72 +233,8 @@
          */
         public function inserts(array $infos) {
 
-            // Insert records
-            $return = parent::_inserts($infos);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            foreach ($infos as $info) {
-                // BY_NAME_NORMALIZED
-                if (array_key_exists('name_normalized', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_NAME_NORMALIZED,
-                            [
-                                'name_normalized' => (string) $info['name_normalized'],
-                            ]
-                        )
-                    );
-                }
-
-                // BY_ISO2
-                if (array_key_exists('iso2', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_ISO2,
-                            [
-                                'iso2' => (string) $info['iso2'],
-                            ]
-                        )
-                    );
-                }
-
-                // BY_ISO3
-                if (array_key_exists('iso3', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_ISO3,
-                            [
-                                'iso3' => (string) $info['iso3'],
-                            ]
-                        )
-                    );
-                }
-
-                // BY_NAME
-                if (array_key_exists('name', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_NAME,
-                            [
-                                'name' => (string) $info['name'],
-                            ]
-                        )
-                    );
-                }
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            // Insert record
+            return parent::_inserts($infos);
         }
 
         /**
@@ -335,101 +249,7 @@
         public function update(country_model $country, array $info) {
 
             // Update record
-            $updated_model = parent::_update($country, $info);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            // BY_NAME_NORMALIZED
-            if (array_key_exists('name_normalized', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME_NORMALIZED,
-                        [
-                            'name_normalized' => (string) $country->name_normalized,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME_NORMALIZED,
-                        [
-                            'name_normalized' => (string) $info['name_normalized'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_ISO2
-            if (array_key_exists('iso2', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ISO2,
-                        [
-                            'iso2' => (string) $country->iso2,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ISO2,
-                        [
-                            'iso2' => (string) $info['iso2'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_ISO3
-            if (array_key_exists('iso3', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ISO3,
-                        [
-                            'iso3' => (string) $country->iso3,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ISO3,
-                        [
-                            'iso3' => (string) $info['iso3'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_NAME
-            if (array_key_exists('name', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME,
-                        [
-                            'name' => (string) $country->name,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME,
-                        [
-                            'name' => (string) $info['name'],
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $updated_model;
+            return parent::_update($country, $info);
         }
 
         /**
@@ -442,61 +262,7 @@
         public function delete(country_model $country) {
 
             // Delete record
-            $return = parent::_delete($country);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            // BY_NAME_NORMALIZED
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_NAME_NORMALIZED,
-                    [
-                        'name_normalized' => (string) $country->name_normalized,
-                    ]
-                )
-            );
-
-            // BY_ISO2
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_ISO2,
-                    [
-                        'iso2' => (string) $country->iso2,
-                    ]
-                )
-            );
-
-            // BY_ISO3
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_ISO3,
-                    [
-                        'iso3' => (string) $country->iso3,
-                    ]
-                )
-            );
-
-            // BY_NAME
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_NAME,
-                    [
-                        'name' => (string) $country->name,
-                    ]
-                )
-            );
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_delete($country);
         }
 
         /**
@@ -509,62 +275,6 @@
         public function deletes(country_collection $country_collection) {
 
             // Delete records
-            $return = parent::_deletes($country_collection);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            foreach ($country_collection as $country) {
-                // BY_NAME_NORMALIZED
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME_NORMALIZED,
-                        [
-                            'name_normalized' => (string) $country->name_normalized,
-                        ]
-                    )
-                );
-
-                // BY_ISO2
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ISO2,
-                        [
-                            'iso2' => (string) $country->iso2,
-                        ]
-                    )
-                );
-
-                // BY_ISO3
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ISO3,
-                        [
-                            'iso3' => (string) $country->iso3,
-                        ]
-                    )
-                );
-
-                // BY_NAME
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME,
-                        [
-                            'name' => (string) $country->name,
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_deletes($country_collection);
         }
     }

@@ -5,19 +5,20 @@
      */
     class locale_key_dao extends entity_record_dao implements locale_key_definition {
 
-        const BY_ALL       = 'by_all';
         const BY_LOCALE    = 'by_locale';
         const BY_BODY      = 'by_body';
         const BY_NAMESPACE = 'by_namespace';
 
         /**
-         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
+         * $var array $field_bindings list of fields and their corresponding bindings
+         *
+         * @return array
          */
-        protected $pdo_bindings = [
-            'id'           => PDO::PARAM_INT,
-            'body'         => PDO::PARAM_STR,
-            'locale'       => PDO::PARAM_STR,
-            'namespace_id' => PDO::PARAM_INT,
+        protected $field_bindings = [
+            'id'           => self::TYPE_INTEGER,
+            'body'         => self::TYPE_STRING,
+            'locale'       => self::TYPE_STRING,
+            'namespace_id' => self::TYPE_INTEGER,
         ];
 
         // READS
@@ -26,15 +27,21 @@
          * Get Locale Key ids by locale
          *
          * @param string $locale
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of Locale Key ids
          */
-        public function by_locale($locale) {
+        public function by_locale($locale, array $order_by=null, $offset=null, $limit=null) {
             return parent::_by_fields(
                 self::BY_LOCALE,
                 [
                     'locale' => (string) $locale,
-                ]
+                ],
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -42,15 +49,21 @@
          * Get Locale Key ids by body
          *
          * @param string $body
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of Locale Key ids
          */
-        public function by_body($body) {
+        public function by_body($body, array $order_by=null, $offset=null, $limit=null) {
             return parent::_by_fields(
                 self::BY_BODY,
                 [
                     'body' => (string) $body,
-                ]
+                ],
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -58,15 +71,21 @@
          * Get Locale Key ids by namespace
          *
          * @param int $namespace_id
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of Locale Key ids
          */
-        public function by_namespace($namespace_id) {
+        public function by_namespace($namespace_id, array $order_by=null, $offset=null, $limit=null) {
             return parent::_by_fields(
                 self::BY_NAMESPACE,
                 [
                     'namespace_id' => (int) $namespace_id,
-                ]
+                ],
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -74,10 +93,13 @@
          * Get multiple sets of Locale Key ids by locale
          *
          * @param locale_collection|array $locale_list
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of arrays containing Locale Key ids
          */
-        public function by_locale_multi($locale_list) {
+        public function by_locale_multi($locale_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
             if ($locale_list instanceof locale_collection) {
                 foreach ($locale_list as $k => $locale) {
@@ -92,17 +114,26 @@
                     ];
                 }
             }
-            return parent::_by_fields_multi(self::BY_LOCALE, $keys);
+            return parent::_by_fields_multi(
+                self::BY_LOCALE,
+                $keys,
+                $order_by,
+                $offset,
+                $limit
+            );
         }
 
         /**
          * Get multiple sets of Locale Key ids by locale_namespace
          *
          * @param locale_namespace_collection|array $locale_namespace_list
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of arrays containing Locale Key ids
          */
-        public function by_namespace_multi($locale_namespace_list) {
+        public function by_namespace_multi($locale_namespace_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
             if ($locale_namespace_list instanceof locale_namespace_collection) {
                 foreach ($locale_namespace_list as $k => $locale_namespace) {
@@ -117,34 +148,37 @@
                     ];
                 }
             }
-            return parent::_by_fields_multi(self::BY_NAMESPACE, $keys);
+            return parent::_by_fields_multi(
+                self::BY_NAMESPACE,
+                $keys,
+                $order_by,
+                $offset,
+                $limit
+            );
         }
 
         /**
          * Get Locale Key id_arr by an array of bodys
          *
          * @param array $body_arr an array containing bodys
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of arrays of Locale Key ids
          */
-        public function by_body_multi(array $body_arr) {
+        public function by_body_multi(array $body_arr, array $order_by=null, $offset=null, $limit=null) {
             $keys_arr = [];
             foreach ($body_arr as $k => $body) {
                 $keys_arr[$k] = [ 'body' => (string) $body, ];
             }
             return parent::_by_fields_multi(
                 self::BY_BODY,
-                $keys_arr
+                $keys_arr,
+                $order_by,
+                $offset,
+                $limit
             );
-        }
-
-        /**
-         * Get all data for all Locale Key records
-         *
-         * @return array containing all Locale Key records
-         */
-        public function all() {
-            return parent::_all(self::BY_ALL);
         }
 
         // WRITES
@@ -159,57 +193,7 @@
         public function insert(array $info) {
 
             // Insert record
-            $return = parent::_insert($info);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            // BY_LOCALE
-            if (array_key_exists('locale', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_LOCALE,
-                        [
-                            'locale' => (string) $info['locale'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_BODY
-            if (array_key_exists('body', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_BODY,
-                        [
-                            'body' => (string) $info['body'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_NAMESPACE
-            if (array_key_exists('namespace_id', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAMESPACE,
-                        [
-                            'namespace_id' => (int) $info['namespace_id'],
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_insert($info);
         }
 
         /**
@@ -221,60 +205,8 @@
          */
         public function inserts(array $infos) {
 
-            // Insert records
-            $return = parent::_inserts($infos);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            foreach ($infos as $info) {
-                // BY_LOCALE
-                if (array_key_exists('locale', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_LOCALE,
-                            [
-                                'locale' => (string) $info['locale'],
-                            ]
-                        )
-                    );
-                }
-
-                // BY_BODY
-                if (array_key_exists('body', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_BODY,
-                            [
-                                'body' => (string) $info['body'],
-                            ]
-                        )
-                    );
-                }
-
-                // BY_NAMESPACE
-                if (array_key_exists('namespace_id', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_NAMESPACE,
-                            [
-                                'namespace_id' => (int) $info['namespace_id'],
-                            ]
-                        )
-                    );
-                }
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            // Insert record
+            return parent::_inserts($infos);
         }
 
         /**
@@ -289,81 +221,7 @@
         public function update(locale_key_model $locale_key, array $info) {
 
             // Update record
-            $updated_model = parent::_update($locale_key, $info);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            // BY_LOCALE
-            if (array_key_exists('locale', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_LOCALE,
-                        [
-                            'locale' => (string) $locale_key->locale,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_LOCALE,
-                        [
-                            'locale' => (string) $info['locale'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_BODY
-            if (array_key_exists('body', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_BODY,
-                        [
-                            'body' => (string) $locale_key->body,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_BODY,
-                        [
-                            'body' => (string) $info['body'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_NAMESPACE
-            if (array_key_exists('namespace_id', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAMESPACE,
-                        [
-                            'namespace_id' => (int) $locale_key->namespace_id,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAMESPACE,
-                        [
-                            'namespace_id' => (int) $info['namespace_id'],
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $updated_model;
+            return parent::_update($locale_key, $info);
         }
 
         /**
@@ -376,51 +234,7 @@
         public function delete(locale_key_model $locale_key) {
 
             // Delete record
-            $return = parent::_delete($locale_key);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            // BY_LOCALE
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_LOCALE,
-                    [
-                        'locale' => (string) $locale_key->locale,
-                    ]
-                )
-            );
-
-            // BY_BODY
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_BODY,
-                    [
-                        'body' => (string) $locale_key->body,
-                    ]
-                )
-            );
-
-            // BY_NAMESPACE
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_NAMESPACE,
-                    [
-                        'namespace_id' => (int) $locale_key->namespace_id,
-                    ]
-                )
-            );
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_delete($locale_key);
         }
 
         /**
@@ -433,52 +247,6 @@
         public function deletes(locale_key_collection $locale_key_collection) {
 
             // Delete records
-            $return = parent::_deletes($locale_key_collection);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            foreach ($locale_key_collection as $locale_key) {
-                // BY_LOCALE
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_LOCALE,
-                        [
-                            'locale' => (string) $locale_key->locale,
-                        ]
-                    )
-                );
-
-                // BY_BODY
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_BODY,
-                        [
-                            'body' => (string) $locale_key->body,
-                        ]
-                    )
-                );
-
-                // BY_NAMESPACE
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAMESPACE,
-                        [
-                            'namespace_id' => (int) $locale_key->namespace_id,
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_deletes($locale_key_collection);
         }
     }

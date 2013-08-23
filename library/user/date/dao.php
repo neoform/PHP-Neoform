@@ -5,15 +5,18 @@
      */
     class user_date_dao extends entity_record_dao implements user_date_definition {
 
+
         /**
-         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
+         * $var array $field_bindings list of fields and their corresponding bindings
+         *
+         * @return array
          */
-        protected $pdo_bindings = [
-            'user_id'             => PDO::PARAM_INT,
-            'created_on'          => PDO::PARAM_STR,
-            'last_login'          => PDO::PARAM_STR,
-            'email_verified_on'   => PDO::PARAM_STR,
-            'password_updated_on' => PDO::PARAM_STR,
+        protected $field_bindings = [
+            'user_id'             => self::TYPE_INTEGER,
+            'created_on'          => self::TYPE_STRING,
+            'last_login'          => self::TYPE_STRING,
+            'email_verified_on'   => self::TYPE_STRING,
+            'password_updated_on' => self::TYPE_STRING,
         ];
 
         // WRITES

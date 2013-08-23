@@ -56,11 +56,13 @@
         // List key - Always clear these keys on every change
         const ALWAYS = 'always';
 
-        // List key - Limit lists
-        const LIMIT = 'limit';
+        // List key
+        const META = 'meta';
 
         // Offset key - Offset related record PK lists
         const OFFSET = 'offset';
+
+        const LIMIT = 'limit';
 
         /**
          * Construct
@@ -212,9 +214,9 @@
          */
         final public static function _build_key_list($field_name, $field_value=null) {
             if ($field_value === null) {
-                return static::ENTITY_NAME . ':' . self::LIMIT . "[{$field_name}]";
+                return static::ENTITY_NAME . ':' . self::META . "[{$field_name}]";
             } else {
-                return static::ENTITY_NAME . ':' . self::LIMIT . "[{$field_name}]:" . md5($field_value);
+                return static::ENTITY_NAME . ':' . self::META . "[{$field_name}]:" . md5($field_value);
             }
         }
 
@@ -226,7 +228,7 @@
          * @return string
          */
         final public static function _build_key_order($field_name) {
-            return static::ENTITY_NAME . ':' . self::LIMIT . ":order_by[{$field_name}]";
+            return static::ENTITY_NAME . ':' . self::META . ":order_by[{$field_name}]";
         }
 
         /**
@@ -269,7 +271,7 @@
          * @return array cached record data
          * @throws model_exception
          */
-        public function by_pk($pk) {
+        public function record($pk) {
 
             $self = $this;
 
@@ -280,7 +282,7 @@
                 static::ENTITY_NAME . ':' . self::RECORD . ':' . (static::BINARY_PK ? md5($pk) : $pk),
                 function() use ($pk, $self) {
                     $source_driver = "entity_record_driver_{$self->source_engine}";
-                    return $source_driver::by_pk($self, $self->source_engine_pool_read, $pk);
+                    return $source_driver::record($self, $self->source_engine_pool_read, $pk);
                 }
             );
         }
@@ -294,7 +296,7 @@
          * @return array  cached records data - with preserved key names from $pks.
          * @throws model_exception
          */
-        public function by_pks(array $pks) {
+        public function records(array $pks) {
 
             if (! $pks) {
                 return [];
@@ -312,8 +314,46 @@
                 },
                 function(array $pks) use ($self) {
                     $source_driver = "entity_record_driver_{$self->source_engine}";
-                    return $source_driver::by_pks($self, $self->source_engine_pool_read, $pks);
+                    return $source_driver::records($self, $self->source_engine_pool_read, $pks);
                 }
+            );
+        }
+
+        /**
+         * Get list of PKs, ordered and limited
+         *
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
+         *
+         * @return array of User ids
+         */
+        public function limit(array $order_by=null, $offset=null, $limit=null) {
+            return self::_by_fields(
+                self::LIMIT,
+                [],
+                $order_by,
+                $offset,
+                $limit
+            );
+        }
+
+        /**
+         * Get list of PKs, ordered and limited
+         *
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
+         *
+         * @return array of User ids
+         */
+        public function limits(array $order_by=null, $offset=null, $limit=null) {
+            return self::_by_fields_multi(
+                self::LIMIT,
+                [],
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -388,7 +428,7 @@
          *
          * @return mixed
          */
-        final protected function _by_fields($cache_key_name, array $keys, array $order_by, $offset, $limit) {
+        final protected function _by_fields($cache_key_name, array $keys, array $order_by=null, $offset=null, $limit=null) {
 
             $pk   = static::PRIMARY_KEY;
             $self = $this;
@@ -457,7 +497,7 @@
          * @return array  pks of records from cache
          * @throws model_exception
          */
-        final protected function _by_fields_multi($cache_key_name, array $keys_arr, array $order_by, $offset, $limit) {
+        final protected function _by_fields_multi($cache_key_name, array $keys_arr, array $order_by=null, $offset=null, $limit=null) {
 
             $pk   = static::PRIMARY_KEY;
             $self = $this;
@@ -541,7 +581,7 @@
 
             if ($load_model_from_source) {
                 // Use master to avoid race condition
-                $info = $source_driver::by_pk($this, $this->source_engine_pool_write, $info[static::PRIMARY_KEY]);
+                $info = $source_driver::record($this, $this->source_engine_pool_write, $info[static::PRIMARY_KEY]);
             }
 
             // In case a blank record was cached
@@ -594,7 +634,7 @@
                 }
 
                 // Use master to avoid race condition
-                $infos = $source_driver::by_pks($this, $this->source_engine_pool_write, $ids);
+                $infos = $source_driver::records($this, $this->source_engine_pool_write, $ids);
             }
 
             $insert_cache_data = [];
@@ -662,7 +702,7 @@
              */
             if ($reload_model_from_source) {
                 // Use master to avoid race condition
-                $new_info = $source_driver::by_pk(
+                $new_info = $source_driver::record(
                     $this,
                     $this->source_engine_pool_write,
                     array_key_exists($pk, $new_info) ? $new_info[$pk] : $model->$pk

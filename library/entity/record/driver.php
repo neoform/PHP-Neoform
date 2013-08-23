@@ -1,8 +1,8 @@
 <?php
 
     interface entity_record_driver {
-        public static function by_pk(entity_record_dao $self, $pool, $pk);
-        public static function by_pks(entity_record_dao $self, $pool, array $pks);
+        public static function record(entity_record_dao $self, $pool, $pk);
+        public static function records(entity_record_dao $self, $pool, array $pks);
         public static function count(entity_record_dao $self, $pool, array $keys=null);
         public static function all(entity_record_dao $self, $pool, $pk, array $keys=null);
         public static function by_fields(entity_record_dao $self, $pool, array $keys, $pk);

@@ -32,7 +32,7 @@
          * @param array      $info
          * @param bool       $crush
          *
-         * @return model|bool
+         * @return entity_record_model|bool
          * @throws input_exception
          */
         public static function update(auth_model $auth, array $info, $crush=false) {

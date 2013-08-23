@@ -21,7 +21,7 @@
 
             if ($pk !== null) {
                 $dao = entity::dao(static::ENTITY_NAME);
-                if ($this->vars = $dao->by_pk($pk)) {
+                if ($this->vars = $dao->record($pk)) {
                     return;
                 }
             } else if ($info !== null) {

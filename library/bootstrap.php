@@ -83,7 +83,6 @@
                 $json = new render_json;
                 $json->status = 'captcha';
                 $json->render();
-
             }
 
             return $this;

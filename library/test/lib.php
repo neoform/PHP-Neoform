@@ -11,7 +11,7 @@
          *
          * @return float
          */
-        function timer(callable $f, $name, $echo=false) {
+        public static function timer(callable $f, $name, $echo=false) {
             if ($echo) {
                 echo "Test: {$name}\n";
             }

@@ -132,8 +132,8 @@
             // Redis >=2.4 can do multiple removes in one command.
             if (is_array($remove_key)) {
                 $redis = core::redis($pool);
-                foreach ($value as $v) {
-                    $redis->sAdd($key, $v);
+                foreach ($remove_key as $v) {
+                    $redis->sRemove($key, $v);
                 }
 
                 // PHPRedis has poor support for batch removals.

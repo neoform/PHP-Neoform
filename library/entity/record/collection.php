@@ -20,7 +20,7 @@
         public function __construct(array $pks=null, array $infos=null, $map_field=null) {
 
             if ($pks !== null) {
-                $infos = entity::dao(static::ENTITY_NAME)->by_pks($pks);
+                $infos = entity::dao(static::ENTITY_NAME)->records($pks);
             }
 
             if ($infos !== null && $infos) {
@@ -236,7 +236,7 @@
             }
 
             // get all the records all in one shot
-            $models = new $collection_name(null, $dao->by_pks($pks));
+            $models = new $collection_name(null, $dao->records($pks));
 
             // sort flat array back into grouped data again
             foreach ($pks_groups as & $pks_group) {
@@ -292,7 +292,7 @@
             }
 
             // get all the records all in one shot
-            $models = new $foreign_collection(null, entity::dao($foreign_type)->by_pks($pks));
+            $models = new $foreign_collection(null, entity::dao($foreign_type)->records($pks));
 
             // sort flat array back into grouped data again
             foreach ($pks_groups as & $pks_group) {
@@ -340,7 +340,7 @@
             foreach ($this as $model) {
                 $pks[$model->$field] = $model->$field;
             }
-            $infos  = entity::dao($entity)->by_pks($pks);
+            $infos  = entity::dao($entity)->records($pks);
             $models = [];
 
             foreach ($this as $key => $model) {

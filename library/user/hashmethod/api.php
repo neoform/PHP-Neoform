@@ -46,7 +46,7 @@
 
             // id
             $input->id->cast('int')->digit(0, 255)->callback(function($id) {
-                if (entity::dao('user_hashmethod')->by_pk($id->val())) {
+                if (entity::dao('user_hashmethod')->record($id->val())) {
                     $id->errors('already in use');
                 }
             });
@@ -63,7 +63,7 @@
 
             // id
             $input->id->cast('int')->optional()->digit(0, 255)->callback(function($id) use ($user_hashmethod) {
-                $user_hashmethod_info = entity::dao('user_hashmethod')->by_pk($id->val());
+                $user_hashmethod_info = entity::dao('user_hashmethod')->record($id->val());
                 if ($user_hashmethod_info && (int) $user_hashmethod_info['id'] !== $user_hashmethod->id) {
                     $id->errors('already in use');
                 }

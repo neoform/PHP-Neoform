@@ -22,6 +22,16 @@
         protected $cache_engine_pool_read;
         protected $cache_engine_pool_write;
 
+        /**
+         * Types
+         */
+        const TYPE_STRING  = 1;
+        const TYPE_INTEGER = 2;
+        const TYPE_BINARY  = 3;
+        const TYPE_FLOAT   = 4;
+        const TYPE_DECIMAL = 5;
+        const TYPE_BOOL    = 6;
+
         public function __construct(array $config) {
             $this->source_engine            = $config['source_engine'];
             $this->source_engine_pool_read  = $config['source_engine_pool_read'];
@@ -38,8 +48,8 @@
          *
          * @return integer
          */
-        public function pdo_binding($field_name) {
-            return $this->pdo_bindings[$field_name];
+        public function field_binding($field_name) {
+            return $this->field_bindings[$field_name];
         }
 
         /**
@@ -47,8 +57,8 @@
          *
          * @return array
          */
-        public function pdo_bindings() {
-            return $this->pdo_bindings;
+        public function field_bindings() {
+            return $this->field_bindings;
         }
 
         /**
@@ -182,7 +192,7 @@
                 $this->cache_engine_pool_write,
                 $keys_arr,
                 function($fields) use ($self, $cache_key_name) {
-                    return entity_record_dao::_build_key($cache_key_name, $fields, $self::ENTITY_NAME);
+                    return $self::_build_key($cache_key_name, $fields, $self::ENTITY_NAME);
                 },
                 function($keys_arr) use ($self, $select_fields) {
                     $source_driver = "entity_link_driver_{$self->source_engine}";

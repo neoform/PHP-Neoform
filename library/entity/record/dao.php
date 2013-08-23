@@ -50,11 +50,14 @@
         // Counts
         const COUNT = 'count';
 
+        // All records
+        const ALL = 'all';
+
         // List key - Always clear these keys on every change
-        const ALWAYS  = 'always';
+        const ALWAYS = 'always';
 
         // List key - Limit lists
-        const LIMIT  = 'limit';
+        const LIMIT = 'limit';
 
         // Offset key - Offset related record PK lists
         const OFFSET = 'offset';
@@ -320,21 +323,22 @@
          * @access protected
          * @static
          * @final
-         * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
          * @param array   $keys           array of table keys and their values being looked up in the table
          * @return array  pks of records from cache
          * @throws model_exception
          */
-        final protected function _all($cache_key_name, array $keys=null) {
+        public function all(array $keys=null) {
 
             $pk   = static::PRIMARY_KEY;
             $self = $this;
+
+            // @todo bind key values to their types
 
             return cache_lib::single(
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
-                self::_build_key($cache_key_name),
+                self::_build_key(self::ALL),
                 function() use ($self, $pk, $keys) {
                     $source_driver = "entity_record_driver_{$self->source_engine}";
                     return $source_driver::all($self, $self->source_engine_pool_read, $pk, $keys);
@@ -355,6 +359,8 @@
         public function count(array $keys=null) {
 
             $self = $this;
+
+            // @todo bind key values to their types
 
             return cache_lib::single(
                 $this->cache_engine,

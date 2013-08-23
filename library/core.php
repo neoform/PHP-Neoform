@@ -269,7 +269,7 @@
 
                         //case 'cli':
                         default:
-                            die("FATAL ERROR - {$message} {$file} ({$line})\n");
+                            die("FATAL ERROR [SHUTDOWN] - {$message} {$file} ({$line})\n");
                     }
                 }
             });

@@ -84,10 +84,6 @@
                 $json->status = 'captcha';
                 $json->render();
 
-            // All other exceptions - 500 error
-            } catch (exception $e) {
-                error_lib::log($e);
-                controller::error(500);
             }
 
             return $this;

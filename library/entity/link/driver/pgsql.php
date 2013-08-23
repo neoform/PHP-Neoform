@@ -22,9 +22,9 @@
          * Get specific fields from a record, by keys
          *
          * @param entity_link_dao $self the name of the DAO
-         * @param string   $pool which source engine pool to use
-         * @param array    $select_fields
-         * @param array    $keys
+         * @param string          $pool which source engine pool to use
+         * @param array           $select_fields
+         * @param array           $keys
          *
          * @return array
          */
@@ -62,9 +62,9 @@
          * Get specific fields from multiple records, by keys
          *
          * @param entity_link_dao $self the name of the DAO
-         * @param string   $pool which source engine pool to use
-         * @param array    $select_fields
-         * @param array    $keys_arr
+         * @param string          $pool which source engine pool to use
+         * @param array           $select_fields
+         * @param array           $keys_arr
          *
          * @return array
          */
@@ -143,9 +143,9 @@
          * Insert a link
          *
          * @param entity_link_dao $self the name of the DAO
-         * @param string   $pool which source engine pool to use
-         * @param array    $info
-         * @param bool     $replace
+         * @param string          $pool which source engine pool to use
+         * @param array           $info
+         * @param bool            $replace
          *
          * @return mixed
          */
@@ -171,9 +171,9 @@
          * Insert multiple links
          *
          * @param entity_link_dao $self the name of the DAO
-         * @param string   $pool which source engine pool to use
-         * @param array    $infos
-         * @param bool     $replace
+         * @param string          $pool which source engine pool to use
+         * @param array           $infos
+         * @param bool            $replace
          *
          * @return bool
          */
@@ -212,9 +212,9 @@
          * Update a set of links
          *
          * @param entity_link_dao $self the name of the DAO
-         * @param string   $pool which source engine pool to use
-         * @param array    $new_info
-         * @param array    $where
+         * @param string          $pool which source engine pool to use
+         * @param array           $new_info
+         * @param array           $where
          *
          * @return mixed
          */
@@ -250,8 +250,8 @@
          * Delete one or more links
          *
          * @param entity_link_dao $self the name of the DAO
-         * @param string   $pool which source engine pool to use
-         * @param array    $keys
+         * @param string          $pool which source engine pool to use
+         * @param array           $keys
          *
          * @return mixed
          */
@@ -280,8 +280,8 @@
          * Delete sets of links
          *
          * @param entity_link_dao $self the name of the DAO
-         * @param string   $pool which source engine pool to use
-         * @param array    $keys_arr
+         * @param string          $pool which source engine pool to use
+         * @param array           $keys_arr
          *
          * @return mixed
          */

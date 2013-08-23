@@ -7,7 +7,6 @@
 
         protected $table;
         protected $code = '';
-        protected $all  = false;
 
         /**
          * @param sql_parser_table $table
@@ -15,7 +14,6 @@
          */
         public function __construct(sql_parser_table $table, array $options = []) {
             $this->table = $table;
-            $this->all = (bool) in_array('--all', $options);
             $this->code();
         }
 

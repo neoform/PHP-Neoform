@@ -9,6 +9,5 @@
         const TABLE         = 'acl_group';
         const AUTOINCREMENT = false;
         const PRIMARY_KEY   = 'id';
-        const BINARY_PK     = false;
         const ENTITY_NAME   = 'acl_group';
     }

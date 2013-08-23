@@ -9,6 +9,5 @@
         const TABLE         = 'auth';
         const AUTOINCREMENT = false;
         const PRIMARY_KEY   = 'hash';
-        const BINARY_PK     = true;
         const ENTITY_NAME   = 'auth';
     }

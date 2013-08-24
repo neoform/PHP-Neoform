@@ -238,8 +238,6 @@
          * @param array $rows
          */
         public static function set_multi(array $rows) {
-
-            // @todo maybe this should be replaced with array_merge()
             foreach ($rows as $k => $v) {
                 self::$local[$k] = $v;
             }

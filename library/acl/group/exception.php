@@ -1,5 +1,5 @@
 <?php
 
-    class acl_group_exception extends model_exception {
+    class acl_group_exception extends entity_exception {
 
     }

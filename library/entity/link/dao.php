@@ -152,7 +152,7 @@
          * @param array   $select_fields  array of table fields (table columns) to be selected
          * @param array   $keys           array of table keys and their values being looked up in the table
          * @return array  array of records from cache
-         * @throws model_exception
+         * @throws entity_exception
          */
         final protected function _by_fields($cache_key_name, array $select_fields, array $keys) {
             return cache_lib::single(
@@ -177,7 +177,7 @@
          * @param array   $select_fields  array of table fields (table columns) to be selected
          * @param array   $keys_arr       array of arrays of table keys and their values being looked up in the table - each sub-array must have matching keys
          * @return array  ids of records from cache
-         * @throws model_exception
+         * @throws entity_exception
          */
         final protected function _by_fields_multi($cache_key_name, array $select_fields, array $keys_arr) {
             return cache_lib::multi(
@@ -203,7 +203,7 @@
          * @param array   $info    an associative array of into to be put info the database
          * @param boolean $replace optional - user REPLACE INTO instead of INSERT INTO
          * @return boolean result of the PDO::execute()
-         * @throws model_exception
+         * @throws entity_exception
          */
         protected function _insert(array $info, $replace=false) {
             $source_driver = "entity_link_driver_{$this->source_engine}";
@@ -218,7 +218,7 @@
          * @param array   $infos   an array of associative array of info to be put into the database
          * @param boolean $replace optional - user REPLACE INTO instead of INSERT INTO
          * @return boolean result of the PDO::execute()
-         * @throws model_exception
+         * @throws entity_exception
          */
         protected function _inserts(array $infos, $replace=false) {
             if (! $infos) {
@@ -237,7 +237,7 @@
          * @param array $new_info the new info to be put into the model
          * @param array $where    return a model of the new record
          * @return boolean|null result of the PDO::execute()
-         * @throws model_exception
+         * @throws entity_exception
          */
         protected function _update(array $new_info, array $where) {
             if ($new_info) {
@@ -253,7 +253,7 @@
          * @static
          * @param array $keys the where of the query
          * @return boolean result of the PDO::execute()
-         * @throws model_exception
+         * @throws entity_exception
          */
         protected function _delete(array $keys) {
             $source_driver = "entity_link_driver_{$this->source_engine}";
@@ -267,7 +267,7 @@
          * @static
          * @param array of arrays matching the PKs of the link
          * @return boolean returns true on success
-         * @throws model_exception
+         * @throws entity_exception
          */
         protected function _deletes(array $keys_arr) {
             $source_driver = "entity_link_driver_{$this->source_engine}";

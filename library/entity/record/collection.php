@@ -32,7 +32,7 @@
                         } else if ($info instanceof $model) {
                             $this[$map_field !== null ? $info->$map_field : $key] = $info;
                         }
-                    } catch (model_exception $e) {
+                    } catch (entity_exception $e) {
 
                     }
                 }

@@ -59,7 +59,7 @@
                 core::output()->redirect();
 
             // Model Exception
-            } catch (model_exception $e) {
+            } catch (entity_exception $e) {
                 core::output()->error($e->message(), $e->description());
 
             // Force user to login exception

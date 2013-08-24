@@ -155,17 +155,14 @@
          * @throws model_exception
          */
         final protected function _by_fields($cache_key_name, array $select_fields, array $keys) {
-
-            $self = $this;
-
             return cache_lib::single(
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
                 self::_build_key($cache_key_name, $keys),
-                function() use ($self, $select_fields, $keys) {
-                    $source_driver = "entity_link_driver_{$self->source_engine}";
-                    return $source_driver::by_fields($self, $self->source_engine_pool_read, $select_fields, $keys);
+                function() use ($select_fields, $keys) {
+                    $source_driver = "entity_link_driver_{$this->source_engine}";
+                    return $source_driver::by_fields($this, $this->source_engine_pool_read, $select_fields, $keys);
                 }
             );
         }
@@ -183,20 +180,17 @@
          * @throws model_exception
          */
         final protected function _by_fields_multi($cache_key_name, array $select_fields, array $keys_arr) {
-
-            $self = $this;
-
             return cache_lib::multi(
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
                 $keys_arr,
-                function($fields) use ($self, $cache_key_name) {
-                    return $self::_build_key($cache_key_name, $fields, $self::ENTITY_NAME);
+                function($fields) use ($cache_key_name) {
+                    return $this::_build_key($cache_key_name, $fields, $this::ENTITY_NAME);
                 },
-                function($keys_arr) use ($self, $select_fields) {
-                    $source_driver = "entity_link_driver_{$self->source_engine}";
-                    return $source_driver::by_fields_multi($self, $self->source_engine_pool_read, $select_fields, $keys_arr);
+                function($keys_arr) use ($select_fields) {
+                    $source_driver = "entity_link_driver_{$this->source_engine}";
+                    return $source_driver::by_fields_multi($this, $this->source_engine_pool_read, $select_fields, $keys_arr);
                 }
             );
         }

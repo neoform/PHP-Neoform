@@ -191,7 +191,7 @@
          * @param array   $params         optional - array of table keys and their values being looked up in the table
          * @return string a cache key that is unqiue to the application
          */
-        final public static function _build_key($cache_key_name, array $params=[]) {
+        final protected static function _build_key($cache_key_name, array $params=[]) {
             // each key is namespaced with the name of the class, then the name of the function ($cache_key_name)
             $param_count = count($params);
             if ($param_count === 1) {
@@ -216,7 +216,7 @@
          *
          * @return string
          */
-        final public static function _build_key_list($field_name, $field_value=null) {
+        final protected static function _build_key_list($field_name, $field_value=null) {
             if ($field_value === null) {
                 return static::ENTITY_NAME . ':' . self::META . "[{$field_name}]";
             } else {
@@ -231,7 +231,7 @@
          *
          * @return string
          */
-        final public static function _build_key_order($field_name) {
+        final protected static function _build_key_order($field_name) {
             return static::ENTITY_NAME . ':' . self::META . ":order_by[{$field_name}]";
         }
 
@@ -248,7 +248,7 @@
          * @param array        $params         optional - array of table keys and their values being looked up in the table
          * @return string a cache key that is unqiue to the application
          */
-        final public static function _build_key_offset($cache_key_name, array $order_by, $offset, $limit=null, array $params=[]) {
+        final protected static function _build_key_offset($cache_key_name, array $order_by, $offset, $limit=null, array $params=[]) {
             ksort($order_by);
 
             // each key is namespaced with the name of the class, then the name of the function ($cache_key_name)
@@ -276,17 +276,14 @@
          * @throws model_exception
          */
         public function record($pk) {
-
-            $self = $this;
-
             return cache_lib::single(
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
                 static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($pk) : $pk),
-                function() use ($pk, $self) {
-                    $source_driver = "entity_record_driver_{$self->source_engine}";
-                    return $source_driver::record($self, $self->source_engine_pool_read, $pk);
+                function() use ($pk) {
+                    $source_driver = "entity_record_driver_{$this->source_engine}";
+                    return $source_driver::record($this, $this->source_engine_pool_read, $pk);
                 }
             );
         }
@@ -306,19 +303,17 @@
                 return [];
             }
 
-            $self = $this;
-
             return cache_lib::multi(
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
                 $pks,
-                function($pk) use ($self) {
-                    return $self::ENTITY_NAME . ':' . $self::RECORD . ':' . ($self->binary_pk ? md5($pk) : $pk);
+                function($pk) {
+                    return $this::ENTITY_NAME . ':' . $this::RECORD . ':' . ($this->binary_pk ? md5($pk) : $pk);
                 },
-                function(array $pks) use ($self) {
-                    $source_driver = "entity_record_driver_{$self->source_engine}";
-                    return $source_driver::records($self, $self->source_engine_pool_read, $pks);
+                function(array $pks) {
+                    $source_driver = "entity_record_driver_{$this->source_engine}";
+                    return $source_driver::records($this, $this->source_engine_pool_read, $pks);
                 }
             );
         }
@@ -374,7 +369,6 @@
         public function all(array $keys=null) {
 
             $pk   = static::PRIMARY_KEY;
-            $self = $this;
 
             // @todo bind key values to their types
 
@@ -383,12 +377,12 @@
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
                 self::_build_key(self::ALL),
-                function() use ($self, $pk, $keys) {
-                    $source_driver = "entity_record_driver_{$self->source_engine}";
-                    return $source_driver::all($self, $self->source_engine_pool_read, $pk, $keys);
+                function() use ($pk, $keys) {
+                    $source_driver = "entity_record_driver_{$this->source_engine}";
+                    return $source_driver::all($this, $this->source_engine_pool_read, $pk, $keys);
                 },
-                function($cache_key) use ($self) {
-                    $self->_set_always_cache_lists($cache_key);
+                function($cache_key) {
+                    $this->_set_always_cache_lists($cache_key);
                 }
             );
         }
@@ -402,8 +396,6 @@
          */
         public function count(array $keys=null) {
 
-            $self = $this;
-
             // @todo bind key values to their types
 
             return cache_lib::single(
@@ -411,12 +403,12 @@
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
                 self::_build_key(self::COUNT, $keys ?: []),
-                function() use ($self, $keys) {
-                    $source_driver = "entity_record_driver_{$self->source_engine}";
-                    return $source_driver::count($self, $self->source_engine_pool_read, $keys);
+                function() use ($keys) {
+                    $source_driver = "entity_record_driver_{$this->source_engine}";
+                    return $source_driver::count($this, $this->source_engine_pool_read, $keys);
                 },
-                function($cache_key) use ($self, $keys) {
-                    $self->_set_count_cache_lists($cache_key, $keys);
+                function($cache_key) use ($keys) {
+                    $this->_set_count_cache_lists($cache_key, $keys);
                 }
             );
         }
@@ -434,8 +426,7 @@
          */
         final protected function _by_fields($cache_key_name, array $keys, array $order_by=null, $offset=null, $limit=null) {
 
-            $pk   = static::PRIMARY_KEY;
-            $self = $this;
+            $pk = static::PRIMARY_KEY;
 
             if ($order_by) {
                 $limit  = (int) $limit;
@@ -454,11 +445,11 @@
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
                     $cache_key,
-                    function() use ($self, $cache_key, $keys, $pk, $order_by, $offset, $limit) {
-                        $source_driver = "entity_record_driver_{$self->source_engine}";
+                    function() use ($cache_key, $keys, $pk, $order_by, $offset, $limit) {
+                        $source_driver = "entity_record_driver_{$this->source_engine}";
                         return $source_driver::by_fields_offset(
-                            $self,
-                            $self->source_engine_pool_read,
+                            $this,
+                            $this->source_engine_pool_read,
                             $keys,
                             $pk,
                             $order_by,
@@ -466,8 +457,8 @@
                             $limit
                         );
                     },
-                    function($cache_key) use ($self, $keys, $order_by) {
-                        $self->_set_limit_cache_lists($cache_key, $keys, $order_by);
+                    function($cache_key) use ($keys, $order_by) {
+                        $this->_set_limit_cache_lists($cache_key, $keys, $order_by);
                     }
                 );
             } else {
@@ -476,12 +467,12 @@
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
                     self::_build_key($cache_key_name, $keys),
-                    function() use ($self, $keys, $pk) {
-                        $source_driver = "entity_record_driver_{$self->source_engine}";
-                        return $source_driver::by_fields($self, $self->source_engine_pool_read, $keys, $pk);
+                    function() use ($keys, $pk) {
+                        $source_driver = "entity_record_driver_{$this->source_engine}";
+                        return $source_driver::by_fields($this, $this->source_engine_pool_read, $keys, $pk);
                     },
-                    function($cache_key) use ($self, $keys) {
-                        $self->_set_limit_cache_lists($cache_key, $keys);
+                    function($cache_key) use ($keys) {
+                        $this->_set_limit_cache_lists($cache_key, $keys);
                     }
                 );
             }
@@ -503,8 +494,7 @@
          */
         final protected function _by_fields_multi($cache_key_name, array $keys_arr, array $order_by=null, $offset=null, $limit=null) {
 
-            $pk   = static::PRIMARY_KEY;
-            $self = $this;
+            $pk = static::PRIMARY_KEY;
 
             if ($order_by) {
                 $limit  = (int) $limit;
@@ -515,8 +505,8 @@
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
                     $keys_arr,
-                    function($fields) use ($self, $cache_key_name, $order_by, $offset, $limit) {
-                        return $self::_build_key_offset(
+                    function($fields) use ($cache_key_name, $order_by, $offset, $limit) {
+                        return $this::_build_key_offset(
                             $cache_key_name,
                             $order_by,
                             (int) $offset,
@@ -524,11 +514,11 @@
                             $fields
                         );
                     },
-                    function(array $keys_arr) use ($self, $pk, $order_by, $offset, $limit) {
-                        $source_driver = "entity_record_driver_{$self->source_engine}";
+                    function(array $keys_arr) use ($pk, $order_by, $offset, $limit) {
+                        $source_driver = "entity_record_driver_{$this->source_engine}";
                         return $source_driver::by_fields_offset_multi(
-                            $self,
-                            $self->source_engine_pool_read,
+                            $this,
+                            $this->source_engine_pool_read,
                             $keys_arr,
                             $pk,
                             $order_by,
@@ -536,8 +526,8 @@
                             $limit
                         );
                     },
-                    function(array $cache_keys) use ($self, $order_by) {
-                        $self->_set_limit_cache_lists_multi($cache_keys, $order_by);
+                    function(array $cache_keys) use ($order_by) {
+                        $this->_set_limit_cache_lists_multi($cache_keys, $order_by);
                     }
                 );
             } else {
@@ -546,15 +536,15 @@
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
                     $keys_arr,
-                    function($fields) use ($self, $cache_key_name) {
-                        return $self::_build_key($cache_key_name, $fields);
+                    function($fields) use ($cache_key_name) {
+                        return $this::_build_key($cache_key_name, $fields);
                     },
-                    function(array $keys_arr) use ($self, $pk) {
-                        $source_driver = "entity_record_driver_{$self->source_engine}";
-                        return $source_driver::by_fields_multi($self, $self->source_engine_pool_read, $keys_arr, $pk);
+                    function(array $keys_arr) use ($pk) {
+                        $source_driver = "entity_record_driver_{$this->source_engine}";
+                        return $source_driver::by_fields_multi($this, $this->source_engine_pool_read, $keys_arr, $pk);
                     },
-                    function(array $cache_keys) use ($self) {
-                        $self->_set_limit_cache_lists_multi($cache_keys);
+                    function(array $cache_keys) {
+                        $this->_set_limit_cache_lists_multi($cache_keys);
                     }
                 );
             }

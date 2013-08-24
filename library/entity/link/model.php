@@ -105,7 +105,7 @@
          * @param string $k
          * @param mixed $v
          *
-         * @throws model_exception
+         * @throws entity_exception
          */
         public function offsetSet($k, $v) {
             $exception = static::ENTITY_NAME . '_exception';
@@ -128,7 +128,7 @@
          *
          * @param string $k
          *
-         * @throws model_exception
+         * @throws entity_exception
          */
         public function offsetUnset($k) {
             $exception = static::ENTITY_NAME . '_exception';

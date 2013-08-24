@@ -9,7 +9,7 @@
          * @param string|int $pk Primary key
          *
          * @return array cached record data
-         * @throws model_exception
+         * @throws entity_exception
          */
         public function record($pk) {
             $info = parent::record($pk);

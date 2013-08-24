@@ -10,7 +10,7 @@
          * @param int|string $pk
          *
          * @return mixed
-         * @throws model_exception
+         * @throws entity_exception
          */
         public static function record(entity_record_dao $self, $pool, $pk) {
 

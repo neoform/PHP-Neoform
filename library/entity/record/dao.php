@@ -110,6 +110,66 @@
         }
 
         /**
+         * Bind an field's values to its appropriate variable type
+         *
+         * @param string $field_name
+         * @param mixed  $value
+         *
+         * @return mixed
+         */
+        protected function bind_field($field_name, $value) {
+            switch ($this->field_bindings[$field_name]) {
+                case self::TYPE_STRING:
+                    return (string) $value;
+
+                case self::TYPE_INTEGER:
+                    return (int) $value;
+
+                case self::TYPE_BINARY:
+                    return (binary) $value;
+
+                case self::TYPE_FLOAT:
+                case self::TYPE_DECIMAL:
+                    return (float) $value;
+
+                case self::TYPE_BOOL:
+                    return (bool) $value;
+            }
+        }
+
+        /**
+         * Bind an array's values to their appropriate variable types
+         *
+         * @param array $fields
+         */
+        protected function bind_fields(array &$fields) {
+            foreach ($fields as $k => &$v) {
+                switch ($this->field_bindings[$k]) {
+                    case self::TYPE_STRING:
+                        $v = (string) $v;
+                        break;
+
+                    case self::TYPE_INTEGER:
+                        $v = (int) $v;
+                        break;
+
+                    case self::TYPE_BINARY:
+                        $v = (binary) $v;
+                        break;
+
+                    case self::TYPE_FLOAT:
+                    case self::TYPE_DECIMAL:
+                        $v = (float) $v;
+                        break;
+
+                    case self::TYPE_BOOL:
+                        $v = (bool) $v;
+                        break;
+                }
+            }
+        }
+
+        /**
          * Get a cached recordset
          *
          * @access protected
@@ -273,7 +333,7 @@
          * @param int $pk primary key of a record
          *
          * @return array cached record data
-         * @throws model_exception
+         * @throws entity_exception
          */
         public function record($pk) {
             return cache_lib::single(
@@ -295,7 +355,7 @@
          * @static
          * @param array   $pks primary key of a records
          * @return array  cached records data - with preserved key names from $pks.
-         * @throws model_exception
+         * @throws entity_exception
          */
         public function records(array $pks) {
 
@@ -362,15 +422,15 @@
          * @access protected
          * @static
          * @final
-         * @param array   $keys           array of table keys and their values being looked up in the table
-         * @return array  pks of records from cache
-         * @throws model_exception
+         * @param array $keys array of table keys and their values being looked up in the table
+         * @return array pks of records from cache
+         * @throws entity_exception
          */
         public function all(array $keys=null) {
 
-            $pk   = static::PRIMARY_KEY;
+            $pk = static::PRIMARY_KEY;
 
-            // @todo bind key values to their types
+            $this->bind_fields($keys);
 
             return cache_lib::single(
                 $this->cache_engine,
@@ -396,7 +456,7 @@
          */
         public function count(array $keys=null) {
 
-            // @todo bind key values to their types
+            $this->bind_fields($keys);
 
             return cache_lib::single(
                 $this->cache_engine,
@@ -458,7 +518,7 @@
                         );
                     },
                     function($cache_key) use ($keys, $order_by) {
-                        $this->_set_limit_cache_lists($cache_key, $keys, $order_by);
+                        $this->_set_meta_cache($cache_key, $keys, $order_by);
                     }
                 );
             } else {
@@ -472,7 +532,7 @@
                         return $source_driver::by_fields($this, $this->source_engine_pool_read, $keys, $pk);
                     },
                     function($cache_key) use ($keys) {
-                        $this->_set_limit_cache_lists($cache_key, $keys);
+                        $this->_set_meta_cache($cache_key, $keys);
                     }
                 );
             }
@@ -490,7 +550,7 @@
          * @param integer $offset         records starting at what offset
          * @param integer $limit          max number of record to return
          * @return array  pks of records from cache
-         * @throws model_exception
+         * @throws entity_exception
          */
         final protected function _by_fields_multi($cache_key_name, array $keys_arr, array $order_by=null, $offset=null, $limit=null) {
 
@@ -527,7 +587,7 @@
                         );
                     },
                     function(array $cache_keys) use ($order_by) {
-                        $this->_set_limit_cache_lists_multi($cache_keys, $order_by);
+                        $this->_set_meta_cache_multi($cache_keys, $order_by);
                     }
                 );
             } else {
@@ -544,7 +604,7 @@
                         return $source_driver::by_fields_multi($this, $this->source_engine_pool_read, $keys_arr, $pk);
                     },
                     function(array $cache_keys) {
-                        $this->_set_limit_cache_lists_multi($cache_keys);
+                        $this->_set_meta_cache_multi($cache_keys);
                     }
                 );
             }
@@ -560,7 +620,7 @@
          * @param boolean $return_model           optional - return a model of the new record
          * @param boolean $load_model_from_source optional - after insert, load data from source - this is needed if the DB changes values on insert (eg, timestamps)
          * @return entity_record_model|boolean    if $return_model is set to true, the model created from the info is returned
-         * @throws model_exception
+         * @throws entity_exception
          */
         protected function _insert(array $info, $replace=false, $return_model=true, $load_model_from_source=false) {
 
@@ -586,7 +646,7 @@
                 $info
             );
 
-            self::_delete_limit_cache_by_fields($info);
+            self::_delete_meta_cache_by_fields($info);
 
             if ($return_model) {
                 $model = static::ENTITY_NAME . '_model';
@@ -607,7 +667,7 @@
          * @param boolean $return_collection        optional - return a collection of models created
          * @param boolean $load_models_from_source  optional - after insert, load data from source - this is needed if the DB changes values on insert (eg, timestamps)
          * @return entity_record_collection|boolean if $return_collection is true function returns a collection
-         * @throws model_exception
+         * @throws entity_exception
          */
         protected function _inserts(array $infos, $keys_match=true, $replace=false, $return_collection=true, $load_models_from_source=false) {
 
@@ -642,7 +702,7 @@
                 $insert_cache_data
             );
 
-            self::_delete_limit_cache_by_fields_multi($infos);
+            self::_delete_meta_cache_by_fields_multi($infos);
 
             if ($load_models_from_source) {
                 return $return_collection ? new $collection(null, $infos) : true;
@@ -666,7 +726,7 @@
          * @param boolean             $return_model             optional - return a model of the new record
          * @param boolean             $reload_model_from_source optional - after update, load data from source - this is needed if the DB changes values on update (eg, timestamps)
          * @return entity_record_model|bool                     if $return_model is true, an updated model is returned
-         * @throws model_exception
+         * @throws entity_exception
          */
         protected function _update(entity_record_model $model, array $new_info, $return_model=true, $reload_model_from_source=false) {
 
@@ -746,7 +806,7 @@
             $this->cache_batch_execute($this->cache_engine, $this->cache_engine_pool_write);
 
             // Destroy cache based on the fields that were changed - do not wrap this function in a batch execution
-            self::_delete_limit_cache_by_fields(
+            self::_delete_meta_cache_by_fields(
                 array_diff($new_info, $old_info),
                 array_diff($old_info, $new_info)
             );
@@ -771,7 +831,7 @@
          * @static
          * @param entity_record_model $model the model that is to be deleted
          * @return boolean returns true on success
-         * @throws model_exception
+         * @throws entity_exception
          */
         protected function _delete(entity_record_model $model) {
 
@@ -796,7 +856,7 @@
             }
 
             // Destroy cache based on table fields - do not wrap this function in a batch execution
-            self::_delete_limit_cache_by_fields(array_keys(static::field_bindings()));
+            self::_delete_meta_cache_by_fields(array_keys(static::field_bindings()));
 
             return true;
         }
@@ -808,7 +868,7 @@
          * @static
          * @param entity_record_collection $collection the collection of models that is to be deleted
          * @return boolean returns true on success
-         * @throws model_exception
+         * @throws entity_exception
          */
         protected function _deletes(entity_record_collection $collection) {
 
@@ -844,7 +904,7 @@
             $this->cache_batch_execute($this->cache_engine, $this->cache_engine_pool_write);
 
             // Destroy cache based on table fields - do not wrap this function in a batch execution
-            self::_delete_limit_cache_by_fields(array_keys(static::field_bindings()));
+            self::_delete_meta_cache_by_fields(array_keys(static::field_bindings()));
 
             return true;
         }
@@ -856,7 +916,7 @@
          * @param array                   $keys
          * @param array                   $order_by
          */
-        final protected function _set_limit_cache_lists($cache_key, array $keys, array $order_by=[]) {
+        final protected function _set_meta_cache($cache_key, array $keys, array $order_by=[]) {
 
             $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
 
@@ -937,7 +997,7 @@
          * @param array $cache_keys
          * @param array $order_by
          */
-        final protected function _set_limit_cache_lists_multi(array $cache_keys, array $order_by=[]) {
+        final protected function _set_meta_cache_multi(array $cache_keys, array $order_by=[]) {
 
             $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
 
@@ -1022,7 +1082,7 @@
          * @param array $fields           list of fields/values - key = field
          * @param array $secondary_fields list of fields/values - key = field
          */
-        final protected function _delete_limit_cache_by_fields(array $fields, array $secondary_fields=null) {
+        final protected function _delete_meta_cache_by_fields(array $fields, array $secondary_fields=null) {
             $field_list_keys      = [];
             $list_keys            = [ static::ENTITY_NAME . ':' . self::ALWAYS, ];
             $list_items_to_remove = [];
@@ -1160,7 +1220,7 @@
          *
          * @param array $fields_arr array containing lists of fields/values - key = field
          */
-        final protected function _delete_limit_cache_by_fields_multi(array $fields_arr) {
+        final protected function _delete_meta_cache_by_fields_multi(array $fields_arr) {
             $field_list_keys      = [];
             $list_keys            = [ static::ENTITY_NAME . ':' . self::ALWAYS, ];
             $list_items_to_remove = [];

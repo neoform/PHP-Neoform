@@ -29,7 +29,7 @@
                     if ($this->type === 'model') {
                         try {
                             $v = new $model($info);
-                        } catch (model_exception $e) {
+                        } catch (entity_exception $e) {
                         }
                     } else if ($this->type === 'object') {
                         $v = $info;

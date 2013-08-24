@@ -15,7 +15,7 @@
         /**
          * @param string|integer|null  $pk   Primary key of the entity
          * @param array                $info Manually load model with entity data
-         * @throws model_exception
+         * @throws entity_exception
          */
         public function __construct($pk=null, array $info=null) {
 
@@ -38,7 +38,7 @@
          *
          * @param $k
          * @param $v
-         * @throws model_exception
+         * @throws entity_exception
          */
         final public function __set($k, $v) {
             $exception = static::ENTITY_NAME . '_exception';
@@ -139,7 +139,7 @@
                     } else {
                         $this->_vars[$key] = $default;
                     }
-                } catch (model_exception $e) {
+                } catch (entity_exception $e) {
                     $this->_vars[$key] = $default;
                 }
             }
@@ -184,7 +184,7 @@
          *
          * @param string $k
          *
-         * @throws model_exception
+         * @throws entity_exception
          */
         public function offsetUnset($k) {
             $exception = static::ENTITY_NAME . '_exception';

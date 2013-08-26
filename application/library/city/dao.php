@@ -29,52 +29,6 @@
         // READS
 
         /**
-         * Get City ids by region
-         *
-         * @param int $region_id
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
-         *
-         * @return array of City ids
-         */
-        public function by_region($region_id, array $order_by=null, $offset=null, $limit=null) {
-            return parent::_by_fields(
-                self::BY_REGION,
-                [
-                    'region_id' => (int) $region_id,
-                ],
-                $order_by,
-                $offset,
-                $limit
-            );
-        }
-
-        /**
-         * Get City ids by region and name_normalized
-         *
-         * @param int $region_id
-         * @param string $name_normalized
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
-         *
-         * @return array of City ids
-         */
-        public function by_region_name_normalized($region_id, $name_normalized, array $order_by=null, $offset=null, $limit=null) {
-            return parent::_by_fields(
-                self::BY_REGION_NAME_NORMALIZED,
-                [
-                    'region_id'       => (int) $region_id,
-                    'name_normalized' => (string) $name_normalized,
-                ],
-                $order_by,
-                $offset,
-                $limit
-            );
-        }
-
-        /**
          * Get City ids by name_normalized
          *
          * @param string $name_normalized
@@ -119,6 +73,46 @@
         }
 
         /**
+         * Get City ids by region
+         *
+         * @param int $region_id
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
+         *
+         * @return array of City ids
+         */
+        public function by_region($region_id, array $order_by=null, $offset=null, $limit=null) {
+            return parent::_by_fields(
+                self::BY_REGION,
+                [
+                    'region_id' => (int) $region_id,
+                ],
+                $order_by,
+                $offset,
+                $limit
+            );
+        }
+
+        /**
+         * Get City ids by region and name_normalized
+         *
+         * @param int $region_id
+         * @param string $name_normalized
+         *
+         * @return array of City ids
+         */
+        public function by_region_name_normalized($region_id, $name_normalized) {
+            return parent::_by_fields(
+                self::BY_REGION_NAME_NORMALIZED,
+                [
+                    'region_id'       => (int) $region_id,
+                    'name_normalized' => (string) $name_normalized,
+                ]
+            );
+        }
+
+        /**
          * Get multiple sets of City ids by region
          *
          * @param region_collection|array $region_list
@@ -146,33 +140,6 @@
             return parent::_by_fields_multi(
                 self::BY_REGION,
                 $keys,
-                $order_by,
-                $offset,
-                $limit
-            );
-        }
-
-        /**
-         * Get City id_arr by an array of region and name_normalizeds
-         *
-         * @param array $region_name_normalized_arr an array of arrays containing region_ids and name_normalizeds
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
-         *
-         * @return array of arrays of City ids
-         */
-        public function by_region_name_normalized_multi(array $region_name_normalized_arr, array $order_by=null, $offset=null, $limit=null) {
-            $keys_arr = [];
-            foreach ($region_name_normalized_arr as $k => $region_name_normalized) {
-                $keys_arr[$k] = [
-                    'region_id'       => (int) $region_name_normalized['region_id'],
-                    'name_normalized' => (string) $region_name_normalized['name_normalized'],
-                ];
-            }
-            return parent::_by_fields_multi(
-                self::BY_REGION_NAME_NORMALIZED,
-                $keys_arr,
                 $order_by,
                 $offset,
                 $limit
@@ -224,6 +191,27 @@
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Get City id_arr by an array of region and name_normalizeds
+         *
+         * @param array $region_name_normalized_arr an array of arrays containing region_ids and name_normalizeds
+         *
+         * @return array of arrays of City ids
+         */
+        public function by_region_name_normalized_multi(array $region_name_normalized_arr) {
+            $keys_arr = [];
+            foreach ($region_name_normalized_arr as $k => $region_name_normalized) {
+                $keys_arr[$k] = [
+                    'region_id'       => (int) $region_name_normalized['region_id'],
+                    'name_normalized' => (string) $region_name_normalized['name_normalized'],
+                ];
+            }
+            return parent::_by_fields_multi(
+                self::BY_REGION_NAME_NORMALIZED,
+                $keys_arr
             );
         }
 

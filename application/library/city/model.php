@@ -1,17 +1,17 @@
 <?php
 
     /**
-    * City Model
-    *
-    * @var int $id
-    * @var int $region_id
-    * @var string $name
-    * @var string $name_normalized
-    * @var string $name_soundex
-    * @var bool $top
-    * @var float $longitude
-    * @var float $latitude
-    */
+     * City Model
+     *
+     * @var int $id
+     * @var int $region_id
+     * @var string $name
+     * @var string $name_normalized
+     * @var string $name_soundex
+     * @var bool $top
+     * @var float $longitude
+     * @var float $latitude
+     */
     class city_model extends entity_record_model implements city_definition {
 
         public function __get($k) {

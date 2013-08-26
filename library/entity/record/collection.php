@@ -51,7 +51,7 @@
          */
         public static function __callstatic($name, array $args) {
             $collection = static::ENTITY_NAME . '_collection';
-            if ($name === 'by_all') {
+            if ($name === 'all' || $name === 'records') {
                 return new $collection(null, call_user_func_array([entity::dao(static::ENTITY_NAME), $name], $args));
             } else {
                 return new $collection(call_user_func_array([entity::dao(static::ENTITY_NAME), $name], $args));
@@ -206,26 +206,27 @@
         }
 
         /**
-         * Get many groups of records all in one shot.
-         * this is ideal for installations where memcached
-         * is not on the same machine as this php app,
-         * since it reduces the number of hits to memcached
-         * to two multigets to populate all child collections
+         * Get many groups of records all in one shot. This greatly reduces the number of requests to the cache service,
+         * which can greatly speed up an application.
          *
-         * @param string      $entity          eg, user
-         * @param string      $by_function     eg, by_comments
-         * @param string|null $method_override Override the name of the model function being preloaded
+         * @param string       $entity         eg, user
+         * @param string       $by_function    eg, by_comments
+         * @param string       $model_var_name Key (in $model::$_var) that stores preloaded model data
+         * @param array        $order_by       array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param integer|null $offset         get PKs starting at this offset
+         * @param integer|null $limit          max number of PKs to return
          *
          * @return entity_record_collection
          */
-        protected function _preload_one_to_many($entity, $by_function, $method_override=null) {
+        protected function _preload_one_to_many($entity, $by_function, $model_var_name, array $order_by=null, $offset=null, $limit=null) {
 
             $collection_name  = "{$entity}_collection";
+            $model_name       = "{$entity}_model";
             $dao              = entity::dao($entity);
             $by_function     .= '_multi';
 
             // Get the ids for those
-            $pks_groups = $dao->$by_function($this);
+            $pks_groups = $dao->$by_function($this, $order_by, $offset, $limit);
             $pks        = [];
 
             // make a flat array of all keys, removing dupes along the way.
@@ -244,16 +245,22 @@
                     if (isset($models[$pk])) {
                         $pks_group[$k] = $models[$pk];
                     } else {
-                        // this shouldn't actually happen...
+                        // this shouldn't actually happen... if it did, something went wrong in the DAO
                         unset($pks_group[$k]);
                     }
                 }
             }
 
+            // load the child models into the $_var of each model in this collection
             foreach ($this as $key => $model) {
                 if (isset($pks_groups[$key])) {
                     $model->_set_var(
-                        $method_override !== null ? $method_override : $collection_name,
+                        $model_name::_limit_var_key(
+                            $model_var_name,
+                            $order_by,
+                            $offset,
+                            $limit
+                        ),
                         new $collection_name(null, $pks_groups[$key])
                     );
                 }
@@ -262,26 +269,27 @@
         }
 
         /**
-         * Get many groups of records all in one shot.
-         * this is ideal for installations where memcached
-         * is not on the same machine as this php app,
-         * since it reduces the number of hits to memcached
-         * to two multigets to populate all child collections
+         * Get many groups of records all in one shot. This greatly reduces the number of requests to the cache service,
+         * which can greatly speed up an application.
          *
-         * @param string      $entity          eg, user_permission
-         * @param string      $by_function     eg, by_user
-         * @param string      $foreign_type    eg, permission
-         * @param string|null $method_override Override the name of the model function being preloaded
+         * @param string       $entity         eg, user_permission
+         * @param string       $by_function    eg, by_user
+         * @param string       $foreign_type   eg, permission
+         * @param string       $model_var_name Key (in $model::$_var) that stores preloaded model data
+         * @param array        $order_by       array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param integer|null $offset         get PKs starting at this offset
+         * @param integer|null $limit          max number of PKs to return
          *
          * @return entity_record_collection
          */
-        protected function _preload_many_to_many($entity, $by_function, $foreign_type, $method_override=null) {
+        protected function _preload_many_to_many($entity, $by_function, $foreign_type, $model_var_name, array $order_by=null, $offset=null, $limit=null) {
 
-            $by_function        .= '_multi';
-            $foreign_collection  = "{$foreign_type}_collection";
+            $by_function             .= '_multi';
+            $foreign_collection_name  = "{$foreign_type}_collection";
+            $foreign_model_name       = "{$foreign_type}_model";
 
             // Get the ids for those
-            $pks_groups = entity::dao($entity)->$by_function($this);
+            $pks_groups = entity::dao($entity)->$by_function($this, $order_by, $offset, $limit);
             $pks        = [];
 
             // make a flat array of all keys, removing dupes along the way.
@@ -292,7 +300,7 @@
             }
 
             // get all the records all in one shot
-            $models = new $foreign_collection(null, entity::dao($foreign_type)->records($pks));
+            $models = new $foreign_collection_name(null, entity::dao($foreign_type)->records($pks));
 
             // sort flat array back into grouped data again
             foreach ($pks_groups as & $pks_group) {
@@ -300,7 +308,7 @@
                     if (isset($models[$pk])) {
                         $pks_group[$k] = $models[$pk];
                     } else {
-                        // this shouldn't actually happen...
+                        // this shouldn't actually happen... if it did, something went wrong in the DAO
                         unset($pks_group[$k]);
                     }
                 }
@@ -309,8 +317,13 @@
             foreach ($this as $key => $model) {
                 if (isset($pks_groups[$key])) {
                     $model->_set_var(
-                        $method_override !== null ? $method_override : $foreign_collection,
-                        new $foreign_collection(null, $pks_groups[$key])
+                        $foreign_model_name::_limit_var_key(
+                            $model_var_name,
+                            $order_by,
+                            $offset,
+                            $limit
+                        ),
+                        new $foreign_collection_name(null, $pks_groups[$key])
                     );
                 }
             }
@@ -318,19 +331,16 @@
         }
 
         /**
-         * Get many groups of records all in one shot.
-         * this is ideal for installations where memcached
-         * is not on the same machine as this php app,
-         * since it reduces the number of hits to memcached
-         * to two multigets to populate all child collections
+         * Get many groups of records all in one shot. This greatly reduces the number of requests to the cache service,
+         * which can greatly speed up an application.
          *
-         * @param string      $entity          Name of the entity
-         * @param string      $field           Corresponding field for that entity
-         * @param string|null $method_override Override the name of the model function being preloaded
+         * @param string $entity         Name of the entity
+         * @param string $field          Corresponding field for that entity
+         * @param string $model_var_name Key (in $model::$_var) that stores preloaded model data
          *
          * @return entity_record_collection
          */
-        protected function _preload_one_to_one($entity, $field, $method_override=null) {
+        protected function _preload_one_to_one($entity, $field, $model_var_name) {
 
             $model_name      = "{$entity}_model";
             $collection_name = "{$entity}_collection";
@@ -347,7 +357,7 @@
                 $k = $model->$field;
                 if (isset($infos[$k])) {
                     $model->_set_var(
-                        $method_override ?: $entity,
+                        $model_var_name,
                         $models[$key] = new $model_name(null, $infos[$k])
                     );
                 }

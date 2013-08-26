@@ -1,17 +1,17 @@
 <?php
 
     /**
-    * Region Model
-    *
-    * @var int $id
-    * @var int $country_id
-    * @var string $name
-    * @var string $name_normalized
-    * @var string $name_soundex
-    * @var string $iso2
-    * @var float $longitude
-    * @var float $latitude
-    */
+     * Region Model
+     *
+     * @var int $id
+     * @var int $country_id
+     * @var string $name
+     * @var string $name_normalized
+     * @var string $name_soundex
+     * @var string $iso2
+     * @var float $longitude
+     * @var float $latitude
+     */
     class region_model extends entity_record_model implements region_definition {
 
         public function __get($k) {
@@ -44,15 +44,20 @@
         /**
          * City Collection
          *
+         * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
+         *
          * @return city_collection
          */
-        public function city_collection() {
-            if (! array_key_exists('city_collection', $this->_vars)) {
-                $this->_vars['city_collection'] = new city_collection(
-                    entity::dao('city')->by_region($this->vars['id'])
+        public function city_collection(array $order_by=null, $offset=null, $limit=null) {
+            $key = self::_limit_var_key('city_collection', $order_by, $offset, $limit);
+            if (! array_key_exists($key, $this->_vars)) {
+                $this->_vars[$key] = new city_collection(
+                    entity::dao('city')->by_region($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
-            return $this->_vars['city_collection'];
+            return $this->_vars[$key];
         }
 
         /**

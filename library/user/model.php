@@ -1,16 +1,16 @@
 <?php
 
     /**
-    * User Model
-    *
-    * @var int $id
-    * @var string $email
-    * @var string $password_hash
-    * @var int $password_hashmethod
-    * @var int $password_cost
-    * @var string $password_salt
-    * @var int $status_id
-    */
+     * User Model
+     *
+     * @var int $id
+     * @var string $email
+     * @var binary $password_hash
+     * @var int $password_hashmethod
+     * @var int $password_cost
+     * @var binary $password_salt
+     * @var int $status_id
+     */
     class user_model extends entity_record_model implements user_definition {
 
         public function __get($k) {
@@ -34,7 +34,6 @@
                         return $this->vars[$k];
                 }
             }
-
         }
 
         /**
@@ -152,17 +151,50 @@
         }
 
         /**
+         * Acl Group Collection
+         *
+         * @return acl_group_collection
+         */
+        public function acl_group_collection() {
+            if (! array_key_exists('acl_group_collection', $this->_vars)) {
+                $this->_vars['acl_group_collection'] = new acl_group_collection(
+                    entity::dao('acl_group_user')->by_user($this->vars['id'])
+                );
+            }
+            return $this->_vars['acl_group_collection'];
+        }
+
+        /**
          * Auth Collection
+         *
+         * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return auth_collection
          */
-        public function auth_collection() {
-            if (! array_key_exists('auth_collection', $this->_vars)) {
-                $this->_vars['auth_collection'] = new auth_collection(
-                    entity::dao('auth')->by_user($this->vars['id'])
+        public function auth_collection(array $order_by=null, $offset=null, $limit=null) {
+            $key = self::_limit_var_key('auth_collection', $order_by, $offset, $limit);
+            if (! array_key_exists($key, $this->_vars)) {
+                $this->_vars[$key] = new auth_collection(
+                    entity::dao('auth')->by_user($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
-            return $this->_vars['auth_collection'];
+            return $this->_vars[$key];
+        }
+
+        /**
+         * Acl Role Collection
+         *
+         * @return acl_role_collection
+         */
+        public function acl_role_collection() {
+            if (! array_key_exists('acl_role_collection', $this->_vars)) {
+                $this->_vars['acl_role_collection'] = new acl_role_collection(
+                    entity::dao('user_acl_role')->by_user($this->vars['id'])
+                );
+            }
+            return $this->_vars['acl_role_collection'];
         }
 
         /**
@@ -181,47 +213,6 @@
          */
         public function user_lostpassword() {
             return $this->_model('user_lostpassword', $this->vars['id'], 'user_lostpassword_model');
-        }
-
-        /**
-         * Acl Resource Collection
-         *
-         * @return acl_resource_collection
-         */
-        public function acl_resource_collection() {
-            if (! array_key_exists('acl_resource_collection', $this->_vars)) {
-                $this->_vars['acl_resource_collection'] = new acl_resource_collection($this->role_resource_ids());
-            }
-
-            return $this->_vars['acl_resource_collection'];
-        }
-
-        /**
-         * Acl Role Collection
-         *
-         * @return acl_role_collection
-         */
-        public function acl_role_collection() {
-            if (! array_key_exists('acl_role_collection', $this->_vars)) {
-                $this->_vars['acl_role_collection'] = new acl_role_collection(
-                    entity::dao('user_acl_role')->by_user($this->vars['id'])
-                );
-            }
-            return $this->_vars['acl_role_collection'];
-        }
-
-        /**
-         * Acl Group Collection
-         *
-         * @return acl_group_collection
-         */
-        public function acl_group_collection() {
-            if (! array_key_exists('acl_group_collection', $this->_vars)) {
-                $this->_vars['acl_group_collection'] = new acl_group_collection(
-                    entity::dao('acl_group_user')->by_user($this->vars['id'])
-                );
-            }
-            return $this->_vars['acl_group_collection'];
         }
 
         /**

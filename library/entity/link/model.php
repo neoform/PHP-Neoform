@@ -100,6 +100,18 @@
         }
 
         /**
+         * @param string        $name
+         * @param integer|null  $limit
+         * @param integer|null  $offset
+         * @param array|null    $order_by
+         *
+         * @return string
+         */
+        final public static function _limit_var_key($name, $limit=null, $offset=null, array $order_by=null) {
+            return "{$name}:{$offset}:{$limit}:" . json_encode($order_by);
+        }
+
+        /**
          * Attempt to set a value in this model - this is not possible
          *
          * @param string $k

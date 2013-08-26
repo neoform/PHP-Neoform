@@ -50,7 +50,7 @@
          *
          * @param array $vars
          */
-        public function _update(array $vars) {
+        final public function _update(array $vars) {
             //clean the temp vars
             $this->_vars = [];
 
@@ -96,6 +96,18 @@
         }
 
         /**
+         * @param string        $name
+         * @param integer|null  $limit
+         * @param integer|null  $offset
+         * @param array|null    $order_by
+         *
+         * @return string
+         */
+        final public static function _limit_var_key($name, $limit=null, $offset=null, array $order_by=null) {
+            return "{$name}:{$offset}:{$limit}:" . json_encode($order_by);
+        }
+
+        /**
          * var_export() and print_r() use this internally
          *
          * @return array
@@ -131,7 +143,7 @@
          *
          * @return entity_record_model|mixed
          */
-        protected function _model($key, $pk, $model_name, $default=null) {
+        final protected function _model($key, $pk, $model_name, $default=null) {
             if (! array_key_exists($key, $this->_vars)) {
                 try {
                     if ($pk !== null) {
@@ -151,7 +163,7 @@
          * @param string $key
          * @param mixed  $val
          */
-        public function _set_var($key, $val) {
+        final public function _set_var($key, $val) {
             $this->_vars[$key] = $val;
         }
 

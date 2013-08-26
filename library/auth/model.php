@@ -1,15 +1,13 @@
 <?php
 
     /**
-    * Auth Model
-    *
-    * @var string $hash
-    * @var int $user_id
-    * @var string $expires_on
-    */
+     * Auth Model
+     *
+     * @var binary $hash
+     * @var int $user_id
+     * @var datetime $expires_on
+     */
     class auth_model extends entity_record_model implements auth_definition {
-
-        use core_instance;
 
         public function __get($k) {
 
@@ -34,6 +32,15 @@
         }
 
         /**
+         * User Model based on 'user_id'
+         *
+         * @return user_model
+         */
+        public function user() {
+            return $this->_model('user', $this->vars['user_id'], 'user_model');
+        }
+
+        /**
          * Instantiate models based on the user_id
          *
          * @param string $name
@@ -43,7 +50,7 @@
          */
         public function __call($name, $args) {
             if (isset($this->vars['user_id'])) {
-                return $this->_model($name, $this->vars['user_id'], $name . '_model');
+                return $this->_model($name, $this->vars['user_id'], "{$name}_model");
             }
         }
 

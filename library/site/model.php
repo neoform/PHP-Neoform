@@ -1,11 +1,11 @@
 <?php
 
     /**
-    * Site Model
-    *
-    * @var int $id
-    * @var string $name
-    */
+     * Site Model
+     *
+     * @var int $id
+     * @var string $name
+     */
     class site_model extends entity_record_model implements site_definition {
 
         public function __get($k) {
@@ -24,7 +24,6 @@
                         return $this->vars[$k];
                 }
             }
-
         }
 
         /**

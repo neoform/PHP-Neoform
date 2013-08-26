@@ -24,21 +24,15 @@
          * Get User Lostpassword hashs by user
          *
          * @param int $user_id
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
          *
          * @return array of User Lostpassword hashs
          */
-        public function by_user($user_id, array $order_by=null, $offset=null, $limit=null) {
+        public function by_user($user_id) {
             return parent::_by_fields(
                 self::BY_USER,
                 [
                     'user_id' => (int) $user_id,
-                ],
-                $order_by,
-                $offset,
-                $limit
+                ]
             );
         }
 

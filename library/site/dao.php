@@ -23,21 +23,15 @@
          * Get Site ids by name
          *
          * @param string $name
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
          *
          * @return array of Site ids
          */
-        public function by_name($name, array $order_by=null, $offset=null, $limit=null) {
+        public function by_name($name) {
             return parent::_by_fields(
                 self::BY_NAME,
                 [
                     'name' => (string) $name,
-                ],
-                $order_by,
-                $offset,
-                $limit
+                ]
             );
         }
 
@@ -45,23 +39,17 @@
          * Get Site id_arr by an array of names
          *
          * @param array $name_arr an array containing names
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
          *
          * @return array of arrays of Site ids
          */
-        public function by_name_multi(array $name_arr, array $order_by=null, $offset=null, $limit=null) {
+        public function by_name_multi(array $name_arr) {
             $keys_arr = [];
             foreach ($name_arr as $k => $name) {
                 $keys_arr[$k] = [ 'name' => (string) $name, ];
             }
             return parent::_by_fields_multi(
                 self::BY_NAME,
-                $keys_arr,
-                $order_by,
-                $offset,
-                $limit
+                $keys_arr
             );
         }
 

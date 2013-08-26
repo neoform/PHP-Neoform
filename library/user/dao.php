@@ -27,28 +27,6 @@
         // READS
 
         /**
-         * Get User ids by email
-         *
-         * @param string $email
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
-         *
-         * @return array of User ids
-         */
-        public function by_email($email, array $order_by=null, $offset=null, $limit=null) {
-            return parent::_by_fields(
-                self::BY_EMAIL,
-                [
-                    'email' => (string) $email,
-                ],
-                $order_by,
-                $offset,
-                $limit
-            );
-        }
-
-        /**
          * Get User ids by password_hashmethod
          *
          * @param int $password_hashmethod
@@ -89,6 +67,22 @@
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Get User ids by email
+         *
+         * @param string $email
+         *
+         * @return array of User ids
+         */
+        public function by_email($email) {
+            return parent::_by_fields(
+                self::BY_EMAIL,
+                [
+                    'email' => (string) $email,
+                ]
             );
         }
 
@@ -164,23 +158,17 @@
          * Get User id_arr by an array of emails
          *
          * @param array $email_arr an array containing emails
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
          *
          * @return array of arrays of User ids
          */
-        public function by_email_multi(array $email_arr, array $order_by=null, $offset=null, $limit=null) {
+        public function by_email_multi(array $email_arr) {
             $keys_arr = [];
             foreach ($email_arr as $k => $email) {
                 $keys_arr[$k] = [ 'email' => (string) $email, ];
             }
             return parent::_by_fields_multi(
                 self::BY_EMAIL,
-                $keys_arr,
-                $order_by,
-                $offset,
-                $limit
+                $keys_arr
             );
         }
 

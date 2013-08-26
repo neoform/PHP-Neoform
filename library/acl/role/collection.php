@@ -8,27 +8,63 @@
         /**
          * Preload the Acl Group models in this collection
          *
+         * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
+         *
          * @return acl_group_collection
          */
-        public function acl_group_collection() {
-            return $this->_preload_many_to_many('acl_group_role', 'by_acl_role', 'acl_group');
+        public function acl_group_collection(array $order_by=null, $offset=null, $limit=null) {
+            return $this->_preload_many_to_many(
+                'acl_group_role',
+                'by_acl_role',
+                'acl_group',
+                'acl_group_collection',
+                $order_by,
+                $offset,
+                $limit
+            );
         }
 
         /**
          * Preload the Acl Resource models in this collection
          *
+         * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
+         *
          * @return acl_resource_collection
          */
-        public function acl_resource_collection() {
-            return $this->_preload_many_to_many('acl_role_resource', 'by_acl_role', 'acl_resource');
+        public function acl_resource_collection(array $order_by=null, $offset=null, $limit=null) {
+            return $this->_preload_many_to_many(
+                'acl_role_resource',
+                'by_acl_role',
+                'acl_resource',
+                'acl_resource_collection',
+                $order_by,
+                $offset,
+                $limit
+            );
         }
 
         /**
          * Preload the User models in this collection
          *
+         * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
+         *
          * @return user_collection
          */
-        public function user_collection() {
-            return $this->_preload_many_to_many('user_acl_role', 'by_acl_role', 'user');
+        public function user_collection(array $order_by=null, $offset=null, $limit=null) {
+            return $this->_preload_many_to_many(
+                'user_acl_role',
+                'by_acl_role',
+                'user',
+                'user_collection',
+                $order_by,
+                $offset,
+                $limit
+            );
         }
     }

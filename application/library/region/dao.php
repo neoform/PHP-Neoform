@@ -23,11 +23,33 @@
             'name_normalized' => self::TYPE_STRING,
             'name_soundex'    => self::TYPE_STRING,
             'iso2'            => self::TYPE_STRING,
-            'longitude'       => self::TYPE_DECIMAL,
-            'latitude'        => self::TYPE_DECIMAL,
+            'longitude'       => self::TYPE_FLOAT,
+            'latitude'        => self::TYPE_FLOAT,
         ];
 
         // READS
+
+        /**
+         * Get Region ids by name_soundex
+         *
+         * @param string $name_soundex
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
+         *
+         * @return array of Region ids
+         */
+        public function by_name_soundex($name_soundex, array $order_by=null, $offset=null, $limit=null) {
+            return parent::_by_fields(
+                self::BY_NAME_SOUNDEX,
+                [
+                    'name_soundex' => (string) $name_soundex,
+                ],
+                $order_by,
+                $offset,
+                $limit
+            );
+        }
 
         /**
          * Get Region ids by country
@@ -56,22 +78,16 @@
          *
          * @param int $country_id
          * @param string $name_normalized
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
          *
          * @return array of Region ids
          */
-        public function by_country_name_normalized($country_id, $name_normalized, array $order_by=null, $offset=null, $limit=null) {
+        public function by_country_name_normalized($country_id, $name_normalized) {
             return parent::_by_fields(
                 self::BY_COUNTRY_NAME_NORMALIZED,
                 [
                     'country_id'      => (int) $country_id,
                     'name_normalized' => (string) $name_normalized,
-                ],
-                $order_by,
-                $offset,
-                $limit
+                ]
             );
         }
 
@@ -79,21 +95,15 @@
          * Get Region ids by iso2
          *
          * @param string $iso2
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
          *
          * @return array of Region ids
          */
-        public function by_iso2($iso2, array $order_by=null, $offset=null, $limit=null) {
+        public function by_iso2($iso2) {
             return parent::_by_fields(
                 self::BY_ISO2,
                 [
                     'iso2' => (string) $iso2,
-                ],
-                $order_by,
-                $offset,
-                $limit
+                ]
             );
         }
 
@@ -102,44 +112,16 @@
          *
          * @param int $country_id
          * @param string $name
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
          *
          * @return array of Region ids
          */
-        public function by_country_name($country_id, $name, array $order_by=null, $offset=null, $limit=null) {
+        public function by_country_name($country_id, $name) {
             return parent::_by_fields(
                 self::BY_COUNTRY_NAME,
                 [
                     'country_id' => (int) $country_id,
                     'name'       => (string) $name,
-                ],
-                $order_by,
-                $offset,
-                $limit
-            );
-        }
-
-        /**
-         * Get Region ids by name_soundex
-         *
-         * @param string $name_soundex
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
-         *
-         * @return array of Region ids
-         */
-        public function by_name_soundex($name_soundex, array $order_by=null, $offset=null, $limit=null) {
-            return parent::_by_fields(
-                self::BY_NAME_SOUNDEX,
-                [
-                    'name_soundex' => (string) $name_soundex,
-                ],
-                $order_by,
-                $offset,
-                $limit
+                ]
             );
         }
 
@@ -178,84 +160,6 @@
         }
 
         /**
-         * Get Region id_arr by an array of country and name_normalizeds
-         *
-         * @param array $country_name_normalized_arr an array of arrays containing country_ids and name_normalizeds
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
-         *
-         * @return array of arrays of Region ids
-         */
-        public function by_country_name_normalized_multi(array $country_name_normalized_arr, array $order_by=null, $offset=null, $limit=null) {
-            $keys_arr = [];
-            foreach ($country_name_normalized_arr as $k => $country_name_normalized) {
-                $keys_arr[$k] = [
-                    'country_id'      => (int) $country_name_normalized['country_id'],
-                    'name_normalized' => (string) $country_name_normalized['name_normalized'],
-                ];
-            }
-            return parent::_by_fields_multi(
-                self::BY_COUNTRY_NAME_NORMALIZED,
-                $keys_arr,
-                $order_by,
-                $offset,
-                $limit
-            );
-        }
-
-        /**
-         * Get Region id_arr by an array of iso2s
-         *
-         * @param array $iso2_arr an array containing iso2s
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
-         *
-         * @return array of arrays of Region ids
-         */
-        public function by_iso2_multi(array $iso2_arr, array $order_by=null, $offset=null, $limit=null) {
-            $keys_arr = [];
-            foreach ($iso2_arr as $k => $iso2) {
-                $keys_arr[$k] = [ 'iso2' => (string) $iso2, ];
-            }
-            return parent::_by_fields_multi(
-                self::BY_ISO2,
-                $keys_arr,
-                $order_by,
-                $offset,
-                $limit
-            );
-        }
-
-        /**
-         * Get Region id_arr by an array of country and names
-         *
-         * @param array $country_name_arr an array of arrays containing country_ids and names
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
-         *
-         * @return array of arrays of Region ids
-         */
-        public function by_country_name_multi(array $country_name_arr, array $order_by=null, $offset=null, $limit=null) {
-            $keys_arr = [];
-            foreach ($country_name_arr as $k => $country_name) {
-                $keys_arr[$k] = [
-                    'country_id' => (int) $country_name['country_id'],
-                    'name'       => (string) $country_name['name'],
-                ];
-            }
-            return parent::_by_fields_multi(
-                self::BY_COUNTRY_NAME,
-                $keys_arr,
-                $order_by,
-                $offset,
-                $limit
-            );
-        }
-
-        /**
          * Get Region id_arr by an array of name_soundexs
          *
          * @param array $name_soundex_arr an array containing name_soundexs
@@ -276,6 +180,66 @@
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Get Region id_arr by an array of country and name_normalizeds
+         *
+         * @param array $country_name_normalized_arr an array of arrays containing country_ids and name_normalizeds
+         *
+         * @return array of arrays of Region ids
+         */
+        public function by_country_name_normalized_multi(array $country_name_normalized_arr) {
+            $keys_arr = [];
+            foreach ($country_name_normalized_arr as $k => $country_name_normalized) {
+                $keys_arr[$k] = [
+                    'country_id'      => (int) $country_name_normalized['country_id'],
+                    'name_normalized' => (string) $country_name_normalized['name_normalized'],
+                ];
+            }
+            return parent::_by_fields_multi(
+                self::BY_COUNTRY_NAME_NORMALIZED,
+                $keys_arr
+            );
+        }
+
+        /**
+         * Get Region id_arr by an array of iso2s
+         *
+         * @param array $iso2_arr an array containing iso2s
+         *
+         * @return array of arrays of Region ids
+         */
+        public function by_iso2_multi(array $iso2_arr) {
+            $keys_arr = [];
+            foreach ($iso2_arr as $k => $iso2) {
+                $keys_arr[$k] = [ 'iso2' => (string) $iso2, ];
+            }
+            return parent::_by_fields_multi(
+                self::BY_ISO2,
+                $keys_arr
+            );
+        }
+
+        /**
+         * Get Region id_arr by an array of country and names
+         *
+         * @param array $country_name_arr an array of arrays containing country_ids and names
+         *
+         * @return array of arrays of Region ids
+         */
+        public function by_country_name_multi(array $country_name_arr) {
+            $keys_arr = [];
+            foreach ($country_name_arr as $k => $country_name) {
+                $keys_arr[$k] = [
+                    'country_id' => (int) $country_name['country_id'],
+                    'name'       => (string) $country_name['name'],
+                ];
+            }
+            return parent::_by_fields_multi(
+                self::BY_COUNTRY_NAME,
+                $keys_arr
             );
         }
 

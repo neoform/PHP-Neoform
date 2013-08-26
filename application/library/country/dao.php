@@ -29,21 +29,15 @@
          * Get Country ids by name_normalized
          *
          * @param string $name_normalized
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
          *
          * @return array of Country ids
          */
-        public function by_name_normalized($name_normalized, array $order_by=null, $offset=null, $limit=null) {
+        public function by_name_normalized($name_normalized) {
             return parent::_by_fields(
                 self::BY_NAME_NORMALIZED,
                 [
                     'name_normalized' => (string) $name_normalized,
-                ],
-                $order_by,
-                $offset,
-                $limit
+                ]
             );
         }
 
@@ -51,21 +45,15 @@
          * Get Country ids by iso2
          *
          * @param string $iso2
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
          *
          * @return array of Country ids
          */
-        public function by_iso2($iso2, array $order_by=null, $offset=null, $limit=null) {
+        public function by_iso2($iso2) {
             return parent::_by_fields(
                 self::BY_ISO2,
                 [
                     'iso2' => (string) $iso2,
-                ],
-                $order_by,
-                $offset,
-                $limit
+                ]
             );
         }
 
@@ -73,21 +61,15 @@
          * Get Country ids by iso3
          *
          * @param string $iso3
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
          *
          * @return array of Country ids
          */
-        public function by_iso3($iso3, array $order_by=null, $offset=null, $limit=null) {
+        public function by_iso3($iso3) {
             return parent::_by_fields(
                 self::BY_ISO3,
                 [
                     'iso3' => (string) $iso3,
-                ],
-                $order_by,
-                $offset,
-                $limit
+                ]
             );
         }
 
@@ -95,21 +77,15 @@
          * Get Country ids by name
          *
          * @param string $name
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
          *
          * @return array of Country ids
          */
-        public function by_name($name, array $order_by=null, $offset=null, $limit=null) {
+        public function by_name($name) {
             return parent::_by_fields(
                 self::BY_NAME,
                 [
                     'name' => (string) $name,
-                ],
-                $order_by,
-                $offset,
-                $limit
+                ]
             );
         }
 
@@ -117,23 +93,17 @@
          * Get Country id_arr by an array of name_normalizeds
          *
          * @param array $name_normalized_arr an array containing name_normalizeds
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
          *
          * @return array of arrays of Country ids
          */
-        public function by_name_normalized_multi(array $name_normalized_arr, array $order_by=null, $offset=null, $limit=null) {
+        public function by_name_normalized_multi(array $name_normalized_arr) {
             $keys_arr = [];
             foreach ($name_normalized_arr as $k => $name_normalized) {
                 $keys_arr[$k] = [ 'name_normalized' => (string) $name_normalized, ];
             }
             return parent::_by_fields_multi(
                 self::BY_NAME_NORMALIZED,
-                $keys_arr,
-                $order_by,
-                $offset,
-                $limit
+                $keys_arr
             );
         }
 
@@ -141,23 +111,17 @@
          * Get Country id_arr by an array of iso2s
          *
          * @param array $iso2_arr an array containing iso2s
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
          *
          * @return array of arrays of Country ids
          */
-        public function by_iso2_multi(array $iso2_arr, array $order_by=null, $offset=null, $limit=null) {
+        public function by_iso2_multi(array $iso2_arr) {
             $keys_arr = [];
             foreach ($iso2_arr as $k => $iso2) {
                 $keys_arr[$k] = [ 'iso2' => (string) $iso2, ];
             }
             return parent::_by_fields_multi(
                 self::BY_ISO2,
-                $keys_arr,
-                $order_by,
-                $offset,
-                $limit
+                $keys_arr
             );
         }
 
@@ -165,23 +129,17 @@
          * Get Country id_arr by an array of iso3s
          *
          * @param array $iso3_arr an array containing iso3s
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
          *
          * @return array of arrays of Country ids
          */
-        public function by_iso3_multi(array $iso3_arr, array $order_by=null, $offset=null, $limit=null) {
+        public function by_iso3_multi(array $iso3_arr) {
             $keys_arr = [];
             foreach ($iso3_arr as $k => $iso3) {
                 $keys_arr[$k] = [ 'iso3' => (string) $iso3, ];
             }
             return parent::_by_fields_multi(
                 self::BY_ISO3,
-                $keys_arr,
-                $order_by,
-                $offset,
-                $limit
+                $keys_arr
             );
         }
 
@@ -189,23 +147,17 @@
          * Get Country id_arr by an array of names
          *
          * @param array $name_arr an array containing names
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
          *
          * @return array of arrays of Country ids
          */
-        public function by_name_multi(array $name_arr, array $order_by=null, $offset=null, $limit=null) {
+        public function by_name_multi(array $name_arr) {
             $keys_arr = [];
             foreach ($name_arr as $k => $name) {
                 $keys_arr[$k] = [ 'name' => (string) $name, ];
             }
             return parent::_by_fields_multi(
                 self::BY_NAME,
-                $keys_arr,
-                $order_by,
-                $offset,
-                $limit
+                $keys_arr
             );
         }
 

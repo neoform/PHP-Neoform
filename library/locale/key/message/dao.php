@@ -25,52 +25,6 @@
         // READS
 
         /**
-         * Get Locale Key Message ids by locale
-         *
-         * @param string $locale
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
-         *
-         * @return array of Locale Key Message ids
-         */
-        public function by_locale($locale, array $order_by=null, $offset=null, $limit=null) {
-            return parent::_by_fields(
-                self::BY_LOCALE,
-                [
-                    'locale' => (string) $locale,
-                ],
-                $order_by,
-                $offset,
-                $limit
-            );
-        }
-
-        /**
-         * Get Locale Key Message ids by locale and key
-         *
-         * @param string $locale
-         * @param int $key_id
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
-         *
-         * @return array of Locale Key Message ids
-         */
-        public function by_locale_key($locale, $key_id, array $order_by=null, $offset=null, $limit=null) {
-            return parent::_by_fields(
-                self::BY_LOCALE_KEY,
-                [
-                    'locale' => (string) $locale,
-                    'key_id' => (int) $key_id,
-                ],
-                $order_by,
-                $offset,
-                $limit
-            );
-        }
-
-        /**
          * Get Locale Key Message ids by body
          *
          * @param string $body
@@ -111,6 +65,46 @@
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Get Locale Key Message ids by locale
+         *
+         * @param string $locale
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
+         *
+         * @return array of Locale Key Message ids
+         */
+        public function by_locale($locale, array $order_by=null, $offset=null, $limit=null) {
+            return parent::_by_fields(
+                self::BY_LOCALE,
+                [
+                    'locale' => (string) $locale,
+                ],
+                $order_by,
+                $offset,
+                $limit
+            );
+        }
+
+        /**
+         * Get Locale Key Message ids by locale and key
+         *
+         * @param string $locale
+         * @param int $key_id
+         *
+         * @return array of Locale Key Message ids
+         */
+        public function by_locale_key($locale, $key_id) {
+            return parent::_by_fields(
+                self::BY_LOCALE_KEY,
+                [
+                    'locale' => (string) $locale,
+                    'key_id' => (int) $key_id,
+                ]
             );
         }
 
@@ -183,33 +177,6 @@
         }
 
         /**
-         * Get Locale Key Message id_arr by an array of locale and keys
-         *
-         * @param array $locale_key_arr an array of arrays containing locales and key_ids
-         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
-         *
-         * @return array of arrays of Locale Key Message ids
-         */
-        public function by_locale_key_multi(array $locale_key_arr, array $order_by=null, $offset=null, $limit=null) {
-            $keys_arr = [];
-            foreach ($locale_key_arr as $k => $locale_key) {
-                $keys_arr[$k] = [
-                    'locale' => (string) $locale_key['locale'],
-                    'key_id' => (int) $locale_key['key_id'],
-                ];
-            }
-            return parent::_by_fields_multi(
-                self::BY_LOCALE_KEY,
-                $keys_arr,
-                $order_by,
-                $offset,
-                $limit
-            );
-        }
-
-        /**
          * Get Locale Key Message id_arr by an array of bodys
          *
          * @param array $body_arr an array containing bodys
@@ -230,6 +197,27 @@
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Get Locale Key Message id_arr by an array of locale and keys
+         *
+         * @param array $locale_key_arr an array of arrays containing locales and key_ids
+         *
+         * @return array of arrays of Locale Key Message ids
+         */
+        public function by_locale_key_multi(array $locale_key_arr) {
+            $keys_arr = [];
+            foreach ($locale_key_arr as $k => $locale_key) {
+                $keys_arr[$k] = [
+                    'locale' => (string) $locale_key['locale'],
+                    'key_id' => (int) $locale_key['key_id'],
+                ];
+            }
+            return parent::_by_fields_multi(
+                self::BY_LOCALE_KEY,
+                $keys_arr
             );
         }
 

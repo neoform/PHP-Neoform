@@ -1,12 +1,12 @@
 <?php
 
     /**
-    * User Lostpassword Model
-    *
-    * @var string $hash
-    * @var int $user_id
-    * @var string $posted_on
-    */
+     * User Lostpassword Model
+     *
+     * @var string $hash
+     * @var int $user_id
+     * @var datetime $posted_on
+     */
     class user_lostpassword_model extends entity_record_model implements user_lostpassword_definition {
 
         public function __get($k) {
@@ -29,7 +29,6 @@
                         return $this->vars[$k];
                 }
             }
-
         }
 
         /**
@@ -40,5 +39,4 @@
         public function user() {
             return $this->_model('user', $this->vars['user_id'], 'user_model');
         }
-
     }

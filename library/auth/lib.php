@@ -13,7 +13,7 @@
         public static function activate_session(user_model $user, $remember=false) {
 
             // Create expiry date for session
-            $expires = new datetime();
+            $expires = new datetime;
             if ($remember) {
                 $expires->add(new DateInterval('P' . core::config()['auth']['long_auth_lifetime']));
             } else {

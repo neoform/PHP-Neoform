@@ -64,6 +64,7 @@
         // Offset key - Offset related record PK lists
         const OFFSET = 'offset';
 
+        // Generic orderby/limit/offset (with no WHERE)
         const LIMIT = 'limit';
 
         /**
@@ -442,7 +443,7 @@
                     return $source_driver::all($this, $this->source_engine_pool_read, $this::PRIMARY_KEY, $keys);
                 },
                 function($cache_key) {
-                    $this->_set_always_cache_lists($cache_key);
+                    $this->_set_meta_cache_always($cache_key);
                 }
             );
         }
@@ -470,7 +471,7 @@
                     return $source_driver::count($this, $this->source_engine_pool_read, $keys);
                 },
                 function($cache_key) use ($keys) {
-                    $this->_set_count_cache_lists($cache_key, $keys);
+                    $this->_set_meta_cache_count($cache_key, $keys);
                 }
             );
         }
@@ -1340,7 +1341,7 @@
          * @param string     $cache_key
          * @param array|null $keys
          */
-        final protected function _set_count_cache_lists($cache_key, array $keys=null) {
+        final protected function _set_meta_cache_count($cache_key, array $keys=null) {
 
             /**
              * Build lists of keys for deletion - when it's time to delete/modify the record
@@ -1401,7 +1402,7 @@
          *
          * @param string $cache_key
          */
-        final protected function _set_always_cache_lists($cache_key) {
+        final protected function _set_meta_cache_always($cache_key) {
             cache_lib::list_add(
                 $this->cache_list_engine,
                 $this->cache_list_engine_pool_write,

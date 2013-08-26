@@ -272,24 +272,21 @@
          * Get many groups of records all in one shot. This greatly reduces the number of requests to the cache service,
          * which can greatly speed up an application.
          *
-         * @param string       $entity         eg, user_permission
-         * @param string       $by_function    eg, by_user
-         * @param string       $foreign_type   eg, permission
-         * @param string       $model_var_name Key (in $model::$_var) that stores preloaded model data
-         * @param array        $order_by       array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
-         * @param integer|null $offset         get PKs starting at this offset
-         * @param integer|null $limit          max number of PKs to return
+         * @param string $entity         eg, user_permission
+         * @param string $by_function    eg, by_user
+         * @param string $foreign_type   eg, permission
+         * @param string $model_var_name Key (in $model::$_var) that stores preloaded model data
          *
          * @return entity_record_collection
          */
-        protected function _preload_many_to_many($entity, $by_function, $foreign_type, $model_var_name, array $order_by=null, $offset=null, $limit=null) {
+        protected function _preload_many_to_many($entity, $by_function, $foreign_type, $model_var_name) {
 
             $by_function             .= '_multi';
             $foreign_collection_name  = "{$foreign_type}_collection";
             $foreign_model_name       = "{$foreign_type}_model";
 
             // Get the ids for those
-            $pks_groups = entity::dao($entity)->$by_function($this, $order_by, $offset, $limit);
+            $pks_groups = entity::dao($entity)->$by_function($this);
             $pks        = [];
 
             // make a flat array of all keys, removing dupes along the way.
@@ -317,12 +314,7 @@
             foreach ($this as $key => $model) {
                 if (isset($pks_groups[$key])) {
                     $model->_set_var(
-                        $foreign_model_name::_limit_var_key(
-                            $model_var_name,
-                            $order_by,
-                            $offset,
-                            $limit
-                        ),
+                        $model_var_name,
                         new $foreign_collection_name(null, $pks_groups[$key])
                     );
                 }

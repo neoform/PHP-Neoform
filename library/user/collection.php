@@ -8,21 +8,14 @@
         /**
          * Preload the Acl Group models in this collection
          *
-         * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
-         *
          * @return acl_group_collection
          */
-        public function acl_group_collection(array $order_by=null, $offset=null, $limit=null) {
+        public function acl_group_collection() {
             return $this->_preload_many_to_many(
                 'acl_group_user',
                 'by_user',
                 'acl_group',
-                'acl_group_collection',
-                $order_by,
-                $offset,
-                $limit
+                'acl_group_collection'
             );
         }
 
@@ -49,21 +42,14 @@
         /**
          * Preload the Acl Role models in this collection
          *
-         * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
-         *
          * @return acl_role_collection
          */
-        public function acl_role_collection(array $order_by=null, $offset=null, $limit=null) {
+        public function acl_role_collection() {
             return $this->_preload_many_to_many(
                 'user_acl_role',
                 'by_user',
                 'acl_role',
-                'acl_role_collection',
-                $order_by,
-                $offset,
-                $limit
+                'acl_role_collection'
             );
         }
 
@@ -96,21 +82,14 @@
         /**
          * Preload the Site models in this collection
          *
-         * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
-         * @param integer|null $offset get PKs starting at this offset
-         * @param integer|null $limit max number of PKs to return
-         *
          * @return site_collection
          */
-        public function site_collection(array $order_by=null, $offset=null, $limit=null) {
+        public function site_collection() {
             return $this->_preload_many_to_many(
                 'user_site',
                 'by_user',
                 'site',
-                'site_collection',
-                $order_by,
-                $offset,
-                $limit
+                'site_collection'
             );
         }
 

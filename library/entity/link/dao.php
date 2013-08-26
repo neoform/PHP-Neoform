@@ -265,7 +265,7 @@
          *
          * @access protected
          * @static
-         * @param array of arrays matching the PKs of the link
+         * @param array $keys_arr arrays matching the PKs of the link
          * @return boolean returns true on success
          * @throws entity_exception
          */

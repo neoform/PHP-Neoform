@@ -46,7 +46,7 @@
 
             // id
             $input->id->cast('int')->digit(0, 255)->callback(function($id) {
-                if (entity::dao('user_status')->by_pk($id->val())) {
+                if (entity::dao('user_status')->record($id->val())) {
                     $id->errors('already in use');
                 }
             });
@@ -63,7 +63,7 @@
 
             // id
             $input->id->cast('int')->optional()->digit(0, 255)->callback(function($id) use ($user_status) {
-                $user_status_info = entity::dao('user_status')->by_pk($id->val());
+                $user_status_info = entity::dao('user_status')->record($id->val());
                 if ($user_status_info && (int) $user_status_info['id'] !== $user_status->id) {
                     $id->errors('already in use');
                 }

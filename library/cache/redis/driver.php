@@ -58,6 +58,7 @@
 
         /**
          * Create a list and/or Add a value to a list
+         * It is recommended this function be wrapped in a batch operation
          *
          * @param string $pool
          * @param string $key
@@ -66,19 +67,22 @@
          * @return bool
          */
         public static function list_add($pool, $key, $value) {
-            if ($return = core::redis($pool)->sAdd($key, $value)) {
-                return $return;
-            } else {
-                // if for some reason this key is holding a non-list delete it and create a list (this should never happen)
-                // this is here just for fault tolerance
+            // Redis >=2.4 can do multiple adds in one command.
+            if (is_array($value)) {
                 $redis = core::redis($pool);
+                foreach ($value as $v) {
+                    $redis->sAdd($key, $v);
+                }
 
-                $redis->multi();
-                $redis->delete($key);
-                $redis->sAdd($key, $value);
-                $return = $redis->exec();
-
-                return $return[1];
+                // Interestingly, PHP doesn't seem to have a max number of function arguments... so this shouldn't cause
+                // any problems...
+                // However PHPRedis seems to have poor support for this... bah.
+//                return call_user_func_array(
+//                    [ core::redis($pool), 'sAdd' ],
+//                    array_merge([ $key ], $value)
+//                );
+            } else {
+                return core::redis($pool)->sAdd($key, $value);
             }
         }
 
@@ -118,22 +122,28 @@
 
         /**
          * Remove values from a list
+         * It is recommended this function be wrapped in a batch operation
          *
          * @param string $pool
          * @param string $key
-         * @param array  $remove_keys
+         * @param mixed  $remove_key
          */
-        public static function list_remove($pool, $key, array $remove_keys) {
-            $redis = core::redis($pool);
-            // Batch execute the deletes
-            $redis->multi();
-            foreach ($remove_keys as $remove_key) {
-                $redis->sRemove($key, $remove_key);
-            }
-            $redis->exec();
+        public static function list_remove($pool, $key, $remove_key) {
+            // Redis >=2.4 can do multiple removes in one command.
+            if (is_array($remove_key)) {
+                $redis = core::redis($pool);
+                foreach ($remove_key as $v) {
+                    $redis->sRemove($key, $v);
+                }
 
-            // bug in the documentation makes it seem like you can delete multiple keys at the same time. Nope!
-            //call_user_func_array([core::redis($pool), 'sRemove'], array_merge([ $key, ], $remove_keys))
+                // PHPRedis has poor support for batch removals.
+//                call_user_func_array(
+//                    [ core::redis($pool), 'sRemove' ],
+//                    array_merge([ $key ], $remove_key)
+//                );
+            } else {
+                core::redis($pool)->sRemove($key, $remove_key);
+            }
         }
 
         /**
@@ -209,6 +219,8 @@
         /**
          * Set multiple records at the same time
          *
+         * It is recommended that this function be wrapped in pipeline_start() and pipeline_execute();
+         *
          * @param string       $pool
          * @param array        $rows
          * @param integer|null $ttl
@@ -218,11 +230,9 @@
         public static function set_multi($pool, array $rows, $ttl=null) {
             if ($ttl) {
                 $redis = core::redis($pool);
-                $redis->multi();
                 foreach ($rows as $k => $v) {
                     $redis->set($k, $v, $ttl);
                 }
-                $redis->exec();
             } else {
                 return core::redis($pool)->mset($rows);
             }
@@ -249,9 +259,45 @@
          * @return integer the number of keys deleted
          */
         public static function delete_multi($pool, array $keys) {
-            if (count($keys)) {
-                reset($keys);
+            if ($keys) {
                 return core::redis($pool)->delete($keys);
+            }
+        }
+
+        /**
+         * Expire a single record
+         *
+         * @param string  $pool
+         * @param string  $key
+         * @param integer $ttl how many seconds left for this key to live - if not set, it will expire now
+         *
+         * @return integer the number of keys deleted
+         */
+        public static function expire($pool, $key, $ttl=0) {
+            if ($ttl) {
+                return core::redis($pool)->expire($key, $ttl);
+            } else {
+                return core::redis($pool)->delete($key);
+            }
+        }
+
+        /**
+         * Expire multiple entries
+         *
+         * @param string  $pool
+         * @param array   $keys
+         * @param integer $ttl how many seconds left for this key to live - if not set, it will expire now
+         *
+         * @return integer the number of keys deleted
+         */
+        public static function expire_multi($pool, array $keys, $ttl=0) {
+            if ($ttl) {
+                $redis = core::redis($pool);
+                foreach ($keys as $key) {
+                    $redis->expire($key, $ttl);
+                }
+            } else {
+                core::redis($pool)->delete($keys, $ttl);
             }
         }
     }

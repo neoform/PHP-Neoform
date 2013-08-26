@@ -1,6 +1,6 @@
 <?php
 
-    class generate_entity_link_model extends generate_model {
+    class generate_link_model extends generate_model {
 
         public function code() {
 

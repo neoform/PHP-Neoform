@@ -40,6 +40,51 @@
         }
 
         /**
+         * Set a record in cache
+         *
+         * @param string  $engine
+         * @param string  $engine_pool
+         * @param string  $key
+         * @param mixed   $data
+         * @param integer $ttl seconds
+         *
+         * @return mixed|null
+         */
+        public static function set($engine, $engine_pool, $key, $data, $ttl=null) {
+
+            // Memory
+            cache_memory_dao::set($key, $data);
+
+            if ($engine) {
+                $engine_driver = "cache_{$engine}_driver";
+                $engine_driver::set($engine_pool, $key, $data, $ttl);
+            }
+        }
+
+        /**
+         * Set multiple records in cache
+         *
+         * @param string  $engine
+         * @param string  $engine_pool
+         * @param array   $rows
+         * @param integer $ttl seconds
+         */
+        public static function set_multi($engine, $engine_pool, array $rows, $ttl=null) {
+
+            if (! $rows) {
+                return;
+            }
+
+            // Memory
+            cache_memory_dao::set_multi($rows);
+
+            if ($engine) {
+                $engine_driver = "cache_{$engine}_driver";
+                $engine_driver::set_multi($engine_pool, $rows, $ttl);
+            }
+        }
+
+        /**
          * Get a record from cache
          *
          * @param string $engine
@@ -57,8 +102,8 @@
 
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
-                if ( $data = $engine_driver::get($engine_pool, $key)) {
-                    return current($data);
+                if ($data = $engine_driver::get($engine_pool, $key)) {
+                    return reset($data);
                 }
             }
         }
@@ -74,6 +119,10 @@
          * @return array|null
          */
         public static function list_get($engine, $engine_pool, $list_key, array $filter=null) {
+
+            if (! $list_key) {
+                return;
+            }
 
             // Memory
             // This cannot be used until it's properly set up. There are bugs that happen when a new list is created
@@ -100,6 +149,11 @@
          * @return array|null
          */
         public static function list_get_union($engine, $engine_pool, array $list_keys, array $filter=null) {
+
+            if (! $list_keys) {
+                return;
+            }
+
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
                 return $engine_driver::list_get_union($engine_pool, $list_keys, $filter);
@@ -135,6 +189,10 @@
          */
         public static function list_remove($engine, $engine_pool, $list_key, $remove_keys) {
 
+            if (! $remove_keys) {
+                return;
+            }
+
             // Memory
             //cache_memory_dao::list_remove($list_key, $remove_keys);
 
@@ -152,7 +210,7 @@
          * @param string  $key
          * @param integer $offset
          */
-        public static function increment($engine, $engine_pool, $key, $offset=1){
+        public static function increment($engine, $engine_pool, $key, $offset=1) {
 
             // Memory
             cache_memory_dao::increment($key, $offset);
@@ -186,11 +244,12 @@
          * Checks cache for an entry, pulls from source $data_func() if not present in cache
          *
          * @param string       $engine              Which caching engines to use
-         * @param string       $engine_pool_read   Caching pool
+         * @param string       $engine_pool_read    Caching pool
          * @param string       $engine_pool_write   Caching pool
          * @param string       $key                 Cache key
          * @param callable     $data_func           Source data function
-         * @param mixed|null   $args                Args to pass to $data_func($args)
+         * @param callable     $after_cache_func    After cache function
+         * @param mixed|null   $args                Args to pass to $data_func($key [, array $args])
          * @param integer|null $ttl                 Cache length
          * @param bool         $cache_empty_results cache empty results (eg, null|false) if that is what $data_func() returns
          *
@@ -200,7 +259,7 @@
         // re-arrange order of params, $key shouldn't be there.
 
         public static function single($engine, $engine_pool_read, $engine_pool_write, $key, callable $data_func,
-                                      $args=null, $ttl=null, $cache_empty_results=true) {
+                                      callable $after_cache_func=null, $args=null, $ttl=null, $cache_empty_results=true) {
 
             // Memory
             if (cache_memory_dao::exists($key)) {
@@ -210,7 +269,7 @@
             $engine_driver = "cache_{$engine}_driver";
 
             if ($engine && $data = $engine_driver::get($engine_pool_read, $key)) {
-                $data = current($data);
+                $data = reset($data);
             } else {
                 //get the data from it's original source
                 $data = $data_func($args);
@@ -224,6 +283,10 @@
                 // cache data to engine
                 if ($engine) {
                     $engine_driver::set($engine_pool_write, $key, $data, $ttl);
+
+                    if ($after_cache_func) {
+                        $after_cache_func($key);
+                    }
                 }
             }
 
@@ -247,6 +310,7 @@
          * @param array        $rows                Rows to look up in cache
          * @param callable     $key_func            generates the cache key based on data from $rows
          * @param callable     $data_func           Source data function(array $keys [, array $args])
+         * @param callable     $after_cache_func    After cache function
          * @param mixed|null   $args                args to pass to the $data_func
          * @param integer|null $ttl                 How long to cache
          * @param bool         $cache_empty_results cache empty results (eg, null|false) if that is what $data_func() returns
@@ -254,7 +318,7 @@
          * @return array of mixed values from $data_func() calls
          */
         public static function multi($engine, $engine_pool_read, $engine_pool_write, array $rows, callable $key_func,
-                                     callable $data_func, $args=null, $ttl=null, $cache_empty_results=true) {
+                                     callable $data_func, callable $after_cache_func=null, $args=null, $ttl=null, $cache_empty_results=true) {
 
             if (! $rows) {
                 return [];
@@ -270,10 +334,8 @@
             $matched_rows = $key_lookup; // this results in the array keeping the exact order
 
             /*
-             * READS
+             * PHP Memory
              */
-
-            //MEMORY
             if ($found_in_memory = cache_memory_dao::get_multi($missing_rows)) {
                 foreach ($found_in_memory as $index => $key) {
                     $matched_rows[$index] = $key;
@@ -287,6 +349,9 @@
 
             $rows_not_in_memory = $missing_rows;
 
+            /**
+             * Source Engine
+             */
             if ($engine && $missing_rows) {
                 $engine = "cache_{$engine}_driver";
                 foreach ($engine::get_multi($engine_pool_read, $missing_rows) as $key => $row) {
@@ -301,7 +366,7 @@
                 // duplicate the array, so we can know what rows need to be stored in cache
                 $rows_not_in_cache = $missing_rows;
 
-                if ($origin_rows = $data_func(array_intersect_key($rows, $missing_rows), $args)) {
+                if ($origin_rows = $data_func(array_intersect_key($rows, $missing_rows), $missing_rows, $args)) {
                     foreach ($origin_rows as $key => $val) {
                         $matched_rows[$key] = $val;
                         unset($missing_rows[$key]);
@@ -344,6 +409,10 @@
                 }
 
                 $engine::set_multi($engine_pool_write, $save_to_cache, $ttl);
+
+                if ($after_cache_func) {
+                    $after_cache_func(array_combine($rows_not_in_cache, array_intersect_key($rows, $rows_not_in_cache)));
+                }
             }
 
             return $matched_rows;
@@ -374,9 +443,9 @@
          * @param string $engine_pool
          * @param array  $keys
          */
-        public static function delete_multi($engine, $engine_pool, array $keys){
+        public static function delete_multi($engine, $engine_pool, array $keys) {
 
-            if (count($keys)) {
+            if ($keys) {
 
                 // Memory
                 foreach ($keys as $key) {
@@ -386,6 +455,49 @@
                 if ($engine) {
                     $engine = "cache_{$engine}_driver";
                     $engine::delete_multi($engine_pool, $keys);
+                }
+            }
+        }
+
+        /**
+         * Expire a cache entry
+         *
+         * @param string  $engine
+         * @param string  $engine_pool
+         * @param string  $key
+         * @param integer $ttl seconds to live
+         */
+        public static function expire($engine, $engine_pool, $key, $ttl) {
+
+            // Memory
+            cache_memory_dao::delete($key);
+
+            if ($engine) {
+                $engine = "cache_{$engine}_driver";
+                $engine::expire($engine_pool, $key, $ttl);
+            }
+        }
+
+        /**
+         * Delete multiple entries from cache
+         *
+         * @param string  $engine
+         * @param string  $engine_pool
+         * @param array   $keys
+         * @param integer $ttl seconds to live
+         */
+        public static function expire_multi($engine, $engine_pool, array $keys, $ttl) {
+
+            if ($keys) {
+
+                // Memory
+                foreach ($keys as $key) {
+                    cache_memory_dao::delete($key);
+                }
+
+                if ($engine) {
+                    $engine = "cache_{$engine}_driver";
+                    $engine::expire_multi($engine_pool, $keys, $ttl);
                 }
             }
         }

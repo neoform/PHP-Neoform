@@ -22,6 +22,16 @@
         protected $cache_engine_pool_read;
         protected $cache_engine_pool_write;
 
+        /**
+         * Types
+         */
+        const TYPE_STRING  = 1;
+        const TYPE_INTEGER = 2;
+        const TYPE_BINARY  = 3;
+        const TYPE_FLOAT   = 4;
+        const TYPE_DECIMAL = 5;
+        const TYPE_BOOL    = 6;
+
         public function __construct(array $config) {
             $this->source_engine            = $config['source_engine'];
             $this->source_engine_pool_read  = $config['source_engine_pool_read'];
@@ -38,8 +48,8 @@
          *
          * @return integer
          */
-        public function pdo_binding($field_name) {
-            return $this->pdo_bindings[$field_name];
+        public function field_binding($field_name) {
+            return $this->field_bindings[$field_name];
         }
 
         /**
@@ -47,8 +57,8 @@
          *
          * @return array
          */
-        public function pdo_bindings() {
-            return $this->pdo_bindings;
+        public function field_bindings() {
+            return $this->field_bindings;
         }
 
         /**
@@ -142,20 +152,17 @@
          * @param array   $select_fields  array of table fields (table columns) to be selected
          * @param array   $keys           array of table keys and their values being looked up in the table
          * @return array  array of records from cache
-         * @throws model_exception
+         * @throws entity_exception
          */
         final protected function _by_fields($cache_key_name, array $select_fields, array $keys) {
-
-            $self = $this;
-
             return cache_lib::single(
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
                 self::_build_key($cache_key_name, $keys),
-                function() use ($self, $select_fields, $keys) {
-                    $source_driver = "entity_link_driver_{$self->source_engine}";
-                    return $source_driver::by_fields($self, $self->source_engine_pool_read, $select_fields, $keys);
+                function() use ($select_fields, $keys) {
+                    $source_driver = "entity_link_driver_{$this->source_engine}";
+                    return $source_driver::by_fields($this, $this->source_engine_pool_read, $select_fields, $keys);
                 }
             );
         }
@@ -170,23 +177,20 @@
          * @param array   $select_fields  array of table fields (table columns) to be selected
          * @param array   $keys_arr       array of arrays of table keys and their values being looked up in the table - each sub-array must have matching keys
          * @return array  ids of records from cache
-         * @throws model_exception
+         * @throws entity_exception
          */
         final protected function _by_fields_multi($cache_key_name, array $select_fields, array $keys_arr) {
-
-            $self = $this;
-
             return cache_lib::multi(
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
                 $keys_arr,
-                function($fields) use ($self, $cache_key_name) {
-                    return entity_record_dao::_build_key($cache_key_name, $fields, $self::ENTITY_NAME);
+                function($fields) use ($cache_key_name) {
+                    return $this::_build_key($cache_key_name, $fields, $this::ENTITY_NAME);
                 },
-                function($keys_arr) use ($self, $select_fields) {
-                    $source_driver = "entity_link_driver_{$self->source_engine}";
-                    return $source_driver::by_fields_multi($self, $self->source_engine_pool_read, $select_fields, $keys_arr);
+                function($keys_arr) use ($select_fields) {
+                    $source_driver = "entity_link_driver_{$this->source_engine}";
+                    return $source_driver::by_fields_multi($this, $this->source_engine_pool_read, $select_fields, $keys_arr);
                 }
             );
         }
@@ -199,7 +203,7 @@
          * @param array   $info    an associative array of into to be put info the database
          * @param boolean $replace optional - user REPLACE INTO instead of INSERT INTO
          * @return boolean result of the PDO::execute()
-         * @throws model_exception
+         * @throws entity_exception
          */
         protected function _insert(array $info, $replace=false) {
             $source_driver = "entity_link_driver_{$this->source_engine}";
@@ -214,7 +218,7 @@
          * @param array   $infos   an array of associative array of info to be put into the database
          * @param boolean $replace optional - user REPLACE INTO instead of INSERT INTO
          * @return boolean result of the PDO::execute()
-         * @throws model_exception
+         * @throws entity_exception
          */
         protected function _inserts(array $infos, $replace=false) {
             if (! $infos) {
@@ -233,7 +237,7 @@
          * @param array $new_info the new info to be put into the model
          * @param array $where    return a model of the new record
          * @return boolean|null result of the PDO::execute()
-         * @throws model_exception
+         * @throws entity_exception
          */
         protected function _update(array $new_info, array $where) {
             if ($new_info) {
@@ -249,7 +253,7 @@
          * @static
          * @param array $keys the where of the query
          * @return boolean result of the PDO::execute()
-         * @throws model_exception
+         * @throws entity_exception
          */
         protected function _delete(array $keys) {
             $source_driver = "entity_link_driver_{$this->source_engine}";
@@ -263,7 +267,7 @@
          * @static
          * @param array of arrays matching the PKs of the link
          * @return boolean returns true on success
-         * @throws model_exception
+         * @throws entity_exception
          */
         protected function _deletes(array $keys_arr) {
             $source_driver = "entity_link_driver_{$this->source_engine}";

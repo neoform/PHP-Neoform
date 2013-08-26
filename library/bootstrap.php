@@ -59,7 +59,7 @@
                 core::output()->redirect();
 
             // Model Exception
-            } catch (model_exception $e) {
+            } catch (entity_exception $e) {
                 core::output()->error($e->message(), $e->description());
 
             // Force user to login exception
@@ -83,11 +83,6 @@
                 $json = new render_json;
                 $json->status = 'captcha';
                 $json->render();
-
-            // All other exceptions - 500 error
-            } catch (exception $e) {
-                error_lib::log($e);
-                controller::error(500);
             }
 
             return $this;

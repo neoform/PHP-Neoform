@@ -64,7 +64,7 @@
                     if (isset($this->tables[$fk['parent_table']])) {
                         $table->fields[$fk['field']]->_set_referenced_field($this->tables[$fk['parent_table']]->fields[$fk['parent_field']]);
                     } else {
-                        throw new exception('The parent table `' . $fk['parent_table'] . '` was not identified during parsing, is it in this database/schema?');
+                        throw new exception("The parent table `{$fk['parent_table']}` was not identified during parsing, is it in this database/schema?");
                     }
                 }
             }
@@ -84,7 +84,7 @@
 
         protected function get_table_definition($table_name) {
             $sql = core::sql()->prepare("
-                SHOW CREATE TABLE `" . $table_name . "`
+                SHOW CREATE TABLE `{$table_name}`
             ");
             $sql->execute();
             $describe = $sql->fetch();
@@ -103,7 +103,7 @@
             } else if ($create_view) {
                 // views are of no interest for this...
             } else {
-                throw new exception("Could not find table definition of `" . $table_name . "`");
+                throw new exception("Could not find table definition of `{$table_name}`");
             }
         }
 
@@ -246,7 +246,7 @@
                 case 'varbinary':
                     return 'binary';
 
-                case 'enum':
+                case 'enum': // break missing intentionally
                     if (array_key_exists(strtolower($details), self::$enum_values)) {
                         return 'bool';
                     }
@@ -277,9 +277,11 @@
                 case 'real':
                 case 'double':
                 case 'float':
-                case 'decimal':
                 case 'numeric':
                     return 'float';
+
+                case 'decimal':
+                    return 'decimal';
 
                 case 'binary':
                 case 'varbinary':
@@ -366,7 +368,7 @@
                 case 'char':
                 case 'varbinary':
                 case 'binary':
-                    return "->length(1, " . $field->size . ")";
+                    return "->length(1, {$field->size})";
 
                 case 'tinytext':
                 case 'tinyblob':
@@ -392,7 +394,7 @@
                     return "->is_date()";
 
                 case 'enum':
-                    return "->in([" . $field->var_info . "])";
+                    return "->in([{$field->var_info}])";
             }
         }
 

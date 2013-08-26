@@ -100,11 +100,11 @@
          *
          * @param string $pool
          * @param string $key
-         * @param array  $remove_keys
+         * @param mixed  $remove_key
          *
          * @throws cache_memcache_exception
          */
-        public static function list_remove($pool, $key, array $remove_keys) {
+        public static function list_remove($pool, $key, $remove_key) {
             throw new cache_memcache_exception('List commands are not supported by memcache');
         }
 
@@ -153,7 +153,14 @@
          * @return array
          */
         public static function get_multi($pool, array $keys) {
-            return core::memcache($pool)->getMulti($keys);
+            $mc_results = core::memcache($pool)->getMulti($keys);
+            $results = [];
+            foreach ($keys as $k => $key) {
+                if (array_key_exists($key, $mc_results)) {
+                    $results[$k] = $mc_results[$key];
+                }
+            }
+            return $results;
         }
 
         /**
@@ -186,10 +193,47 @@
          * @param array  $keys
          */
         public static function delete_multi($pool, array $keys) {
-            if (count($keys)) {
+            if ($keys) {
                 $mc = core::memcache($pool);
                 foreach ($keys as $key) {
                     $mc->delete($key);
+                }
+            }
+        }
+
+        /**
+         * Delete a single record
+         *
+         * @param string  $pool
+         * @param string  $key
+         * @param integer $ttl how many seconds left for this key to live - if not set, it will expire now
+         */
+        public static function expire($pool, $key, $ttl=0) {
+            if ($ttl === 0) {
+                core::memcache($pool)->delete($key);
+            } else {
+                core::memcache($pool)->touch($key, $ttl);
+            }
+        }
+
+        /**
+         * Delete multiple entries from cache
+         *
+         * @param string  $pool
+         * @param array   $keys
+         * @param integer $ttl how many seconds left for this key to live - if not set, it will expire now
+         */
+        public static function expire_multi($pool, array $keys, $ttl=0) {
+            if ($keys) {
+                $mc = core::memcache($pool);
+                if ($ttl === 0) {
+                    foreach ($keys as $key) {
+                        $mc->delete($key);
+                    }
+                } else {
+                    foreach ($keys as $key) {
+                        $mc->touch($key, $ttl);
+                    }
                 }
             }
         }

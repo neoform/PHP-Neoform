@@ -1,5 +1,5 @@
 <?php
 
-    class country_exception extends model_exception {
+    class country_exception extends entity_exception {
 
     }

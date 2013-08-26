@@ -1,5 +1,5 @@
 <?php
 
-    class city_exception extends model_exception {
+    class city_exception extends entity_exception {
 
     }

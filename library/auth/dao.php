@@ -7,10 +7,15 @@
 
         const BY_USER = 'by_user';
 
-        protected $pdo_bindings = [
-            'hash'       => PDO::PARAM_LOB,
-            'user_id'    => PDO::PARAM_INT,
-            'expires_on' => PDO::PARAM_STR,
+        /**
+         * $var array $field_bindings list of fields and their corresponding bindings
+         *
+         * @return array
+         */
+        protected $field_bindings = [
+            'hash'       => self::TYPE_BINARY,
+            'user_id'    => self::TYPE_INTEGER,
+            'expires_on' => self::TYPE_STRING,
         ];
 
         // READS
@@ -19,33 +24,56 @@
          * Get Auth hashs by user
          *
          * @param int $user_id
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of Auth hashs
          */
-        public function by_user($user_id) {
+        public function by_user($user_id, array $order_by=null, $offset=null, $limit=null) {
             return parent::_by_fields(
                 self::BY_USER,
                 [
                     'user_id' => (int) $user_id,
-                ]
+                ],
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
         /**
          * Get multiple sets of Auth hashs by user
          *
-         * @param user_collection $user_collection
+         * @param user_collection|array $user_list
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of arrays containing Auth hashs
          */
-        public function by_user_multi(user_collection $user_collection) {
+        public function by_user_multi($user_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
-            foreach ($user_collection as $k => $user) {
-                $keys[$k] = [
-                    'user_id' => (int) $user->id,
-                ];
+            if ($user_list instanceof user_collection) {
+                foreach ($user_list as $k => $user) {
+                    $keys[$k] = [
+                        'user_id' => (int) $user->id,
+                    ];
+                }
+            } else {
+                foreach ($user_list as $k => $user) {
+                    $keys[$k] = [
+                        'user_id' => (int) $user,
+                    ];
+                }
             }
-            return parent::_by_fields_multi(self::BY_USER, $keys);
+            return parent::_by_fields_multi(
+                self::BY_USER,
+                $keys,
+                $order_by,
+                $offset,
+                $limit
+            );
         }
 
         // WRITES
@@ -60,22 +88,7 @@
         public function insert(array $info) {
 
             // Insert record
-            $return = parent::_insert($info);
-
-            // Delete Cache
-            // BY_USER
-            if (array_key_exists('user_id', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_USER,
-                        [
-                            'user_id' => (int) $info['user_id'],
-                        ]
-                    )
-                );
-            }
-
-            return $return;
+            return parent::_insert($info);
         }
 
         /**
@@ -87,31 +100,8 @@
          */
         public function inserts(array $infos) {
 
-            // Insert records
-            $return = parent::_inserts($infos);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            foreach ($infos as $info) {
-                // BY_USER
-                if (array_key_exists('user_id', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_USER,
-                            [
-                                'user_id' => (int) $info['user_id'],
-                            ]
-                        )
-                    );
-                }
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            // Insert record
+            return parent::_inserts($infos);
         }
 
         /**
@@ -126,37 +116,7 @@
         public function update(auth_model $auth, array $info) {
 
             // Update record
-            $updated_model = parent::_update($auth, $info);
-
-            // Delete Cache
-            // BY_USER
-            if (array_key_exists('user_id', $info)) {
-
-                // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-                parent::cache_batch_start();
-
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_USER,
-                        [
-                            'user_id' => (int) $auth->user_id,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_USER,
-                        [
-                            'user_id' => (int) $info['user_id'],
-                        ]
-                    )
-                );
-
-                // Execute pipelined cache deletion queries (if supported by cache engine)
-                parent::cache_batch_execute();
-            }
-
-            return $updated_model;
+            return parent::_update($auth, $info);
         }
 
         /**
@@ -169,20 +129,7 @@
         public function delete(auth_model $auth) {
 
             // Delete record
-            $return = parent::_delete($auth);
-
-            // Delete Cache
-            // BY_USER
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_USER,
-                    [
-                        'user_id' => (int) $auth->user_id,
-                    ]
-                )
-            );
-
-            return $return;
+            return parent::_delete($auth);
         }
 
         /**
@@ -195,27 +142,6 @@
         public function deletes(auth_collection $auth_collection) {
 
             // Delete records
-            $return = parent::_deletes($auth_collection);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            foreach ($auth_collection as $auth) {
-                // BY_USER
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_USER,
-                        [
-                            'user_id' => (int) $auth->user_id,
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_deletes($auth_collection);
         }
     }

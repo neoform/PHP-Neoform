@@ -1,5 +1,5 @@
 <?php
 
-    class user_site_exception extends model_exception {
+    class user_site_exception extends entity_exception {
 
     }

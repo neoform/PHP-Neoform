@@ -1,11 +1,11 @@
 <?php
 
     /**
-    * User Site Model
-    *
-    * @var int $user_id
-    * @var int $site_id
-    */
+     * User Site Model
+     *
+     * @var int $user_id
+     * @var int $site_id
+     */
     class user_site_model extends entity_link_model implements user_site_definition {
 
         public function __get($k) {
@@ -21,16 +21,6 @@
                         return $this->vars[$k];
                 }
             }
-
-        }
-
-        /**
-         * Site Model based on 'site_id'
-         *
-         * @return site_model
-         */
-        public function site() {
-            return $this->_model('site', $this->vars['site_id'], 'site_model');
         }
 
         /**
@@ -42,4 +32,12 @@
             return $this->_model('user', $this->vars['user_id'], 'user_model');
         }
 
+        /**
+         * Site Model based on 'site_id'
+         *
+         * @return site_model
+         */
+        public function site() {
+            return $this->_model('site', $this->vars['site_id'], 'site_model');
+        }
     }

@@ -1,13 +1,13 @@
 <?php
 
     /**
-    * Locale Key Model
-    *
-    * @var int $id
-    * @var string $body
-    * @var string $locale
-    * @var int $namespace_id
-    */
+     * Locale Key Model
+     *
+     * @var int $id
+     * @var string $body
+     * @var string $locale
+     * @var int $namespace_id
+     */
     class locale_key_model extends entity_record_model implements locale_key_definition {
 
         public function __get($k) {
@@ -33,15 +33,20 @@
         /**
          * Locale Key Message Collection
          *
+         * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
+         *
          * @return locale_key_message_collection
          */
-        public function locale_key_message_collection() {
-            if (! array_key_exists('locale_key_message_collection', $this->_vars)) {
-                $this->_vars['locale_key_message_collection'] = new locale_key_message_collection(
-                    entity::dao('locale_key_message')->by_key($this->vars['id'])
+        public function locale_key_message_collection(array $order_by=null, $offset=null, $limit=null) {
+            $key = self::_limit_var_key('locale_key_message_collection', $order_by, $offset, $limit);
+            if (! array_key_exists($key, $this->_vars)) {
+                $this->_vars[$key] = new locale_key_message_collection(
+                    entity::dao('locale_key_message')->by_key($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
-            return $this->_vars['locale_key_message_collection'];
+            return $this->_vars[$key];
         }
 
         /**

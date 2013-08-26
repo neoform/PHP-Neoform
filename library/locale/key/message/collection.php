@@ -11,7 +11,11 @@
          * @return locale_key_collection
          */
         public function locale_key_collection() {
-            return $this->_preload_one_to_one('locale_key', 'key_id');
+            return $this->_preload_one_to_one(
+                'locale_key',
+                'key_id',
+                'locale_key'
+            );
         }
 
         /**
@@ -20,6 +24,10 @@
          * @return locale_collection
          */
         public function locale_collection() {
-            return $this->_preload_one_to_one('locale', 'locale');
+            return $this->_preload_one_to_one(
+                'locale',
+                'locale',
+                'locale'
+            );
         }
     }

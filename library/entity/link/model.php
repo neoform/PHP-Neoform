@@ -100,12 +100,24 @@
         }
 
         /**
+         * @param string        $name
+         * @param integer|null  $limit
+         * @param integer|null  $offset
+         * @param array|null    $order_by
+         *
+         * @return string
+         */
+        final public static function _limit_var_key($name, $limit=null, $offset=null, array $order_by=null) {
+            return "{$name}:{$offset}:{$limit}:" . json_encode($order_by);
+        }
+
+        /**
          * Attempt to set a value in this model - this is not possible
          *
          * @param string $k
          * @param mixed $v
          *
-         * @throws model_exception
+         * @throws entity_exception
          */
         public function offsetSet($k, $v) {
             $exception = static::ENTITY_NAME . '_exception';
@@ -128,7 +140,7 @@
          *
          * @param string $k
          *
-         * @throws model_exception
+         * @throws entity_exception
          */
         public function offsetUnset($k) {
             $exception = static::ENTITY_NAME . '_exception';

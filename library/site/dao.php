@@ -5,15 +5,17 @@
      */
     class site_dao extends entity_record_dao implements site_definition {
 
-        const BY_ALL  = 'by_all';
         const BY_NAME = 'by_name';
 
-        public static function bindings() {
-            return [
-                'id'   => PDO::PARAM_INT,
-                'name' => PDO::PARAM_STR,
-            ];
-        }
+        /**
+         * $var array $field_bindings list of fields and their corresponding bindings
+         *
+         * @return array
+         */
+        protected $field_bindings = [
+            'id'   => self::TYPE_INTEGER,
+            'name' => self::TYPE_STRING,
+        ];
 
         // READS
 
@@ -34,12 +36,21 @@
         }
 
         /**
-         * Get all data for all Site records
+         * Get Site id_arr by an array of names
          *
-         * @return array containing all Site records
+         * @param array $name_arr an array containing names
+         *
+         * @return array of arrays of Site ids
          */
-        public function all() {
-            return parent::_all(self::BY_ALL);
+        public function by_name_multi(array $name_arr) {
+            $keys_arr = [];
+            foreach ($name_arr as $k => $name) {
+                $keys_arr[$k] = [ 'name' => (string) $name, ];
+            }
+            return parent::_by_fields_multi(
+                self::BY_NAME,
+                $keys_arr
+            );
         }
 
         // WRITES
@@ -52,27 +63,9 @@
          * @return site_model
          */
         public function insert(array $info) {
-            $return = parent::_insert($info);
 
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            // BY_NAME
-            if (array_key_exists('name', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME,
-                        [
-                            'name' => (string) $info['name'],
-                        ]
-                    )
-                );
-            }
-
-            return $return;
+            // Insert record
+            return parent::_insert($info);
         }
 
         /**
@@ -83,30 +76,9 @@
          * @return site_collection
          */
         public function inserts(array $infos) {
-            $return = parent::_inserts($infos);
 
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            foreach ($infos as $info) {
-                // BY_NAME
-                if (array_key_exists('name', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_NAME,
-                            [
-                                'name' => (string) $info['name'],
-                            ]
-                        )
-                    );
-                }
-
-            }
-
-            return $return;
+            // Insert record
+            return parent::_inserts($infos);
         }
 
         /**
@@ -119,35 +91,9 @@
          * @return site_model updated model
          */
         public function update(site_model $site, array $info) {
-            $updated_model = parent::_update($site, $info);
 
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            // BY_NAME
-            if (array_key_exists('name', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME,
-                        [
-                            'name' => (string) $site->name,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME,
-                        [
-                            'name' => (string) $info['name'],
-                        ]
-                    )
-                );
-            }
-
-            return $updated_model;
+            // Update record
+            return parent::_update($site, $info);
         }
 
         /**
@@ -158,25 +104,9 @@
          * @return bool
          */
         public function delete(site_model $site) {
-            $return = parent::_delete($site);
 
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            // BY_NAME
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_NAME,
-                    [
-                        'name' => (string) $site->name,
-                    ]
-                )
-            );
-
-            return $return;
+            // Delete record
+            return parent::_delete($site);
         }
 
         /**
@@ -187,27 +117,8 @@
          * @return bool
          */
         public function deletes(site_collection $site_collection) {
-            $return = parent::_deletes($site_collection);
 
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            foreach ($site_collection as $site) {
-                // BY_NAME
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME,
-                        [
-                            'name' => (string) $site->name,
-                        ]
-                    )
-                );
-
-            }
-
-            return $return;
+            // Delete records
+            return parent::_deletes($site_collection);
         }
     }

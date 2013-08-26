@@ -2,7 +2,7 @@
 
     //crush all the built in exception crap since we don't need to know anything relating to stack trace for these model exceptions...
 
-    class model_exception extends exception {
+    class entity_exception extends exception {
 
         protected $message;
         protected $description;

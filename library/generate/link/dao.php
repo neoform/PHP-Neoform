@@ -1,6 +1,6 @@
 <?php
 
-    class generate_entity_link_dao extends generate_dao {
+    class generate_link_dao extends generate_dao {
 
         public function code() {
 
@@ -206,7 +206,7 @@
 
             $this->code .= "\t\tpublic function insert(array \$info) {\n\n";
 
-            if ($this->table->is_tiny() || count($this->table->all_index_combinations) || $this->all) {
+            if ($this->table->is_tiny() || count($this->table->all_index_combinations)) {
 
                 $this->code .= "\t\t\t// Insert link\n";
                 $this->code .= "\t\t\t\$return = parent::_insert(\$info);\n\n";
@@ -217,7 +217,7 @@
                 $this->code .= "\t\t\t// Delete Cache\n";
 
                 // ALL
-                if ($this->table->is_tiny() || $this->all) {
+                if ($this->table->is_tiny()) {
                     $this->code .= "\t\t\t// BY_ALL\n";
                     $this->code .= "\t\t\tparent::_cache_delete(\n";
                     $this->code .= "\t\t\t\tparent::_build_key(self::BY_ALL)\n";
@@ -285,7 +285,7 @@
 
             $this->code .= "\t\tpublic function inserts(array \$infos) {\n\n";
 
-            if ($this->table->is_tiny() || count($this->table->all_index_combinations) || $this->all) {
+            if ($this->table->is_tiny() || count($this->table->all_index_combinations)) {
 
                 $this->code .= "\t\t\t// Insert links\n";
                 $this->code .= "\t\t\t\$return = parent::_inserts(\$infos);\n\n";
@@ -295,7 +295,7 @@
 
                 $this->code .= "\t\t\t// Delete Cache\n";
 
-                if ($this->table->is_tiny() || $this->all) {
+                if ($this->table->is_tiny()) {
                     $this->code .= "\t\t\t// BY_ALL\n";
                     $this->code .= "\t\t\tparent::_cache_delete(\n";
                     $this->code .= "\t\t\t\tparent::_build_key(self::BY_ALL)\n";

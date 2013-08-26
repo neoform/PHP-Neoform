@@ -11,7 +11,10 @@
          * @return user_collection
          */
         public function user_collection() {
-            return $this->_preload_one_to_one('user', 'user_id');
+            return $this->_preload_one_to_one(
+                'user',
+                'user_id',
+                'user'
+            );
         }
-
     }

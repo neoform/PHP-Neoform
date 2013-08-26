@@ -277,9 +277,11 @@
                 case 'real':
                 case 'double':
                 case 'float':
-                case 'decimal':
                 case 'numeric':
                     return 'float';
+
+                case 'decimal':
+                    return 'decimal';
 
                 case 'binary':
                 case 'varbinary':

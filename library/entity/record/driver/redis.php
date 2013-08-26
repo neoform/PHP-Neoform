@@ -14,7 +14,7 @@
          */
         public static function record(entity_record_dao $self, $pool, $pk) {
 
-            $key = 'db:' . $self::TABLE . ":{$pk}";
+            $key = '_db_:' . $self::TABLE . ":{$pk}";
 
             $redis = core::redis($pool);
             $data  = $redis->get($key);
@@ -40,7 +40,7 @@
         public static function records(entity_record_dao $self, $pool, array $pks) {
             $keys = [];
             foreach ($pks as $k => $pk) {
-                $keys[$k] = 'db:' . $self::TABLE . ":{$pk}";
+                $keys[$k] = '_db_:' . $self::TABLE . ":{$pk}";
             }
 
             $redis = core::redis($pool);
@@ -171,7 +171,7 @@
          */
         public static function insert(entity_record_dao $self, $pool, array $info, $autoincrement, $replace) {
             core::redis($pool)->set(
-                'db:' . $self::TABLE . ':' . $info[$self::PRIMARY_KEY],
+                '_db_:' . $self::TABLE . ':' . $info[$self::PRIMARY_KEY],
                 $info
             );
 
@@ -194,7 +194,7 @@
 
             $inserts = [];
             foreach ($infos as $info) {
-                $inserts['db:' . $self::TABLE . ':' . $info[$self::PRIMARY_KEY]] = $info;
+                $inserts['_db_:' . $self::TABLE . ':' . $info[$self::PRIMARY_KEY]] = $info;
             }
 
             core::redis($pool)->mset($inserts);
@@ -213,7 +213,7 @@
          */
         public static function update(entity_record_dao $self, $pool, $pk, entity_record_model $model, array $info) {
             return core::redis($pool)->set(
-                'db:' . $self::TABLE . ":{$model->$pk}",
+                '_db_:' . $self::TABLE . ":{$model->$pk}",
                 array_merge($model->export(), $info)
             );
         }
@@ -227,7 +227,7 @@
          * @param entity_record_model $model
          */
         public static function delete(entity_record_dao $self, $pool, $pk, entity_record_model $model) {
-            return core::redis($pool)->delete('db:' . $self::TABLE . ":{$model->$pk}");
+            return core::redis($pool)->delete('_db_:' . $self::TABLE . ":{$model->$pk}");
         }
 
         /**
@@ -241,7 +241,7 @@
         public static function deletes(entity_record_dao $self, $pool, $pk, entity_record_collection $collection) {
             $keys = [];
             foreach ($collection as $model) {
-                $keys[] = 'db:' . $self::TABLE . ":{$model->$pk}";
+                $keys[] = '_db_:' . $self::TABLE . ":{$model->$pk}";
             }
 
             return core::redis($pool)->delete($keys);

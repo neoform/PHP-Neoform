@@ -428,8 +428,6 @@
          */
         public function all(array $keys=null) {
 
-            $pk = static::PRIMARY_KEY;
-
             if ($keys) {
                 $this->bind_fields($keys);
             }
@@ -439,9 +437,9 @@
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
                 self::_build_key(self::ALL),
-                function() use ($pk, $keys) {
+                function() use ($keys) {
                     $source_driver = "entity_record_driver_{$this->source_engine}";
-                    return $source_driver::all($this, $this->source_engine_pool_read, $pk, $keys);
+                    return $source_driver::all($this, $this->source_engine_pool_read, $this::PRIMARY_KEY, $keys);
                 },
                 function($cache_key) {
                     $this->_set_always_cache_lists($cache_key);
@@ -489,9 +487,6 @@
          * @return mixed
          */
         final protected function _by_fields($cache_key_name, array $keys, array $order_by=null, $offset=null, $limit=null) {
-
-            $pk = static::PRIMARY_KEY;
-
             if ($order_by) {
                 $limit  = (int) $limit;
                 $offset = $offset === null ? null : (int) $offset;
@@ -509,13 +504,13 @@
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
                     $cache_key,
-                    function() use ($cache_key, $keys, $pk, $order_by, $offset, $limit) {
+                    function() use ($cache_key, $keys, $order_by, $offset, $limit) {
                         $source_driver = "entity_record_driver_{$this->source_engine}";
                         return $source_driver::by_fields_offset(
                             $this,
                             $this->source_engine_pool_read,
                             $keys,
-                            $pk,
+                            $this::PRIMARY_KEY,
                             $order_by,
                             $offset,
                             $limit
@@ -531,9 +526,9 @@
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
                     self::_build_key($cache_key_name, $keys),
-                    function() use ($keys, $pk) {
+                    function() use ($keys) {
                         $source_driver = "entity_record_driver_{$this->source_engine}";
-                        return $source_driver::by_fields($this, $this->source_engine_pool_read, $keys, $pk);
+                        return $source_driver::by_fields($this, $this->source_engine_pool_read, $keys, $this::PRIMARY_KEY);
                     },
                     function($cache_key) use ($keys) {
                         $this->_set_meta_cache($cache_key, $keys);
@@ -557,9 +552,6 @@
          * @throws entity_exception
          */
         final protected function _by_fields_multi($cache_key_name, array $keys_arr, array $order_by=null, $offset=null, $limit=null) {
-
-            $pk = static::PRIMARY_KEY;
-
             if ($order_by) {
                 $limit  = (int) $limit;
                 $offset = $offset === null ? null : (int) $offset;
@@ -578,13 +570,13 @@
                             $fields
                         );
                     },
-                    function(array $keys_arr) use ($pk, $order_by, $offset, $limit) {
+                    function(array $keys_arr) use ($order_by, $offset, $limit) {
                         $source_driver = "entity_record_driver_{$this->source_engine}";
                         return $source_driver::by_fields_offset_multi(
                             $this,
                             $this->source_engine_pool_read,
                             $keys_arr,
-                            $pk,
+                            $this::PRIMARY_KEY,
                             $order_by,
                             $offset,
                             $limit
@@ -603,9 +595,9 @@
                     function($fields) use ($cache_key_name) {
                         return $this::_build_key($cache_key_name, $fields);
                     },
-                    function(array $keys_arr) use ($pk) {
+                    function(array $keys_arr) {
                         $source_driver = "entity_record_driver_{$this->source_engine}";
-                        return $source_driver::by_fields_multi($this, $this->source_engine_pool_read, $keys_arr, $pk);
+                        return $source_driver::by_fields_multi($this, $this->source_engine_pool_read, $keys_arr, $this::PRIMARY_KEY);
                     },
                     function(array $cache_keys) {
                         $this->_set_meta_cache_multi($cache_keys);

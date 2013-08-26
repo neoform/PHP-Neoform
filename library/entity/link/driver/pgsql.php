@@ -22,9 +22,9 @@
          * Get specific fields from a record, by keys
          *
          * @param entity_link_dao $self the name of the DAO
-         * @param string   $pool which source engine pool to use
-         * @param array    $select_fields
-         * @param array    $keys
+         * @param string          $pool which source engine pool to use
+         * @param array           $select_fields
+         * @param array           $keys
          *
          * @return array
          */
@@ -62,53 +62,77 @@
          * Get specific fields from multiple records, by keys
          *
          * @param entity_link_dao $self the name of the DAO
-         * @param string   $pool which source engine pool to use
-         * @param array    $select_fields
-         * @param array    $keys_arr
+         * @param string          $pool which source engine pool to use
+         * @param array           $select_fields
+         * @param array           $keys_arr
          *
          * @return array
          */
         public static function by_fields_multi(entity_link_dao $self, $pool, array $select_fields, array $keys_arr) {
-            $key_fields     = array_keys(current($keys_arr));
+            $key_fields     = array_keys(reset($keys_arr));
+            $fields         = [];
             $reverse_lookup = [];
             $return         = [];
             $vals           = [];
             $where          = [];
 
+            foreach (array_unique(array_merge($select_fields, $key_fields)) as $k) {
+                $fields[] = "\"{$k}\"";
+            }
+
             foreach ($keys_arr as $k => $keys) {
                 $w = [];
-                $reverse_lookup[join(':', $keys)] = $k;
                 $return[$k] = [];
-                foreach ($keys as $k => $v) {
+                $hashed_valued = [];
+                foreach ($keys as $key => $v) {
                     if ($v === null) {
-                        $w[] = "\"{$k}\" IS NULL";
+                        $w[]             = "\"{$key}\" IS NULL";
+                        $hashed_valued[] = '';
                     } else {
-                        $vals[] = $v;
-                        $w[]    = "\"{$k}\" = ?";
+                        $vals[]          = $v;
+                        $w[]             = "\"{$key}\" = ?";
+                        $hashed_valued[] = md5($v);
                     }
                 }
+                $reverse_lookup[join(':', $hashed_valued)] = $k;
                 $where[] = '(' . join(" AND ", $w) . ')';
             }
 
             $rs = core::sql($pool)->prepare("
-                SELECT
-                    " . join(',', $select_fields) . ",
-                    CONCAT(" . join(", ':', ", $key_fields) . ") \"__cache_key__\"
+                SELECT " . join(',', $fields) . "
                 FROM \"" . self::table($self::TABLE) . "\"
                 WHERE " . join(' OR ', $where) . "
             ");
-
             $rs->execute($vals);
 
-            $rows = $rs->fetchAll();
             if (count($select_fields) === 1) {
                 $field = reset($select_fields);
-                foreach ($rows as $row) {
-                    $return[$reverse_lookup[$row['__cache_key__']]][] = $row[$field];
+                foreach ($rs->fetchAll() as $row) {
+                    $hashed = [];
+                    foreach ($key_fields as $k) {
+                        $hashed[$row[$k]] = md5($row[$k]);
+                    }
+                    $return[$reverse_lookup[join(':', $hashed)]][] = $row[$field];
                 }
             } else {
-                foreach ($rows as $row) {
-                    $return[$reverse_lookup[$row['__cache_key__']]][] = $row;
+                // If the selected field count is different than the requested fields, only return the requested fields
+                if (count($select_fields) !== count($fields)) {
+                    $select_fields = array_keys($select_fields);
+                    foreach ($rs->fetchAll() as $row) {
+                        $hashed = [];
+                        foreach ($key_fields as $k) {
+                            $hashed[$row[$k]] = md5($row[$k]);
+                        }
+                        $return[$reverse_lookup[join(':', $hashed)]][] = array_intersect_key($row, $select_fields);
+                    }
+                } else {
+                    foreach ($rs->fetchAll() as $row) {
+                        $hashed = [];
+                        foreach ($key_fields as $k) {
+                            $hashed[$row[$k]] = md5($row[$k]);
+                        }
+                        $return[$reverse_lookup[join(':', $hashed)]][] = $row;
+                    }
                 }
             }
 
@@ -119,9 +143,9 @@
          * Insert a link
          *
          * @param entity_link_dao $self the name of the DAO
-         * @param string   $pool which source engine pool to use
-         * @param array    $info
-         * @param bool     $replace
+         * @param string          $pool which source engine pool to use
+         * @param array           $info
+         * @param bool            $replace
          *
          * @return mixed
          */
@@ -147,9 +171,9 @@
          * Insert multiple links
          *
          * @param entity_link_dao $self the name of the DAO
-         * @param string   $pool which source engine pool to use
-         * @param array    $infos
-         * @param bool     $replace
+         * @param string          $pool which source engine pool to use
+         * @param array           $infos
+         * @param bool            $replace
          *
          * @return bool
          */
@@ -188,9 +212,9 @@
          * Update a set of links
          *
          * @param entity_link_dao $self the name of the DAO
-         * @param string   $pool which source engine pool to use
-         * @param array    $new_info
-         * @param array    $where
+         * @param string          $pool which source engine pool to use
+         * @param array           $new_info
+         * @param array           $where
          *
          * @return mixed
          */
@@ -226,8 +250,8 @@
          * Delete one or more links
          *
          * @param entity_link_dao $self the name of the DAO
-         * @param string   $pool which source engine pool to use
-         * @param array    $keys
+         * @param string          $pool which source engine pool to use
+         * @param array           $keys
          *
          * @return mixed
          */
@@ -256,8 +280,8 @@
          * Delete sets of links
          *
          * @param entity_link_dao $self the name of the DAO
-         * @param string   $pool which source engine pool to use
-         * @param array    $keys_arr
+         * @param string          $pool which source engine pool to use
+         * @param array           $keys_arr
          *
          * @return mixed
          */

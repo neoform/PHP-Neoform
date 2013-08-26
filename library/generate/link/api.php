@@ -1,6 +1,6 @@
 <?php
 
-    class generate_entity_link_api extends generate_api {
+    class generate_link_api extends generate_api {
 
         public function code() {
 

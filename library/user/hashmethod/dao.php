@@ -5,15 +5,16 @@
      */
     class user_hashmethod_dao extends entity_record_dao implements user_hashmethod_definition {
 
-        const BY_ALL  = 'by_all';
         const BY_NAME = 'by_name';
 
         /**
-         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
+         * $var array $field_bindings list of fields and their corresponding bindings
+         *
+         * @return array
          */
-        protected $pdo_bindings = [
-            'id'   => PDO::PARAM_INT,
-            'name' => PDO::PARAM_STR,
+        protected $field_bindings = [
+            'id'   => self::TYPE_INTEGER,
+            'name' => self::TYPE_STRING,
         ];
 
         // READS
@@ -52,15 +53,6 @@
             );
         }
 
-        /**
-         * Get all data for all User Hashmethod records
-         *
-         * @return array containing all User Hashmethod records
-         */
-        public function all() {
-            return parent::_all(self::BY_ALL);
-        }
-
         // WRITES
 
         /**
@@ -73,33 +65,7 @@
         public function insert(array $info) {
 
             // Insert record
-            $return = parent::_insert($info);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            // BY_NAME
-            if (array_key_exists('name', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME,
-                        [
-                            'name' => (string) $info['name'],
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_insert($info);
         }
 
         /**
@@ -111,36 +77,8 @@
          */
         public function inserts(array $infos) {
 
-            // Insert records
-            $return = parent::_inserts($infos);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            foreach ($infos as $info) {
-                // BY_NAME
-                if (array_key_exists('name', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_NAME,
-                            [
-                                'name' => (string) $info['name'],
-                            ]
-                        )
-                    );
-                }
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            // Insert record
+            return parent::_inserts($infos);
         }
 
         /**
@@ -155,41 +93,7 @@
         public function update(user_hashmethod_model $user_hashmethod, array $info) {
 
             // Update record
-            $updated_model = parent::_update($user_hashmethod, $info);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            // BY_NAME
-            if (array_key_exists('name', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME,
-                        [
-                            'name' => (string) $user_hashmethod->name,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME,
-                        [
-                            'name' => (string) $info['name'],
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $updated_model;
+            return parent::_update($user_hashmethod, $info);
         }
 
         /**
@@ -202,31 +106,7 @@
         public function delete(user_hashmethod_model $user_hashmethod) {
 
             // Delete record
-            $return = parent::_delete($user_hashmethod);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            // BY_NAME
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_NAME,
-                    [
-                        'name' => (string) $user_hashmethod->name,
-                    ]
-                )
-            );
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_delete($user_hashmethod);
         }
 
         /**
@@ -239,32 +119,6 @@
         public function deletes(user_hashmethod_collection $user_hashmethod_collection) {
 
             // Delete records
-            $return = parent::_deletes($user_hashmethod_collection);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            foreach ($user_hashmethod_collection as $user_hashmethod) {
-                // BY_NAME
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME,
-                        [
-                            'name' => (string) $user_hashmethod->name,
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_deletes($user_hashmethod_collection);
         }
     }

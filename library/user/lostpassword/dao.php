@@ -8,12 +8,14 @@
         const BY_USER = 'by_user';
 
         /**
-         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
+         * $var array $field_bindings list of fields and their corresponding bindings
+         *
+         * @return array
          */
-        protected $pdo_bindings = [
-            'hash'      => PDO::PARAM_STR,
-            'user_id'   => PDO::PARAM_INT,
-            'posted_on' => PDO::PARAM_STR,
+        protected $field_bindings = [
+            'hash'      => self::TYPE_STRING,
+            'user_id'   => self::TYPE_INTEGER,
+            'posted_on' => self::TYPE_STRING,
         ];
 
         // READS
@@ -38,10 +40,13 @@
          * Get multiple sets of User Lostpassword hashs by user
          *
          * @param user_collection|array $user_list
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of arrays containing User Lostpassword hashs
          */
-        public function by_user_multi($user_list) {
+        public function by_user_multi($user_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
             if ($user_list instanceof user_collection) {
                 foreach ($user_list as $k => $user) {
@@ -56,7 +61,13 @@
                     ];
                 }
             }
-            return parent::_by_fields_multi(self::BY_USER, $keys);
+            return parent::_by_fields_multi(
+                self::BY_USER,
+                $keys,
+                $order_by,
+                $offset,
+                $limit
+            );
         }
 
         // WRITES
@@ -71,28 +82,7 @@
         public function insert(array $info) {
 
             // Insert record
-            $return = parent::_insert($info);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_USER
-            if (array_key_exists('user_id', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_USER,
-                        [
-                            'user_id' => (int) $info['user_id'],
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_insert($info);
         }
 
         /**
@@ -104,31 +94,8 @@
          */
         public function inserts(array $infos) {
 
-            // Insert records
-            $return = parent::_inserts($infos);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            foreach ($infos as $info) {
-                // BY_USER
-                if (array_key_exists('user_id', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_USER,
-                            [
-                                'user_id' => (int) $info['user_id'],
-                            ]
-                        )
-                    );
-                }
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            // Insert record
+            return parent::_inserts($infos);
         }
 
         /**
@@ -143,36 +110,7 @@
         public function update(user_lostpassword_model $user_lostpassword, array $info) {
 
             // Update record
-            $updated_model = parent::_update($user_lostpassword, $info);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_USER
-            if (array_key_exists('user_id', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_USER,
-                        [
-                            'user_id' => (int) $user_lostpassword->user_id,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_USER,
-                        [
-                            'user_id' => (int) $info['user_id'],
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $updated_model;
+            return parent::_update($user_lostpassword, $info);
         }
 
         /**
@@ -185,26 +123,7 @@
         public function delete(user_lostpassword_model $user_lostpassword) {
 
             // Delete record
-            $return = parent::_delete($user_lostpassword);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_USER
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_USER,
-                    [
-                        'user_id' => (int) $user_lostpassword->user_id,
-                    ]
-                )
-            );
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_delete($user_lostpassword);
         }
 
         /**
@@ -217,27 +136,6 @@
         public function deletes(user_lostpassword_collection $user_lostpassword_collection) {
 
             // Delete records
-            $return = parent::_deletes($user_lostpassword_collection);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            foreach ($user_lostpassword_collection as $user_lostpassword) {
-                // BY_USER
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_USER,
-                        [
-                            'user_id' => (int) $user_lostpassword->user_id,
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_deletes($user_lostpassword_collection);
         }
     }

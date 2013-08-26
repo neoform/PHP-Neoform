@@ -10,11 +10,13 @@
         const BY_USER      = 'by_user';
 
         /**
-         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
+         * $var array $field_bindings list of fields and their corresponding bindings
+         *
+         * @return array
          */
-        protected $pdo_bindings = [
-            'user_id' => PDO::PARAM_INT,
-            'site_id' => PDO::PARAM_INT,
+        protected $field_bindings = [
+            'user_id' => self::TYPE_INTEGER,
+            'site_id' => self::TYPE_INTEGER,
         ];
 
         // READS

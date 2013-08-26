@@ -5,21 +5,22 @@
      */
     class country_dao extends entity_record_dao implements country_definition {
 
-        const BY_ALL             = 'by_all';
         const BY_NAME_NORMALIZED = 'by_name_normalized';
         const BY_ISO2            = 'by_iso2';
         const BY_ISO3            = 'by_iso3';
         const BY_NAME            = 'by_name';
 
         /**
-         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
+         * $var array $field_bindings list of fields and their corresponding bindings
+         *
+         * @return array
          */
-        protected $pdo_bindings = [
-            'id'              => PDO::PARAM_INT,
-            'name'            => PDO::PARAM_STR,
-            'name_normalized' => PDO::PARAM_STR,
-            'iso2'            => PDO::PARAM_STR,
-            'iso3'            => PDO::PARAM_STR,
+        protected $field_bindings = [
+            'id'              => self::TYPE_INTEGER,
+            'name'            => self::TYPE_STRING,
+            'name_normalized' => self::TYPE_STRING,
+            'iso2'            => self::TYPE_STRING,
+            'iso3'            => self::TYPE_STRING,
         ];
 
         // READS
@@ -160,15 +161,6 @@
             );
         }
 
-        /**
-         * Get all data for all Country records
-         *
-         * @return array containing all Country records
-         */
-        public function all() {
-            return parent::_all(self::BY_ALL);
-        }
-
         // WRITES
 
         /**
@@ -181,69 +173,7 @@
         public function insert(array $info) {
 
             // Insert record
-            $return = parent::_insert($info);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            // BY_NAME_NORMALIZED
-            if (array_key_exists('name_normalized', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME_NORMALIZED,
-                        [
-                            'name_normalized' => (string) $info['name_normalized'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_ISO2
-            if (array_key_exists('iso2', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ISO2,
-                        [
-                            'iso2' => (string) $info['iso2'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_ISO3
-            if (array_key_exists('iso3', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ISO3,
-                        [
-                            'iso3' => (string) $info['iso3'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_NAME
-            if (array_key_exists('name', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME,
-                        [
-                            'name' => (string) $info['name'],
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_insert($info);
         }
 
         /**
@@ -255,72 +185,8 @@
          */
         public function inserts(array $infos) {
 
-            // Insert records
-            $return = parent::_inserts($infos);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            foreach ($infos as $info) {
-                // BY_NAME_NORMALIZED
-                if (array_key_exists('name_normalized', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_NAME_NORMALIZED,
-                            [
-                                'name_normalized' => (string) $info['name_normalized'],
-                            ]
-                        )
-                    );
-                }
-
-                // BY_ISO2
-                if (array_key_exists('iso2', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_ISO2,
-                            [
-                                'iso2' => (string) $info['iso2'],
-                            ]
-                        )
-                    );
-                }
-
-                // BY_ISO3
-                if (array_key_exists('iso3', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_ISO3,
-                            [
-                                'iso3' => (string) $info['iso3'],
-                            ]
-                        )
-                    );
-                }
-
-                // BY_NAME
-                if (array_key_exists('name', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_NAME,
-                            [
-                                'name' => (string) $info['name'],
-                            ]
-                        )
-                    );
-                }
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            // Insert record
+            return parent::_inserts($infos);
         }
 
         /**
@@ -335,101 +201,7 @@
         public function update(country_model $country, array $info) {
 
             // Update record
-            $updated_model = parent::_update($country, $info);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            // BY_NAME_NORMALIZED
-            if (array_key_exists('name_normalized', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME_NORMALIZED,
-                        [
-                            'name_normalized' => (string) $country->name_normalized,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME_NORMALIZED,
-                        [
-                            'name_normalized' => (string) $info['name_normalized'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_ISO2
-            if (array_key_exists('iso2', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ISO2,
-                        [
-                            'iso2' => (string) $country->iso2,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ISO2,
-                        [
-                            'iso2' => (string) $info['iso2'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_ISO3
-            if (array_key_exists('iso3', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ISO3,
-                        [
-                            'iso3' => (string) $country->iso3,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ISO3,
-                        [
-                            'iso3' => (string) $info['iso3'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_NAME
-            if (array_key_exists('name', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME,
-                        [
-                            'name' => (string) $country->name,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME,
-                        [
-                            'name' => (string) $info['name'],
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $updated_model;
+            return parent::_update($country, $info);
         }
 
         /**
@@ -442,61 +214,7 @@
         public function delete(country_model $country) {
 
             // Delete record
-            $return = parent::_delete($country);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            // BY_NAME_NORMALIZED
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_NAME_NORMALIZED,
-                    [
-                        'name_normalized' => (string) $country->name_normalized,
-                    ]
-                )
-            );
-
-            // BY_ISO2
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_ISO2,
-                    [
-                        'iso2' => (string) $country->iso2,
-                    ]
-                )
-            );
-
-            // BY_ISO3
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_ISO3,
-                    [
-                        'iso3' => (string) $country->iso3,
-                    ]
-                )
-            );
-
-            // BY_NAME
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_NAME,
-                    [
-                        'name' => (string) $country->name,
-                    ]
-                )
-            );
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_delete($country);
         }
 
         /**
@@ -509,62 +227,6 @@
         public function deletes(country_collection $country_collection) {
 
             // Delete records
-            $return = parent::_deletes($country_collection);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            foreach ($country_collection as $country) {
-                // BY_NAME_NORMALIZED
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME_NORMALIZED,
-                        [
-                            'name_normalized' => (string) $country->name_normalized,
-                        ]
-                    )
-                );
-
-                // BY_ISO2
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ISO2,
-                        [
-                            'iso2' => (string) $country->iso2,
-                        ]
-                    )
-                );
-
-                // BY_ISO3
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ISO3,
-                        [
-                            'iso3' => (string) $country->iso3,
-                        ]
-                    )
-                );
-
-                // BY_NAME
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_NAME,
-                        [
-                            'name' => (string) $country->name,
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_deletes($country_collection);
         }
     }

@@ -10,11 +10,13 @@
         const BY_ACL_RESOURCE          = 'by_acl_resource';
 
         /**
-         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
+         * $var array $field_bindings list of fields and their corresponding bindings
+         *
+         * @return array
          */
-        protected $pdo_bindings = [
-            'acl_role_id'     => PDO::PARAM_INT,
-            'acl_resource_id' => PDO::PARAM_INT,
+        protected $field_bindings = [
+            'acl_role_id'     => self::TYPE_INTEGER,
+            'acl_resource_id' => self::TYPE_INTEGER,
         ];
 
         // READS

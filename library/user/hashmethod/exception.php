@@ -1,5 +1,5 @@
 <?php
 
-    class user_hashmethod_exception extends model_exception {
+    class user_hashmethod_exception extends entity_exception {
 
     }

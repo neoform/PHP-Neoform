@@ -1,5 +1,5 @@
 <?php
 
-    class user_acl_role_exception extends model_exception {
+    class user_acl_role_exception extends entity_exception {
 
     }

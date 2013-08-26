@@ -2,6 +2,20 @@
 
     class generate_model extends generate {
 
+        protected $used_function_names = [];
+
+        protected function used($name) {
+            $suffix     = '';
+            $final_name = $name;
+            $i          = 1;
+            while (in_array($final_name, $this->used_function_names)) {
+                $final_name = $name . $suffix;
+                $suffix     = $i++;
+            }
+            $this->used_function_names[] = $final_name;
+            return $final_name;
+        }
+
         public function get() {
 
             $enum_values = [
@@ -108,33 +122,14 @@
             * As many lines of extendend description as you want {@link element} links to an element
             * {@link http://www.example.com Example hyperlink inline link} links to a website
             * Below this goes the tags to further describe element you are documenting
-            *
-            * @param      type    $varname    description
-            * @return     type    description
-            * @access     public or private
-            * @author     author name
-            * @copyright    name date
-            * @version    version
-            * @see        name of another element that can be documented, produces a link to it in the documentation
-            * @link        a url
-            * @since      a version or a date
-            * @deprecated    description
-            * @deprec    alias for deprecated
-            * @magic    phpdoc.de compatibility
-            * @exception    Javadoc-compatible, use as needed
-            * @throws      Javadoc-compatible, use as needed
-            * @var        type    a data type for a class variable
-            * @package    package name
-            * @subpackage    sub package name, groupings inside of a project
             */
-
             $this->code .= "\t/**\n";
-            $this->code .= "\t* " . ucwords(str_replace('_', ' ', $this->table->name)) . " Model\n";
-            $this->code .= "\t*\n";
+            $this->code .= "\t * " . ucwords(str_replace('_', ' ', $this->table->name)) . " Model\n";
+            $this->code .= "\t *\n";
             foreach ($this->table->fields as $field) {
-                $this->code .= "\t* @var " . $field->casting_extended . ($field->allows_null() ? '|null' : '') . ' $' . $field->name . "\n";
+                $this->code .= "\t * @var " . $field->casting_extended . ($field->allows_null() ? '|null' : '') . ' $' . $field->name . "\n";
             }
-            $this->code .= "\t*/\n";
+            $this->code .= "\t */\n";
         }
 
         public function references() {
@@ -151,8 +146,6 @@
                     if ($referencing_field->table->is_record()) {
                         // one to many relationship (linking table implicating this one, tying it to another)
                         $this->one_to_many(
-                            $referencing_field->table->name . '_collection',
-                            $referencing_field->table->name . '_dao',
                             $referencing_field,
                             $referencing_field->referenced_field
                         );
@@ -166,10 +159,10 @@
                 }
             }
 
+
             // one to one relationships on outbound references
             foreach ($this->table->foreign_keys as $foreign_key) {
-                if ($foreign_key->table->is_record()) {
-
+                if ($foreign_key->referenced_field->table->is_record()) {
                     $this->one_to_one($foreign_key, $foreign_key->referenced_field);
                 }
             }
@@ -179,34 +172,43 @@
 
             $self_reference = $referenced_field->table === $this->table;
 
+            $name = $this->used(($self_reference ? 'parent_' : '') . $referenced_field->table->name);
+
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * " . ($self_reference ? 'Parent ' : '') . ucwords(str_replace('_', ' ', $referenced_field->table->name)) . " Model based on '" . $field->name . "'\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @return " . $referenced_field->table->name . "_model\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic function " . ($self_reference ? 'parent_' : '') . $referenced_field->table->name . "() {\n";
-            $this->code .= "\t\t\treturn \$this->_model('" . ($self_reference ? 'parent_' : '') . $referenced_field->table->name . "', \$this->vars['" . $field->name . "'], '" . $referenced_field->table->name . "_model');\n";
+            $this->code .= "\t\tpublic function {$name}() {\n";
+            $this->code .= "\t\t\treturn \$this->_model('{$name}', \$this->vars['" . $field->name . "'], '" . $referenced_field->table->name . "_model');\n";
             $this->code .= "\t\t}\n\n";
         }
 
-        protected function one_to_many($collection_name, $dao_name, sql_parser_field $field, sql_parser_field $referenced_field) {
+        protected function one_to_many(sql_parser_field $field, sql_parser_field $referenced_field) {
 
             $self_reference = $field->table === $this->table;
 
+            $name = $this->used(($self_reference ? 'child_' : '') . $field->table->name . '_collection');
+
             $this->code .= "\t\t/**\n";
-            $this->code .= "\t\t * " . ($self_reference ? 'Child ' : '') . ucwords(str_replace('_', ' ', $collection_name)) . "\n";
+            $this->code .= "\t\t * " . ($self_reference ? 'Child ' : '') . ucwords(str_replace('_', ' ', $field->table->name . '_collection')) . "\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @return " . $collection_name . "\n";
+            $this->code .= "\t\t * @param array|null   \$order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)\n";
+            $this->code .= "\t\t * @param integer|null \$offset get PKs starting at this offset\n";
+            $this->code .= "\t\t * @param integer|null \$limit max number of PKs to return\n";
+            $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @return {$field->table->name}_collection\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic function " . ($self_reference ? 'child_' : '') . $collection_name . "() {\n";
-            $this->code .= "\t\t\tif (! array_key_exists('" . ($self_reference ? 'child_' : '') . $collection_name . "', \$this->_vars)) {\n";
-            $this->code .= "\t\t\t\t\$this->_vars['" . ($self_reference ? 'child_' : '') . $collection_name . "'] = new " . $collection_name . "(\n";
-            $this->code .= "\t\t\t\t\t" . $dao_name . "::by_" . $field->name_idless . "(\$this->vars['" . $referenced_field->name . "'])\n";
+            $this->code .= "\t\tpublic function {$name}(array \$order_by=null, \$offset=null, \$limit=null) {\n";
+            $this->code .= "\t\t\t\$key = self::_limit_var_key('{$name}', \$order_by, \$offset, \$limit);\n";
+            $this->code .= "\t\t\tif (! array_key_exists(\$key, \$this->_vars)) {\n";
+            $this->code .= "\t\t\t\t\$this->_vars[\$key] = new {$field->table->name}_collection(\n";
+            $this->code .= "\t\t\t\t\tentity::dao('{$field->table->name}')->by_{$field->name_idless}(\$this->vars['{$referenced_field->name}'], \$order_by, \$offset, \$limit)\n";
             $this->code .= "\t\t\t\t);\n";
             $this->code .= "\t\t\t}\n";
-            $this->code .= "\t\t\treturn \$this->_vars['" . ($self_reference ? 'child_' : '') . $collection_name . "'];\n";
+            $this->code .= "\t\t\treturn \$this->_vars[\$key];\n";
             $this->code .= "\t\t}\n\n";
         }
 
@@ -216,19 +218,21 @@
 
             $self_reference = $field->table === $this->table;
 
+            $name = $this->used(($self_reference ? 'child_' : '') . $referenced_field->referenced_field->table->name . "_collection");
+
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * " . ($self_reference ? 'Child ' : '') . ucwords(str_replace('_', ' ', $referenced_field->referenced_field->table->name)) . " Collection\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @return " . $referenced_field->referenced_field->table->name . "_collection\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic function " . ($self_reference ? 'child_' : '') . $referenced_field->referenced_field->table->name . "_collection() {\n";
-            $this->code .= "\t\t\tif (! array_key_exists('" . ($self_reference ? 'child_' : '') . $referenced_field->referenced_field->table->name . "_collection', \$this->_vars)) {\n";
-            $this->code .= "\t\t\t\t\$this->_vars['" . ($self_reference ? 'child_' : '') . $referenced_field->referenced_field->table->name . "_collection'] = new " . $referenced_field->referenced_field->table->name . "_collection(\n";
-            $this->code .= "\t\t\t\t\t" . $field->table->name . "_dao::by_" . $field->name_idless . "(\$this->vars['" . $field->referenced_field->name . "'])\n";
+            $this->code .= "\t\tpublic function {$name}() {\n";
+            $this->code .= "\t\t\tif (! array_key_exists('{$name}', \$this->_vars)) {\n";
+            $this->code .= "\t\t\t\t\$this->_vars['{$name}'] = new " . $referenced_field->referenced_field->table->name . "_collection(\n";
+            $this->code .= "\t\t\t\t\tentity::dao('{$field->table->name}')->by_{$field->name_idless}(\$this->vars['" . $field->referenced_field->name . "'])\n";
             $this->code .= "\t\t\t\t);\n";
             $this->code .= "\t\t\t}\n";
-            $this->code .= "\t\t\treturn \$this->_vars['" . ($self_reference ? 'child_' : '') . $referenced_field->referenced_field->table->name . "_collection'];\n";
+            $this->code .= "\t\t\treturn \$this->_vars['{$name}'];\n";
             $this->code .= "\t\t}\n\n";
         }
     }

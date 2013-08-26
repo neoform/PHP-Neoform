@@ -9,9 +9,5 @@
         const TABLE         = 'site';
         const AUTOINCREMENT = false;
         const PRIMARY_KEY   = 'id';
-        const BINARY_PK     = false;
         const ENTITY_NAME   = 'site';
-        const USING_LIMIT   = true;
-        const USING_PAGINATED = true;
-        const USING_COUNT   = true;
     }

@@ -5,26 +5,16 @@
      */
     class locale_dao extends entity_record_dao implements locale_definition {
 
-        const BY_ALL = 'by_all';
 
         /**
-         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
-         */
-        protected $pdo_bindings = [
-            'iso2' => PDO::PARAM_STR,
-            'name' => PDO::PARAM_STR,
-        ];
-
-        // READS
-
-        /**
-         * Get all data for all Locale records
+         * $var array $field_bindings list of fields and their corresponding bindings
          *
-         * @return array containing all Locale records
+         * @return array
          */
-        public function all() {
-            return parent::_all(self::BY_ALL);
-        }
+        protected $field_bindings = [
+            'iso2' => self::TYPE_STRING,
+            'name' => self::TYPE_STRING,
+        ];
 
         // WRITES
 
@@ -38,15 +28,7 @@
         public function insert(array $info) {
 
             // Insert record
-            $return = parent::_insert($info);
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            return $return;
+            return parent::_insert($info);
         }
 
         /**
@@ -58,16 +40,8 @@
          */
         public function inserts(array $infos) {
 
-            // Insert records
-            $return = parent::_inserts($infos);
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            return $return;
+            // Insert record
+            return parent::_inserts($infos);
         }
 
         /**
@@ -82,15 +56,7 @@
         public function update(locale_model $locale, array $info) {
 
             // Update record
-            $updated_model = parent::_update($locale, $info);
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            return $updated_model;
+            return parent::_update($locale, $info);
         }
 
         /**
@@ -103,15 +69,7 @@
         public function delete(locale_model $locale) {
 
             // Delete record
-            $return = parent::_delete($locale);
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            return $return;
+            return parent::_delete($locale);
         }
 
         /**
@@ -124,14 +82,6 @@
         public function deletes(locale_collection $locale_collection) {
 
             // Delete records
-            $return = parent::_deletes($locale_collection);
-
-            // Delete Cache
-            // BY_ALL
-            parent::_cache_delete(
-                parent::_build_key(self::BY_ALL)
-            );
-
-            return $return;
+            return parent::_deletes($locale_collection);
         }
     }

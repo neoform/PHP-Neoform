@@ -15,13 +15,13 @@
         /**
          * @param string|integer|null  $pk   Primary key of the entity
          * @param array                $info Manually load model with entity data
-         * @throws model_exception
+         * @throws entity_exception
          */
         public function __construct($pk=null, array $info=null) {
 
             if ($pk !== null) {
                 $dao = entity::dao(static::ENTITY_NAME);
-                if ($this->vars = $dao->by_pk($pk)) {
+                if ($this->vars = $dao->record($pk)) {
                     return;
                 }
             } else if ($info !== null) {
@@ -38,7 +38,7 @@
          *
          * @param $k
          * @param $v
-         * @throws model_exception
+         * @throws entity_exception
          */
         final public function __set($k, $v) {
             $exception = static::ENTITY_NAME . '_exception';
@@ -50,7 +50,7 @@
          *
          * @param array $vars
          */
-        public function _update(array $vars) {
+        final public function _update(array $vars) {
             //clean the temp vars
             $this->_vars = [];
 
@@ -96,6 +96,18 @@
         }
 
         /**
+         * @param string        $name
+         * @param integer|null  $limit
+         * @param integer|null  $offset
+         * @param array|null    $order_by
+         *
+         * @return string
+         */
+        final public static function _limit_var_key($name, $limit=null, $offset=null, array $order_by=null) {
+            return "{$name}:{$offset}:{$limit}:" . json_encode($order_by);
+        }
+
+        /**
          * var_export() and print_r() use this internally
          *
          * @return array
@@ -114,7 +126,7 @@
          * @return array
          */
         public function export(array $fields=null) {
-            if ($fields !== null && count($fields)) {
+            if ($fields) {
                 return array_intersect_key($this->vars, array_flip($fields));
             } else {
                 return $this->vars;
@@ -131,7 +143,7 @@
          *
          * @return entity_record_model|mixed
          */
-        protected function _model($key, $pk, $model_name, $default=null) {
+        final protected function _model($key, $pk, $model_name, $default=null) {
             if (! array_key_exists($key, $this->_vars)) {
                 try {
                     if ($pk !== null) {
@@ -139,7 +151,7 @@
                     } else {
                         $this->_vars[$key] = $default;
                     }
-                } catch (model_exception $e) {
+                } catch (entity_exception $e) {
                     $this->_vars[$key] = $default;
                 }
             }
@@ -151,7 +163,7 @@
          * @param string $key
          * @param mixed  $val
          */
-        public function _set_var($key, $val) {
+        final public function _set_var($key, $val) {
             $this->_vars[$key] = $val;
         }
 
@@ -184,7 +196,7 @@
          *
          * @param string $k
          *
-         * @throws model_exception
+         * @throws entity_exception
          */
         public function offsetUnset($k) {
             $exception = static::ENTITY_NAME . '_exception';

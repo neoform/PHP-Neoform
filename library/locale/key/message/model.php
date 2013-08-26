@@ -1,13 +1,13 @@
 <?php
 
     /**
-    * Locale Key Message Model
-    *
-    * @var int $id
-    * @var int $key_id
-    * @var string $body
-    * @var string $locale
-    */
+     * Locale Key Message Model
+     *
+     * @var int $id
+     * @var int $key_id
+     * @var string $body
+     * @var string $locale
+     */
     class locale_key_message_model extends entity_record_model implements locale_key_message_definition {
 
         public function __get($k) {

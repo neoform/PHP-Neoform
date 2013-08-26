@@ -87,6 +87,27 @@
                         $this->unique_keys
                     );
 
+                case 'all_non_unique_indexes':
+                    $indexed_fields = [];
+                    foreach ($this->indexes as $index) {
+                        $key = [];
+                        foreach ($index as $field) {
+                            $key[] = $field->name;
+                        }
+                        $indexed_fields[join(':', $key)] = $index;
+                    }
+                    foreach (array_merge($this->unique_keys, $this->primary_keys) as $index) {
+                        if (count($index) > 1) {
+                            $index = array_slice($index, 0, count($index) - 1);
+                            $key = [];
+                            foreach ($index as $field) {
+                                $key[] = $field->name;
+                            }
+                            $indexed_fields[join(':', $key)] = $index;
+                        }
+                    }
+                    return array_values($indexed_fields);
+
                 case 'all_non_pk_indexes':
                     return array_merge(
                         $this->unique_keys,

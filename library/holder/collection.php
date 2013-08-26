@@ -17,7 +17,7 @@
                                 $this[(int) $key] = new $model($info);
                             }
                         }
-                    } catch (model_exception $e) {
+                    } catch (entity_exception $e) {
 
                     }
                 }

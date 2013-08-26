@@ -22,6 +22,7 @@
             $this->flash_cache_engine     = $config['flash_cache_engine'];
             $this->flash_cache_pool_read  = $config['flash_cache_pool_read'];
             $this->flash_cache_pool_write = $config['flash_cache_pool_write'];
+
             $this->default_flash_lifetime = $config['default_flash_lifetime'];
         }
 
@@ -34,7 +35,7 @@
          */
         public function get($key) {
             $engine = "cache_{$this->flash_cache_engine}_driver";
-            return $engine::get($this->flash_cache_pool_read, "{$this->hash}:{$key}");
+            return $engine::get($this->flash_cache_pool_read, "http_flash:{$this->hash}:{$key}");
         }
 
         /**
@@ -50,7 +51,7 @@
             $engine = "cache_{$this->flash_cache_engine}_driver";
             return $engine::set(
                 $this->flash_cache_pool_write,
-                "{$this->hash}:{$key}",
+                "http_flash:{$this->hash}:{$key}",
                 $val,
                 $ttl !== null ? $ttl : (int) $this->default_flash_lifetime
             );
@@ -65,6 +66,6 @@
          */
         public function del($key) {
             $engine = "cache_{$this->flash_cache_engine}_driver";
-            return $engine::delete($this->flash_cache_pool_write, "{$this->hash}:{$key}");
+            return $engine::delete($this->flash_cache_pool_write, "http_flash:{$this->hash}:{$key}");
         }
     }

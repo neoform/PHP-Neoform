@@ -10,19 +10,65 @@
         const BY_STATUS              = 'by_status';
 
         /**
-         * @var array $pdo_bindings list of fields and their corresponding PDO bindings
+         * $var array $field_bindings list of fields and their corresponding bindings
+         *
+         * @return array
          */
-        protected $pdo_bindings = [
-            'id'                  => PDO::PARAM_INT,
-            'email'               => PDO::PARAM_STR,
-            'password_hash'       => PDO::PARAM_LOB,
-            'password_hashmethod' => PDO::PARAM_INT,
-            'password_cost'       => PDO::PARAM_INT,
-            'password_salt'       => PDO::PARAM_LOB,
-            'status_id'           => PDO::PARAM_INT,
+        protected $field_bindings = [
+            'id'                  => self::TYPE_INTEGER,
+            'email'               => self::TYPE_STRING,
+            'password_hash'       => self::TYPE_BINARY,
+            'password_hashmethod' => self::TYPE_INTEGER,
+            'password_cost'       => self::TYPE_INTEGER,
+            'password_salt'       => self::TYPE_BINARY,
+            'status_id'           => self::TYPE_INTEGER,
         ];
 
         // READS
+
+        /**
+         * Get User ids by password_hashmethod
+         *
+         * @param int $password_hashmethod
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
+         *
+         * @return array of User ids
+         */
+        public function by_password_hashmethod($password_hashmethod, array $order_by=null, $offset=null, $limit=null) {
+            return parent::_by_fields(
+                self::BY_PASSWORD_HASHMETHOD,
+                [
+                    'password_hashmethod' => (int) $password_hashmethod,
+                ],
+                $order_by,
+                $offset,
+                $limit
+            );
+        }
+
+        /**
+         * Get User ids by status
+         *
+         * @param int $status_id
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
+         *
+         * @return array of User ids
+         */
+        public function by_status($status_id, array $order_by=null, $offset=null, $limit=null) {
+            return parent::_by_fields(
+                self::BY_STATUS,
+                [
+                    'status_id' => (int) $status_id,
+                ],
+                $order_by,
+                $offset,
+                $limit
+            );
+        }
 
         /**
          * Get User ids by email
@@ -41,45 +87,16 @@
         }
 
         /**
-         * Get User ids by password_hashmethod
-         *
-         * @param int $password_hashmethod
-         *
-         * @return array of User ids
-         */
-        public function by_password_hashmethod($password_hashmethod) {
-            return parent::_by_fields(
-                self::BY_PASSWORD_HASHMETHOD,
-                [
-                    'password_hashmethod' => (int) $password_hashmethod,
-                ]
-            );
-        }
-
-        /**
-         * Get User ids by status
-         *
-         * @param int $status_id
-         *
-         * @return array of User ids
-         */
-        public function by_status($status_id) {
-            return parent::_by_fields(
-                self::BY_STATUS,
-                [
-                    'status_id' => (int) $status_id,
-                ]
-            );
-        }
-
-        /**
          * Get multiple sets of User ids by user_hashmethod
          *
          * @param user_hashmethod_collection|array $user_hashmethod_list
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of arrays containing User ids
          */
-        public function by_password_hashmethod_multi($user_hashmethod_list) {
+        public function by_password_hashmethod_multi($user_hashmethod_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
             if ($user_hashmethod_list instanceof user_hashmethod_collection) {
                 foreach ($user_hashmethod_list as $k => $user_hashmethod) {
@@ -94,17 +111,26 @@
                     ];
                 }
             }
-            return parent::_by_fields_multi(self::BY_PASSWORD_HASHMETHOD, $keys);
+            return parent::_by_fields_multi(
+                self::BY_PASSWORD_HASHMETHOD,
+                $keys,
+                $order_by,
+                $offset,
+                $limit
+            );
         }
 
         /**
          * Get multiple sets of User ids by user_status
          *
          * @param user_status_collection|array $user_status_list
+         * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return array of arrays containing User ids
          */
-        public function by_status_multi($user_status_list) {
+        public function by_status_multi($user_status_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
             if ($user_status_list instanceof user_status_collection) {
                 foreach ($user_status_list as $k => $user_status) {
@@ -119,7 +145,13 @@
                     ];
                 }
             }
-            return parent::_by_fields_multi(self::BY_STATUS, $keys);
+            return parent::_by_fields_multi(
+                self::BY_STATUS,
+                $keys,
+                $order_by,
+                $offset,
+                $limit
+            );
         }
 
         /**
@@ -152,52 +184,7 @@
         public function insert(array $info) {
 
             // Insert record
-            $return = parent::_insert($info);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_EMAIL
-            if (array_key_exists('email', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_EMAIL,
-                        [
-                            'email' => (string) $info['email'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_PASSWORD_HASHMETHOD
-            if (array_key_exists('password_hashmethod', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_PASSWORD_HASHMETHOD,
-                        [
-                            'password_hashmethod' => (int) $info['password_hashmethod'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_STATUS
-            if (array_key_exists('status_id', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_STATUS,
-                        [
-                            'status_id' => (int) $info['status_id'],
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_insert($info);
         }
 
         /**
@@ -209,55 +196,8 @@
          */
         public function inserts(array $infos) {
 
-            // Insert records
-            $return = parent::_inserts($infos);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            foreach ($infos as $info) {
-                // BY_EMAIL
-                if (array_key_exists('email', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_EMAIL,
-                            [
-                                'email' => (string) $info['email'],
-                            ]
-                        )
-                    );
-                }
-
-                // BY_PASSWORD_HASHMETHOD
-                if (array_key_exists('password_hashmethod', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_PASSWORD_HASHMETHOD,
-                            [
-                                'password_hashmethod' => (int) $info['password_hashmethod'],
-                            ]
-                        )
-                    );
-                }
-
-                // BY_STATUS
-                if (array_key_exists('status_id', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_STATUS,
-                            [
-                                'status_id' => (int) $info['status_id'],
-                            ]
-                        )
-                    );
-                }
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            // Insert record
+            return parent::_inserts($infos);
         }
 
         /**
@@ -272,76 +212,7 @@
         public function update(user_model $user, array $info) {
 
             // Update record
-            $updated_model = parent::_update($user, $info);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_EMAIL
-            if (array_key_exists('email', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_EMAIL,
-                        [
-                            'email' => (string) $user->email,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_EMAIL,
-                        [
-                            'email' => (string) $info['email'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_PASSWORD_HASHMETHOD
-            if (array_key_exists('password_hashmethod', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_PASSWORD_HASHMETHOD,
-                        [
-                            'password_hashmethod' => (int) $user->password_hashmethod,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_PASSWORD_HASHMETHOD,
-                        [
-                            'password_hashmethod' => (int) $info['password_hashmethod'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_STATUS
-            if (array_key_exists('status_id', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_STATUS,
-                        [
-                            'status_id' => (int) $user->status_id,
-                        ]
-                    )
-                );
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_STATUS,
-                        [
-                            'status_id' => (int) $info['status_id'],
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $updated_model;
+            return parent::_update($user, $info);
         }
 
         /**
@@ -354,46 +225,7 @@
         public function delete(user_model $user) {
 
             // Delete record
-            $return = parent::_delete($user);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_EMAIL
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_EMAIL,
-                    [
-                        'email' => (string) $user->email,
-                    ]
-                )
-            );
-
-            // BY_PASSWORD_HASHMETHOD
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_PASSWORD_HASHMETHOD,
-                    [
-                        'password_hashmethod' => (int) $user->password_hashmethod,
-                    ]
-                )
-            );
-
-            // BY_STATUS
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_STATUS,
-                    [
-                        'status_id' => (int) $user->status_id,
-                    ]
-                )
-            );
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_delete($user);
         }
 
         /**
@@ -406,47 +238,6 @@
         public function deletes(user_collection $user_collection) {
 
             // Delete records
-            $return = parent::_deletes($user_collection);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            foreach ($user_collection as $user) {
-                // BY_EMAIL
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_EMAIL,
-                        [
-                            'email' => (string) $user->email,
-                        ]
-                    )
-                );
-
-                // BY_PASSWORD_HASHMETHOD
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_PASSWORD_HASHMETHOD,
-                        [
-                            'password_hashmethod' => (int) $user->password_hashmethod,
-                        ]
-                    )
-                );
-
-                // BY_STATUS
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_STATUS,
-                        [
-                            'status_id' => (int) $user->status_id,
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_deletes($user_collection);
         }
     }

@@ -1,14 +1,14 @@
 <?php
 
     /**
-    * User Date Model
-    *
-    * @var int $user_id
-    * @var string $created_on
-    * @var string $last_login
-    * @var string $email_verified_on
-    * @var string $password_updated_on
-    */
+     * User Date Model
+     *
+     * @var int $user_id
+     * @var datetime $created_on
+     * @var datetime|null $last_login
+     * @var datetime|null $email_verified_on
+     * @var datetime|null $password_updated_on
+     */
     class user_date_model extends entity_record_model implements user_date_definition {
 
         public function __get($k) {
@@ -30,7 +30,6 @@
                         return $this->vars[$k];
                 }
             }
-
         }
 
         /**

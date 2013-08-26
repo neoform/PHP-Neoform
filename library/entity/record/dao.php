@@ -430,7 +430,9 @@
 
             $pk = static::PRIMARY_KEY;
 
-            $this->bind_fields($keys);
+            if ($keys) {
+                $this->bind_fields($keys);
+            }
 
             return cache_lib::single(
                 $this->cache_engine,
@@ -456,7 +458,9 @@
          */
         public function count(array $keys=null) {
 
-            $this->bind_fields($keys);
+            if ($keys) {
+                $this->bind_fields($keys);
+            }
 
             return cache_lib::single(
                 $this->cache_engine,

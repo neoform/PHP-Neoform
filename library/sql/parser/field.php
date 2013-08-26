@@ -106,7 +106,11 @@
 
                 // PHP type (eg, int, string)
                 case 'casting':
-                    return $this->info['casting'];
+                    if ($this->info['casting'] === 'decimal') {
+                        return 'float'; // php no support decimal type
+                    } else {
+                        return $this->info['casting'];
+                    }
 
                 // PHP type (eg, int, string, date, datetime, bool)
                 case 'casting_extended':
@@ -124,11 +128,11 @@
                     if ($this->is_binary()) {
                         return 'binary';
                     } else {
-                        return $this->casting;
+                        return $this->info['casting'];
                     }
 
                 default:
-                    throw new exception('Unknown field `' . $k . '`');
+                    throw new exception("Unknown field `{$k}`");
 
             }
         }

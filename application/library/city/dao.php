@@ -22,8 +22,8 @@
             'name_normalized' => self::TYPE_STRING,
             'name_soundex'    => self::TYPE_STRING,
             'top'             => self::TYPE_STRING,
-            'longitude'       => self::TYPE_FLOAT,
-            'latitude'        => self::TYPE_FLOAT,
+            'longitude'       => self::TYPE_DECIMAL,
+            'latitude'        => self::TYPE_DECIMAL,
         ];
 
         // READS

@@ -284,8 +284,10 @@
             ini_set('display_errors', 'Off'); // do not display error(s) in browser - only affects non-fatal errors
             ini_set('display_startup_errors', 'Off');
 
-            mb_internal_encoding(core::config()['core']['encoding']);
-            date_default_timezone_set(core::config()['core']['timezone']);
+            $config = core::config()['core'];
+
+            mb_internal_encoding($config['encoding']);
+            date_default_timezone_set($config['timezone']);
         }
 
         /**

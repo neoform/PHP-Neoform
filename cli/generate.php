@@ -2,7 +2,7 @@
 <?php
 
     $root = realpath(__DIR__ . '/..');
-    require_once($root . '/library/core.php');
+    require_once("{$root}/library/core.php");
     core::init([
         'extension'   => 'php',
         'environment' => 'sling',

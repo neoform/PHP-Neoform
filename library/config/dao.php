@@ -35,13 +35,14 @@
         /**
          * Load config from source and compile into cache file
          *
-         * @param string $file
+         * @param string      $file
+         * @param string|null $environment
          *
          * @return array
          * @throws config_exception
          * @throws Exception
          */
-        public static function set($file) {
+        public static function set($file, $environment=null) {
 
             $config_class = core::environment() . ($file ? '_' . str_replace('/', '_', $file) : '');
 
@@ -51,7 +52,7 @@
                     "\n\n// DO NOT MODIFY THIS FILE DIRECTLY, IT IS A CACHE FILE AND GETS OVERWRITTEN AUTOMATICALLY.\n\n".
                     'return ' . var_export($config, true) . ";\n\n";
 
-            if (! disk_lib::file_put_contents(core::path('application') . self::CONF_CACHE_DIR . '/' . core::environment() . ($file ? "/{$file}." : '.') . EXT, $code)) {
+            if (! disk_lib::file_put_contents(core::path('application') . self::CONF_CACHE_DIR . '/' . ($environment ?: core::environment()) . ($file ? "/{$file}." : '.') . EXT, $code)) {
                 throw new Exception('Could not write to the config cache file.');
             }
 

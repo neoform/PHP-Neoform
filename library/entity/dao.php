@@ -254,4 +254,433 @@
                 $key
             );
         }
+
+        /**
+         * Create the meta data (lists) to identify which cache keys to destroy when the record or field values have been changed
+         *
+         * @param string     $cache_key cache key for which we are storing meta data
+         * @param array|null $fields    fields
+         * @param array      $fieldvals   fields and values
+         */
+        final public function _set_meta_cache($cache_key, array $fieldvals, array $fields=[]) {
+
+            $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
+
+            /**
+             * Build lists of keys for deletion - when it's time to delete/modify the record
+             */
+
+            /**
+             * Order by - goes first, since it's wider reaching, if there is overlap between $order_by fields
+             * and $keys fields, we wont use those fields in $keys. (since they'll both contain the same cache
+             * keys to destroy.
+             *
+             * An entry for each $fields field must be created (linking back to this set's $cache_key)
+             */
+            foreach ($fields as $field) {
+                // Create list key for order by field
+                $order_by_list_key = self::_build_key_order($field);
+
+                // Store the cache key in $order_by_list_key list
+                cache_lib::list_add(
+                    $this->cache_list_engine,
+                    $this->cache_list_engine_pool_write,
+                    $order_by_list_key,
+                    $cache_key
+                );
+
+                // Add the $order_by_list_key key to the field list key - if it doesn't already exist
+                cache_lib::list_add(
+                    $this->cache_list_engine,
+                    $this->cache_list_engine_pool_write,
+                    self::_build_key_list($field),
+                    $order_by_list_key
+                );
+            }
+
+            /**
+             * Keys - An entry for each key and value must be created (linking back to this set's $cache_key)
+             *
+             * array_diff_key() is used to avoid doubling the deletion of keys when it's completely unnecessary.
+             * If we're going to clear a field (because it's used in the order by), there's no point in also
+             * clearing if because it's used as a field/value. (yes, I realize this is complicated and possibly confusing)
+             *
+             * Example: If you get records where id = 10 and you order by that same 'id' field, then every cached
+             * result set that uses id for anything needs to be destroyed when any id changes in the table. Since
+             * ordering by a field might be affected by any id, all resulting sets that involve that 'id' field,
+             * must be cleared out.
+             *
+             * If foo_id = 10 and order by 'id' was used, then only cached result sets with foo_id = 10 would
+             * need to be destroyed (along with all 'id' cached result sets).
+             */
+            foreach (array_diff_key($fieldvals, array_flip($fields)) as $field => $value) {
+                // Create a list key for the field/value
+                $list_key = self::_build_key_list($field, $value);
+
+                // Store the cache key in the $list_key list
+                cache_lib::list_add(
+                    $this->cache_list_engine,
+                    $this->cache_list_engine_pool_write,
+                    $list_key,
+                    $cache_key
+                );
+
+                // Add the $list_key key to field list key - if it doesn't already exist
+                cache_lib::list_add(
+                    $this->cache_list_engine,
+                    $this->cache_list_engine_pool_write,
+                    self::_build_key_list($field),
+                    $list_key
+                );
+            }
+
+            $this->cache_batch_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
+        }
+
+        /**
+         * Create the meta data (lists) to identify which cache keys to destroy when the record or field values have been changed
+         *
+         * @param array $cache_keys
+         * @param array $fields
+         */
+        final public function _set_meta_cache_multi(array $cache_keys, array $fields=[]) {
+
+            $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
+
+            /**
+             * Build lists of keys for deletion - when it's time to delete/modify the record
+             */
+
+            /**
+             * Order by - goes first, since it's wider reaching, if there is overlap between $order_by fields
+             * and $keys fields, we wont use those fields in $keys. (since they'll both contain the same cache
+             * keys to destroy.
+             *
+             * An entry for each $order_by field must be created (linking back to this set's $cache_key)
+             */
+            foreach ($fields as $field) {
+                // Create list key for order by field
+                $order_by_list_key = self::_build_key_order($field);
+
+                // Store the cache key in $order_by_list_key list
+                cache_lib::list_add(
+                    $this->cache_list_engine,
+                    $this->cache_list_engine_pool_write,
+                    $order_by_list_key,
+                    array_keys($cache_keys)
+                );
+
+                // Add the $order_by_list_key key to the field list key - if it doesn't already exist
+                cache_lib::list_add(
+                    $this->cache_list_engine,
+                    $this->cache_list_engine_pool_write,
+                    self::_build_key_list($field),
+                    $order_by_list_key
+                );
+            }
+
+            /**
+             * Keys - An entry for each key and value must be created (linking back to this set's $cache_key)
+             *
+             * array_diff_key() is used to avoid doubling the deletion of keys when it's completely unnecessary.
+             * If we're going to clear a field (because it's used in the order by), there's no point in also
+             * clearing if because it's used as a field/value. (yes, I realize this is complicated and possibly confusing)
+             *
+             * Example: If you get records where id = 10 and you order by that same 'id' field, then every cached
+             * result set that uses id for anything needs to be destroyed when any id changes in the table. Since
+             * ordering by a field might be affected by any id, all resulting sets that involve that 'id' field,
+             * must be cleared out.
+             *
+             * If foo_id = 10 and order by 'id' was used, then only cached result sets with foo_id = 10 would
+             * need to be destroyed (along with all 'id' cached result sets).
+             */
+            foreach ($cache_keys as $cache_key => $fieldvals) {
+                foreach (array_diff_key($fieldvals, array_flip($fields)) as $field => $value) {
+                    // Create a list key for the field/value
+                    $list_key = self::_build_key_list($field, $value);
+
+                    // Store the cache key in the $list_key list
+                    cache_lib::list_add(
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
+                        $list_key,
+                        $cache_key
+                    );
+
+                    // Add the $list_key key to field list key - if it doesn't already exist
+                    cache_lib::list_add(
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
+                        self::_build_key_list($field),
+                        $list_key
+                    );
+                }
+            }
+
+            $this->cache_batch_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
+        }
+
+        /**
+         * Delete all cache keys and field/value and field order lists - by fields
+         *
+         * Do not wrap a batch execution around this function
+         *
+         * @param array $fieldvals           list of fields/values
+         * @param array $secondary_fieldvals list of fields/values
+         * @param array $list_keys           list of keys to start off with (eg, key ALWAYS)
+         */
+        final protected function _delete_meta_cache(array $fieldvals, array $secondary_fieldvals=null, $list_keys=[]) {
+            $field_list_keys      = [];
+            $list_items_to_remove = [];
+
+            foreach ($fieldvals as $field => $value) {
+
+                // Which list does this field/value key belong to - we need to remove it from that list
+                $field_list_key = self::_build_key_list($field);
+
+                // Order by list key
+                $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_order($field);
+
+                /**
+                 * If the value is null, it means it's a parent $field_list_keys key (eg, limit[id])
+                 * instead of a $list_keys (eg, limit[id]:5 or limit[id]:order_by)
+                 */
+                if ($value === null) {
+                    $field_list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field);
+                } else {
+                    $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $value);
+                }
+
+                // This gets used when an update took place - there is a new and old value
+                if ($secondary_fieldvals && array_key_exists($field, $secondary_fieldvals)) {
+                    $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $secondary_fieldvals[$field]);
+                }
+            }
+
+            /**
+             * If any $field_list_keys keys need deleting (eg, limit[id]), get all list keys from them (eg, limit[id]:5)
+             */
+            if ($field_list_keys) {
+                $arr = cache_lib::list_get_union(
+                    $this->cache_list_engine,
+                    $this->cache_list_engine_pool_write,
+                    $field_list_keys
+                );
+
+                if ($arr) {
+                    $list_keys = array_unique(
+                        array_merge($list_keys, $arr)
+                    );
+                }
+            }
+
+            /**
+             * Get a union of all field/value list keys - combined
+             * eg, limit[id]:555 + limit[id]:order_by + limit[email]:aaa@aaa.com + limit[email]:order_by
+             */
+            $cache_keys = cache_lib::list_get_union(
+                $this->cache_list_engine,
+                $this->cache_list_engine_pool_write,
+                $list_keys
+            );
+
+            $this->cache_batch_start($this->cache_engine, $this->cache_engine_pool_write);
+
+            if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
+            }
+
+            if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
+                /**
+                 * Expire all the keys selected above
+                 */
+                if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                    cache_lib::expire_multi(
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
+                        array_merge($list_keys, $field_list_keys),
+                        $this->cache_delete_expire_ttl
+                    );
+                    cache_lib::expire_multi(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        $cache_keys,
+                        $this->cache_delete_expire_ttl
+                    );
+                } else {
+                    cache_lib::expire_multi(
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
+                        array_merge($cache_keys, $list_keys, $field_list_keys),
+                        $this->cache_delete_expire_ttl
+                    );
+                }
+            } else {
+                /**
+                 * Delete all the keys selected above
+                 */
+                if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                    cache_lib::delete_multi(
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
+                        array_merge($list_keys, $field_list_keys)
+                    );
+                    cache_lib::delete_multi(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        $cache_keys
+                    );
+                } else {
+                    cache_lib::delete_multi(
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
+                        array_merge($cache_keys, $list_keys, $field_list_keys)
+                    );
+                }
+            }
+
+            /**
+             * Since we just deleted $field_list_keys, we now remove those values from their parent lists
+             * (Remove list field/value keys and order by keys from field lists)
+             */
+            foreach ($list_items_to_remove as $field_list_key => $remove_keys) {
+                cache_lib::list_remove(
+                    $this->cache_list_engine,
+                    $this->cache_list_engine_pool_write,
+                    $field_list_key,
+                    array_unique($remove_keys)
+                );
+            }
+
+            if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                $this->cache_batch_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
+            }
+
+            $this->cache_batch_execute($this->cache_engine, $this->cache_engine_pool_write);
+        }
+
+        /**
+         * Delete all cache keys and field/value and field order lists - by fields
+         *
+         * Do not wrap a batch execution around this function
+         *
+         * @param array $fieldvals_arr array containing lists of fields/values
+         * @param array $list_keys     list of keys to start off with (eg, key ALWAYS)
+         */
+        final protected function _delete_meta_cache_multi(array $fieldvals_arr, $list_keys=[]) {
+            $field_list_keys      = [];
+            $list_items_to_remove = [];
+
+            foreach ($fieldvals_arr as $fieldvals) {
+                foreach ($fieldvals as $field => $value) {
+
+                    // @todo i'm fairly certain this can be made more efficient
+
+                    // Which list does this field/value key belong to - we need to remove it from that list
+                    $field_list_key = self::_build_key_list($field);
+
+                    // Order by list key
+                    $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_order($field);
+
+                    /**
+                     * If the value is null, it means it's a parent $field_list_keys key (eg, limit[id])
+                     * instead of a $list_keys (eg, limit[id]:5 or limit[id]:order_by)
+                     */
+                    if ($value === null) {
+                        $field_list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field);
+                    } else {
+                        $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $value);
+                    }
+                }
+            }
+
+            /**
+             * If any $field_list_keys keys need deleting (eg, limit[id]), get all list keys from them (eg, limit[id]:5)
+             */
+            if ($field_list_keys) {
+
+                $arr = cache_lib::list_get_union(
+                    $this->cache_list_engine,
+                    $this->cache_list_engine_pool_write,
+                    $field_list_keys
+                );
+
+                if ($arr) {
+                    $list_keys = array_unique(
+                        array_merge($list_keys, $arr)
+                    );
+                }
+            }
+
+            /**
+             * Get a union of all field/value list keys - combined
+             * eg, limit[id]:555 + limit[id]:order_by + limit[email]:aaa@aaa.com + limit[email]:order_by
+             */
+            $cache_keys = cache_lib::list_get_union(
+                $this->cache_list_engine,
+                $this->cache_list_engine_pool_write,
+                $list_keys
+            );
+
+            $this->cache_batch_start($this->cache_engine, $this->cache_engine_pool_write);
+
+            if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
+            }
+
+            if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
+                /**
+                 * Expire all the keys selected above
+                 */
+                if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                    cache_lib::expire_multi(
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
+                        array_merge($list_keys, $field_list_keys),
+                        $this->cache_delete_expire_ttl
+                    );
+                    cache_lib::expire_multi(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        $cache_keys,
+                        $this->cache_delete_expire_ttl
+                    );
+                } else {
+                    cache_lib::expire_multi(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        array_merge($cache_keys, $list_keys, $field_list_keys),
+                        $this->cache_delete_expire_ttl
+                    );
+                }
+            } else {
+                /**
+                 * Delete all the keys selected above
+                 */
+                if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                    cache_lib::delete_multi(
+                        $this->cache_list_engine,
+                        $this->cache_list_engine_pool_write,
+                        array_merge($list_keys, $field_list_keys)
+                    );
+                    cache_lib::delete_multi(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        $cache_keys
+                    );
+                } else {
+                    cache_lib::delete_multi(
+                        $this->cache_engine,
+                        $this->cache_engine_pool_write,
+                        array_merge($cache_keys, $list_keys, $field_list_keys)
+                    );
+                }
+            }
+
+            if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                $this->cache_batch_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
+            }
+
+            $this->cache_batch_execute($this->cache_engine, $this->cache_engine_pool_write);
+        }
     }

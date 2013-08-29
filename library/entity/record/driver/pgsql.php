@@ -221,7 +221,7 @@
 
             $rs = $rs->fetchAll();
 
-            $pks = array_column($rs->fetchAll(), $pk);
+            $pks = $rs->fetchAll(PDO::FETCH_COLUMN, 0);
             sql_pdo::unbinary($pks);
 
             return $pks;
@@ -324,7 +324,7 @@
 
             $order = [];
             foreach ($order_by as $field => $sort_direction) {
-                $order[] = "\"{$field}\" " . (entity_record_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
+                $order[] = "\"{$field}\" " . (entity_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
             }
             $order_by = join(', ', $order);
 
@@ -337,7 +337,7 @@
             ");
             $rs->execute($vals);
 
-            return array_column($rs->fetchAll(), $pk);
+            return $rs->fetchAll(PDO::FETCH_COLUMN, 0);
         }
 
         /**
@@ -373,7 +373,7 @@
 
             $order = [];
             foreach ($order_by as $field => $sort_direction) {
-                $order[] = "\"{$field}\" " . (entity_record_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
+                $order[] = "\"{$field}\" " . (entity_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
             }
             $order_by = join(', ', $order);
 

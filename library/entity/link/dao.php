@@ -21,28 +21,33 @@
          * @static
          * @final
          * @param string       $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
+         * @param string       $select_field
          * @param array        $order_by       optional - array of order bys
          * @param integer      $offset         what starting position to get records from
          * @param integer|null $limit          how many records to select
          * @param array        $params         optional - array of table keys and their values being looked up in the table
          * @return string a cache key that is unqiue to the application
          */
-        final protected static function _build_key_limit($cache_key_name, $field, array $order_by, $offset, $limit=null, array $params=[]) {
+        final protected static function _build_key_limit($cache_key_name, $select_field, array $order_by, $offset=null,
+                                                         $limit=null, array $params=[]) {
             ksort($order_by);
 
             // each key is namespaced with the name of the class, then the name of the function ($cache_key_name)
             $param_count = count($params);
             if ($param_count === 1) {
-                return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by)) . ':' . md5(reset($params));
+                return static::ENTITY_NAME . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
+                       md5(json_encode($order_by)) . ':' . md5(reset($params));
             } else if ($param_count === 0) {
-                return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by)) . ':';
+                return static::ENTITY_NAME . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
+                       md5(json_encode($order_by)) . ':';
             } else {
                 ksort($params);
                 foreach ($params as & $param) {
                     $param = base64_encode($param);
                 }
                 // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
-                return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by)) . ':' . md5(json_encode(array_values($params)));
+                return static::ENTITY_NAME . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
+                       md5(json_encode($order_by)) . ':' . md5(json_encode(array_values($params)));
             }
         }
 
@@ -54,62 +59,63 @@
          * @final
          * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
          * @param array   $select_fields  array of table fields (table columns) to be selected
-         * @param array   $keys           array of table keys and their values being looked up in the table
+         * @param array   $fieldvals      array of table keys and their values being looked up in the table
          * @param array   $order_by
          * @param null    $limit
          * @param null    $offset
          * @return array  array of records from cache
          * @throws entity_exception
          */
-        final protected function _by_fields($cache_key_name, array $select_fields, array $keys, array $order_by=null, $limit=null, $offset=null) {
+        final protected function _by_fields($cache_key_name, array $select_fields, array $fieldvals, array $order_by=null,
+                                            $limit=null, $offset=null) {
 
             if ($order_by) {
-                $field = reset($select_fields); // if more than one key is provided, too bad, only the first is getting used
+                $select_field = reset($select_fields); // if more than one key is provided, too bad, only the first is getting used
 
                 $limit  = (int) $limit;
                 $offset = $offset === null ? null : (int) $offset;
 
-                $foreign_pk    = reset($this->foreign_keys[$field]);
-                $foreign_table = key($this->foreign_keys[$field]);
+                if (! isset($this->foreign_keys[$select_field])) {
+                    throw new entity_exception("Unknown foreign key field \"{$select_field}\" in " . $this::ENTITY_NAME . '.');
+                }
+
+                $foreign_dao = entity::dao($this->foreign_keys[$select_field]);
 
                 $cache_key = self::_build_key_limit(
                     $cache_key_name,
-                    $field,
+                    $select_field,
                     $order_by,
                     (int) $offset,
                     (int) $limit,
-                    $keys
+                    $fieldvals
                 );
 
                 return cache_lib::single(
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
-                    parent::_build_key($cache_key, $keys),
-                    function() use ($field, $keys, $foreign_pk, $foreign_table, $order_by, $limit, $offset) {
-
-                        if (! isset($this->foreign_keys[$field])) {
-                            throw new entity_exception("Unknown foreign key field \"{$field}\" in " . $this::ENTITY_NAME . '.');
-                        }
-
+                    $cache_key,
+                    function() use ($select_field, $fieldvals, $foreign_dao, $order_by, $limit, $offset) {
                         $source_driver = "entity_link_driver_{$this->source_engine}";
                         return $source_driver::by_fields_limit(
                             $this,
                             $this->source_engine_pool_read,
-                            $field,
-                            $foreign_table,
-                            $foreign_pk,
-                            $keys,
+                            $select_field,
+                            $foreign_dao,
+                            $fieldvals,
                             $order_by,
                             $limit,
                             $offset
                         );
                     },
-                    function($cache_key) use ($field, $keys, $order_by, $foreign_pk, $foreign_table) {
+                    function($cache_key) use ($select_field, $fieldvals, $order_by, $foreign_dao) {
 
+                        // Local DAO
+                        $this->_set_meta_cache($cache_key, $fieldvals, [ $select_field ]);
 
-
-                        $this->_set_meta_cache($cache_key, $field, $keys, $order_by);
+                        // Foreign DAO
+                        $order_by[$foreign_dao::PRIMARY_KEY] = true; // add primary key to the list of fields
+                        $foreign_dao->_set_meta_cache($cache_key, [], array_keys($order_by));
                     }
                 );
             } else {
@@ -117,10 +123,26 @@
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
-                    parent::_build_key($cache_key_name, $keys),
-                    function() use ($select_fields, $keys, $order_by, $limit, $offset) {
+                    parent::_build_key($cache_key_name, $fieldvals),
+                    function() use ($select_fields, $fieldvals, $order_by, $limit, $offset) {
                         $source_driver = "entity_link_driver_{$this->source_engine}";
-                        return $source_driver::by_fields($this, $this->source_engine_pool_read, $select_fields, $keys, $order_by, $limit, $offset);
+                        return $source_driver::by_fields(
+                            $this,
+                            $this->source_engine_pool_read,
+                            $select_fields,
+                            $fieldvals,
+                            $order_by,
+                            $limit,
+                            $offset
+                        );
+                    },
+                    function($cache_key) use ($select_fields, $fieldvals, $order_by) {
+
+                        foreach ($select_fields as $select_field) {
+                            $order_by[$select_field] = true;
+                        }
+
+                        $this->_set_meta_cache($cache_key, $fieldvals, array_keys($order_by));
                     }
                 );
             }
@@ -236,12 +258,11 @@
         /**
          * Create the meta data (lists) to identify which cache keys to destroy when the record or field values have been changed
          *
-         * @param string $field
-         * @param string $cache_key
-         * @param array  $keys
-         * @param array  $order_by
+         * @param string     $cache_key cache key for which we are storing meta data
+         * @param array      $fieldvals fields and values
+         * @param array|null $fields    fields
          */
-        final protected function _set_meta_cache($cache_key, $field, array $keys, array $order_by=[]) {
+        final public function _set_meta_cache($cache_key, array $fieldvals, array $fields=[]) {
 
             $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
 
@@ -249,33 +270,14 @@
              * Build lists of keys for deletion - when it's time to delete/modify the record
              */
 
-            // Create list key for order by field
-            $order_by_list_key = parent::_build_key_order($field);
-
-            // Store the cache key in $order_by_list_key list
-            cache_lib::list_add(
-                $this->cache_list_engine,
-                $this->cache_list_engine_pool_write,
-                $order_by_list_key,
-                $cache_key
-            );
-
-            // Add the $order_by_list_key key to the field list key - if it doesn't already exist
-            cache_lib::list_add(
-                $this->cache_list_engine,
-                $this->cache_list_engine_pool_write,
-                parent::_build_key_list($field),
-                $order_by_list_key
-            );
-
             /**
              * Order by - goes first, since it's wider reaching, if there is overlap between $order_by fields
-             * and $keys fields, we wont use those fields in $keys. (since they'll both contain the same cache
+             * and $fieldvals fields, we wont use those fields in $fieldvals. (since they'll both contain the same cache
              * keys to destroy.
              *
-             * An entry for each $order_by field must be created (linking back to this set's $cache_key)
+             * An entry for each $fields field must be created (linking back to this set's $cache_key)
              */
-            foreach ($order_by as $field => $direction) {
+            foreach ($fields as $field) {
                 // Create list key for order by field
                 $order_by_list_key = parent::_build_key_order($field);
 
@@ -311,7 +313,7 @@
              * If foo_id = 10 and order by 'id' was used, then only cached result sets with foo_id = 10 would
              * need to be destroyed (along with all 'id' cached result sets).
              */
-            foreach (array_diff_key($keys, $order_by) as $field => $value) {
+            foreach (array_diff_key($fieldvals, array_flip($fields)) as $field => $value) {
                 // Create a list key for the field/value
                 $list_key = parent::_build_key_list($field, $value);
 

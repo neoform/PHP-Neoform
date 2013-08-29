@@ -54,7 +54,8 @@
             // each key is namespaced with the name of the class, then the name of the function ($cache_key_name)
             $param_count = count($params);
             if ($param_count === 1) {
-                return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by)) . ':' . md5(reset($params));
+                return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by)) .
+                       ':' . md5(reset($params));
             } else if ($param_count === 0) {
                 return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by)) . ':';
             } else {
@@ -63,7 +64,8 @@
                     $param = base64_encode($param);
                 }
                 // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
-                return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by)) . ':' . md5(json_encode(array_values($params)));
+                return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by)) .
+                       ':' . md5(json_encode(array_values($params)));
             }
         }
 
@@ -257,7 +259,7 @@
                         );
                     },
                     function($cache_key) use ($keys, $order_by) {
-                        $this->_set_meta_cache($cache_key, $keys, $order_by);
+                        $this->_set_meta_cache($cache_key, $keys, array_values($order_by));
                     }
                 );
             } else {
@@ -648,11 +650,11 @@
         /**
          * Create the meta data (lists) to identify which cache keys to destroy when the record or field values have been changed
          *
-         * @param string $cache_key
-         * @param array  $keys
-         * @param array  $order_by
+         * @param string     $cache_key cache key for which we are storing meta data
+         * @param array|null $fields    fields
+         * @param array      $keyvals   fields and values
          */
-        final protected function _set_meta_cache($cache_key, array $keys, array $order_by=[]) {
+        final public function _set_meta_cache($cache_key, array $keyvals, array $fields=[]) {
 
             $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
 
@@ -665,9 +667,9 @@
              * and $keys fields, we wont use those fields in $keys. (since they'll both contain the same cache
              * keys to destroy.
              *
-             * An entry for each $order_by field must be created (linking back to this set's $cache_key)
+             * An entry for each $fields field must be created (linking back to this set's $cache_key)
              */
-            foreach ($order_by as $field => $direction) {
+            foreach ($fields as $field) {
                 // Create list key for order by field
                 $order_by_list_key = parent::_build_key_order($field);
 
@@ -703,7 +705,7 @@
              * If foo_id = 10 and order by 'id' was used, then only cached result sets with foo_id = 10 would
              * need to be destroyed (along with all 'id' cached result sets).
              */
-            foreach (array_diff_key($keys, $order_by) as $field => $value) {
+            foreach (array_diff_key($keyvals, array_flip($fields)) as $field => $value) {
                 // Create a list key for the field/value
                 $list_key = parent::_build_key_list($field, $value);
 
@@ -733,7 +735,7 @@
          * @param array $cache_keys
          * @param array $order_by
          */
-        final protected function _set_meta_cache_multi(array $cache_keys, array $order_by=[]) {
+        final public function _set_meta_cache_multi(array $cache_keys, array $order_by=[]) {
 
             $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
 
@@ -816,7 +818,7 @@
          * @param string     $cache_key
          * @param array|null $keys
          */
-        final protected function _set_meta_cache_count($cache_key, array $keys=null) {
+        final public function _set_meta_cache_count($cache_key, array $keys=null) {
 
             /**
              * Build lists of keys for deletion - when it's time to delete/modify the record
@@ -877,7 +879,7 @@
          *
          * @param string $cache_key
          */
-        final protected function _set_meta_cache_always($cache_key) {
+        final public function _set_meta_cache_always($cache_key) {
             cache_lib::list_add(
                 $this->cache_list_engine,
                 $this->cache_list_engine_pool_write,

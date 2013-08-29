@@ -53,7 +53,7 @@
             $rs->execute($vals);
 
             if (count($select_fields) === 1) {
-                return array_column($rs->fetchAll(), reset($select_fields));
+                return $rs->fetchAll(PDO::FETCH_COLUMN, 0);
             } else {
                 return $rs->fetchAll();
             }
@@ -143,24 +143,26 @@
         /**
          * Get specific fields from a record, by keys - joined to its related foreign table - and limited
          *
-         * @param entity_link_dao $self the name of the DAO
-         * @param string          $pool which source engine pool to use
-         * @param string          $local_field
-         * @param string          $foreign_table
-         * @param string          $foreign_pk
-         * @param array           $keys
-         * @param array           $order_by
-         * @param integer         $offset
-         * @param integer         $limit
+         * @param entity_link_dao   $self the name of the DAO
+         * @param string            $pool which source engine pool to use
+         * @param string            $local_field
+         * @param entity_record_dao $foreign_dao
+         * @param array             $keys
+         * @param array             $order_by
+         * @param integer           $offset
+         * @param integer           $limit
          *
          * @return array
          * @throws entity_exception
          */
-        public static function by_fields_limit(entity_link_dao $self, $pool, $local_field, $foreign_table, $foreign_pk, array $keys, array $order_by, $offset, $limit) {
+        public static function by_fields_limit(entity_link_dao $self, $pool, $local_field, entity_record_dao $foreign_dao,
+                                               array $keys, array $order_by, $offset, $limit) {
+
+            $quoted_table = self::table($self::TABLE);
 
             // FK Relation
-            $quoted_table         = self::table($self::TABLE);
-            $quoted_foreign_table = self::table($foreign_table);
+            $quoted_foreign_table = self::table($foreign_dao::TABLE);
+            $foreign_pk           = $foreign_dao::PRIMARY_KEY;
 
             // WHERE
             $where = [];
@@ -187,7 +189,7 @@
             // ORDER BY
             $order = [];
             foreach ($order_by as $field => $sort_direction) {
-                $order[] = "`{$quoted_foreign_table}`.`{$field}` " . (entity_record_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
+                $order[] = "`{$quoted_foreign_table}`.`{$field}` " . (entity_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
             }
             $order_by = join(', ', $order);
 
@@ -203,7 +205,7 @@
 
             $rs->execute($vals);
 
-            return array_column($rs->fetchAll(), $foreign_pk);
+            return $rs->fetchAll(PDO::FETCH_COLUMN, 0);
         }
 
         /**

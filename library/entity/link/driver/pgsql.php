@@ -52,7 +52,7 @@
             $rs->execute($vals);
 
             if (count($select_fields) === 1) {
-                return array_column($rs->fetchAll(), reset($select_fields));
+                return $rs->fetchAll(PDO::FETCH_COLUMN, 0);
             } else {
                 return $rs->fetchAll();
             }

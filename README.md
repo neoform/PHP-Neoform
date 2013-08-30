@@ -1,4 +1,4 @@
-PHP Neoform - PHP Framwork
+PHP Neoform - PHP Framework
 ----------------------
 
 PHP Neoform is not a CMS. PHP Neoform is not wordpress. PHP Neoform is not a framework that does everything for you.

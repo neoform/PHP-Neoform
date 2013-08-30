@@ -97,16 +97,16 @@
          *
          * @param entity_record_dao $dao
          * @param string            $pool
-         * @param array             $keys
+         * @param array             $fieldvals
          *
          * @return integer
          */
-        public static function count(entity_record_dao $dao, $pool, array $keys=null) {
+        public static function count(entity_record_dao $dao, $pool, array $fieldvals=null) {
             $where = [];
             $vals  = [];
 
-            if ($keys) {
-                foreach ($keys as $k => $v) {
+            if ($fieldvals) {
+                foreach ($fieldvals as $k => $v) {
                     if ($v === null) {
                         $where[] = "\"{$k}\" IS NULL";
                     } else {
@@ -131,29 +131,29 @@
          * @param entity_record_dao $dao
          * @param string            $pool which source engine pool to use
          * @param int|string        $pk
-         * @param array             $keys
+         * @param array             $fieldvals
          *
          * @return array
          */
-        public static function all(entity_record_dao $dao, $pool, $pk, array $keys=null) {
+        public static function all(entity_record_dao $dao, $pool, $pk, array $fieldvals=null) {
             $where = [];
             $vals  = [];
 
-            if ($keys) {
-                foreach ($keys as $k => $v) {
-                    if (is_array($v) && $v) {
-                        foreach ($v as $arr_v) {
-                            $vals[] = $arr_v;
-                        }
-                        $where[] = "\"{$k}\" IN(" . join(',', array_fill(0, count($v), '?')) . ")";
-                    } else {
-                        if ($v === null) {
-                            $where[] = "\"{$k}\" IS NULL";
+            if ($fieldvals) {
+                foreach ($fieldvals as $field => $val) {
+//                    if (is_array($val) && $val) {
+//                        foreach ($val as $arr_v) {
+//                            $vals[] = $arr_v;
+//                        }
+//                        $where[] = "\"{$field}\" IN(" . join(',', array_fill(0, count($v), '?')) . ")";
+//                    } else {
+                        if ($val === null) {
+                            $where[] = "\"{$field}\" IS NULL";
                         } else {
-                            $vals[$k] = $v;
-                            $where[]  = "\"{$k}\" = ?";
+                            $vals[$field] = $val;
+                            $where[]      = "\"{$field}\" = ?";
                         }
-                    }
+//                    }
                 }
             }
 
@@ -184,22 +184,22 @@
          *
          * @param entity_record_dao $dao
          * @param string            $pool which source engine pool to use
-         * @param array             $keys
+         * @param array             $fieldvals
          * @param int|string        $pk
          *
          * @return array
          */
-        public static function by_fields(entity_record_dao $dao, $pool, array $keys, $pk) {
+        public static function by_fields(entity_record_dao $dao, $pool, array $fieldvals, $pk) {
             $where = [];
             $vals  = [];
 
-            if ($keys) {
-                foreach ($keys as $k => $v) {
-                    if ($v === null) {
-                        $where[] = "\"{$k}\" IS NULL";
+            if ($fieldvals) {
+                foreach ($fieldvals as $field => $val) {
+                    if ($val === null) {
+                        $where[] = "\"{$field}\" IS NULL";
                     } else {
-                        $vals[$k] = $v;
-                        $where[]  = "\"{$k}\" = ?";
+                        $vals[$field] = $val;
+                        $where[]      = "\"{$field}\" = ?";
                     }
                 }
             }
@@ -232,34 +232,34 @@
          *
          * @param entity_record_dao $dao
          * @param string            $pool which source engine pool to use
-         * @param array             $keys_arr
+         * @param array             $fieldvals_arr
          * @param int|string        $pk
          *
          * @return array
          */
-        public static function by_fields_multi(entity_record_dao $dao, $pool, array $keys_arr, $pk) {
+        public static function by_fields_multi(entity_record_dao $dao, $pool, array $fieldvals_arr, $pk) {
             $select_fields  = [ "\"{$pk}\"" ];
             $reverse_lookup = [];
             $return         = [];
             $vals           = [];
             $where          = [];
-            $fields         = array_keys(reset($keys_arr));
+            $fields         = array_keys(reset($fieldvals_arr));
 
             foreach ($fields as $k) {
                 $select_fields[] = "\"{$k}\"";
             }
 
-            foreach ($keys_arr as $k => $keys) {
+            foreach ($fieldvals_arr as $k => $fieldvals) {
                 $w             = [];
                 $return[$k]    = [];
                 $hashed_valued = [];
-                foreach ($keys as $key => $val) {
+                foreach ($fieldvals as $field => $val) {
                     if ($val === null) {
-                        $w[]             = "\"{$key}\" IS NULL";
+                        $w[]             = "\"{$field}\" IS NULL";
                         $hashed_valued[] = '';
                     } else {
                         $vals[]          = $val;
-                        $w[]             = "\"{$key}\" = ?";
+                        $w[]             = "\"{$field}\" = ?";
                         $hashed_valued[] = md5($val);
                     }
                 }
@@ -293,7 +293,7 @@
          *
          * @param entity_record_dao $dao
          * @param string            $pool
-         * @param array             $keys
+         * @param array             $fieldvals
          * @param mixed             $pk
          * @param array             $order_by
          * @param integer|null      $offset
@@ -301,17 +301,17 @@
          *
          * @return mixed
          */
-        public static function by_fields_offset(entity_record_dao $dao, $pool, array $keys, $pk, array $order_by, $offset, $limit) {
+        public static function by_fields_offset(entity_record_dao $dao, $pool, array $fieldvals, $pk, array $order_by, $offset, $limit) {
             $where = [];
             $vals  = [];
 
-            if ($keys) {
-                foreach ($keys as $k => $v) {
-                    if ($v === null) {
-                        $where[] = "\"{$k}\" IS NULL";
+            if ($fieldvals) {
+                foreach ($fieldvals as $field => $val) {
+                    if ($val === null) {
+                        $where[] = "\"{$field}\" IS NULL";
                     } else {
-                        $vals[]  = $v;
-                        $where[] = "\"{$k}\" = ?";
+                        $vals[]  = $val;
+                        $where[] = "\"{$field}\" = ?";
                     }
                 }
             }
@@ -345,7 +345,7 @@
          *
          * @param entity_record_dao $dao
          * @param string            $pool
-         * @param array             $keys_arr
+         * @param array             $fieldvals_arr
          * @param mixed             $pk
          * @param array             $order_by
          * @param integer|null      $offset
@@ -353,13 +353,13 @@
          *
          * @return array
          */
-        public static function by_fields_offset_multi(entity_record_dao $dao, $pool, array $keys_arr, $pk, array $order_by, $offset, $limit) {
+        public static function by_fields_offset_multi(entity_record_dao $dao, $pool, array $fieldvals_arr, $pk, array $order_by, $offset, $limit) {
             $select_fields  = [ "\"{$pk}\"" ];
             $reverse_lookup = [];
             $return         = [];
             $vals           = [];
             $queries        = [];
-            $fields         = array_keys(reset($keys_arr));
+            $fields         = array_keys(reset($fieldvals_arr));
 
             foreach ($fields as $k) {
                 $select_fields[] = "\"{$k}\"";
@@ -377,17 +377,17 @@
             }
             $order_by = join(', ', $order);
 
-            foreach ($keys_arr as $k => $keys) {
+            foreach ($fieldvals_arr as $k => $fieldvals) {
                 $where         = [];
                 $return[$k]    = [];
                 $hashed_valued = [];
-                foreach ($keys as $key => $val) {
+                foreach ($fieldvals as $field => $val) {
                     if ($val === null) {
-                        $where[]         = "\"{$key}\" IS NULL";
+                        $where[]         = "\"{$field}\" IS NULL";
                         $hashed_valued[] = '';
                     } else {
-                        $vals[]  = $val;
-                        $where[] = "\"{$key}\" = ?";
+                        $vals[]          = $val;
+                        $where[]         = "\"{$field}\" = ?";
                         $hashed_valued[] = md5($val);
                     }
                 }

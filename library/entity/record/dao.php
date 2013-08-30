@@ -319,7 +319,7 @@
                     },
                     function(array $keys_arr) use ($order_by, $offset, $limit) {
                         $source_driver = "entity_record_driver_{$this->source_engine}";
-                        return $source_driver::by_fields_offset_multi(
+                        return $source_driver::by_field_offset_multi(
                             $this,
                             $this->source_engine_pool_read,
                             $keys_arr,
@@ -517,7 +517,7 @@
                 );
             }
 
-            $this->cache_batch_start($this->cache_engine, $this->cache_engine_pool_write);
+            cache_lib::pipeline_start($this->cache_engine, $this->cache_engine_pool_write);
 
             /**
              * If the primary key was changed, bust the cache for that new key too
@@ -643,7 +643,7 @@
                 $delete_cache_keys[] = static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? ':' . md5($pk) : ":{$pk}");
             }
 
-            $this->cache_batch_start($this->cache_engine, $this->cache_engine_pool_write);
+            cache_lib::pipeline_start($this->cache_engine, $this->cache_engine_pool_write);
 
             if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
                 cache_lib::expire_multi(
@@ -660,7 +660,7 @@
                 );
             }
 
-            $this->cache_batch_execute($this->cache_engine, $this->cache_engine_pool_write);
+            cache_lib::pipeline_execute($this->cache_engine, $this->cache_engine_pool_write);
 
             // Destroy cache based on table fields - do not wrap this function in a batch execution
             self::_delete_meta_cache(
@@ -684,7 +684,7 @@
              * Build lists of keys for deletion - when it's time to delete/modify the record
              */
             if ($fieldvals) {
-                $this->cache_batch_start($this->cache_engine, $this->cache_engine_pool_write);
+                cache_lib::pipeline_start($this->cache_engine, $this->cache_engine_pool_write);
 
                 /**
                  * Keys - An entry for each key and value must be created (linking back to this set's $cache_key)
@@ -722,7 +722,7 @@
                     );
                 }
 
-                $this->cache_batch_execute($this->cache_engine, $this->cache_engine_pool_write);
+                cache_lib::pipeline_execute($this->cache_engine, $this->cache_engine_pool_write);
             } else {
                 // Add the $list_key key to field list key - if it doesn't already exist
                 cache_lib::list_add(

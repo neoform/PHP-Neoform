@@ -24,21 +24,21 @@
          * @param entity_link_dao $self the name of the DAO
          * @param string          $pool which source engine pool to use
          * @param array           $select_fields
-         * @param array           $keys
+         * @param array           $fieldvals
          *
          * @return array
          */
-        public static function by_fields(entity_link_dao $self, $pool, array $select_fields, array $keys) {
+        public static function by_fields(entity_link_dao $self, $pool, array $select_fields, array $fieldvals) {
             $where = [];
             $vals  = [];
 
-            if ($keys) {
-                foreach ($keys as $k => $v) {
-                    if ($v === null) {
-                        $where[] = "\"{$k}\" IS NULL";
+            if ($fieldvals) {
+                foreach ($fieldvals as $field => $val) {
+                    if ($val === null) {
+                        $where[] = "\"{$field}\" IS NULL";
                     } else {
-                        $vals[]  = $v;
-                        $where[] = "\"{$k}\" = ?";
+                        $vals[]  = $val;
+                        $where[] = "\"{$field}\" = ?";
                     }
                 }
             }
@@ -64,12 +64,12 @@
          * @param entity_link_dao $self the name of the DAO
          * @param string          $pool which source engine pool to use
          * @param array           $select_fields
-         * @param array           $keys_arr
+         * @param array           $fieldvals_arr
          *
          * @return array
          */
-        public static function by_fields_multi(entity_link_dao $self, $pool, array $select_fields, array $keys_arr) {
-            $key_fields     = array_keys(reset($keys_arr));
+        public static function by_fields_multi(entity_link_dao $self, $pool, array $select_fields, array $fieldvals_arr) {
+            $key_fields     = array_keys(reset($fieldvals_arr));
             $fields         = [];
             $reverse_lookup = [];
             $return         = [];
@@ -80,18 +80,18 @@
                 $fields[] = "\"{$k}\"";
             }
 
-            foreach ($keys_arr as $k => $keys) {
+            foreach ($fieldvals_arr as $k => $fieldvals) {
                 $w = [];
                 $return[$k] = [];
                 $hashed_valued = [];
-                foreach ($keys as $key => $v) {
-                    if ($v === null) {
-                        $w[]             = "\"{$key}\" IS NULL";
+                foreach ($fieldvals as $field => $val) {
+                    if ($val === null) {
+                        $w[]             = "\"{$field}\" IS NULL";
                         $hashed_valued[] = '';
                     } else {
-                        $vals[]          = $v;
-                        $w[]             = "\"{$key}\" = ?";
-                        $hashed_valued[] = md5($v);
+                        $vals[]          = $val;
+                        $w[]             = "\"{$field}\" = ?";
+                        $hashed_valued[] = md5($val);
                     }
                 }
                 $reverse_lookup[join(':', $hashed_valued)] = $k;
@@ -251,20 +251,20 @@
          *
          * @param entity_link_dao $self the name of the DAO
          * @param string          $pool which source engine pool to use
-         * @param array           $keys
+         * @param array           $fieldvals
          *
          * @return mixed
          */
-        public static function delete(entity_link_dao $self, $pool, array $keys) {
+        public static function delete(entity_link_dao $self, $pool, array $fieldvals) {
             $where = [];
             $vals  = [];
 
-            foreach ($keys as $k => $v) {
+            foreach ($fieldvals as $field => $v) {
                 if ($v === null) {
-                    $where[] = "\"{$k}\" IS NULL";
+                    $where[] = "\"{$field}\" IS NULL";
                 } else {
                     $vals[]  = $v;
-                    $where[] = "\"{$k}\" = ?";
+                    $where[] = "\"{$field}\" = ?";
                 }
             }
 
@@ -281,22 +281,22 @@
          *
          * @param entity_link_dao $self the name of the DAO
          * @param string          $pool which source engine pool to use
-         * @param array           $keys_arr
+         * @param array           $fieldvals_arr
          *
          * @return mixed
          */
-        public static function deletes(entity_link_dao $self, $pool, array $keys_arr) {
+        public static function deletes(entity_link_dao $self, $pool, array $fieldvals_arr) {
             $vals  = [];
             $where = [];
 
-            foreach ($keys_arr as $keys) {
+            foreach ($fieldvals_arr as $fieldvals) {
                 $w = [];
-                foreach ($keys as $k => $v) {
+                foreach ($fieldvals as $field => $v) {
                     if ($v === null) {
-                        $w[] = "\"{$k}\" IS NULL";
+                        $w[] = "\"{$field}\" IS NULL";
                     } else {
                         $vals[] = $v;
-                        $w[]    = "\"{$k}\" = ?";
+                        $w[]    = "\"{$field}\" = ?";
                     }
                 }
                 $where[] = "(" . join(" AND ", $w) . ")";

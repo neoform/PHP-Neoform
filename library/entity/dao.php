@@ -138,73 +138,46 @@
         }
 
         /**
-         * Start batched query pipeline
-         *
-         * @param string $engine
-         * @param string $pool
-         */
-        final protected function cache_batch_start($engine, $pool) {
-            cache_lib::pipeline_start(
-                $engine,
-                $pool
-            );
-        }
-
-        /**
-         * Execute batched cache queries
-         *
-         * @param string $engine
-         * @param string $pool
-         *
-         * @return mixed result from batch execution
-         */
-        final protected function cache_batch_execute($engine, $pool) {
-            return cache_lib::pipeline_execute(
-                $engine,
-                $pool
-            );
-        }
-
-        /**
-         * Build a cache key used by the cache_lib by combining the dao class name, the cache key and the variables found in the $params
+         * Build a cache key used by the cache_lib by combining the dao class name, the cache key and the variables
+         * found in the $fieldvals
          *
          * @access public
          * @static
          * @final
          * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
-         * @param array   $params         optional - array of table keys and their values being looked up in the table
+         * @param array   $fieldvals      optional - array of table keys and their values being looked up in the table
          * @return string a cache key that is unqiue to the application
          */
-        final protected static function _build_key($cache_key_name, array $params=[]) {
+        final protected static function _build_key($cache_key_name, array $fieldvals=[]) {
             // each key is namespaced with the name of the class, then the name of the function ($cache_key_name)
-            $param_count = count($params);
+            $param_count = count($fieldvals);
             if ($param_count === 1) {
-                return static::ENTITY_NAME . ":{$cache_key_name}:" . md5(reset($params));
+                return static::ENTITY_NAME . ":{$cache_key_name}:" . md5(reset($fieldvals));
             } else if ($param_count === 0) {
                 return static::ENTITY_NAME . ":{$cache_key_name}:";
             } else {
-                ksort($params);
-                foreach ($params as & $param) {
-                    $param = base64_encode($param);
+                ksort($fieldvals);
+                foreach ($fieldvals as & $val) {
+                    $val = base64_encode($val);
                 }
                 // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
-                return static::ENTITY_NAME . ":{$cache_key_name}:" . md5(json_encode(array_values($params)));
+                return static::ENTITY_NAME . ":{$cache_key_name}:" . md5(json_encode(array_values($fieldvals)));
             }
         }
 
         /**
          * Build a list cache key with an optional field value
          *
-         * @param String $field_name  name of field/column
-         * @param mixed  $field_value value of field/column
+         * @param String $field_name name of field/column
+         * @param mixed  $fieldval   value of field/column
          *
          * @return string
          */
-        final protected static function _build_key_list($field_name, $field_value=null) {
-            if ($field_value === null) {
+        final protected static function _build_key_list($field_name, $fieldval=null) {
+            if ($fieldval === null) {
                 return static::ENTITY_NAME . ':' . self::META . "[{$field_name}]";
             } else {
-                return static::ENTITY_NAME . ':' . self::META . "[{$field_name}]:" . md5($field_value);
+                return static::ENTITY_NAME . ':' . self::META . "[{$field_name}]:" . md5($fieldval);
             }
         }
 
@@ -264,7 +237,7 @@
          */
         final public function _set_meta_cache($cache_key, array $fieldvals, array $fields=[]) {
 
-            $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
+            cache_lib::pipeline_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
 
             /**
              * Build lists of keys for deletion - when it's time to delete/modify the record
@@ -334,7 +307,7 @@
                 );
             }
 
-            $this->cache_batch_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
+            cache_lib::pipeline_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
         }
 
         /**
@@ -345,7 +318,7 @@
          */
         final public function _set_meta_cache_multi(array $cache_keys, array $fields=[]) {
 
-            $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
+            cache_lib::pipeline_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
 
             /**
              * Build lists of keys for deletion - when it's time to delete/modify the record
@@ -395,29 +368,31 @@
              * need to be destroyed (along with all 'id' cached result sets).
              */
             foreach ($cache_keys as $cache_key => $fieldvals) {
-                foreach (array_diff_key($fieldvals, array_flip($fields)) as $field => $value) {
-                    // Create a list key for the field/value
-                    $list_key = self::_build_key_list($field, $value);
+                if ($fieldvals) {
+                    foreach (array_diff_key($fieldvals, array_flip($fields)) as $field => $value) {
+                        // Create a list key for the field/value
+                        $list_key = self::_build_key_list($field, $value);
 
-                    // Store the cache key in the $list_key list
-                    cache_lib::list_add(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
-                        $list_key,
-                        $cache_key
-                    );
+                        // Store the cache key in the $list_key list
+                        cache_lib::list_add(
+                            $this->cache_list_engine,
+                            $this->cache_list_engine_pool_write,
+                            $list_key,
+                            $cache_key
+                        );
 
-                    // Add the $list_key key to field list key - if it doesn't already exist
-                    cache_lib::list_add(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
-                        self::_build_key_list($field),
-                        $list_key
-                    );
+                        // Add the $list_key key to field list key - if it doesn't already exist
+                        cache_lib::list_add(
+                            $this->cache_list_engine,
+                            $this->cache_list_engine_pool_write,
+                            self::_build_key_list($field),
+                            $list_key
+                        );
+                    }
                 }
             }
 
-            $this->cache_batch_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
+            cache_lib::pipeline_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
         }
 
         /**
@@ -484,10 +459,10 @@
                 $list_keys
             );
 
-            $this->cache_batch_start($this->cache_engine, $this->cache_engine_pool_write);
+            cache_lib::pipeline_start($this->cache_engine, $this->cache_engine_pool_write);
 
             if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
-                $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
+                cache_lib::pipeline_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
             }
 
             if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
@@ -553,10 +528,10 @@
             }
 
             if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
-                $this->cache_batch_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
+                cache_lib::pipeline_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
             }
 
-            $this->cache_batch_execute($this->cache_engine, $this->cache_engine_pool_write);
+            cache_lib::pipeline_execute($this->cache_engine, $this->cache_engine_pool_write);
         }
 
         /**
@@ -622,10 +597,10 @@
                 $list_keys
             );
 
-            $this->cache_batch_start($this->cache_engine, $this->cache_engine_pool_write);
+            cache_lib::pipeline_start($this->cache_engine, $this->cache_engine_pool_write);
 
             if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
-                $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
+                cache_lib::pipeline_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
             }
 
             if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
@@ -678,9 +653,9 @@
             }
 
             if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
-                $this->cache_batch_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
+                cache_lib::pipeline_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
             }
 
-            $this->cache_batch_execute($this->cache_engine, $this->cache_engine_pool_write);
+            cache_lib::pipeline_execute($this->cache_engine, $this->cache_engine_pool_write);
         }
     }

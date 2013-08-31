@@ -418,7 +418,7 @@
                             $cache_keys_fieldvals[$cache_key] = $fieldvals;
                         }
 
-                        $this->_set_meta_cache_multi($cache_keys);
+                        $this->_set_meta_cache_multi($cache_keys_fieldvals);
                     }
                 );
             }

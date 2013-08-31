@@ -51,18 +51,18 @@
          * @param array  $select_fields  array of table fields (table columns) to be selected
          * @param array  $fieldvals      array of table keys and their values being looked up in the table
          * @param array  $order_by
-         * @param null   $limit
          * @param null   $offset
+         * @param null   $limit
          *
          * @return array  array of records from cache
          * @throws entity_exception
          */
         final protected function _by_fields($cache_key_name, array $select_fields, array $fieldvals, array $order_by=null,
-                                            $limit=null, $offset=null) {
+                                           $offset=null,  $limit=null) {
 
             if ($order_by) {
                 $select_field = reset($select_fields);
-                $limit        = (int) $limit;
+                $limit        = $limit === null ? null : (int) $limit;
                 $offset       = $offset === null ? null : (int) $offset;
 
                 if (! isset($this->foreign_keys[$select_field])) {
@@ -75,8 +75,8 @@
                     $cache_key_name,
                     $select_field,
                     $order_by,
-                    (int) $offset,
-                    (int) $limit,
+                    $offset,
+                    $limit,
                     $fieldvals
                 );
 
@@ -133,18 +133,18 @@
         /**
          * Gets the ids of more than one set of key values
          *
-         * @param string $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
-         * @param array  $select_fields  array of table fields (table columns) to be selected
-         * @param array  $keys_arr       array of arrays of table keys and their values being looked up in the table - each sub-array must have matching keys
-         * @param array  $order_by       fields in the foreign table - key = field, val = order direction
-         * @param null   $limit
-         * @param null   $offset
+         * @param string       $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
+         * @param array        $select_fields  array of table fields (table columns) to be selected
+         * @param array        $keys_arr       array of arrays of table keys and their values being looked up in the table - each sub-array must have matching keys
+         * @param array        $order_by       fields in the foreign table - key = field, val = order direction
+         * @param integer|null $offset
+         * @param integer|null $limit
          *
          * @return array  ids of records from cache
          * @throws entity_exception
          */
         final protected function _by_fields_multi($cache_key_name, array $select_fields, array $keys_arr, array $order_by=null,
-                                                  $limit=null, $offset=null) {
+                                                  $offset=null, $limit=null) {
             if ($order_by) {
                 // Limit ranges only work on single keys
                 $select_field = reset($select_fields);
@@ -167,8 +167,8 @@
                             $cache_key_name,
                             $select_field,
                             $order_by,
-                            (int) $offset,
-                            (int) $limit,
+                            $offset,
+                            $limit,
                             $fieldvals
                         );
                     },
@@ -181,11 +181,23 @@
                             $foreign_dao,
                             $fieldvals_arr,
                             $order_by,
-                            $limit,
-                            $offset
+                            $offset,
+                            $limit
                         );
                     },
-                    function(array $cache_keys) use ($select_fields, $order_by, $foreign_dao) {
+                    function(array $cache_keys, array $fieldvals_arr, array $pks_arr) use ($select_fields, $order_by, $foreign_dao) {
+
+
+
+
+
+
+
+
+
+
+
+
 
                         // Local DAO
                         $this->_set_meta_cache_multi($cache_keys, $select_fields);
@@ -208,7 +220,17 @@
                         $source_driver = "entity_link_driver_{$this->source_engine}";
                         return $source_driver::by_fields_multi($this, $this->source_engine_pool_read, $select_fields, $fieldvals_arr);
                     },
-                    function(array $cache_keys) use($select_fields) {
+                    function(array $cache_keys, array $fieldvals_arr, array $pks_arr) use ($select_fields) {
+
+
+
+
+
+
+
+
+
+
                         $this->_set_meta_cache_multi($cache_keys, $select_fields);
                     }
                 );

@@ -111,14 +111,13 @@
         /**
          * Get a segment of a list/array
          *
-         * @param string     $engine
-         * @param string     $engine_pool
-         * @param string     $list_key
-         * @param array|null $filter
+         * @param string $engine
+         * @param string $engine_pool
+         * @param string $list_key
          *
          * @return array|null
          */
-        public static function list_get($engine, $engine_pool, $list_key, array $filter=null) {
+        public static function list_get($engine, $engine_pool, $list_key) {
 
             if (! $list_key) {
                 return;
@@ -128,27 +127,26 @@
             // This cannot be used until it's properly set up. There are bugs that happen when a new list is created
             // before checking the cache driver (eg redis) to see if the list exists or not
 
-            //if (cache_memory_dao::exists($list_key) && ($arr = cache_memory_dao::list_get($list_key, $filter)) !== null) {
+            //if (cache_memory_dao::exists($list_key)) {
             //    return $arr;
             //}
 
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
-                return $engine_driver::list_get($engine_pool, $list_key, $filter);
+                return $engine_driver::list_get($engine_pool, $list_key);
             }
         }
 
         /**
          * Get a segment of multiple joined lists/arrays (via union)
          *
-         * @param string     $engine
-         * @param string     $engine_pool
-         * @param array      $list_keys
-         * @param array|null $filter
+         * @param string $engine
+         * @param string $engine_pool
+         * @param array  $list_keys
          *
          * @return array|null
          */
-        public static function list_get_union($engine, $engine_pool, array $list_keys, array $filter=null) {
+        public static function list_get_union($engine, $engine_pool, array $list_keys) {
 
             if (! $list_keys) {
                 return;
@@ -156,17 +154,17 @@
 
             if ($engine) {
                 $engine_driver = "cache_{$engine}_driver";
-                return $engine_driver::list_get_union($engine_pool, $list_keys, $filter);
+                return $engine_driver::list_get_union($engine_pool, $list_keys);
             }
         }
 
         /**
          * Create a list and/or Add a value to a list
          *
-         * @param string $engine
-         * @param string $list_key
-         * @param string $engine_pool
-         * @param mixed  $value
+         * @param string       $engine
+         * @param string       $engine_pool
+         * @param string|array $list_key
+         * @param mixed|array  $value
          */
         public static function list_add($engine, $engine_pool, $list_key, $value) {
 
@@ -182,10 +180,10 @@
         /**
          * Remove values from a list
          *
-         * @param string $engine
-         * @param string $engine_pool
-         * @param string $list_key
-         * @param array  $remove_keys
+         * @param string       $engine
+         * @param string       $engine_pool
+         * @param string|array $list_key
+         * @param array        $remove_keys
          */
         public static function list_remove($engine, $engine_pool, $list_key, $remove_keys) {
 
@@ -266,14 +264,24 @@
                 return cache_memory_dao::get($key);
             }
 
-            $engine_driver = "cache_{$engine}_driver";
+            if ($engine) {
 
-            if ($engine && $data = $engine_driver::get($engine_pool_read, $key)) {
-                $data = reset($data);
-            } else {
-                //get the data from it's original source
-                $data = $data_func($args);
+                $engine_driver = "cache_{$engine}_driver";
+
+                if ($data = $engine_driver::get($engine_pool_read, $key)) {
+
+                    // cache_driver::get() will return an array if a result was found in cache
+                    $data = reset($data);
+
+                    // Save to memory - for faster lookup if this record gets requested again
+                    cache_memory_dao::set($key, $data);
+
+                    return $data;
+                }
             }
+
+            // Not found in cache - get the data from it's original source
+            $data = $data_func($args);
 
             if ($data !== null || $cache_empty_results) {
 
@@ -282,10 +290,11 @@
 
                 // cache data to engine
                 if ($engine) {
+
                     $engine_driver::set($engine_pool_write, $key, $data, $ttl);
 
                     if ($after_cache_func) {
-                        $after_cache_func($key);
+                        $after_cache_func($key, $data);
                     }
                 }
             }
@@ -386,7 +395,7 @@
             // Save to memory
             if ($rows_not_in_memory) {
                 $save_to_memory = [];
-                foreach (array_keys($rows_not_in_memory) as $index) {
+                foreach (array_intersect_key($matched_rows, $rows_not_in_memory) as $index => $row) {
                     // either we cache empty results, or the row is not empty
                     $row = $matched_rows[$index];
                     if ($row !== null || $cache_empty_results) {
@@ -400,9 +409,8 @@
             // Save to cache
             if ($engine && $rows_not_in_cache) {
                 $save_to_cache = [];
-                foreach (array_keys($rows_not_in_cache) as $index) {
+                foreach (array_intersect_key($matched_rows, $rows_not_in_cache) as $index => $row) {
                     // either we cache empty results, or the row is not empty
-                    $row = $matched_rows[$index];
                     if ($row !== null || $cache_empty_results) {
                         $save_to_cache[$key_lookup[$index]] = $row;
                     }
@@ -411,7 +419,11 @@
                 $engine::set_multi($engine_pool_write, $save_to_cache, $ttl);
 
                 if ($after_cache_func) {
-                    $after_cache_func(array_combine($rows_not_in_cache, array_intersect_key($rows, $rows_not_in_cache)));
+                    $after_cache_func(
+                        $rows_not_in_cache,
+                        array_intersect_key($rows, $rows_not_in_cache),
+                        $matched_rows
+                    );
                 }
             }
 
@@ -499,76 +511,6 @@
                     $engine = "cache_{$engine}_driver";
                     $engine::expire_multi($engine_pool, $keys, $ttl);
                 }
-            }
-        }
-
-        /**
-         * Delete all cache entries being stored by a list (from the list as well), by applying filters
-         *
-         * @param string            $engine
-         * @param string            $engine_pool
-         * @param string            $list_key
-         * @param string|array|null $filter
-         */
-        public static function delete_cache_filter_list($engine, $engine_pool, $list_key, $filter=null) {
-
-            $keys = self::list_get(
-                $engine,
-                $engine_pool,
-                $list_key
-            );
-
-            if ($keys) {
-                if ($filter !== null) {
-                    if (is_array($filter)) {
-                        $keys_matched = [];
-                        foreach ($filter as $f) {
-                            foreach (preg_grep('`' . preg_quote($f) . '`', $keys) as $key) {
-                                $keys_matched[] = $key;
-                            }
-                        }
-                    } else {
-                        $keys_matched = preg_grep('`' . preg_quote($filter) . '`', $keys);
-                    }
-
-                    // If there are any relevant keys in the list to remove, remove them
-                    if ($keys_matched) {
-                        $keys = $keys_matched;
-
-                    // Otherwise return
-                    } else {
-                        return;
-                    }
-                }
-
-                // We do not remove the list_key, because there's a race condition here
-                // It's possible for the list to have newly added keys, right before it gets deleted
-                // which would result in lost cache keys that exist but are not on the list any more.
-                // The downside to not deleting this, is the cache key is basically permanent.
-                // However, there is only one such key per entity, so it's not a big deal.
-
-                self::pipeline_start($engine, $engine_pool);
-
-                // Even though these commands are pipelined, they are not necessarily atomic (as is the case with redis)
-                // So we delete from the list before we delete from the actual cache key, incase that cache key somehow
-                // gets re-added before it was removed from the list. (race condition, same as above)
-
-                // Remove the all keys from the list
-                self::list_remove(
-                    $engine,
-                    $engine_pool,
-                    $list_key,
-                    $keys
-                );
-
-                // Delete keys
-                self::delete_multi(
-                    $engine,
-                    $engine_pool,
-                    $keys
-                );
-
-                self::pipeline_execute($engine, $engine_pool);
             }
         }
     }

@@ -156,7 +156,7 @@
          * @throws entity_exception
          */
         public static function by_field_limit(entity_link_dao $self, $pool, $local_field, entity_record_dao $foreign_dao,
-                                               array $fieldvals, array $order_by, $limit, $offset) {
+                                               array $fieldvals, array $order_by, $offset, $limit) {
 
             $quoted_table = self::table($self::TABLE);
 
@@ -235,11 +235,10 @@
          * @throws entity_exception
          */
         public static function by_field_limit_multi(entity_link_dao $self, $pool, $local_field, entity_record_dao $foreign_dao,
-                                               array $fieldvals_arr, array $order_by, $limit, $offset) {
+                                               array $fieldvals_arr, array $order_by, $offset, $limit) {
 
             $fieldvals_fields = array_keys(reset($fieldvals_arr));
             $select_fields    = [];
-            $return           = [];
             $reverse_lookup   = [];
             $return           = [];
             $vals             = [];

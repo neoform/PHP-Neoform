@@ -10,9 +10,9 @@
         protected $cache_engine_pool_read;
         protected $cache_engine_pool_write;
 
-        protected $cache_list_engine;
-        protected $cache_list_engine_pool_read;
-        protected $cache_list_engine_pool_write;
+        protected $cache_meta_engine;
+        protected $cache_meta_engine_pool_read;
+        protected $cache_meta_engine_pool_write;
 
         protected $cache_delete_expire_ttl;
 
@@ -50,9 +50,9 @@
             $this->cache_engine_pool_read       = $config['cache_engine_pool_read'];
             $this->cache_engine_pool_write      = $config['cache_engine_pool_write'];
 
-            $this->cache_list_engine            = $config['cache_list_engine'];
-            $this->cache_list_engine_pool_read  = $config['cache_list_engine_pool_read'];
-            $this->cache_list_engine_pool_write = $config['cache_list_engine_pool_write'];
+            $this->cache_meta_engine            = $config['cache_meta_engine'];
+            $this->cache_meta_engine_pool_read  = $config['cache_meta_engine_pool_read'];
+            $this->cache_meta_engine_pool_write = $config['cache_meta_engine_pool_write'];
 
             $this->cache_delete_expire_ttl      = $config['cache_delete_expire_ttl'];
         }
@@ -233,11 +233,11 @@
          *
          * @param string     $cache_key cache key for which we are storing meta data
          * @param array|null $fields    fields
-         * @param array      $fieldvals   fields and values
+         * @param array      $fieldvals fields and values
          */
         final public function _set_meta_cache($cache_key, array $fieldvals, array $fields=[]) {
 
-            cache_lib::pipeline_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
+            cache_lib::pipeline_start($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
 
             /**
              * Build lists of keys for deletion - when it's time to delete/modify the record
@@ -256,16 +256,16 @@
 
                 // Store the cache key in $order_by_list_key list
                 cache_lib::list_add(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
+                    $this->cache_meta_engine,
+                    $this->cache_meta_engine_pool_write,
                     $order_by_list_key,
                     $cache_key
                 );
 
                 // Add the $order_by_list_key key to the field list key - if it doesn't already exist
                 cache_lib::list_add(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
+                    $this->cache_meta_engine,
+                    $this->cache_meta_engine_pool_write,
                     self::_build_key_list($field),
                     $order_by_list_key
                 );
@@ -287,27 +287,56 @@
              * need to be destroyed (along with all 'id' cached result sets).
              */
             foreach (array_diff_key($fieldvals, array_flip($fields)) as $field => $value) {
-                // Create a list key for the field/value
-                $list_key = self::_build_key_list($field, $value);
 
-                // Store the cache key in the $list_key list
-                cache_lib::list_add(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
-                    $list_key,
-                    $cache_key
-                );
+                // @todo bulk operations are better - $list_keys array containing cache_key(s) would be better
+                // @todo thereby doing fewer calls to list_add() (and potentially being able to get rid of the pipelining
 
-                // Add the $list_key key to field list key - if it doesn't already exist
-                cache_lib::list_add(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
-                    self::_build_key_list($field),
-                    $list_key
-                );
+                if (is_array($value)) {
+                    $list_keys = [];
+                    foreach ($value as $val) {
+                        // Create a list key for the field/value
+                        $list_keys[] = self::_build_key_list($field, $val);
+                    }
+
+                    // Store the cache key in each $list_keys list
+                    cache_lib::list_add(
+                        $this->cache_meta_engine,
+                        $this->cache_meta_engine_pool_write,
+                        $list_keys,
+                        $cache_key
+                    );
+
+                    // Add the $list_key key to field list key - if it doesn't already exist
+                    cache_lib::list_add(
+                        $this->cache_meta_engine,
+                        $this->cache_meta_engine_pool_write,
+                        self::_build_key_list($field),
+                        $list_keys
+                    );
+
+                } else {
+                    // Create a list key for the field/value
+                    $list_key = self::_build_key_list($field, $value);
+
+                    // Store the cache key in the $list_key list
+                    cache_lib::list_add(
+                        $this->cache_meta_engine,
+                        $this->cache_meta_engine_pool_write,
+                        $list_key,
+                        $cache_key
+                    );
+
+                    // Add the $list_key key to field list key - if it doesn't already exist
+                    cache_lib::list_add(
+                        $this->cache_meta_engine,
+                        $this->cache_meta_engine_pool_write,
+                        self::_build_key_list($field),
+                        $list_key
+                    );
+                }
             }
 
-            cache_lib::pipeline_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
+            cache_lib::pipeline_execute($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
         }
 
         /**
@@ -318,7 +347,7 @@
          */
         final public function _set_meta_cache_multi(array $cache_keys, array $fields=[]) {
 
-            cache_lib::pipeline_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
+            cache_lib::pipeline_start($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
 
             /**
              * Build lists of keys for deletion - when it's time to delete/modify the record
@@ -337,16 +366,16 @@
 
                 // Store the cache key in $order_by_list_key list
                 cache_lib::list_add(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
+                    $this->cache_meta_engine,
+                    $this->cache_meta_engine_pool_write,
                     $order_by_list_key,
                     array_keys($cache_keys)
                 );
 
                 // Add the $order_by_list_key key to the field list key - if it doesn't already exist
                 cache_lib::list_add(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
+                    $this->cache_meta_engine,
+                    $this->cache_meta_engine_pool_write,
                     self::_build_key_list($field),
                     $order_by_list_key
                 );
@@ -369,30 +398,59 @@
              */
             foreach ($cache_keys as $cache_key => $fieldvals) {
                 if ($fieldvals) {
+
+                    // @todo bulk operations are better - $list_keys array containing cache_key(s) would be better
+                    // @todo thereby doing fewer calls to list_add() (and potentially being able to get rid of the pipelining
+
                     foreach (array_diff_key($fieldvals, array_flip($fields)) as $field => $value) {
-                        // Create a list key for the field/value
-                        $list_key = self::_build_key_list($field, $value);
+                        if (is_array($value)) {
+                            $list_keys = [];
+                            foreach ($value as $val) {
+                                // Create a list key for the field/value
+                                $list_keys[] = self::_build_key_list($field, $val);
+                            }
 
-                        // Store the cache key in the $list_key list
-                        cache_lib::list_add(
-                            $this->cache_list_engine,
-                            $this->cache_list_engine_pool_write,
-                            $list_key,
-                            $cache_key
-                        );
+                            // Store the cache key in each $list_keys list
+                            cache_lib::list_add(
+                                $this->cache_meta_engine,
+                                $this->cache_meta_engine_pool_write,
+                                $list_keys,
+                                $cache_key
+                            );
 
-                        // Add the $list_key key to field list key - if it doesn't already exist
-                        cache_lib::list_add(
-                            $this->cache_list_engine,
-                            $this->cache_list_engine_pool_write,
-                            self::_build_key_list($field),
-                            $list_key
-                        );
+                            // Add the $list_key key to field list key - if it doesn't already exist
+                            cache_lib::list_add(
+                                $this->cache_meta_engine,
+                                $this->cache_meta_engine_pool_write,
+                                self::_build_key_list($field),
+                                $list_keys
+                            );
+
+                        } else {
+                            // Create a list key for the field/value
+                            $list_key = self::_build_key_list($field, $value);
+
+                            // Store the cache key in the $list_key list
+                            cache_lib::list_add(
+                                $this->cache_meta_engine,
+                                $this->cache_meta_engine_pool_write,
+                                $list_key,
+                                $cache_key
+                            );
+
+                            // Add the $list_key key to field list key - if it doesn't already exist
+                            cache_lib::list_add(
+                                $this->cache_meta_engine,
+                                $this->cache_meta_engine_pool_write,
+                                self::_build_key_list($field),
+                                $list_key
+                            );
+                        }
                     }
                 }
             }
 
-            cache_lib::pipeline_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
+            cache_lib::pipeline_execute($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
         }
 
         /**
@@ -400,11 +458,10 @@
          *
          * Do not wrap a batch execution around this function
          *
-         * @param array $fieldvals           list of fields/values
-         * @param array $secondary_fieldvals list of fields/values
-         * @param array $list_keys           list of keys to start off with (eg, key ALWAYS)
+         * @param array $fieldvals list of fields/values
+         * @param array $list_keys list of keys to start off with (eg, key ALWAYS)
          */
-        final protected function _delete_meta_cache(array $fieldvals, array $secondary_fieldvals=null, $list_keys=[]) {
+        final protected function _delete_meta_cache(array $fieldvals, $list_keys=[]) {
             $field_list_keys      = [];
             $list_items_to_remove = [];
 
@@ -423,12 +480,14 @@
                 if ($value === null) {
                     $field_list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field);
                 } else {
-                    $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $value);
-                }
-
-                // This gets used when an update took place - there is a new and old value
-                if ($secondary_fieldvals && array_key_exists($field, $secondary_fieldvals)) {
-                    $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $secondary_fieldvals[$field]);
+                    // incase we stacked multiple arrays of fieldvals together - as is done during updates
+                    if (is_array($value)) {
+                        foreach ($value as $val) {
+                            $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $val);
+                        }
+                    } else {
+                        $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $value);
+                    }
                 }
             }
 
@@ -437,8 +496,8 @@
              */
             if ($field_list_keys) {
                 $arr = cache_lib::list_get_union(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
+                    $this->cache_meta_engine,
+                    $this->cache_meta_engine_pool_write,
                     $field_list_keys
                 );
 
@@ -454,25 +513,25 @@
              * eg, limit[id]:555 + limit[id]:order_by + limit[email]:aaa@aaa.com + limit[email]:order_by
              */
             $cache_keys = cache_lib::list_get_union(
-                $this->cache_list_engine,
-                $this->cache_list_engine_pool_write,
+                $this->cache_meta_engine,
+                $this->cache_meta_engine_pool_write,
                 $list_keys
             );
 
             cache_lib::pipeline_start($this->cache_engine, $this->cache_engine_pool_write);
 
-            if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
-                cache_lib::pipeline_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
+            if ($this->cache_meta_engine !== $this->cache_engine || $this->cache_meta_engine_pool_write !== $this->cache_engine_pool_write) {
+                cache_lib::pipeline_start($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
             }
 
             if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
                 /**
                  * Expire all the keys selected above
                  */
-                if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                if ($this->cache_meta_engine !== $this->cache_engine || $this->cache_meta_engine_pool_write !== $this->cache_engine_pool_write) {
                     cache_lib::expire_multi(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
+                        $this->cache_meta_engine,
+                        $this->cache_meta_engine_pool_write,
                         array_merge($list_keys, $field_list_keys),
                         $this->cache_delete_expire_ttl
                     );
@@ -484,8 +543,8 @@
                     );
                 } else {
                     cache_lib::expire_multi(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
+                        $this->cache_meta_engine,
+                        $this->cache_meta_engine_pool_write,
                         array_merge($cache_keys, $list_keys, $field_list_keys),
                         $this->cache_delete_expire_ttl
                     );
@@ -494,10 +553,10 @@
                 /**
                  * Delete all the keys selected above
                  */
-                if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                if ($this->cache_meta_engine !== $this->cache_engine || $this->cache_meta_engine_pool_write !== $this->cache_engine_pool_write) {
                     cache_lib::delete_multi(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
+                        $this->cache_meta_engine,
+                        $this->cache_meta_engine_pool_write,
                         array_merge($list_keys, $field_list_keys)
                     );
                     cache_lib::delete_multi(
@@ -507,8 +566,8 @@
                     );
                 } else {
                     cache_lib::delete_multi(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
+                        $this->cache_meta_engine,
+                        $this->cache_meta_engine_pool_write,
                         array_merge($cache_keys, $list_keys, $field_list_keys)
                     );
                 }
@@ -520,15 +579,15 @@
              */
             foreach ($list_items_to_remove as $field_list_key => $remove_keys) {
                 cache_lib::list_remove(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
+                    $this->cache_meta_engine,
+                    $this->cache_meta_engine_pool_write,
                     $field_list_key,
                     array_unique($remove_keys)
                 );
             }
 
-            if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
-                cache_lib::pipeline_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
+            if ($this->cache_meta_engine !== $this->cache_engine || $this->cache_meta_engine_pool_write !== $this->cache_engine_pool_write) {
+                cache_lib::pipeline_execute($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
             }
 
             cache_lib::pipeline_execute($this->cache_engine, $this->cache_engine_pool_write);
@@ -575,8 +634,8 @@
             if ($field_list_keys) {
 
                 $arr = cache_lib::list_get_union(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
+                    $this->cache_meta_engine,
+                    $this->cache_meta_engine_pool_write,
                     $field_list_keys
                 );
 
@@ -592,25 +651,25 @@
              * eg, limit[id]:555 + limit[id]:order_by + limit[email]:aaa@aaa.com + limit[email]:order_by
              */
             $cache_keys = cache_lib::list_get_union(
-                $this->cache_list_engine,
-                $this->cache_list_engine_pool_write,
+                $this->cache_meta_engine,
+                $this->cache_meta_engine_pool_write,
                 $list_keys
             );
 
             cache_lib::pipeline_start($this->cache_engine, $this->cache_engine_pool_write);
 
-            if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
-                cache_lib::pipeline_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
+            if ($this->cache_meta_engine !== $this->cache_engine || $this->cache_meta_engine_pool_write !== $this->cache_engine_pool_write) {
+                cache_lib::pipeline_start($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
             }
 
             if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
                 /**
                  * Expire all the keys selected above
                  */
-                if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                if ($this->cache_meta_engine !== $this->cache_engine || $this->cache_meta_engine_pool_write !== $this->cache_engine_pool_write) {
                     cache_lib::expire_multi(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
+                        $this->cache_meta_engine,
+                        $this->cache_meta_engine_pool_write,
                         array_merge($list_keys, $field_list_keys),
                         $this->cache_delete_expire_ttl
                     );
@@ -632,10 +691,10 @@
                 /**
                  * Delete all the keys selected above
                  */
-                if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
+                if ($this->cache_meta_engine !== $this->cache_engine || $this->cache_meta_engine_pool_write !== $this->cache_engine_pool_write) {
                     cache_lib::delete_multi(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
+                        $this->cache_meta_engine,
+                        $this->cache_meta_engine_pool_write,
                         array_merge($list_keys, $field_list_keys)
                     );
                     cache_lib::delete_multi(
@@ -652,8 +711,8 @@
                 }
             }
 
-            if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
-                cache_lib::pipeline_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
+            if ($this->cache_meta_engine !== $this->cache_engine || $this->cache_meta_engine_pool_write !== $this->cache_engine_pool_write) {
+                cache_lib::pipeline_execute($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
             }
 
             cache_lib::pipeline_execute($this->cache_engine, $this->cache_engine_pool_write);

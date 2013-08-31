@@ -59,9 +59,9 @@
         /**
          * Create a list and/or Add a value to a list
          *
-         * @param string $pool
-         * @param string $key
-         * @param mixed  $value
+         * @param string       $pool
+         * @param string|array $key
+         * @param mixed        $value
          *
          * @throws cache_memcache_exception
          */
@@ -74,24 +74,22 @@
          *
          * @param string $pool
          * @param string $key
-         * @param array  $filter list of keys, an intersection is done
          *
          * @throws cache_memcache_exception
          */
-        public static function list_get($pool, $key, array $filter = null) {
+        public static function list_get($pool, $key) {
             throw new cache_memcache_exception('List commands are not supported by memcache');
         }
 
         /**
-         * Get all members of multiple list or get matching members of multiple lists (via filter array)
+         * Get all members of multiple list or get matching members of multiple lists
          *
          * @param string $pool
          * @param array  $keys
-         * @param array  $filter list of keys, an intersection is done
          *
          * @throws cache_memcache_exception
          */
-        public static function list_get_union($pool, array $keys, array $filter = null) {
+        public static function list_get_union($pool, array $keys) {
             throw new cache_memcache_exception('List commands are not supported by memcache');
         }
 

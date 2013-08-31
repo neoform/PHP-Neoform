@@ -134,9 +134,9 @@
                         'cache_engine_pool_read'  => 'master',
                         'cache_engine_pool_write' => 'master',
 
-                        'cache_list_engine'            => 'redis',
-                        'cache_list_engine_pool_read'  => 'master',
-                        'cache_list_engine_pool_write' => 'master',
+                        'cache_meta_engine'            => 'redis',
+                        'cache_meta_engine_pool_read'  => 'master',
+                        'cache_meta_engine_pool_write' => 'master',
                     ],
 
                     'overrides' => [

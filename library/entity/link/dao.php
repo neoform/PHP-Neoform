@@ -98,13 +98,25 @@
                             $offset
                         );
                     },
-                    function($cache_key) use ($select_field, $fieldvals, $order_by, $foreign_dao) {
+                    function($cache_key, $pks) use ($select_field, $fieldvals, $order_by, $foreign_dao) {
+
+                        $pk = $this::PRIMARY_KEY;
+
+                        // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
+                        if (array_key_exists($pk, $fieldvals)) {
+                            $fieldvals[$pk] = array_unique(array_merge(
+                                is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
+                                $pks
+                            ));
+                        } else {
+                            $fieldvals[$pk] = $pks;
+                        }
 
                         // Local DAO
                         $this->_set_meta_cache($cache_key, $fieldvals, [ $select_field ]);
 
                         // Foreign DAO
-                        $order_by[$foreign_dao::PRIMARY_KEY] = true; // add primary key to the list of fields
+                        $order_by[$pk] = true; // add primary key to the list of fields
                         $foreign_dao->_set_meta_cache($cache_key, [], array_keys($order_by));
                     }
                 );
@@ -123,7 +135,20 @@
                             $fieldvals
                         );
                     },
-                    function($cache_key) use ($select_fields, $fieldvals) {
+                    function($cache_key, $pks) use ($select_fields, $fieldvals) {
+
+                        $pk = $this::PRIMARY_KEY;
+
+                        // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
+                        if (array_key_exists($pk, $fieldvals)) {
+                            $fieldvals[$pk] = array_unique(array_merge(
+                                is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
+                                $pks
+                            ));
+                        } else {
+                            $fieldvals[$pk] = $pks;
+                        }
+
                         $this->_set_meta_cache($cache_key, $fieldvals, $select_fields);
                     }
                 );
@@ -187,17 +212,25 @@
                     },
                     function(array $cache_keys, array $fieldvals_arr, array $pks_arr) use ($select_fields, $order_by, $foreign_dao) {
 
+                        $pk = $this::PRIMARY_KEY;
 
+                        $cache_keys_fieldvals = [];
+                        foreach ($cache_keys as $k => $cache_key) {
 
+                            // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
+                            $fieldvals = & $fieldvals_arr[$k];
 
+                            if (array_key_exists($pk, $fieldvals)) {
+                                $fieldvals[$pk] = array_unique(array_merge(
+                                    is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
+                                    $pks_arr[$k]
+                                ));
+                            } else {
+                                $fieldvals[$pk] = $pks_arr[$k];
+                            }
 
-
-
-
-
-
-
-
+                            $cache_keys_fieldvals[$cache_key] = $fieldvals;
+                        }
 
                         // Local DAO
                         $this->_set_meta_cache_multi($cache_keys, $select_fields);
@@ -222,14 +255,25 @@
                     },
                     function(array $cache_keys, array $fieldvals_arr, array $pks_arr) use ($select_fields) {
 
+                        $pk = $this::PRIMARY_KEY;
 
+                        $cache_keys_fieldvals = [];
+                        foreach ($cache_keys as $k => $cache_key) {
 
+                            // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
+                            $fieldvals = & $fieldvals_arr[$k];
 
+                            if (array_key_exists($pk, $fieldvals)) {
+                                $fieldvals[$pk] = array_unique(array_merge(
+                                    is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
+                                    $pks_arr[$k]
+                                ));
+                            } else {
+                                $fieldvals[$pk] = $pks_arr[$k];
+                            }
 
-
-
-
-
+                            $cache_keys_fieldvals[$cache_key] = $fieldvals;
+                        }
 
                         $this->_set_meta_cache_multi($cache_keys, $select_fields);
                     }

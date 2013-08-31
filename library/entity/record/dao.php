@@ -267,7 +267,7 @@
                             $fieldvals[$this::PRIMARY_KEY] = $pks;
                         }
 
-                        $this->_set_meta_cache($cache_key, $fieldvals, array_values($order_by));
+                        $this->_set_meta_cache($cache_key, $fieldvals, array_keys($order_by));
                     }
                 );
             } else {
@@ -360,21 +360,19 @@
                             // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
                             $fieldvals = & $fieldvals_arr[$k];
 
-                            if (! empty($pks_arr[$k])) {
-                                if (array_key_exists($pk, $fieldvals)) {
-                                    $fieldvals[$pk] = array_unique(array_merge(
-                                        is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
-                                        $pks_arr[$k]
-                                    ));
-                                } else {
-                                    $fieldvals[$pk] = $pks_arr[$k];
-                                }
+                            if (array_key_exists($pk, $fieldvals)) {
+                                $fieldvals[$pk] = array_unique(array_merge(
+                                    is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
+                                    $pks_arr[$k]
+                                ));
+                            } else {
+                                $fieldvals[$pk] = $pks_arr[$k];
                             }
 
                             $cache_keys_fieldvals[$cache_key] = $fieldvals;
                         }
 
-                        $this->_set_meta_cache_multi($cache_keys, $order_by);
+                        $this->_set_meta_cache_multi($cache_keys_fieldvals, array_keys($order_by));
                     }
                 );
             } else {
@@ -404,15 +402,13 @@
                             // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
                             $fieldvals = & $fieldvals_arr[$k];
 
-                            if (! empty($pks_arr[$k])) {
-                                if (array_key_exists($pk, $fieldvals)) {
-                                    $fieldvals[$pk] = array_unique(array_merge(
-                                        is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
-                                        $pks_arr[$k]
-                                    ));
-                                } else {
-                                    $fieldvals[$pk] = $pks_arr[$k];
-                                }
+                            if (array_key_exists($pk, $fieldvals)) {
+                                $fieldvals[$pk] = array_unique(array_merge(
+                                    is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
+                                    $pks_arr[$k]
+                                ));
+                            } else {
+                                $fieldvals[$pk] = $pks_arr[$k];
                             }
 
                             $cache_keys_fieldvals[$cache_key] = $fieldvals;
@@ -674,9 +670,9 @@
                 );
             }
 
-            // Destroy cache based on table fields - do not wrap this function in a batch execution
+            // Destroy cache based on table fieldvals - do not wrap this function in a batch execution
             self::_delete_meta_cache(
-                array_keys(static::field_bindings()),
+                $model->export(),
                 [ static::ENTITY_NAME . ':' . parent::ALWAYS ]
             );
 
@@ -724,9 +720,15 @@
 
             cache_lib::pipeline_execute($this->cache_engine, $this->cache_engine_pool_write);
 
-            // Destroy cache based on table fields - do not wrap this function in a batch execution
+            // Destroy cache based on table fieldvals - do not wrap this function in a batch execution
+            $collection_data           = $collection->export();
+            $collection_data_organized = [];
+            foreach (array_keys(reset($collection_data)) as $field) {
+                $collection_data_organized[$field] = array_column($collection_data, $field);
+            }
+
             self::_delete_meta_cache(
-                array_keys(static::field_bindings()),
+                $collection_data_organized,
                 [ static::ENTITY_NAME . ':' . parent::ALWAYS ]
             );
 

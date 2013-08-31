@@ -477,10 +477,11 @@
                  * If the value is null, it means it's a parent $field_list_keys key (eg, limit[id])
                  * instead of a $list_keys (eg, limit[id]:5 or limit[id]:order_by)
                  */
+                // @todo investigate this
                 if ($value === null) {
                     $field_list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field);
                 } else {
-                    // incase we stacked multiple arrays of fieldvals together - as is done during updates
+                    // In case we stacked multiple arrays of fieldvals together - as is done during updates
                     if (is_array($value)) {
                         foreach ($value as $val) {
                             $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $val);
@@ -620,6 +621,7 @@
                      * If the value is null, it means it's a parent $field_list_keys key (eg, limit[id])
                      * instead of a $list_keys (eg, limit[id]:5 or limit[id]:order_by)
                      */
+                    // @todo investigate this
                     if ($value === null) {
                         $field_list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field);
                     } else {

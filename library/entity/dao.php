@@ -38,7 +38,7 @@
         // List key - Always clear these keys on every change
         const ALWAYS = 'always';
 
-        // List key
+        // Meta cache key
         const META = 'meta';
 
         public function __construct(array $config) {
@@ -232,10 +232,10 @@
          * Create the meta data (lists) to identify which cache keys to destroy when the record or field values have been changed
          *
          * @param string     $cache_key cache key for which we are storing meta data
+         * @param array|null $fieldvals fields and values
          * @param array|null $fields    fields
-         * @param array      $fieldvals fields and values
          */
-        final public function _set_meta_cache($cache_key, array $fieldvals, array $fields=[]) {
+        final public function _set_meta_cache($cache_key, array $fieldvals=null, array $fields=null) {
 
             cache_lib::pipeline_start($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
 
@@ -250,25 +250,27 @@
              *
              * An entry for each $fields field must be created (linking back to this set's $cache_key)
              */
-            foreach ($fields as $field) {
-                // Create list key for order by field
-                $order_by_list_key = self::_build_key_order($field);
+            if ($fields) {
+                foreach ($fields as $field) {
+                    // Create list key for order by field
+                    $order_by_list_key = self::_build_key_order($field);
 
-                // Store the cache key in $order_by_list_key list
-                cache_lib::list_add(
-                    $this->cache_meta_engine,
-                    $this->cache_meta_engine_pool_write,
-                    $order_by_list_key,
-                    $cache_key
-                );
+                    // Store the cache key in $order_by_list_key list
+                    cache_lib::list_add(
+                        $this->cache_meta_engine,
+                        $this->cache_meta_engine_pool_write,
+                        $order_by_list_key,
+                        $cache_key
+                    );
 
-                // Add the $order_by_list_key key to the field list key - if it doesn't already exist
-                cache_lib::list_add(
-                    $this->cache_meta_engine,
-                    $this->cache_meta_engine_pool_write,
-                    self::_build_key_list($field),
-                    $order_by_list_key
-                );
+                    // Add the $order_by_list_key key to the field list key - if it doesn't already exist
+                    cache_lib::list_add(
+                        $this->cache_meta_engine,
+                        $this->cache_meta_engine_pool_write,
+                        self::_build_key_list($field),
+                        $order_by_list_key
+                    );
+                }
             }
 
             /**
@@ -286,54 +288,67 @@
              * If foo_id = 10 and order by 'id' was used, then only cached result sets with foo_id = 10 would
              * need to be destroyed (along with all 'id' cached result sets).
              */
-            foreach (array_diff_key($fieldvals, array_flip($fields)) as $field => $value) {
+            if ($fieldvals) {
+                foreach ($fields ? array_diff_key($fieldvals, array_flip($fields)) : $fieldvals as $field => $value) {
 
-                // @todo bulk operations are better - $list_keys array containing cache_key(s) would be better
-                // @todo thereby doing fewer calls to list_add() (and potentially being able to get rid of the pipelining
+                    // @todo bulk operations are better - $list_keys array containing cache_key(s) would be better
+                    // @todo thereby doing fewer calls to list_add() (and potentially being able to get rid of the pipelining
 
-                if (is_array($value)) {
-                    $list_keys = [];
-                    foreach ($value as $val) {
+                    if (is_array($value)) {
+                        $list_keys = [];
+                        foreach ($value as $val) {
+                            // Create a list key for the field/value
+                            $list_keys[] = self::_build_key_list($field, $val);
+                        }
+
+                        // Store the cache key in each $list_keys list
+                        cache_lib::list_add(
+                            $this->cache_meta_engine,
+                            $this->cache_meta_engine_pool_write,
+                            $list_keys,
+                            $cache_key
+                        );
+
+                        // Add the $list_key key to field list key - if it doesn't already exist
+                        cache_lib::list_add(
+                            $this->cache_meta_engine,
+                            $this->cache_meta_engine_pool_write,
+                            self::_build_key_list($field),
+                            $list_keys
+                        );
+
+                    } else {
                         // Create a list key for the field/value
-                        $list_keys[] = self::_build_key_list($field, $val);
+                        $list_key = self::_build_key_list($field, $value);
+
+                        // Store the cache key in the $list_key list
+                        cache_lib::list_add(
+                            $this->cache_meta_engine,
+                            $this->cache_meta_engine_pool_write,
+                            $list_key,
+                            $cache_key
+                        );
+
+                        // Add the $list_key key to field list key - if it doesn't already exist
+                        cache_lib::list_add(
+                            $this->cache_meta_engine,
+                            $this->cache_meta_engine_pool_write,
+                            self::_build_key_list($field),
+                            $list_key
+                        );
                     }
-
-                    // Store the cache key in each $list_keys list
-                    cache_lib::list_add(
-                        $this->cache_meta_engine,
-                        $this->cache_meta_engine_pool_write,
-                        $list_keys,
-                        $cache_key
-                    );
-
-                    // Add the $list_key key to field list key - if it doesn't already exist
-                    cache_lib::list_add(
-                        $this->cache_meta_engine,
-                        $this->cache_meta_engine_pool_write,
-                        self::_build_key_list($field),
-                        $list_keys
-                    );
-
-                } else {
-                    // Create a list key for the field/value
-                    $list_key = self::_build_key_list($field, $value);
-
-                    // Store the cache key in the $list_key list
-                    cache_lib::list_add(
-                        $this->cache_meta_engine,
-                        $this->cache_meta_engine_pool_write,
-                        $list_key,
-                        $cache_key
-                    );
-
-                    // Add the $list_key key to field list key - if it doesn't already exist
-                    cache_lib::list_add(
-                        $this->cache_meta_engine,
-                        $this->cache_meta_engine_pool_write,
-                        self::_build_key_list($field),
-                        $list_key
-                    );
                 }
+            } else {
+                /**
+                 * When no fieldvals (AKA the WHERE part of a query) are present, then add this cache key to the
+                 * "ALWAYS" key (which clears the cache keys on every write).
+                 */
+                cache_lib::list_add(
+                    $this->cache_meta_engine,
+                    $this->cache_meta_engine_pool_write,
+                    static::ENTITY_NAME . ':' . self::ALWAYS,
+                    $cache_key
+                );
             }
 
             cache_lib::pipeline_execute($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
@@ -342,10 +357,10 @@
         /**
          * Create the meta data (lists) to identify which cache keys to destroy when the record or field values have been changed
          *
-         * @param array $cache_keys
-         * @param array $fields
+         * @param array      $cache_keys cache key for which we are storing meta data
+         * @param array|null $fields     fields
          */
-        final public function _set_meta_cache_multi(array $cache_keys, array $fields=[]) {
+        final public function _set_meta_cache_multi(array $cache_keys, array $fields=null) {
 
             cache_lib::pipeline_start($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
 
@@ -360,25 +375,27 @@
              *
              * An entry for each $order_by field must be created (linking back to this set's $cache_key)
              */
-            foreach ($fields as $field) {
-                // Create list key for order by field
-                $order_by_list_key = self::_build_key_order($field);
+            if ($fields) {
+                foreach ($fields as $field) {
+                    // Create list key for order by field
+                    $order_by_list_key = self::_build_key_order($field);
 
-                // Store the cache key in $order_by_list_key list
-                cache_lib::list_add(
-                    $this->cache_meta_engine,
-                    $this->cache_meta_engine_pool_write,
-                    $order_by_list_key,
-                    array_keys($cache_keys)
-                );
+                    // Store the cache key in $order_by_list_key list
+                    cache_lib::list_add(
+                        $this->cache_meta_engine,
+                        $this->cache_meta_engine_pool_write,
+                        $order_by_list_key,
+                        array_keys($cache_keys)
+                    );
 
-                // Add the $order_by_list_key key to the field list key - if it doesn't already exist
-                cache_lib::list_add(
-                    $this->cache_meta_engine,
-                    $this->cache_meta_engine_pool_write,
-                    self::_build_key_list($field),
-                    $order_by_list_key
-                );
+                    // Add the $order_by_list_key key to the field list key - if it doesn't already exist
+                    cache_lib::list_add(
+                        $this->cache_meta_engine,
+                        $this->cache_meta_engine_pool_write,
+                        self::_build_key_list($field),
+                        $order_by_list_key
+                    );
+                }
             }
 
             /**
@@ -402,7 +419,7 @@
                     // @todo bulk operations are better - $list_keys array containing cache_key(s) would be better
                     // @todo thereby doing fewer calls to list_add() (and potentially being able to get rid of the pipelining
 
-                    foreach (array_diff_key($fieldvals, array_flip($fields)) as $field => $value) {
+                    foreach ($fields ? array_diff_key($fieldvals, array_flip($fields)) : $fieldvals as $field => $value) {
                         if (is_array($value)) {
                             $list_keys = [];
                             foreach ($value as $val) {
@@ -447,6 +464,17 @@
                             );
                         }
                     }
+                } else {
+                    /**
+                     * When no fieldvals (AKA the WHERE part of a query) are present, then add this cache key to the
+                     * "ALWAYS" key (which clears the cache keys on every write).
+                     */
+                    cache_lib::list_add(
+                        $this->cache_meta_engine,
+                        $this->cache_meta_engine_pool_write,
+                        static::ENTITY_NAME . ':' . self::ALWAYS,
+                        $cache_key
+                    );
                 }
             }
 
@@ -463,7 +491,11 @@
          */
         final protected function _delete_meta_cache(array $fieldvals, $list_keys=[]) {
             $field_list_keys      = [];
+            // @todo possibly remove this
             $list_items_to_remove = [];
+
+            // Always delete the stuff in the always list
+            $list_keys[] = static::ENTITY_NAME . ':' . self::ALWAYS;
 
             foreach ($fieldvals as $field => $value) {
 
@@ -473,22 +505,13 @@
                 // Order by list key
                 $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_order($field);
 
-                /**
-                 * If the value is null, it means it's a parent $field_list_keys key (eg, limit[id])
-                 * instead of a $list_keys (eg, limit[id]:5 or limit[id]:order_by)
-                 */
-                // @todo investigate this
-                if ($value === null) {
-                    $field_list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field);
-                } else {
-                    // In case we stacked multiple arrays of fieldvals together - as is done during updates
-                    if (is_array($value)) {
-                        foreach ($value as $val) {
-                            $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $val);
-                        }
-                    } else {
-                        $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $value);
+                // In case we stacked multiple arrays of fieldvals together - as is done during updates
+                if (is_array($value)) {
+                    foreach ($value as $val) {
+                        $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $val);
                     }
+                } else {
+                    $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $value);
                 }
             }
 
@@ -578,14 +601,14 @@
              * Since we just deleted $field_list_keys, we now remove those values from their parent lists
              * (Remove list field/value keys and order by keys from field lists)
              */
-            foreach ($list_items_to_remove as $field_list_key => $remove_keys) {
-                cache_lib::list_remove(
-                    $this->cache_meta_engine,
-                    $this->cache_meta_engine_pool_write,
-                    $field_list_key,
-                    array_unique($remove_keys)
-                );
-            }
+//            foreach ($list_items_to_remove as $field_list_key => $remove_keys) {
+//                cache_lib::list_remove(
+//                    $this->cache_meta_engine,
+//                    $this->cache_meta_engine_pool_write,
+//                    $field_list_key,
+//                    array_unique($remove_keys)
+//                );
+//            }
 
             if ($this->cache_meta_engine !== $this->cache_engine || $this->cache_meta_engine_pool_write !== $this->cache_engine_pool_write) {
                 cache_lib::pipeline_execute($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
@@ -604,6 +627,7 @@
          */
         final protected function _delete_meta_cache_multi(array $fieldvals_arr, $list_keys=[]) {
             $field_list_keys      = [];
+            // @todo possibly remove this
             $list_items_to_remove = [];
 
             foreach ($fieldvals_arr as $fieldvals) {
@@ -617,13 +641,11 @@
                     // Order by list key
                     $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_order($field);
 
-                    /**
-                     * If the value is null, it means it's a parent $field_list_keys key (eg, limit[id])
-                     * instead of a $list_keys (eg, limit[id]:5 or limit[id]:order_by)
-                     */
-                    // @todo investigate this
-                    if ($value === null) {
-                        $field_list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field);
+                    // In case we stacked multiple arrays of fieldvals together - as is done during updates
+                    if (is_array($value)) {
+                        foreach ($value as $val) {
+                            $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $val);
+                        }
                     } else {
                         $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $value);
                     }
@@ -712,6 +734,19 @@
                     );
                 }
             }
+
+            /**
+             * Since we just deleted $field_list_keys, we now remove those values from their parent lists
+             * (Remove list field/value keys and order by keys from field lists)
+             */
+//            foreach ($list_items_to_remove as $field_list_key => $remove_keys) {
+//                cache_lib::list_remove(
+//                    $this->cache_meta_engine,
+//                    $this->cache_meta_engine_pool_write,
+//                    $field_list_key,
+//                    array_unique($remove_keys)
+//                );
+//            }
 
             if ($this->cache_meta_engine !== $this->cache_engine || $this->cache_meta_engine_pool_write !== $this->cache_engine_pool_write) {
                 cache_lib::pipeline_execute($this->cache_meta_engine, $this->cache_meta_engine_pool_write);

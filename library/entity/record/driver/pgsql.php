@@ -126,6 +126,48 @@
         }
 
         /**
+         * Get multiple counts
+         *
+         * @param entity_record_dao $self
+         * @param string            $pool
+         * @param array             $fieldvals_arr
+         *
+         * @return array
+         */
+        public static function count_multi(entity_record_dao $self, $pool, array $fieldvals_arr) {
+            $queries = [];
+            $vals    = [];
+
+            foreach ($fieldvals_arr as $fieldvals) {
+                $where = [];
+                foreach ($fieldvals as $field => $val) {
+                    if ($val === null) {
+                        $where[] = "\"{$field}\" IS NULL";
+                    } else {
+                        $vals[]  = $val;
+                        $where[] = "\"{$field}\" = ?";
+                    }
+                }
+
+                $queries[] = "(
+                    SELECT COUNT(*) \"num\"
+                    FROM \"" . self::table($self::TABLE) . "\"
+                    " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
+                )";
+            }
+
+            $rs = core::sql($pool)->prepare(join(' UNION ', $queries));
+            $rs->execute($vals);
+
+            $keys   = array_keys($fieldvals_arr);
+            $counts = [];
+            foreach ($rs->fetchAll(PDO::FETCH_COLUMN, 0) as $k => $count) {
+                $counts[$keys[$k]] = (int) $count;
+            }
+            return $counts;
+        }
+
+        /**
          * Get all records in the table
          *
          * @param entity_record_dao $dao

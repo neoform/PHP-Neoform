@@ -5,12 +5,16 @@
 
         public static function by_fields_multi(entity_link_dao $self, $pool, array $select_fields, array $keys_arr);
 
-        public static function by_field_limit(entity_link_dao $self, $pool, $local_field, entity_record_dao $foreign_dao,
+        public static function by_fields_limit(entity_link_dao $self, $pool, $local_field, entity_record_dao $foreign_dao,
                                               array $fieldvals, array $order_by, $offset, $limit);
 
-        public static function by_field_multi_limit(entity_link_dao $self, $pool, $local_field,
+        public static function by_fields_limit_multi(entity_link_dao $self, $pool, $local_field,
                                                     entity_record_dao $foreign_dao, array $fieldvals_arr,
                                                     array $order_by, $offset, $limit);
+
+        public static function count(entity_record_dao $self, $pool, array $keys=null);
+
+        public static function count_multi(entity_record_dao $self, $pool, array $fieldvals_arr);
 
         public static function insert(entity_link_dao $self, $pool, array $info, $replace);
 

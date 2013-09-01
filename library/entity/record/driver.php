@@ -7,6 +7,8 @@
 
         public static function count(entity_record_dao $self, $pool, array $keys=null);
 
+        public static function count_multi(entity_record_dao $self, $pool, array $fieldvals_arr);
+
         public static function all(entity_record_dao $self, $pool, $pk, array $keys=null);
 
         public static function by_fields(entity_record_dao $self, $pool, array $keys, $pk);

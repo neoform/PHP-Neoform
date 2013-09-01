@@ -83,6 +83,19 @@
         }
 
         /**
+         * Get multiple counts
+         *
+         * @param entity_record_dao $self
+         * @param string            $pool
+         * @param array             $fieldvals_arr
+         *
+         * @throws redis_exception
+         */
+        public static function count_multi(entity_record_dao $self, $pool, array $fieldvals_arr) {
+            throw new redis_exception('Count queries are not supported by redis driver.');
+        }
+
+        /**
          * Get all records in the table
          *
          * @param entity_record_dao $self the name of the DAO

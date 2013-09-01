@@ -87,7 +87,7 @@
                     $cache_key,
                     function() use ($select_field, $fieldvals, $foreign_dao, $order_by, $limit, $offset) {
                         $source_driver = "entity_link_driver_{$this->source_engine}";
-                        return $source_driver::by_field_limit(
+                        return $source_driver::by_fields_limit(
                             $this,
                             $this->source_engine_pool_read,
                             $select_field,
@@ -199,7 +199,7 @@
                     },
                     function($fieldvals_arr) use ($select_field, $foreign_dao, $order_by, $limit, $offset) {
                         $source_driver = "entity_link_driver_{$this->source_engine}";
-                        return $source_driver::by_field_limit_multi(
+                        return $source_driver::by_fields_limit_multi(
                             $this,
                             $this->source_engine_pool_read,
                             $select_field,
@@ -279,6 +279,74 @@
                     }
                 );
             }
+        }
+
+        /**
+         * Get a record count
+         *
+         * @param array|null $fieldvals
+         *
+         * @return integer
+         */
+        public function count(array $fieldvals=null) {
+
+            if ($fieldvals) {
+                $this->bind_fields($fieldvals);
+            }
+
+            return cache_lib::single(
+                $this->cache_engine,
+                $this->cache_engine_pool_read,
+                $this->cache_engine_pool_write,
+                parent::_build_key(parent::COUNT, $fieldvals ?: []),
+                function() use ($fieldvals) {
+                    $source_driver = "entity_link_driver_{$this->source_engine}";
+                    return $source_driver::count($this, $this->source_engine_pool_read, $fieldvals);
+                },
+                function($cache_key) use ($fieldvals) {
+                    $this->_set_meta_cache($cache_key, $fieldvals);
+                }
+            );
+        }
+
+        /**
+         * Get multiple record count
+         *
+         * @param array $fieldvals_arr
+         *
+         * @return array
+         */
+        public function count_multi(array $fieldvals_arr) {
+
+            foreach ($fieldvals_arr as $fieldvals) {
+                $this->bind_fields($fieldvals);
+            }
+
+            return cache_lib::multi(
+                $this->cache_engine,
+                $this->cache_engine_pool_read,
+                $this->cache_engine_pool_write,
+                $fieldvals_arr,
+                function($fieldvals) {
+                    return $this::_build_key($this::COUNT, $fieldvals ?: []);
+                },
+                function(array $fieldvals_arr) {
+                    $source_driver = "entity_link_driver_{$this->source_engine}";
+                    return $source_driver::count_multi(
+                        $this,
+                        $this->source_engine_pool_read,
+                        $fieldvals_arr
+                    );
+                },
+                function(array $cache_keys, array $fieldvals_arr) {
+                    // Can't use array_combine since the keys might not be in the same order (possibly)
+                    $cache_keys_fieldvals = [];
+                    foreach ($cache_keys as $k => $cache_key) {
+                        $cache_keys_fieldvals[$cache_key] = $fieldvals_arr[$k];
+                    }
+                    $this->_set_meta_cache_multi($cache_keys_fieldvals);
+                }
+            );
         }
 
         /**

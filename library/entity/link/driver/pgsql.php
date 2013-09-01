@@ -140,6 +140,81 @@
         }
 
         /**
+         * Get a count based on key inputs
+         *
+         * @param entity_record_dao $dao
+         * @param string            $pool
+         * @param array             $fieldvals
+         *
+         * @return integer
+         */
+        public static function count(entity_record_dao $dao, $pool, array $fieldvals=null) {
+            $where = [];
+            $vals  = [];
+
+            if ($fieldvals) {
+                foreach ($fieldvals as $k => $v) {
+                    if ($v === null) {
+                        $where[] = "\"{$k}\" IS NULL";
+                    } else {
+                        $vals[]  = $v;
+                        $where[] = "\"{$k}\" = ?";
+                    }
+                }
+            }
+
+            $rs = core::sql($pool)->prepare("
+                SELECT COUNT(*) \"num\"
+                FROM \"" . self::table($dao::TABLE) . "\"
+                " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
+            ");
+            $rs->execute($vals);
+            return (int) $rs->fetch()['num'];
+        }
+
+        /**
+         * Get multiple counts
+         *
+         * @param entity_record_dao $self
+         * @param string            $pool
+         * @param array             $fieldvals_arr
+         *
+         * @return array
+         */
+        public static function count_multi(entity_record_dao $self, $pool, array $fieldvals_arr) {
+            $queries = [];
+            $vals    = [];
+
+            foreach ($fieldvals_arr as $fieldvals) {
+                $where = [];
+                foreach ($fieldvals as $field => $val) {
+                    if ($val === null) {
+                        $where[] = "\"{$field}\" IS NULL";
+                    } else {
+                        $vals[]  = $val;
+                        $where[] = "\"{$field}\" = ?";
+                    }
+                }
+
+                $queries[] = "(
+                    SELECT COUNT(*) \"num\"
+                    FROM \"" . self::table($self::TABLE) . "\"
+                    " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
+                )";
+            }
+
+            $rs = core::sql($pool)->prepare(join(' UNION ', $queries));
+            $rs->execute($vals);
+
+            $keys   = array_keys($fieldvals_arr);
+            $counts = [];
+            foreach ($rs->fetchAll(PDO::FETCH_COLUMN, 0) as $k => $count) {
+                $counts[$keys[$k]] = (int) $count;
+            }
+            return $counts;
+        }
+
+        /**
          * Insert a link
          *
          * @param entity_link_dao $self the name of the DAO

@@ -155,7 +155,7 @@
          * @return array
          * @throws entity_exception
          */
-        public static function by_field_limit(entity_link_dao $self, $pool, $local_field, entity_record_dao $foreign_dao,
+        public static function by_fields_limit(entity_link_dao $self, $pool, $local_field, entity_record_dao $foreign_dao,
                                                array $fieldvals, array $order_by, $offset, $limit) {
 
             $quoted_table = self::table($self::TABLE);
@@ -217,8 +217,6 @@
             return $rs->fetchAll(PDO::FETCH_COLUMN, 0);
         }
 
-
-
         /**
          * Get specific fields from a record, by keys - joined to its related foreign table - and limited
          *
@@ -234,7 +232,7 @@
          * @return array
          * @throws entity_exception
          */
-        public static function by_field_limit_multi(entity_link_dao $self, $pool, $local_field, entity_record_dao $foreign_dao,
+        public static function by_fields_limit_multi(entity_link_dao $self, $pool, $local_field, entity_record_dao $foreign_dao,
                                                array $fieldvals_arr, array $order_by, $offset, $limit) {
 
             $fieldvals_fields = array_keys(reset($fieldvals_arr));
@@ -323,6 +321,81 @@
             }
 
             return $return;
+        }
+
+        /**
+         * Get a count
+         *
+         * @param entity_record_dao $self
+         * @param string            $pool
+         * @param array             $fieldvals
+         *
+         * @return integer
+         */
+        public static function count(entity_record_dao $self, $pool, array $fieldvals=null) {
+            $where = [];
+            $vals  = [];
+
+            if ($fieldvals) {
+                foreach ($fieldvals as $field => $val) {
+                    if ($val === null) {
+                        $where[] = "`{$field}` IS NULL";
+                    } else {
+                        $vals[]  = $val;
+                        $where[] = "`{$field}` = ?";
+                    }
+                }
+            }
+
+            $rs = core::sql($pool)->prepare("
+                SELECT COUNT(0) `num`
+                FROM `" . self::table($self::TABLE) . "`
+                " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
+            ");
+            $rs->execute($vals);
+            return (int) $rs->fetch()['num'];
+        }
+
+        /**
+         * Get multiple counts
+         *
+         * @param entity_record_dao $self
+         * @param string            $pool
+         * @param array             $fieldvals_arr
+         *
+         * @return array
+         */
+        public static function count_multi(entity_record_dao $self, $pool, array $fieldvals_arr) {
+            $queries = [];
+            $vals    = [];
+
+            foreach ($fieldvals_arr as $fieldvals) {
+                $where = [];
+                foreach ($fieldvals as $field => $val) {
+                    if ($val === null) {
+                        $where[] = "`{$field}` IS NULL";
+                    } else {
+                        $vals[]  = $val;
+                        $where[] = "`{$field}` = ?";
+                    }
+                }
+
+                $queries[] = "(
+                    SELECT COUNT(0) `num`
+                    FROM `" . self::table($self::TABLE) . "`
+                    " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
+                )";
+            }
+
+            $rs = core::sql($pool)->prepare(join(' UNION ', $queries));
+            $rs->execute($vals);
+
+            $keys   = array_keys($fieldvals_arr);
+            $counts = [];
+            foreach ($rs->fetchAll(PDO::FETCH_COLUMN, 0) as $k => $count) {
+                $counts[$keys[$k]] = (int) $count;
+            }
+            return $counts;
         }
 
         /**

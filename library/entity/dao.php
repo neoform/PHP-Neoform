@@ -182,14 +182,14 @@
         }
 
         /**
-         * Build a list cache key for ordered fields
+         * Build a list cache key for entire fields (no values)
          *
          * @param String $field_name name of field/column
          *
          * @return string
          */
-        final protected static function _build_key_order($field_name) {
-            return static::ENTITY_NAME . ':' . self::META . ":order_by[{$field_name}]";
+        final protected static function _build_key_list_field($field_name) {
+            return static::ENTITY_NAME . ':' . self::META . ":field[{$field_name}]";
         }
 
         /**
@@ -244,7 +244,7 @@
              */
 
             /**
-             * Order by - goes first, since it's wider reaching, if there is overlap between $order_by fields
+             * Order by - goes first, since it's wider reaching, if there is overlap between $fields
              * and $keys fields, we wont use those fields in $keys. (since they'll both contain the same cache
              * keys to destroy.
              *
@@ -253,22 +253,22 @@
             if ($fields) {
                 foreach ($fields as $field) {
                     // Create list key for order by field
-                    $order_by_list_key = self::_build_key_order($field);
+                    $field_list_key = self::_build_key_list_field($field);
 
-                    // Store the cache key in $order_by_list_key list
+                    // Store the cache key in $field_list_key list
                     cache_lib::list_add(
                         $this->cache_meta_engine,
                         $this->cache_meta_engine_pool_write,
-                        $order_by_list_key,
+                        $field_list_key,
                         $cache_key
                     );
 
-                    // Add the $order_by_list_key key to the field list key - if it doesn't already exist
+                    // Add the $field_list_key key to the field list key - if it doesn't already exist
                     cache_lib::list_add(
                         $this->cache_meta_engine,
                         $this->cache_meta_engine_pool_write,
                         self::_build_key_list($field),
-                        $order_by_list_key
+                        $field_list_key
                     );
                 }
             }
@@ -369,31 +369,31 @@
              */
 
             /**
-             * Order by - goes first, since it's wider reaching, if there is overlap between $order_by fields
+             * Order by - goes first, since it's wider reaching, if there is overlap between $field
              * and $keys fields, we wont use those fields in $keys. (since they'll both contain the same cache
              * keys to destroy.
              *
-             * An entry for each $order_by field must be created (linking back to this set's $cache_key)
+             * An entry for each $field must be created (linking back to this set's $cache_key)
              */
             if ($fields) {
                 foreach ($fields as $field) {
                     // Create list key for order by field
-                    $order_by_list_key = self::_build_key_order($field);
+                    $field_list_key = self::_build_key_list_field($field);
 
-                    // Store the cache key in $order_by_list_key list
+                    // Store the cache key in $field_list_key list
                     cache_lib::list_add(
                         $this->cache_meta_engine,
                         $this->cache_meta_engine_pool_write,
-                        $order_by_list_key,
+                        $field_list_key,
                         array_keys($cache_keys)
                     );
 
-                    // Add the $order_by_list_key key to the field list key - if it doesn't already exist
+                    // Add the $field_list_key key to the field list key - if it doesn't already exist
                     cache_lib::list_add(
                         $this->cache_meta_engine,
                         $this->cache_meta_engine_pool_write,
                         self::_build_key_list($field),
-                        $order_by_list_key
+                        $field_list_key
                     );
                 }
             }
@@ -490,9 +490,7 @@
          * @param array $list_keys list of keys to start off with (eg, key ALWAYS)
          */
         final protected function _delete_meta_cache(array $fieldvals, $list_keys=[]) {
-            $field_list_keys      = [];
-            // @todo possibly remove this
-            $list_items_to_remove = [];
+            $field_list_keys = [];
 
             // Always delete the stuff in the always list
             $list_keys[] = static::ENTITY_NAME . ':' . self::ALWAYS;
@@ -500,23 +498,23 @@
             foreach ($fieldvals as $field => $value) {
 
                 // Which list does this field/value key belong to - we need to remove it from that list
-                $field_list_key = self::_build_key_list($field);
+                $field_list_keys[] = self::_build_key_list($field);
 
                 // Order by list key
-                $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_order($field);
+                $list_keys[] = self::_build_key_list_field($field);
 
                 // In case we stacked multiple arrays of fieldvals together - as is done during updates
                 if (is_array($value)) {
                     foreach ($value as $val) {
-                        $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $val);
+                        $list_keys[] = self::_build_key_list($field, $val);
                     }
                 } else {
-                    $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $value);
+                    $list_keys[] = self::_build_key_list($field, $value);
                 }
             }
 
             /**
-             * If any $field_list_keys keys need deleting (eg, limit[id]), get all list keys from them (eg, limit[id]:5)
+             * If any $field_list_keys keys need deleting (eg, meta[id]), get all list keys from them (eg, meta[id]:5)
              */
             if ($field_list_keys) {
                 $arr = cache_lib::list_get_union(
@@ -534,7 +532,7 @@
 
             /**
              * Get a union of all field/value list keys - combined
-             * eg, limit[id]:555 + limit[id]:order_by + limit[email]:aaa@aaa.com + limit[email]:order_by
+             * eg, meta[id]:555 + meta:field[id] + meta[email]:aaa@aaa.com + meta:field[email]
              */
             $cache_keys = cache_lib::list_get_union(
                 $this->cache_meta_engine,
@@ -596,19 +594,6 @@
                     );
                 }
             }
-
-            /**
-             * Since we just deleted $field_list_keys, we now remove those values from their parent lists
-             * (Remove list field/value keys and order by keys from field lists)
-             */
-//            foreach ($list_items_to_remove as $field_list_key => $remove_keys) {
-//                cache_lib::list_remove(
-//                    $this->cache_meta_engine,
-//                    $this->cache_meta_engine_pool_write,
-//                    $field_list_key,
-//                    array_unique($remove_keys)
-//                );
-//            }
 
             if ($this->cache_meta_engine !== $this->cache_engine || $this->cache_meta_engine_pool_write !== $this->cache_engine_pool_write) {
                 cache_lib::pipeline_execute($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
@@ -626,37 +611,32 @@
          * @param array $list_keys     list of keys to start off with (eg, key ALWAYS)
          */
         final protected function _delete_meta_cache_multi(array $fieldvals_arr, $list_keys=[]) {
-            $field_list_keys      = [];
-            // @todo possibly remove this
-            $list_items_to_remove = [];
+            $field_list_keys = [];
 
             foreach ($fieldvals_arr as $fieldvals) {
                 foreach ($fieldvals as $field => $value) {
 
-                    // @todo i'm fairly certain this can be made more efficient
-
                     // Which list does this field/value key belong to - we need to remove it from that list
-                    $field_list_key = self::_build_key_list($field);
+                    $field_list_keys[] = self::_build_key_list($field);
 
                     // Order by list key
-                    $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_order($field);
+                    $list_keys[] = self::_build_key_list_field($field);
 
                     // In case we stacked multiple arrays of fieldvals together - as is done during updates
                     if (is_array($value)) {
                         foreach ($value as $val) {
-                            $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $val);
+                            $list_keys[] = self::_build_key_list($field, $val);
                         }
                     } else {
-                        $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $value);
+                        $list_keys[] = self::_build_key_list($field, $value);
                     }
                 }
             }
 
             /**
-             * If any $field_list_keys keys need deleting (eg, limit[id]), get all list keys from them (eg, limit[id]:5)
+             * If any $field_list_keys keys need deleting (eg, meta[id]), get all list keys from them (eg, meta[id]:5)
              */
             if ($field_list_keys) {
-
                 $arr = cache_lib::list_get_union(
                     $this->cache_meta_engine,
                     $this->cache_meta_engine_pool_write,
@@ -672,7 +652,7 @@
 
             /**
              * Get a union of all field/value list keys - combined
-             * eg, limit[id]:555 + limit[id]:order_by + limit[email]:aaa@aaa.com + limit[email]:order_by
+             * eg, meta[id]:555 + meta:field[id] + meta[email]:aaa@aaa.com + meta::field[email]
              */
             $cache_keys = cache_lib::list_get_union(
                 $this->cache_meta_engine,
@@ -734,19 +714,6 @@
                     );
                 }
             }
-
-            /**
-             * Since we just deleted $field_list_keys, we now remove those values from their parent lists
-             * (Remove list field/value keys and order by keys from field lists)
-             */
-//            foreach ($list_items_to_remove as $field_list_key => $remove_keys) {
-//                cache_lib::list_remove(
-//                    $this->cache_meta_engine,
-//                    $this->cache_meta_engine_pool_write,
-//                    $field_list_key,
-//                    array_unique($remove_keys)
-//                );
-//            }
 
             if ($this->cache_meta_engine !== $this->cache_engine || $this->cache_meta_engine_pool_write !== $this->cache_engine_pool_write) {
                 cache_lib::pipeline_execute($this->cache_meta_engine, $this->cache_meta_engine_pool_write);

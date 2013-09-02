@@ -23,11 +23,11 @@
 
         public static function insert(entity_record_dao $self, $pool, array $info, $autoincrement, $replace);
 
-        public static function inserts(entity_record_dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace);
+        public static function insert_multi(entity_record_dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace);
 
         public static function update(entity_record_dao $self, $pool, $pk, entity_record_model $model, array $info);
 
         public static function delete(entity_record_dao $self, $pool, $pk, entity_record_model $model);
 
-        public static function deletes(entity_record_dao $self, $pool, $pk, entity_record_collection $collection);
+        public static function delete_multi(entity_record_dao $self, $pool, $pk, entity_record_collection $collection);
     }

@@ -360,7 +360,20 @@
          */
         protected function _insert(array $info, $replace=false) {
             $source_driver = "entity_link_driver_{$this->source_engine}";
-            return $source_driver::insert($this, $this->source_engine_pool_write, $info, $replace);
+            $inserted = $source_driver::insert(
+                $this,
+                $this->source_engine_pool_write,
+                $info,
+                $replace
+            );
+
+            if (! $inserted) {
+                return false;
+            }
+
+            self::_delete_meta_cache($info);
+
+            return true;
         }
 
         /**
@@ -373,13 +386,21 @@
          * @return boolean result of the PDO::execute()
          * @throws entity_exception
          */
-        protected function _inserts(array $infos, $replace=false) {
+        protected function _insert_multi(array $infos, $replace=false) {
             if (! $infos) {
                 return;
             }
 
             $source_driver = "entity_link_driver_{$this->source_engine}";
-            return $source_driver::inserts($this, $this->source_engine_pool_write, $infos, $replace);
+            $inserted = $source_driver::insert_multi($this, $this->source_engine_pool_write, $infos, $replace);
+
+            if (! $inserted) {
+                return false;
+            }
+
+            self::_delete_meta_cache_multi($infos);
+
+            return true;
         }
 
         /**
@@ -408,7 +429,18 @@
          */
         protected function _delete(array $keys) {
             $source_driver = "entity_link_driver_{$this->source_engine}";
-            return $source_driver::delete($this, $this->source_engine_pool_write, $keys);
+            $delete = $source_driver::delete($this, $this->source_engine_pool_write, $keys);
+
+            if (! $delete) {
+                return false;
+            }
+
+
+
+
+            self::_delete_meta_cache($info);
+
+            return true;
         }
 
         /**
@@ -419,8 +451,18 @@
          * @return boolean returns true on success
          * @throws entity_exception
          */
-        protected function _deletes(array $keys_arr) {
+        protected function _delete_multi(array $keys_arr) {
             $source_driver = "entity_link_driver_{$this->source_engine}";
-            return $source_driver::deletes($this, $this->source_engine_pool_write, $keys_arr);
+            $delete = $source_driver::delete_multi($this, $this->source_engine_pool_write, $keys_arr);
+
+            if (! $delete) {
+                return false;
+            }
+
+
+
+            self::_delete_meta_cache_mutli($info);
+
+            return true;
         }
     }

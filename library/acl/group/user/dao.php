@@ -217,10 +217,10 @@
          *
          * @return boolean
          */
-        public function inserts(array $infos) {
+        public function insert_multi(array $infos) {
 
             // Insert links
-            $return = parent::_inserts($infos);
+            $return = parent::_insert_multi($infos);
 
             // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
             parent::cache_batch_start();
@@ -422,10 +422,10 @@
          *
          * @return bool
          */
-        public function deletes(array $keys_arr) {
+        public function delete_multi(array $keys_arr) {
 
             // Delete links
-            $return = parent::_deletes($keys_arr);
+            $return = parent::_delete_multi($keys_arr);
 
             // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
             parent::cache_batch_start();

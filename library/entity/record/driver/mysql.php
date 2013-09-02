@@ -488,7 +488,7 @@
          *
          * @return array
          */
-        public static function inserts(entity_record_dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace) {
+        public static function insert_multi(entity_record_dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace) {
             $sql = core::sql($pool);
 
             if ($keys_match) {
@@ -614,7 +614,7 @@
          * @param int|string               $pk
          * @param entity_record_collection $collection
          */
-        public static function deletes(entity_record_dao $self, $pool, $pk, entity_record_collection $collection) {
+        public static function delete_multi(entity_record_dao $self, $pool, $pk, entity_record_collection $collection) {
             $delete = core::sql($pool)->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE `{$pk}` IN (" . join(',', array_fill(0, count($collection), '?')) . ")

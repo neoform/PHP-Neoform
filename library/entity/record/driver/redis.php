@@ -203,7 +203,7 @@
          *
          * @return array
          */
-        public static function inserts(entity_record_dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace) {
+        public static function insert_multi(entity_record_dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace) {
 
             $inserts = [];
             foreach ($infos as $info) {
@@ -251,7 +251,7 @@
          * @param int|string        $pk
          * @param entity_record_collection $collection
          */
-        public static function deletes(entity_record_dao $self, $pool, $pk, entity_record_collection $collection) {
+        public static function delete_multi(entity_record_dao $self, $pool, $pk, entity_record_collection $collection) {
             $keys = [];
             foreach ($collection as $model) {
                 $keys[] = '_db_:' . $self::TABLE . ":{$model->$pk}";

@@ -451,12 +451,13 @@
          * @param bool              $autoincrement
          * @param bool              $replace
          *
-         * @return array|bool
+         * @return array
+         * @throws entity_exception
          */
         public static function insert(entity_record_dao $self, $pool, array $info, $autoincrement, $replace) {
             $insert_fields = [];
             foreach (array_keys($info) as $key) {
-                $insert_fields[] = "`$key`";
+                $insert_fields[] = "`{$key}`";
             }
 
             $sql = core::sql($pool);
@@ -468,7 +469,8 @@
             ");
 
             if (! $insert->execute(array_values($info))) {
-                return false;
+                $error = $sql->errorInfo();
+                throw new entity_exception("Insert failed - {$error[0]}: {$error[2]}");
             }
 
             if ($autoincrement) {
@@ -488,7 +490,8 @@
          * @param bool              $autoincrement
          * @param bool              $replace
          *
-         * @return array|bool
+         * @return array
+         * @throws entity_exception
          */
         public static function insert_multi(entity_record_dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace) {
             $sql = core::sql($pool);
@@ -504,7 +507,6 @@
                  * since we need the returned IDs for cache-busting and to return a model
                  */
                 if ($autoincrement) {
-                    $sql->beginTransaction();
 
                     $insert = $sql->prepare("
                         " . ($replace ? 'REPLACE' : 'INSERT') . " INTO
@@ -515,8 +517,9 @@
                     ");
                     foreach ($infos as &$info) {
                         if (! $insert->execute(array_values($info))) {
+                            $error = $sql->errorInfo();
                             $sql->rollBack();
-                            return false;
+                            throw new entity_exception("Insert multi failed - {$error[0]}: {$error[2]}");
                         }
 
                         if ($autoincrement) {
@@ -524,7 +527,10 @@
                         }
                     }
 
-                    $sql->commit();
+                    if (! $sql->commit()) {
+                        $error = $sql->errorInfo();
+                        throw new entity_exception("Insert multi failed - {$error[0]}: {$error[2]}");
+                    }
                 } else {
                     // this might explode if $keys_match was a lie
                     $insert_vals = new splFixedArray(count($insert_fields) * count($infos));
@@ -534,13 +540,16 @@
                         }
                     }
 
-                    return $sql->prepare("
+                    if (! $sql->prepare("
                         INSERT INTO
                         `" . self::table($self::TABLE) . "`
                         ( " . join(', ', $insert_fields) . " )
                         VALUES
                         " . join(', ', array_fill(0, count($infos), '( ' . join(',', array_fill(0, count($insert_fields), '?')) . ')')) . "
-                    ")->execute($insert_vals);
+                    ")->execute($insert_vals)) {
+                        $error = $sql->errorInfo();
+                        throw new entity_exception("Insert multi failed - {$error[0]}: {$error[2]}");
+                    }
                 }
             } else {
                 $sql->beginTransaction();
@@ -551,17 +560,16 @@
                         $insert_fields[] = "`{$key}`";
                     }
 
-                    $result = $sql->prepare("
+                    if (! $sql->prepare("
                         INSERT INTO
                         `" . self::table($self::TABLE) . "`
                         ( " . join(', ', $insert_fields) . " )
                         VALUES
                         ( " . join(',', array_fill(0, count($info), '?')) . " )
-                    ")->execute(array_values($info));
-
-                    if (! $result) {
-                        $sql->rollback();
-                        return false;
+                    ")->execute(array_values($info))) {
+                        $error = $sql->errorInfo();
+                        $sql->rollBack();
+                        throw new entity_exception("Insert multi failed - {$error[0]}: {$error[2]}");
                     }
 
                     if ($autoincrement) {
@@ -569,7 +577,10 @@
                     }
                 }
 
-                $sql->commit();
+                if (! $sql->commit()) {
+                    $error = $sql->errorInfo();
+                    throw new entity_exception("Insert multi failed - {$error[0]}: {$error[2]}");
+                }
             }
 
             return $infos;
@@ -584,7 +595,7 @@
          * @param entity_record_model $model
          * @param array               $info
          *
-         * @return bool
+         * @throws entity_exception
          */
         public static function update(entity_record_dao $self, $pool, $pk, entity_record_model $model, array $info) {
             $update_fields = [];
@@ -594,11 +605,14 @@
 
             $info[$pk] = $model->$pk;
 
-            return core::sql($pool)->prepare("
+            if (core::sql($pool)->prepare("
                 UPDATE `" . self::table($self::TABLE) . "`
                 SET " . join(", \n", $update_fields) . "
                 WHERE `{$pk}` = :{$pk}
-            ")->execute($info);
+            ")->execute($info)) {
+                $error = core::sql($pool)->errorInfo();
+                throw new entity_exception("Update failed - {$error[0]}: {$error[2]}");
+            }
         }
 
         /**
@@ -609,16 +623,19 @@
          * @param int|string          $pk
          * @param entity_record_model $model
          *
-         * @return bool
+         * @throws entity_exception
          */
         public static function delete(entity_record_dao $self, $pool, $pk, entity_record_model $model) {
             $delete = core::sql($pool)->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE `{$pk}` = ?
             ");
-            return $delete->execute([
+            if (! $delete->execute([
                 $model->$pk,
-            ]);
+            ])) {
+                $error = core::sql($pool)->errorInfo();
+                throw new entity_exception("Delete failed - {$error[0]}: {$error[2]}");
+            }
         }
 
         /**
@@ -629,15 +646,18 @@
          * @param int|string               $pk
          * @param entity_record_collection $collection
          *
-         * @return bool
+         * @throws entity_exception
          */
         public static function delete_multi(entity_record_dao $self, $pool, $pk, entity_record_collection $collection) {
             $delete = core::sql($pool)->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE `{$pk}` IN (" . join(',', array_fill(0, count($collection), '?')) . ")
             ");
-            return $delete->execute(
+            if (! $delete->execute(
                 array_values($collection->field($pk))
-            );
+            )) {
+                $error = core::sql($pool)->errorInfo();
+                throw new entity_exception("Delete multi failed - {$error[0]}: {$error[2]}");
+            }
         }
     }

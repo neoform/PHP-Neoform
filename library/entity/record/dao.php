@@ -469,20 +469,19 @@
          * @param boolean $load_model_from_source optional - after insert, load data from source - this is needed if the DB changes values on insert (eg, timestamps)
          *
          * @return entity_record_model|boolean    if $return_model is set to true, the model created from the info is returned
-         * @throws entity_exception
          */
         protected function _insert(array $info, $replace=false, $return_model=true, $load_model_from_source=false) {
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            $info = $source_driver::insert(
-                $this,
-                $this->source_engine_pool_write,
-                $info,
-                static::AUTOINCREMENT,
-                $replace
-            );
-
-            if (! $info) {
+            try {
+                $info = $source_driver::insert(
+                    $this,
+                    $this->source_engine_pool_write,
+                    $info,
+                    static::AUTOINCREMENT,
+                    $replace
+                );
+            } catch (entity_exception $e) {
                 return false;
             }
 
@@ -525,16 +524,16 @@
                                     $load_models_from_source=false) {
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            $infos = $source_driver::insert_multi(
-                $this,
-                $this->source_engine_pool_write,
-                $infos,
-                $keys_match,
-                static::AUTOINCREMENT,
-                $replace
-            );
-
-            if (! $infos) {
+            try {
+                $infos = $source_driver::insert_multi(
+                    $this,
+                    $this->source_engine_pool_write,
+                    $infos,
+                    $keys_match,
+                    static::AUTOINCREMENT,
+                    $replace
+                );
+            } catch (entity_exception $e) {
                 return false;
             }
 
@@ -606,7 +605,15 @@
             $pk = static::PRIMARY_KEY;
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            if (! $source_driver::update($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $model, $new_info)) {
+            try {
+                $source_driver::update(
+                    $this,
+                    $this->source_engine_pool_write,
+                    static::PRIMARY_KEY,
+                    $model,
+                    $new_info
+                );
+            } catch (entity_exception $e) {
                 return false;
             }
 
@@ -699,7 +706,9 @@
             $pk = static::PRIMARY_KEY;
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            if (! $source_driver::delete($this, $this->source_engine_pool_write, $pk, $model)) {
+            try {
+                $source_driver::delete($this, $this->source_engine_pool_write, $pk, $model);
+            } catch (entity_exception $e) {
                 return false;
             }
 
@@ -739,7 +748,14 @@
             }
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            if (! $source_driver::delete_multi($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $collection)) {
+            try {
+                $source_driver::delete_multi(
+                    $this,
+                    $this->source_engine_pool_write,
+                    static::PRIMARY_KEY,
+                    $collection
+                );
+            } catch (entity_exception $e) {
                 return false;
             }
 

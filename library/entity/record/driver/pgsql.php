@@ -486,7 +486,7 @@
          * @param bool              $autoincrement
          * @param bool              $replace
          *
-         * @return array|bool
+         * @return array
          * @throws entity_exception
          */
         public static function insert(entity_record_dao $dao, $pool, array $info, $autoincrement, $replace) {
@@ -497,27 +497,28 @@
 
             $insert_fields = [];
             foreach (array_keys($info) as $key) {
-                $insert_fields[] = "\"$key\"";
+                $insert_fields[] = "\"{$key}\"";
             }
 
             $insert = core::sql($pool)->prepare("
-                INSERT INTO
-                    \"" . self::table($dao::TABLE) . "\"
-                    ( " . join(', ', $insert_fields) . " )
-                    VALUES
-                    ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
-                    " . ($autoincrement ? "RETURNING \"". $dao::PRIMARY_KEY . "\"" : '') . "
+                INSERT INTO \"" . self::table($dao::TABLE) . "\"
+                ( " . join(', ', $insert_fields) . " )
+                VALUES
+                ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
+                " . ($autoincrement ? "RETURNING \"". $dao::PRIMARY_KEY . "\"" : '') . "
             ");
 
             $bindings = $dao->field_bindings();
 
-            // do NOT remove this reference, it will break the bindParam() function
+            // bindParam() expects a reference, not a value, do not remove the &
+            $i = 1;
             foreach ($info as $k => &$v) {
-                $insert->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
+                $insert->bindParam($i++, $v, self::$binding_conversions[$bindings[$k]]);
             }
 
             if (! $insert->execute()) {
-                return false;
+                $error = core::sql($pool)->errorInfo();
+                throw new entity_exception("Insert failed - {$error[0]}: {$error[2]}");
             }
 
             if ($autoincrement) {
@@ -572,14 +573,16 @@
 
                     foreach ($infos as $info) {
 
-                        // do NOT remove this reference, it will break the bindParam() function
+                        // bindParam() expects a reference, not a value, do not remove the &
+                        $i = 1;
                         foreach ($info as $k => &$v) {
-                            $insert->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
+                            $insert->bindParam($i++, $v, self::$binding_conversions[$bindings[$k]]);
                         }
 
                         if (! $insert->execute()) {
+                            $error = $sql->errorInfo();
                             $sql->rollback();
-                            return false;
+                            throw new entity_exception("Inserts failed - {$error[0]}: {$error[2]}");
                         }
 
                         if ($autoincrement) {
@@ -587,7 +590,10 @@
                         }
                     }
 
-                    $sql->commit();
+                    if (! $sql->commit()) {
+                        $error = $sql->errorInfo();
+                        throw new entity_exception("Inserts failed - {$error[0]}: {$error[2]}");
+                    }
                 } else {
                     // this might explode if $keys_match was a lie
                     $insert_vals = new splFixedArray(count($insert_fields) * count($infos));
@@ -606,13 +612,15 @@
 
                     $bindings = $dao->field_bindings();
 
-                    // do NOT remove this reference, it will break the bindParam() function
+                    // bindParam() expects a reference, not a value, do not remove the &
+                    $i = 1;
                     foreach ($insert_vals as $k => &$v) {
-                        $inserts->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
+                        $inserts->bindParam($i++, $v, self::$binding_conversions[$bindings[$k]]);
                     }
 
                     if (! $inserts->execute()) {
-                        return false;
+                        $error = core::sql($pool)->errorInfo();
+                        throw new entity_exception("Inserts failed - {$error[0]}: {$error[2]}");
                     }
                 }
             } else {
@@ -638,14 +646,16 @@
                         " . ($autoincrement ? "RETURNING \"". $dao::PRIMARY_KEY . "\"" : '') . "
                     ");
 
-                    // do NOT remove this reference, it will break the bindParam() function
+                    // bindParam() expects a reference, not a value, do not remove the &
+                    $i = 1;
                     foreach ($info as $k => &$v) {
-                        $insert->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
+                        $insert->bindParam($i++, $v, self::$binding_conversions[$bindings[$k]]);
                     }
 
                     if (! $insert->execute()) {
+                        $error = $sql->errorInfo();
                         $sql->rollback();
-                        return false;
+                        throw new entity_exception("Inserts failed - {$error[0]}: {$error[2]}");
                     }
 
                     if ($autoincrement) {
@@ -653,7 +663,10 @@
                     }
                 }
 
-                $sql->commit();
+                if (! $sql->commit()) {
+                    $error = $sql->errorInfo();
+                    throw new entity_exception("Inserts failed - {$error[0]}: {$error[2]}");
+                }
             }
 
             return $infos;
@@ -668,16 +681,14 @@
          * @param entity_record_model $model
          * @param array               $info
          *
-         * @return bool
+         * @throws entity_exception
          */
         public static function update(entity_record_dao $dao, $pool, $pk, entity_record_model $model, array $info) {
-            $sql = core::sql($pool);
-
             $update_fields = [];
             foreach (array_keys($info) as $key) {
                 $update_fields[] = "\"{$key}\" = :{$key}";
             }
-            $update = $sql->prepare("
+            $update = core::sql($pool)->prepare("
                 UPDATE \"" . self::table($dao::TABLE) . "\"
                 SET " . implode(", \n", $update_fields) . "
                 WHERE \"{$pk}\" = :{$pk}
@@ -687,13 +698,15 @@
 
             $bindings = $dao->field_bindings();
 
-            $i = 1;
-            // do NOT remove this reference, it will break the bindParam() function
+            // bindParam() expects a reference, not a value, do not remove the &
             foreach ($info as $k => &$v) {
-                $update->bindParam($i++, $v, self::$binding_conversions[$bindings[$k]]);
+                $update->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
             }
 
-            return $update->execute();
+            if (! $update->execute()) {
+                $error = core::sql($pool)->errorInfo();
+                throw new entity_exception("Update failed - {$error[0]}: {$error[2]}");
+            }
         }
 
         /**
@@ -704,7 +717,7 @@
          * @param int|string          $pk
          * @param entity_record_model $model
          *
-         * @return bool
+         * @throws entity_exception
          */
         public static function delete(entity_record_dao $dao, $pool, $pk, entity_record_model $model) {
             $delete = core::sql($pool)->prepare("
@@ -712,7 +725,10 @@
                 WHERE \"{$pk}\" = ?
             ");
             $delete->bindValue(1, $model->$pk, self::$binding_conversions[$dao->field_binding($dao::PRIMARY_KEY)]);
-            return $delete->execute();
+            if (! $delete->execute()) {
+                $error = core::sql($pool)->errorInfo();
+                throw new entity_exception("Delete failed - {$error[0]}: {$error[2]}");
+            }
         }
 
         /**
@@ -723,7 +739,7 @@
          * @param int|string               $pk
          * @param entity_record_collection $collection
          *
-         * @return bool
+         * @throws entity_exception
          */
         public static function delete_multi(entity_record_dao $dao, $pool, $pk, entity_record_collection $collection) {
             $pks = $collection->field($pk);
@@ -733,10 +749,13 @@
             ");
 
             $pdo_binding = self::$binding_conversions[$dao->field_binding($dao::PRIMARY_KEY)];
-            $i = 0;
+            $i = 1;
             foreach ($pks as $pk) {
                 $delete->bindValue($i++, $pk, $pdo_binding);
             }
-            return $delete->execute();
+            if (! $delete->execute()) {
+                $error = core::sql($pool)->errorInfo();
+                throw new entity_exception("Deletes failed - {$error[0]}: {$error[2]}");
+            }
         }
     }

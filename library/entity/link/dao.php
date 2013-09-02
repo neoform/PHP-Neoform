@@ -360,14 +360,14 @@
          */
         protected function _insert(array $info, $replace=false) {
             $source_driver = "entity_link_driver_{$this->source_engine}";
-            $inserted = $source_driver::insert(
+            $info = $source_driver::insert(
                 $this,
                 $this->source_engine_pool_write,
                 $info,
                 $replace
             );
 
-            if (! $inserted) {
+            if (! $info) {
                 return false;
             }
 
@@ -392,9 +392,9 @@
             }
 
             $source_driver = "entity_link_driver_{$this->source_engine}";
-            $inserted = $source_driver::insert_multi($this, $this->source_engine_pool_write, $infos, $replace);
+            $infos = $source_driver::insert_multi($this, $this->source_engine_pool_write, $infos, $replace);
 
-            if (! $inserted) {
+            if (! $infos) {
                 return false;
             }
 
@@ -429,9 +429,7 @@
          */
         protected function _delete(array $keys) {
             $source_driver = "entity_link_driver_{$this->source_engine}";
-            $delete = $source_driver::delete($this, $this->source_engine_pool_write, $keys);
-
-            if (! $delete) {
+            if (! $source_driver::delete($this, $this->source_engine_pool_write, $keys)) {
                 return false;
             }
 
@@ -453,11 +451,11 @@
          */
         protected function _delete_multi(array $keys_arr) {
             $source_driver = "entity_link_driver_{$this->source_engine}";
-            $delete = $source_driver::delete_multi($this, $this->source_engine_pool_write, $keys_arr);
-
-            if (! $delete) {
+            if (! $source_driver::delete_multi($this, $this->source_engine_pool_write, $keys_arr)) {
                 return false;
             }
+
+
 
 
 

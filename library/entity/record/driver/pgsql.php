@@ -358,10 +358,18 @@
                 }
             }
 
+            // LIMIT
             if ($limit) {
-                $limit = "LIMIT {$limit}" . ($offset !== null ? " OFFSET {$offset}" : '');
+                $limit = "LIMIT {$limit}";
             } else {
                 $limit = '';
+            }
+
+            // OFFSET
+            if ($offset !== null) {
+                $offset = "OFFSET {$offset}";
+            } else {
+                $offset = '';
             }
 
             $order = [];
@@ -375,7 +383,7 @@
                 FROM \"" . self::table($dao::TABLE) . "\"
                 " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
                 ORDER BY {$order_by}
-                {$limit}
+                {$limit} {$offset}
             ");
             $rs->execute($vals);
 
@@ -407,10 +415,18 @@
                 $select_fields[] = "\"{$k}\"";
             }
 
+            // LIMIT
             if ($limit) {
-                $limit = "LIMIT {$limit}" . ($offset !== null ? " OFFSET {$offset}" : '');
+                $limit = "LIMIT {$limit}";
             } else {
                 $limit = '';
+            }
+
+            // OFFSET
+            if ($offset !== null) {
+                $offset = "OFFSET {$offset}";
+            } else {
+                $offset = '';
             }
 
             $order = [];
@@ -440,7 +456,7 @@
                     FROM \"" . self::table($dao::TABLE) . "\"
                     WHERE " . join(" AND ", $where) . "
                     ORDER BY {$order_by}
-                    {$limit}
+                    {$limit} {$offset}
                 )";
             }
 
@@ -470,9 +486,15 @@
          * @param bool              $autoincrement
          * @param bool              $replace
          *
-         * @return array
+         * @return array|bool
+         * @throws entity_exception
          */
         public static function insert(entity_record_dao $dao, $pool, array $info, $autoincrement, $replace) {
+
+            if ($replace) {
+                throw new entity_exception('PostgreSQL does not support REPLACE INTO.');
+            }
+
             $insert_fields = [];
             foreach (array_keys($info) as $key) {
                 $insert_fields[] = "\"$key\"";
@@ -494,7 +516,9 @@
                 $insert->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
             }
 
-            $insert->execute();
+            if (! $insert->execute()) {
+                return false;
+            }
 
             if ($autoincrement) {
                 $info[$dao::PRIMARY_KEY] = $insert->fetch()[$dao::PRIMARY_KEY];
@@ -514,8 +538,13 @@
          * @param bool              $replace
          *
          * @return array
+         * @throws entity_exception
          */
         public static function insert_multi(entity_record_dao $dao, $pool, array $infos, $keys_match, $autoincrement, $replace) {
+
+            if ($replace) {
+                throw new entity_exception('PostgreSQL does not support REPLACE INTO.');
+            }
 
             if ($keys_match) {
                 $insert_fields = [];
@@ -532,12 +561,11 @@
                     $pk = $dao::PRIMARY_KEY;
 
                     $insert = $sql->prepare("
-                        INSERT INTO
-                            \"" . self::table($dao::TABLE) . "\"
-                            ( " . join(', ', $insert_fields) . " )
-                            VALUES
-                            ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
-                            RETURNING \"{$pk}\"
+                        INSERT INTO \"" . self::table($dao::TABLE) . "\"
+                        ( " . join(', ', $insert_fields) . " )
+                        VALUES
+                        ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
+                        RETURNING \"{$pk}\"
                     ");
 
                     $bindings = $dao->field_bindings();
@@ -549,7 +577,10 @@
                             $insert->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
                         }
 
-                        $insert->execute();
+                        if (! $insert->execute()) {
+                            $sql->rollback();
+                            return false;
+                        }
 
                         if ($autoincrement) {
                             $info[$dao::PRIMARY_KEY] = $insert->fetch()[$pk];
@@ -567,11 +598,10 @@
                     }
 
                     $inserts = core::sql($pool)->prepare("
-                        INSERT INTO
-                            \"" . self::table($dao::TABLE) . "\"
-                            ( " . implode(', ', $insert_fields) . " )
-                            VALUES
-                            " . join(', ', array_fill(0, count($infos), '( ' . join(',', array_fill(0, count($insert_fields), '?')) . ')')) . "
+                        INSERT INTO \"" . self::table($dao::TABLE) . "\"
+                        ( " . implode(', ', $insert_fields) . " )
+                        VALUES
+                        " . join(', ', array_fill(0, count($infos), '( ' . join(',', array_fill(0, count($insert_fields), '?')) . ')')) . "
                     ");
 
                     $bindings = $dao->field_bindings();
@@ -581,7 +611,9 @@
                         $inserts->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
                     }
 
-                    $inserts->execute();
+                    if (! $inserts->execute()) {
+                        return false;
+                    }
                 }
             } else {
                 $sql   = core::sql($pool);
@@ -599,12 +631,11 @@
                     }
 
                     $insert = $sql->prepare("
-                        INSERT INTO
-                            \"$table\"
-                            ( " . join(', ', $insert_fields) . " )
-                            VALUES
-                            ( " . join(',', array_fill(0, count($info), '?')) . " )
-                            " . ($autoincrement ? "RETURNING \"". $dao::PRIMARY_KEY . "\"" : '') . "
+                        INSERT INTO \"{$table}\"
+                        ( " . join(', ', $insert_fields) . " )
+                        VALUES
+                        ( " . join(',', array_fill(0, count($info), '?')) . " )
+                        " . ($autoincrement ? "RETURNING \"". $dao::PRIMARY_KEY . "\"" : '') . "
                     ");
 
                     // do NOT remove this reference, it will break the bindParam() function
@@ -612,7 +643,10 @@
                         $insert->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
                     }
 
-                    $insert->execute();
+                    if (! $insert->execute()) {
+                        $sql->rollback();
+                        return false;
+                    }
 
                     if ($autoincrement) {
                         $info[$dao::PRIMARY_KEY] = $insert->fetch()[$dao::PRIMARY_KEY];
@@ -633,6 +667,8 @@
          * @param int|string          $pk
          * @param entity_record_model $model
          * @param array               $info
+         *
+         * @return bool
          */
         public static function update(entity_record_dao $dao, $pool, $pk, entity_record_model $model, array $info) {
             $sql = core::sql($pool);
@@ -657,7 +693,7 @@
                 $update->bindParam($i++, $v, self::$binding_conversions[$bindings[$k]]);
             }
 
-            $update->execute();
+            return $update->execute();
         }
 
         /**
@@ -667,6 +703,8 @@
          * @param string              $pool which source engine pool to use
          * @param int|string          $pk
          * @param entity_record_model $model
+         *
+         * @return bool
          */
         public static function delete(entity_record_dao $dao, $pool, $pk, entity_record_model $model) {
             $delete = core::sql($pool)->prepare("
@@ -674,7 +712,7 @@
                 WHERE \"{$pk}\" = ?
             ");
             $delete->bindValue(1, $model->$pk, self::$binding_conversions[$dao->field_binding($dao::PRIMARY_KEY)]);
-            $delete->execute();
+            return $delete->execute();
         }
 
         /**
@@ -684,6 +722,8 @@
          * @param string                   $pool which source engine pool to use
          * @param int|string               $pk
          * @param entity_record_collection $collection
+         *
+         * @return bool
          */
         public static function delete_multi(entity_record_dao $dao, $pool, $pk, entity_record_collection $collection) {
             $pks = $collection->field($pk);
@@ -697,6 +737,6 @@
             foreach ($pks as $pk) {
                 $delete->bindValue($i++, $pk, $pdo_binding);
             }
-            $delete->execute();
+            return $delete->execute();
         }
     }

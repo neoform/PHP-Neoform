@@ -474,7 +474,7 @@
         protected function _insert(array $info, $replace=false, $return_model=true, $load_model_from_source=false) {
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            $inserted = $source_driver::insert(
+            $info = $source_driver::insert(
                 $this,
                 $this->source_engine_pool_write,
                 $info,
@@ -482,7 +482,7 @@
                 $replace
             );
 
-            if (! $inserted) {
+            if (! $info) {
                 return false;
             }
 
@@ -525,7 +525,7 @@
                                     $load_models_from_source=false) {
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            $inserted = $source_driver::insert_multi(
+            $infos = $source_driver::insert_multi(
                 $this,
                 $this->source_engine_pool_write,
                 $infos,
@@ -534,7 +534,7 @@
                 $replace
             );
 
-            if (! $inserted) {
+            if (! $infos) {
                 return false;
             }
 
@@ -606,7 +606,9 @@
             $pk = static::PRIMARY_KEY;
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            $source_driver::update($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $model, $new_info);
+            if (! $source_driver::update($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $model, $new_info)) {
+                return false;
+            }
 
             /**
              * Reload model from source based on current (or newly updated) PK
@@ -697,7 +699,9 @@
             $pk = static::PRIMARY_KEY;
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            $source_driver::delete($this, $this->source_engine_pool_write, $pk, $model);
+            if (! $source_driver::delete($this, $this->source_engine_pool_write, $pk, $model)) {
+                return false;
+            }
 
             if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
                 cache_lib::expire(
@@ -735,7 +739,9 @@
             }
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            $source_driver::delete_multi($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $collection);
+            if (! $source_driver::delete_multi($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $collection)) {
+                return false;
+            }
 
             $delete_cache_keys = [];
             foreach ($collection->field(static::PRIMARY_KEY) as $pk) {

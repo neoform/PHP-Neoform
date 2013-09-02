@@ -416,7 +416,7 @@
             }
 
             $insert = core::sql($pool)->prepare("
-                " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO
+                " . ($replace ? 'REPLACE' : 'INSERT') . " INTO
                 `" . self::table($self::TABLE) . "`
                 ( " . join(', ', $insert_fields) . " )
                 VALUES
@@ -450,14 +450,17 @@
             }
 
             $insert = $sql->prepare("
-                " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO `" . self::table($self::TABLE) . "`
+                " . ($replace ? 'REPLACE' : 'INSERT') . " INTO `" . self::table($self::TABLE) . "`
                 ( " . join(', ', $insert_fields) . " )
                 VALUES
                 ( " . join(',', array_fill(0, count($info), '?')) . " )
             ");
 
             foreach ($infos as $info) {
-                $insert->execute(array_values($info));
+                if (! $insert->execute(array_values($info))) {
+                    $sql->rollback();
+                    return false;
+                }
             }
 
             if (count($infos) > 1) {

@@ -223,8 +223,13 @@
          * @param bool            $replace
          *
          * @return mixed
+         * @throws entity_exception
          */
         public static function insert(entity_link_dao $self, $pool, array $info, $replace) {
+
+            if ($replace) {
+                throw new entity_exception('PostgreSQL does not support REPLACE INTO.');
+            }
 
             $insert_fields = [];
             foreach ($info as $k => $v) {
@@ -251,8 +256,14 @@
          * @param bool            $replace
          *
          * @return bool
+         * @throws entity_exception
          */
         public static function insert_multi(entity_link_dao $self, $pool, array $infos, $replace) {
+
+            if ($replace) {
+                throw new entity_exception('PostgreSQL does not support REPLACE INTO.');
+            }
+
             $insert_fields = [];
             $info          = current($infos);
             $sql           = core::sql($pool);
@@ -273,7 +284,10 @@
             ");
 
             foreach ($infos as $info) {
-                $insert->execute(array_values($info));
+                if (! $insert->execute(array_values($info))) {
+                    $sql->rollback();
+                    return false;
+                }
             }
 
             if (count($infos) > 1) {

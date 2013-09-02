@@ -451,7 +451,7 @@
          * @param bool              $autoincrement
          * @param bool              $replace
          *
-         * @return array
+         * @return array|bool
          */
         public static function insert(entity_record_dao $self, $pool, array $info, $autoincrement, $replace) {
             $insert_fields = [];
@@ -461,13 +461,15 @@
 
             $sql = core::sql($pool);
             $insert = $sql->prepare("
-                " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO `" . self::table($self::TABLE) . "`
-                    ( " . join(', ', $insert_fields) . " )
-                    VALUES
-                    ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
+                " . ($replace ? 'REPLACE' : 'INSERT') . " INTO `" . self::table($self::TABLE) . "`
+                ( " . join(', ', $insert_fields) . " )
+                VALUES
+                ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
             ");
 
-            $insert->execute(array_values($info));
+            if (! $insert->execute(array_values($info))) {
+                return false;
+            }
 
             if ($autoincrement) {
                 $info[$self::PRIMARY_KEY] = $sql->lastInsertId();
@@ -486,7 +488,7 @@
          * @param bool              $autoincrement
          * @param bool              $replace
          *
-         * @return array
+         * @return array|bool
          */
         public static function insert_multi(entity_record_dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace) {
             $sql = core::sql($pool);
@@ -505,14 +507,18 @@
                     $sql->beginTransaction();
 
                     $insert = $sql->prepare("
-                        " . ($replace ? 'REPLACE' : 'INSERT IGNORE') . " INTO
+                        " . ($replace ? 'REPLACE' : 'INSERT') . " INTO
                         `" . self::table($self::TABLE) . "`
                         ( " . join(', ', $insert_fields) . " )
                         VALUES
                         ( " . join(',', array_fill(0, count($insert_fields), '?')) . " )
                     ");
                     foreach ($infos as &$info) {
-                        $insert->execute(array_values($info));
+                        if (! $insert->execute(array_values($info))) {
+                            $sql->rollBack();
+                            return false;
+                        }
+
                         if ($autoincrement) {
                             $info[$self::PRIMARY_KEY] = $sql->lastInsertId();
                         }
@@ -528,7 +534,7 @@
                         }
                     }
 
-                    $sql->prepare("
+                    return $sql->prepare("
                         INSERT INTO
                         `" . self::table($self::TABLE) . "`
                         ( " . join(', ', $insert_fields) . " )
@@ -545,13 +551,18 @@
                         $insert_fields[] = "`{$key}`";
                     }
 
-                    $sql->prepare("
+                    $result = $sql->prepare("
                         INSERT INTO
                         `" . self::table($self::TABLE) . "`
                         ( " . join(', ', $insert_fields) . " )
                         VALUES
                         ( " . join(',', array_fill(0, count($info), '?')) . " )
                     ")->execute(array_values($info));
+
+                    if (! $result) {
+                        $sql->rollback();
+                        return false;
+                    }
 
                     if ($autoincrement) {
                         $info[$self::PRIMARY_KEY] = $sql->lastInsertId();
@@ -572,6 +583,8 @@
          * @param int|string          $pk
          * @param entity_record_model $model
          * @param array               $info
+         *
+         * @return bool
          */
         public static function update(entity_record_dao $self, $pool, $pk, entity_record_model $model, array $info) {
             $update_fields = [];
@@ -581,7 +594,7 @@
 
             $info[$pk] = $model->$pk;
 
-            core::sql($pool)->prepare("
+            return core::sql($pool)->prepare("
                 UPDATE `" . self::table($self::TABLE) . "`
                 SET " . join(", \n", $update_fields) . "
                 WHERE `{$pk}` = :{$pk}
@@ -595,13 +608,15 @@
          * @param string              $pool which source engine pool to use
          * @param int|string          $pk
          * @param entity_record_model $model
+         *
+         * @return bool
          */
         public static function delete(entity_record_dao $self, $pool, $pk, entity_record_model $model) {
             $delete = core::sql($pool)->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE `{$pk}` = ?
             ");
-            $delete->execute([
+            return $delete->execute([
                 $model->$pk,
             ]);
         }
@@ -613,13 +628,15 @@
          * @param string                   $pool which source engine pool to use
          * @param int|string               $pk
          * @param entity_record_collection $collection
+         *
+         * @return bool
          */
         public static function delete_multi(entity_record_dao $self, $pool, $pk, entity_record_collection $collection) {
             $delete = core::sql($pool)->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE `{$pk}` IN (" . join(',', array_fill(0, count($collection), '?')) . ")
             ");
-            $delete->execute(
+            return $delete->execute(
                 array_values($collection->field($pk))
             );
         }

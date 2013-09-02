@@ -98,26 +98,24 @@
                             $offset
                         );
                     },
-                    function($cache_key, $pks) use ($select_field, $fieldvals, $order_by, $foreign_dao) {
-
-                        $pk = $this::PRIMARY_KEY;
+                    function($cache_key, $results) use ($select_field, $fieldvals, $order_by, $foreign_dao) {
 
                         // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
-                        if (array_key_exists($pk, $fieldvals)) {
-                            $fieldvals[$pk] = array_unique(array_merge(
-                                is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
-                                $pks
+                        if (array_key_exists($select_field, $fieldvals)) {
+                            $fieldvals[$select_field] = array_unique(array_merge(
+                                is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
+                                $results
                             ));
                         } else {
-                            $fieldvals[$pk] = $pks;
+                            $fieldvals[$select_field] = $results;
                         }
 
                         // Local DAO
                         $this->_set_meta_cache($cache_key, $fieldvals, [ $select_field ]);
 
                         // Foreign DAO
-                        $order_by[$pk] = true; // add primary key to the list of fields
-                        $foreign_dao->_set_meta_cache($cache_key, [], array_keys($order_by));
+                        $order_by[$foreign_dao::PRIMARY_KEY] = true; // add primary key to the list of fields
+                        $foreign_dao->_set_meta_cache($cache_key, null, array_keys($order_by));
                     }
                 );
             } else {
@@ -135,21 +133,24 @@
                             $fieldvals
                         );
                     },
-                    function($cache_key, $pks) use ($select_fields, $fieldvals) {
+                    function($cache_key, $results) use ($select_fields, $fieldvals) {
 
-                        $pk = $this::PRIMARY_KEY;
-
-                        // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
-                        if (array_key_exists($pk, $fieldvals)) {
-                            $fieldvals[$pk] = array_unique(array_merge(
-                                is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
-                                $pks
-                            ));
-                        } else {
-                            $fieldvals[$pk] = $pks;
+                        /**
+                         * In order to be more efficient, we do not want just clear all cache associated with $select_fields
+                         * but instead, the data that has been returned from source. This means less cache busting.
+                         */
+                        foreach ($select_fields as $select_field) {
+                            if (array_key_exists($select_field, $fieldvals)) {
+                                $fieldvals[$select_field] = array_unique(array_merge(
+                                    is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
+                                    $results
+                                ));
+                            } else {
+                                $fieldvals[$select_field] = $results;
+                            }
                         }
 
-                        $this->_set_meta_cache($cache_key, $fieldvals, $select_fields);
+                        $this->_set_meta_cache($cache_key, $fieldvals);
                     }
                 );
             }
@@ -210,9 +211,7 @@
                             $limit
                         );
                     },
-                    function(array $cache_keys, array $fieldvals_arr, array $pks_arr) use ($select_fields, $order_by, $foreign_dao) {
-
-                        $pk = $this::PRIMARY_KEY;
+                    function(array $cache_keys, array $fieldvals_arr, array $results_arr) use ($select_field, $order_by, $foreign_dao) {
 
                         $cache_keys_fieldvals = [];
                         foreach ($cache_keys as $k => $cache_key) {
@@ -220,24 +219,24 @@
                             // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
                             $fieldvals = & $fieldvals_arr[$k];
 
-                            if (array_key_exists($pk, $fieldvals)) {
-                                $fieldvals[$pk] = array_unique(array_merge(
-                                    is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
-                                    $pks_arr[$k]
+                            if (array_key_exists($select_field, $fieldvals)) {
+                                $fieldvals[$select_field] = array_unique(array_merge(
+                                    is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
+                                    $results_arr[$k]
                                 ));
                             } else {
-                                $fieldvals[$pk] = $pks_arr[$k];
+                                $fieldvals[$select_field] = $results_arr[$k];
                             }
 
                             $cache_keys_fieldvals[$cache_key] = $fieldvals;
                         }
 
                         // Local DAO
-                        $this->_set_meta_cache_multi($cache_keys, $select_fields);
+                        $this->_set_meta_cache_multi($cache_keys_fieldvals, [ $select_field ]);
 
                         // Foreign DAO
                         $order_by[$foreign_dao::PRIMARY_KEY] = true; // add primary key to the list of fields
-                        $foreign_dao->_set_meta_cache_multi(array_flip(array_keys($cache_keys)), array_keys($order_by));
+                        $foreign_dao->_set_meta_cache_multi(array_flip($cache_keys), array_keys($order_by));
                     }
                 );
             } else {
@@ -253,29 +252,32 @@
                         $source_driver = "entity_link_driver_{$this->source_engine}";
                         return $source_driver::by_fields_multi($this, $this->source_engine_pool_read, $select_fields, $fieldvals_arr);
                     },
-                    function(array $cache_keys, array $fieldvals_arr, array $pks_arr) use ($select_fields) {
-
-                        $pk = $this::PRIMARY_KEY;
+                    function(array $cache_keys, array $fieldvals_arr, array $results_arr) use ($select_fields) {
 
                         $cache_keys_fieldvals = [];
                         foreach ($cache_keys as $k => $cache_key) {
 
-                            // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
+                            /**
+                             * In order to be more efficient, we do not want just clear all cache associated with $select_fields
+                             * but instead, the data that has been returned from source. This means less cache busting.
+                             */
                             $fieldvals = & $fieldvals_arr[$k];
 
-                            if (array_key_exists($pk, $fieldvals)) {
-                                $fieldvals[$pk] = array_unique(array_merge(
-                                    is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
-                                    $pks_arr[$k]
-                                ));
-                            } else {
-                                $fieldvals[$pk] = $pks_arr[$k];
+                            foreach ($select_fields as $select_field) {
+                                if (array_key_exists($select_field, $fieldvals)) {
+                                    $fieldvals[$select_field] = array_unique(array_merge(
+                                        is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
+                                        $results_arr[$k]
+                                    ));
+                                } else {
+                                    $fieldvals[$select_field] = $results_arr[$k];
+                                }
                             }
 
                             $cache_keys_fieldvals[$cache_key] = $fieldvals;
                         }
 
-                        $this->_set_meta_cache_multi($cache_keys, $select_fields);
+                        $this->_set_meta_cache_multi($cache_keys_fieldvals, $select_fields);
                     }
                 );
             }
@@ -355,7 +357,7 @@
          * @param array   $info    an associative array of into to be put info the database
          * @param boolean $replace optional - user REPLACE INTO instead of INSERT INTO
          *
-         * @return boolean result of the PDO::execute()
+         * @return boolean
          * @throws entity_exception
          */
         protected function _insert(array $info, $replace=false) {
@@ -383,7 +385,7 @@
          * @param array   $infos   an array of associative array of info to be put into the database
          * @param boolean $replace optional - user REPLACE INTO instead of INSERT INTO
          *
-         * @return boolean result of the PDO::execute()
+         * @return boolean
          * @throws entity_exception
          */
         protected function _insert_multi(array $infos, $replace=false) {
@@ -421,10 +423,13 @@
                     return false;
                 }
 
+                // Delete any cache relating to the $new_info or the $where
+                self::_delete_meta_cache(array_merge_recursive($new_info, $where));
+
                 return true;
             }
 
-            return true;
+            return false;
         }
 
         /**
@@ -432,7 +437,7 @@
          *
          * @param array $keys the where of the query
          *
-         * @return boolean result of the PDO::execute()
+         * @return boolean
          * @throws entity_exception
          */
         protected function _delete(array $keys) {
@@ -443,9 +448,7 @@
                 return false;
             }
 
-
-
-            self::_delete_meta_cache($info);
+            parent::_delete_meta_cache($keys);
 
             return true;
         }
@@ -466,11 +469,7 @@
                 return false;
             }
 
-
-
-
-
-            self::_delete_meta_cache_mutli($info);
+            parent::_delete_meta_cache_multi($keys_arr);
 
             return true;
         }

@@ -24,10 +24,10 @@
             $this->code .= "\t\t// WRITES\n\n";
 
             $this->insert();
-            $this->inserts();
+            $this->insert_multi();
             $this->update();
             $this->delete();
-            $this->deletes();
+            $this->delete_multi();
 
             $this->code .= "\t}\n";
         }
@@ -362,8 +362,6 @@
 
         protected function insert() {
 
-            $used_names = [];
-
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Insert " . ucwords(str_replace('_', ' ', $this->table->name)) . " record, created from an array of \$info\n";
             $this->code .= "\t\t *\n";
@@ -378,9 +376,7 @@
             $this->code .= "\t\t}\n\n";
         }
 
-        protected function inserts() {
-
-            $used_names = [];
+        protected function insert_multi() {
 
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Insert multiple " . ucwords(str_replace('_', ' ', $this->table->name)) . " records, created from an array of arrays of \$info\n";
@@ -390,15 +386,13 @@
             $this->code .= "\t\t * @return " . $this->table->name . "_collection\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic function inserts(array \$infos) {\n\n";
+            $this->code .= "\t\tpublic function insert_multi(array \$infos) {\n\n";
             $this->code .= "\t\t\t// Insert record\n";
-            $this->code .= "\t\t\treturn parent::_inserts(\$infos);\n";
+            $this->code .= "\t\t\treturn parent::_insert_multi(\$infos);\n";
             $this->code .= "\t\t}\n\n";
         }
 
         protected function update() {
-
-            $used_names = [];
 
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Updates a " . ucwords(str_replace('_', ' ', $this->table->name)) . " record with new data\n";
@@ -418,8 +412,6 @@
 
         protected function delete() {
 
-            $used_names = [];
-
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Delete a " . ucwords(str_replace('_', ' ', $this->table->name)) . " record\n";
             $this->code .= "\t\t *\n";
@@ -434,9 +426,7 @@
             $this->code .= "\t\t}\n\n";
         }
 
-        protected function deletes() {
-
-            $used_names = [];
+        protected function delete_multi() {
 
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Delete multiple " . ucwords(str_replace('_', ' ', $this->table->name)) . " records\n";
@@ -446,9 +436,9 @@
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic function deletes(" . $this->table->name . "_collection $" . $this->table->name . "_collection) {\n\n";
+            $this->code .= "\t\tpublic function delete_multi(" . $this->table->name . "_collection $" . $this->table->name . "_collection) {\n\n";
             $this->code .= "\t\t\t// Delete records\n";
-            $this->code .= "\t\t\treturn parent::_deletes($" . $this->table->name . "_collection);\n";
+            $this->code .= "\t\t\treturn parent::_delete_multi($" . $this->table->name . "_collection);\n";
             $this->code .= "\t\t}\n";
         }
     }

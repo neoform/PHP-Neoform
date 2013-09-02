@@ -436,7 +436,7 @@
          *
          * @return bool
          */
-        public static function inserts(entity_link_dao $self, $pool, array $infos, $replace) {
+        public static function insert_multi(entity_link_dao $self, $pool, array $infos, $replace) {
             $insert_fields = [];
             $info          = current($infos);
             $sql           = core::sql($pool);
@@ -544,7 +544,7 @@
          *
          * @return mixed
          */
-        public static function deletes(entity_link_dao $self, $pool, array $fieldvals_arr) {
+        public static function delete_multi(entity_link_dao $self, $pool, array $fieldvals_arr) {
             $vals  = [];
             $where = [];
 

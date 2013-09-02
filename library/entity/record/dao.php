@@ -474,13 +474,17 @@
         protected function _insert(array $info, $replace=false, $return_model=true, $load_model_from_source=false) {
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            $info          = $source_driver::insert(
+            $inserted = $source_driver::insert(
                 $this,
                 $this->source_engine_pool_write,
                 $info,
                 static::AUTOINCREMENT,
                 $replace
             );
+
+            if (! $inserted) {
+                return false;
+            }
 
             if ($load_model_from_source) {
                 // Use master to avoid race condition
@@ -517,11 +521,11 @@
          * @return entity_record_collection|boolean if $return_collection is true function returns a collection
          * @throws entity_exception
          */
-        protected function _inserts(array $infos, $keys_match=true, $replace=false, $return_collection=true,
+        protected function _insert_multi(array $infos, $keys_match=true, $replace=false, $return_collection=true,
                                     $load_models_from_source=false) {
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            $infos         = $source_driver::inserts(
+            $inserted = $source_driver::insert_multi(
                 $this,
                 $this->source_engine_pool_write,
                 $infos,
@@ -529,6 +533,10 @@
                 static::AUTOINCREMENT,
                 $replace
             );
+
+            if (! $inserted) {
+                return false;
+            }
 
             if ($load_models_from_source) {
                 $ids = [];
@@ -720,14 +728,14 @@
          * @return boolean returns true on success
          * @throws entity_exception
          */
-        protected function _deletes(entity_record_collection $collection) {
+        protected function _delete_multi(entity_record_collection $collection) {
 
             if (! count($collection)) {
                 return;
             }
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            $source_driver::deletes($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $collection);
+            $source_driver::delete_multi($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $collection);
 
             $delete_cache_keys = [];
             foreach ($collection->field(static::PRIMARY_KEY) as $pk) {

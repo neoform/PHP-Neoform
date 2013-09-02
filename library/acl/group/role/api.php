@@ -25,7 +25,7 @@
                     'acl_role_id'  => (int) $acl_role->id,
                 ];
             }
-            return entity::dao('acl_group_role')->deletes($keys);
+            return entity::dao('acl_group_role')->delete_multi($keys);
         }
 
         public static function delete_by_acl_role(acl_role_model $acl_role, acl_group_collection $acl_group_collection) {
@@ -36,7 +36,7 @@
                     'acl_group_id' => (int) $acl_group->id,
                 ];
             }
-            return entity::dao('acl_group_role')->deletes($keys);
+            return entity::dao('acl_group_role')->delete_multi($keys);
         }
 
         public static function _validate_insert(input_collection $input) {

@@ -20,10 +20,10 @@
             $this->code .= "\t\t// WRITES\n\n";
 
             $this->insert();
-            $this->inserts();
+            $this->insert_multi();
             $this->update();
             $this->delete();
-            $this->deletes();
+            $this->delete_multi();
 
             $this->code .= "\t}\n";
         }
@@ -271,7 +271,7 @@
             $this->code .= "\t\t}\n\n";
         }
 
-        protected function inserts() {
+        protected function insert_multi() {
 
             $used_names = [];
 
@@ -283,12 +283,12 @@
             $this->code .= "\t\t * @return boolean\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic function inserts(array \$infos) {\n\n";
+            $this->code .= "\t\tpublic function insert_multi(array \$infos) {\n\n";
 
             if ($this->table->is_tiny() || count($this->table->all_index_combinations)) {
 
                 $this->code .= "\t\t\t// Insert links\n";
-                $this->code .= "\t\t\t\$return = parent::_inserts(\$infos);\n\n";
+                $this->code .= "\t\t\t\$return = parent::_insert_multi(\$infos);\n\n";
 
                 $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
                 $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
@@ -351,7 +351,7 @@
 
                 $this->code .= "\t\t\treturn \$return;\n";
             } else {
-                $this->code .= "\t\t\treturn parent::_inserts(\$infos);\n";
+                $this->code .= "\t\t\treturn parent::_insert_multi(\$infos);\n";
             }
             $this->code .= "\t\t}\n\n";
         }
@@ -503,7 +503,7 @@
             $this->code .= "\t\t}\n\n";
         }
 
-        protected function deletes() {
+        protected function delete_multi() {
 
             $used_names = [];
 
@@ -515,10 +515,10 @@
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic function deletes(array \$keys_arr) {\n\n";
+            $this->code .= "\t\tpublic function delete_multi(array \$keys_arr) {\n\n";
 
             $this->code .= "\t\t\t// Delete links\n";
-            $this->code .= "\t\t\t\$return = parent::_deletes(\$keys_arr);\n\n";
+            $this->code .= "\t\t\t\$return = parent::_delete_multi(\$keys_arr);\n\n";
 
             $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
             $this->code .= "\t\t\tparent::cache_batch_start();\n\n";

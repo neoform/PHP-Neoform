@@ -140,6 +140,185 @@
         }
 
         /**
+         * Get specific fields from a record, by keys - joined to its related foreign table - and limited
+         *
+         * @param entity_link_dao   $self the name of the DAO
+         * @param string            $pool which source engine pool to use
+         * @param string            $local_field
+         * @param entity_record_dao $foreign_dao
+         * @param array             $fieldvals
+         * @param array             $order_by
+         * @param integer           $limit
+         * @param integer           $offset
+         *
+         * @return array
+         * @throws entity_exception
+         */
+        public static function by_fields_limit(entity_link_dao $self, $pool, $local_field, entity_record_dao $foreign_dao,
+                                               array $fieldvals, array $order_by, $offset, $limit) {
+
+            $quoted_table = self::table($self::TABLE);
+
+            // FK Relation
+            $quoted_foreign_table = self::table($foreign_dao::TABLE);
+            $foreign_pk           = $foreign_dao::PRIMARY_KEY;
+
+            // WHERE
+            $where = [];
+            $vals  = [];
+
+            if ($fieldvals) {
+                foreach ($fieldvals as $field => $val) {
+                    if ($val === null) {
+                        $where[] = "\"{$quoted_table}\".\"{$field}\" IS NULL";
+                    } else {
+                        $vals[]  = $val;
+                        $where[] = "\"{$quoted_table}\".\"{$field}\" = ?";
+                    }
+                }
+            }
+
+            // LIMIT
+            if ($limit) {
+                $limit = "LIMIT {$limit}";
+            } else {
+                $limit = '';
+            }
+
+            // OFFSET
+            if ($offset !== null) {
+                $offset = "OFFSET {$offset}";
+            } else {
+                $offset = '';
+            }
+
+            // ORDER BY
+            $order = [];
+            foreach ($order_by as $field => $sort_direction) {
+                $order[] = "\"{$quoted_foreign_table}\".\"{$field}\" " . (entity_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
+            }
+            $order_by = join(', ', $order);
+
+            $rs = core::sql($pool)->prepare("
+                SELECT \"{$quoted_foreign_table}\".\"{$foreign_pk}\"
+                FROM \"{$quoted_table}\"
+                INNER JOIN \"{$quoted_foreign_table}\"
+                ON \"{$quoted_foreign_table}\".\"{$foreign_pk}\" = \"{$quoted_table}\".\"{$local_field}\"
+                " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
+                ORDER BY {$order_by}
+                {$limit} {$offset}
+            ");
+
+            $rs->execute($vals);
+
+            return $rs->fetchAll(PDO::FETCH_COLUMN, 0);
+        }
+
+        /**
+         * Get specific fields from a record, by keys - joined to its related foreign table - and limited
+         *
+         * @param entity_link_dao   $self the name of the DAO
+         * @param string            $pool which source engine pool to use
+         * @param string            $local_field
+         * @param entity_record_dao $foreign_dao
+         * @param array             $fieldvals_arr
+         * @param array             $order_by
+         * @param integer           $limit
+         * @param integer           $offset
+         *
+         * @return array
+         * @throws entity_exception
+         */
+        public static function by_fields_limit_multi(entity_link_dao $self, $pool, $local_field, entity_record_dao $foreign_dao,
+                                                     array $fieldvals_arr, array $order_by, $offset, $limit) {
+
+            $fieldvals_fields = array_keys(reset($fieldvals_arr));
+            $select_fields    = [];
+            $reverse_lookup   = [];
+            $return           = [];
+            $vals             = [];
+            $queries          = [];
+
+            // LOCAL
+            $quoted_table = self::table($self::TABLE);
+
+            // FK Relation
+            $quoted_foreign_table = self::table($foreign_dao::TABLE);
+            $foreign_pk           = $foreign_dao::PRIMARY_KEY;
+
+            // SELECT
+            foreach (array_unique(array_merge([ $local_field ], $fieldvals_fields)) as $field) {
+                $select_fields[] = "\"{$quoted_table}\".\"{$field}\"";
+            }
+
+            // LIMIT
+            if ($limit) {
+                $limit = "LIMIT {$limit}";
+            } else {
+                $limit = '';
+            }
+
+            // OFFSET
+            if ($offset !== null) {
+                $offset = "OFFSET {$offset}";
+            } else {
+                $offset = '';
+            }
+
+            // ORDER BY
+            $order = [];
+            foreach ($order_by as $field => $sort_direction) {
+                $order[] = "\"{$quoted_foreign_table}\".\"{$field}\" " . (entity_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
+            }
+            $order_by = join(', ', $order);
+
+            // QUERIES
+            $query = "
+                SELECT " . join(',', $select_fields) . "
+                FROM \"" . self::table($self::TABLE) . "\"
+                INNER JOIN \"{$quoted_foreign_table}\"
+                ON \"{$quoted_foreign_table}\".\"{$foreign_pk}\" = \"{$quoted_table}\".\"{$local_field}\"
+            ";
+            foreach ($fieldvals_arr as $k => $fieldvals) {
+                $where         = [];
+                $return[$k]    = [];
+                $hashed_valued = [];
+                foreach ($fieldvals as $field => $val) {
+                    if ($val === null) {
+                        $where[]         = "\"{$quoted_table}\".\"{$field}\" IS NULL";
+                        $hashed_valued[] = '';
+                    } else {
+                        $vals[]          = $val;
+                        $where[]         = "\"{$quoted_table}\".\"{$field}\" = ?";
+                        $hashed_valued[] = md5($val);
+                    }
+                }
+                $reverse_lookup[join(':', $hashed_valued)] = $k;
+                $queries[] = "(
+                    {$query}
+                    WHERE" . join(" AND ", $where) . "
+                    ORDER BY {$order_by}
+                    {$limit} {$offset}
+                )";
+            }
+
+            $rs = core::sql($pool)->prepare(
+                join(" UNION ", $queries)
+            );
+            $rs->execute($vals);
+
+            foreach ($rs->fetchAll() as $row) {
+                $hashed = [];
+                foreach ($fieldvals_fields as $field) {
+                    $hashed[$row[$field]] = md5($row[$field]);
+                }
+                $return[$reverse_lookup[join(':', $hashed)]][] = $row[$local_field];
+            }
+
+            return $return;
+        }
+
+        /**
          * Get a count based on key inputs
          *
          * @param entity_record_dao $dao
@@ -222,7 +401,6 @@
          * @param array           $info
          * @param bool            $replace
          *
-         * @return mixed
          * @throws entity_exception
          */
         public static function insert(entity_link_dao $self, $pool, array $info, $replace) {
@@ -244,7 +422,10 @@
                 ( " . join(',', array_fill(0, count($info), '?')) . " )
             ");
 
-            return $insert->execute(array_values($info));
+            if (! $insert->execute(array_values($info))) {
+                $error = core::sql($pool)->errorInfo();
+                throw new entity_exception("Insert failed - {$error[0]}: {$error[2]}");
+            }
         }
 
         /**
@@ -255,7 +436,6 @@
          * @param array           $infos
          * @param bool            $replace
          *
-         * @return bool
          * @throws entity_exception
          */
         public static function insert_multi(entity_link_dao $self, $pool, array $infos, $replace) {
@@ -267,8 +447,9 @@
             $insert_fields = [];
             $info          = current($infos);
             $sql           = core::sql($pool);
+            $multi         = count($infos) > 1;
 
-            if (count($infos) > 1) {
+            if ($multi) {
                 $sql->beginTransaction();
             }
 
@@ -285,15 +466,15 @@
 
             foreach ($infos as $info) {
                 if (! $insert->execute(array_values($info))) {
+                    $error = $sql->errorInfo();
                     $sql->rollback();
-                    return false;
+                    throw new entity_exception("Insert multi failed - {$error[0]}: {$error[2]}");
                 }
             }
 
-            if (count($infos) > 1) {
-                return $sql->commit();
-            } else {
-                return true;
+            if ($multi && ! $sql->commit()) {
+                $error = $sql->errorInfo();
+                throw new entity_exception("Insert multi failed - {$error[0]}: {$error[2]}");
             }
         }
 
@@ -305,7 +486,7 @@
          * @param array           $new_info
          * @param array           $where
          *
-         * @return mixed
+         * @throws entity_exception
          */
         public static function update(entity_link_dao $self, $pool, array $new_info, array $where) {
             $vals          = [];
@@ -321,18 +502,19 @@
                 if ($v === null) {
                     $where_fields[] = "\"{$k}\" IS NULL";
                 } else {
-                    $vals[] = $v;
+                    $vals[]         = $v;
                     $where_fields[] = "\"{$k}\" = ?";
                 }
             }
 
-            $update = core::sql($pool)->prepare("
+            if (! core::sql($pool)->prepare("
                 UPDATE \"" . self::table($self::TABLE) . "\"
                 SET " . join(", \n", $update_fields) . "
                 WHERE " . join(" AND \n", $where_fields) . "
-            ");
-
-            return $update->execute($vals);
+            ")->execute($vals)) {
+                $error = core::sql($pool)->errorInfo();
+                throw new entity_exception("Update failed - {$error[0]}: {$error[2]}");
+            }
         }
 
         /**
@@ -342,7 +524,7 @@
          * @param string          $pool which source engine pool to use
          * @param array           $fieldvals
          *
-         * @return mixed
+         * @throws entity_exception
          */
         public static function delete(entity_link_dao $self, $pool, array $fieldvals) {
             $where = [];
@@ -357,12 +539,13 @@
                 }
             }
 
-            $delete = core::sql($pool)->prepare("
+            if (! core::sql($pool)->prepare("
                 DELETE FROM \"" . self::table($self::TABLE) . "\"
                 WHERE " . join(" AND ", $where) . "
-            ");
-
-            return $delete->execute($vals);
+            ")->execute($vals)) {
+                $error = core::sql($pool)->errorInfo();
+                throw new entity_exception("Delete failed - {$error[0]}: {$error[2]}");
+            }
         }
 
         /**
@@ -372,7 +555,7 @@
          * @param string          $pool which source engine pool to use
          * @param array           $fieldvals_arr
          *
-         * @return mixed
+         * @throws entity_exception
          */
         public static function delete_multi(entity_link_dao $self, $pool, array $fieldvals_arr) {
             $vals  = [];
@@ -391,11 +574,12 @@
                 $where[] = "(" . join(" AND ", $w) . ")";
             }
 
-            $delete = core::sql($pool)->prepare("
+            if (! core::sql($pool)->prepare("
                 DELETE FROM \"" . self::table($self::TABLE) . "\"
                 WHERE " . join(" OR ", $where) . "
-            ");
-
-            return $delete->execute($vals);
+            ")->execute($vals)) {
+                $error = core::sql($pool)->errorInfo();
+                throw new entity_exception("Delete multi failed - {$error[0]}: {$error[2]}");
+            }
         }
     }

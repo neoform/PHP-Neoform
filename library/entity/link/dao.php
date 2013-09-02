@@ -360,14 +360,14 @@
          */
         protected function _insert(array $info, $replace=false) {
             $source_driver = "entity_link_driver_{$this->source_engine}";
-            $info = $source_driver::insert(
-                $this,
-                $this->source_engine_pool_write,
-                $info,
-                $replace
-            );
-
-            if (! $info) {
+            try {
+                $info = $source_driver::insert(
+                    $this,
+                    $this->source_engine_pool_write,
+                    $info,
+                    $replace
+                );
+            } catch (entity_exception $e) {
                 return false;
             }
 
@@ -392,9 +392,9 @@
             }
 
             $source_driver = "entity_link_driver_{$this->source_engine}";
-            $infos = $source_driver::insert_multi($this, $this->source_engine_pool_write, $infos, $replace);
-
-            if (! $infos) {
+            try {
+                $infos = $source_driver::insert_multi($this, $this->source_engine_pool_write, $infos, $replace);
+            } catch (entity_exception $e) {
                 return false;
             }
 
@@ -409,14 +409,22 @@
          * @param array $new_info the new info to be put into the model
          * @param array $where    return a model of the new record
          *
-         * @return boolean|null result of the PDO::execute()
+         * @return boolean
          * @throws entity_exception
          */
         protected function _update(array $new_info, array $where) {
             if ($new_info) {
                 $source_driver = "entity_link_driver_{$this->source_engine}";
-                return $source_driver::update($this, $this->source_engine_pool_write, $new_info, $where);
+                try {
+                    $source_driver::update($this, $this->source_engine_pool_write, $new_info, $where);
+                } catch (entity_exception $e) {
+                    return false;
+                }
+
+                return true;
             }
+
+            return true;
         }
 
         /**
@@ -429,10 +437,11 @@
          */
         protected function _delete(array $keys) {
             $source_driver = "entity_link_driver_{$this->source_engine}";
-            if (! $source_driver::delete($this, $this->source_engine_pool_write, $keys)) {
+            try {
+                $source_driver::delete($this, $this->source_engine_pool_write, $keys);
+            } catch (entity_exception $e) {
                 return false;
             }
-
 
 
 
@@ -451,7 +460,9 @@
          */
         protected function _delete_multi(array $keys_arr) {
             $source_driver = "entity_link_driver_{$this->source_engine}";
-            if (! $source_driver::delete_multi($this, $this->source_engine_pool_write, $keys_arr)) {
+            try {
+                $source_driver::delete_multi($this, $this->source_engine_pool_write, $keys_arr);
+            } catch (entity_exception $e) {
                 return false;
             }
 

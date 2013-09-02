@@ -406,7 +406,7 @@
          * @param array           $info
          * @param bool            $replace
          *
-         * @return mixed
+         * @throws entity_exception
          */
         public static function insert(entity_link_dao $self, $pool, array $info, $replace) {
 
@@ -423,7 +423,10 @@
                 ( " . join(',', array_fill(0, count($info), '?')) . " )
             ");
 
-            return $insert->execute(array_values($info));
+            if (! $insert->execute(array_values($info))) {
+                $error = core::sql($pool)->errorInfo();
+                throw new entity_exception("Insert failed - {$error[0]}: {$error[2]}");
+            }
         }
 
         /**
@@ -434,14 +437,16 @@
          * @param array           $infos
          * @param bool            $replace
          *
-         * @return bool
+         * @throws entity_exception
          */
         public static function insert_multi(entity_link_dao $self, $pool, array $infos, $replace) {
             $insert_fields = [];
             $info          = current($infos);
             $sql           = core::sql($pool);
+            $multi         = count($infos) > 1;
 
-            if (count($infos) > 1) {
+
+            if ($multi) {
                 $sql->beginTransaction();
             }
 
@@ -458,15 +463,15 @@
 
             foreach ($infos as $info) {
                 if (! $insert->execute(array_values($info))) {
+                    $error = $sql->errorInfo();
                     $sql->rollback();
-                    return false;
+                    throw new entity_exception("Insert multi failed - {$error[0]}: {$error[2]}");
                 }
             }
 
-            if (count($infos) > 1) {
-                return $sql->commit();
-            } else {
-                return true;
+            if ($multi && ! $sql->commit()) {
+                $error = $sql->errorInfo();
+                throw new entity_exception("Insert multi failed - {$error[0]}: {$error[2]}");
             }
         }
 
@@ -478,7 +483,7 @@
          * @param array           $new_info
          * @param array           $where
          *
-         * @return mixed
+         * @throws entity_exception
          */
         public static function update(entity_link_dao $self, $pool, array $new_info, array $where) {
             $vals          = [];
@@ -499,13 +504,14 @@
                 }
             }
 
-            $update = core::sql($pool)->prepare("
+            if (! core::sql($pool)->prepare("
                 UPDATE `" . self::table($self::TABLE) . "`
                 SET " . join(", \n", $update_fields) . "
                 WHERE " . join(" AND \n", $where_fields) . "
-            ");
-
-            return $update->execute($vals);
+            ")->execute($vals)) {
+                $error = core::sql($pool)->errorInfo();
+                throw new entity_exception("Update failed - {$error[0]}: {$error[2]}");
+            }
         }
 
         /**
@@ -515,7 +521,7 @@
          * @param string          $pool which source engine pool to use
          * @param array           $fieldvals
          *
-         * @return mixed
+         * @throws entity_exception
          */
         public static function delete(entity_link_dao $self, $pool, array $fieldvals) {
             $where = [];
@@ -530,12 +536,13 @@
                 }
             }
 
-            $delete = core::sql($pool)->prepare("
+            if (! core::sql($pool)->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE " . join(" AND ", $where) . "
-            ");
-
-            return $delete->execute($vals);
+            ")->execute($vals)) {
+                $error = core::sql($pool)->errorInfo();
+                throw new entity_exception("Delete failed - {$error[0]}: {$error[2]}");
+            }
         }
 
         /**
@@ -545,7 +552,7 @@
          * @param string          $pool which source engine pool to use
          * @param array           $fieldvals_arr
          *
-         * @return mixed
+         * @throws entity_exception
          */
         public static function delete_multi(entity_link_dao $self, $pool, array $fieldvals_arr) {
             $vals  = [];
@@ -564,11 +571,12 @@
                 $where[] = "(" . join(" AND ", $w) . ")";
             }
 
-            $delete = core::sql($pool)->prepare("
+            if (! core::sql($pool)->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE " . join(" OR ", $where) . "
-            ");
-
-            return $delete->execute($vals);
+            ")->execute($vals)) {
+                $error = core::sql($pool)->errorInfo();
+                throw new entity_exception("Delete multi failed - {$error[0]}: {$error[2]}");
+            }
         }
     }

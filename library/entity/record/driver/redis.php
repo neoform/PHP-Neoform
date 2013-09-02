@@ -6,8 +6,8 @@
          * Get full record by primary key
          *
          * @param entity_record_dao $self the name of the DAO
-         * @param string     $pool which source engine pool to use
-         * @param int|string $pk
+         * @param string            $pool which source engine pool to use
+         * @param integer|string    $pk
          *
          * @return mixed
          * @throws entity_exception
@@ -32,8 +32,8 @@
          * Get full records by primary key
          *
          * @param entity_record_dao $self the name of the DAO
-         * @param string     $pool which source engine pool to use
-         * @param array      $pks
+         * @param string            $pool which source engine pool to use
+         * @param array             $pks
          *
          * @return array
          */
@@ -76,10 +76,10 @@
          * @param string            $pool
          * @param array             $keys
          *
-         * @throws redis_exception
+         * @throws entity_exception
          */
         public static function count(entity_record_dao $self, $pool, array $keys=null) {
-            throw new redis_exception('Count queries are not supported by redis driver.');
+            throw new entity_exception('Count queries are not supported by redis driver.');
         }
 
         /**
@@ -89,52 +89,52 @@
          * @param string            $pool
          * @param array             $fieldvals_arr
          *
-         * @throws redis_exception
+         * @throws entity_exception
          */
         public static function count_multi(entity_record_dao $self, $pool, array $fieldvals_arr) {
-            throw new redis_exception('Count queries are not supported by redis driver.');
+            throw new entity_exception('Count queries are not supported by redis driver.');
         }
 
         /**
          * Get all records in the table
          *
          * @param entity_record_dao $self the name of the DAO
-         * @param string     $pool which source engine pool to use
-         * @param int|string $pk
-         * @param array      $keys
+         * @param string            $pool which source engine pool to use
+         * @param int|string        $pk
+         * @param array             $keys
          *
-         * @throws redis_exception
+         * @throws entity_exception
          */
         public static function all(entity_record_dao $self, $pool, $pk, array $keys=null) {
-            throw new redis_exception('Select all queries are not supported by redis driver.');
+            throw new entity_exception('Select all queries are not supported by redis driver.');
         }
 
         /**
          * Get record primary key by fields
          *
          * @param entity_record_dao $self the name of the DAO
-         * @param string     $pool which source engine pool to use
-         * @param array      $keys
-         * @param int|string $pk
+         * @param string            $pool which source engine pool to use
+         * @param array             $keys
+         * @param int|string        $pk
          *
-         * @throws redis_exception
+         * @throws entity_exception
          */
         public static function by_fields(entity_record_dao $self, $pool, array $keys, $pk) {
-            throw new redis_exception('By fields queries are not supported by redis driver.');
+            throw new entity_exception('By fields queries are not supported by redis driver.');
         }
 
         /**
          * Get multiple record primary keys by fields
          *
          * @param entity_record_dao $self the name of the DAO
-         * @param string     $pool which source engine pool to use
-         * @param array      $keys_arr
-         * @param int|string $pk
+         * @param string            $pool which source engine pool to use
+         * @param array             $keys_arr
+         * @param int|string        $pk
          *
-         * @throws redis_exception
+         * @throws entity_exception
          */
         public static function by_fields_multi(entity_record_dao $self, $pool, array $keys_arr, $pk) {
-            throw new redis_exception('By fields multi queries are not supported by redis driver.');
+            throw new entity_exception('By fields multi queries are not supported by redis driver.');
         }
 
         /**
@@ -148,10 +148,10 @@
          * @param integer|null      $offset
          * @param integer           $limit
          *
-         * @throws redis_exception
+         * @throws entity_exception
          */
         public static function by_fields_offset(entity_record_dao $self, $pool, array $keys, $pk, array $order_by, $offset, $limit) {
-            throw new redis_exception('By fields offset queries are not supported by redis driver.');
+            throw new entity_exception('By fields offset queries are not supported by redis driver.');
         }
 
         /**
@@ -165,10 +165,10 @@
          * @param integer|null      $offset
          * @param integer           $limit
          *
-         * @throws redis_exception
+         * @throws entity_exception
          */
         public static function by_fields_offset_multi(entity_record_dao $self, $pool, array $keys_arr, $pk, array $order_by, $offset, $limit) {
-            throw new redis_exception('By fields multi offset queries are not supported by redis driver.');
+            throw new entity_exception('By fields multi offset queries are not supported by redis driver.');
         }
 
         /**
@@ -181,12 +181,17 @@
          * @param bool       $replace
          *
          * @return array
+         * @throws entity_exception
          */
         public static function insert(entity_record_dao $self, $pool, array $info, $autoincrement, $replace) {
-            core::redis($pool)->set(
+            if (! core::redis($pool)->set(
                 '_db_:' . $self::TABLE . ':' . $info[$self::PRIMARY_KEY],
                 $info
-            );
+            )) {
+                $message = core::redis($pool)->getLastError();
+                core::redis($pool)->clearLastError();
+                throw new entity_exception("Insert failed - {$message}");
+            }
 
             return $info;
         }
@@ -195,13 +200,14 @@
          * Insert multiple records
          *
          * @param entity_record_dao $self the name of the DAO
-         * @param string     $pool which source engine pool to use
-         * @param array      $infos
-         * @param bool       $keys_match
-         * @param bool       $autoincrement
-         * @param bool       $replace
+         * @param string            $pool which source engine pool to use
+         * @param array             $infos
+         * @param bool              $keys_match
+         * @param bool              $autoincrement
+         * @param bool              $replace
          *
          * @return array
+         * @throws entity_exception
          */
         public static function insert_multi(entity_record_dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace) {
 
@@ -210,7 +216,11 @@
                 $inserts['_db_:' . $self::TABLE . ':' . $info[$self::PRIMARY_KEY]] = $info;
             }
 
-            core::redis($pool)->mset($inserts);
+            if (! core::redis($pool)->mset($inserts)) {
+                $message = core::redis($pool)->getLastError();
+                core::redis($pool)->clearLastError();
+                throw new entity_exception("Insert multi failed - {$message}");
+            }
 
             return $infos;
         }
@@ -219,37 +229,58 @@
          * Update a record
          *
          * @param entity_record_dao   $self the name of the DAO
-         * @param string       $pool which source engine pool to use
-         * @param int|string   $pk
+         * @param string              $pool which source engine pool to use
+         * @param int|string          $pk
          * @param entity_record_model $model
-         * @param array        $info
+         * @param array               $info
+         *
+         * @return bool
+         * @throws entity_exception
          */
         public static function update(entity_record_dao $self, $pool, $pk, entity_record_model $model, array $info) {
-            return core::redis($pool)->set(
+            if (! core::redis($pool)->set(
                 '_db_:' . $self::TABLE . ":{$model->$pk}",
                 array_merge($model->export(), $info)
-            );
+            )) {
+                $message = core::redis($pool)->getLastError();
+                core::redis($pool)->clearLastError();
+                throw new entity_exception("Update failed - {$message}");
+            }
+
+            return true;
         }
 
         /**
          * Delete a record
          *
          * @param entity_record_dao   $self the name of the DAO
-         * @param string       $pool which source engine pool to use
-         * @param int|string   $pk
+         * @param string              $pool which source engine pool to use
+         * @param int|string          $pk
          * @param entity_record_model $model
+         *
+         * @return bool
+         * @throws entity_exception
          */
         public static function delete(entity_record_dao $self, $pool, $pk, entity_record_model $model) {
-            return core::redis($pool)->delete('_db_:' . $self::TABLE . ":{$model->$pk}");
+            if (! core::redis($pool)->delete('_db_:' . $self::TABLE . ":{$model->$pk}")) {
+                $message = core::redis($pool)->getLastError();
+                core::redis($pool)->clearLastError();
+                throw new entity_exception("Delete failed - {$message}");
+            }
+
+            return true;
         }
 
         /**
          * Delete multiple records
          *
          * @param entity_record_dao        $self the name of the DAO
-         * @param string            $pool which source engine pool to use
-         * @param int|string        $pk
+         * @param string                   $pool which source engine pool to use
+         * @param int|string               $pk
          * @param entity_record_collection $collection
+         *
+         * @return bool
+         * @throws entity_exception
          */
         public static function delete_multi(entity_record_dao $self, $pool, $pk, entity_record_collection $collection) {
             $keys = [];
@@ -257,6 +288,12 @@
                 $keys[] = '_db_:' . $self::TABLE . ":{$model->$pk}";
             }
 
-            return core::redis($pool)->delete($keys);
+            if (! core::redis($pool)->delete($keys)) {
+                $message = core::redis($pool)->getLastError();
+                core::redis($pool)->clearLastError();
+                throw new entity_exception("Delete failed - {$message}");
+            }
+
+            return true;
         }
     }

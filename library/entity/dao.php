@@ -35,11 +35,11 @@
         // Counts
         const COUNT = 'count';
 
-        // List key - Always clear these keys on every change
-        const ALWAYS = 'always';
-
-        // Meta cache key
+        // Meta cache key - this is a parent to all meta data lists
         const META = 'meta';
+
+        // Special key - it's a subset of 'meta' - containing cache keys that must always be destroyed
+        const ALWAYS = 'meta:always';
 
         public function __construct(array $config) {
             $this->source_engine                = $config['source_engine'];
@@ -189,7 +189,7 @@
          * @return string
          */
         final protected static function _build_key_list_field($field_name) {
-            return static::ENTITY_NAME . ':' . self::META . ":field[{$field_name}]";
+            return static::ENTITY_NAME . ':' . self::ALWAYS . "[{$field_name}]";
         }
 
         /**
@@ -237,7 +237,7 @@
          */
         final public function _set_meta_cache($cache_key, array $fieldvals=null, array $fields=null) {
 
-            cache_lib::pipeline_start($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
+            entity_meta_dao::pipeline_start($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
 
             /**
              * Build lists of keys for deletion - when it's time to delete/modify the record
@@ -256,7 +256,7 @@
                     $field_list_key = self::_build_key_list_field($field);
 
                     // Store the cache key in $field_list_key list
-                    cache_lib::list_add(
+                    entity_meta_dao::list_add(
                         $this->cache_meta_engine,
                         $this->cache_meta_engine_pool_write,
                         $field_list_key,
@@ -264,7 +264,7 @@
                     );
 
                     // Add the $field_list_key key to the field list key - if it doesn't already exist
-                    cache_lib::list_add(
+                    entity_meta_dao::list_add(
                         $this->cache_meta_engine,
                         $this->cache_meta_engine_pool_write,
                         self::_build_key_list($field),
@@ -302,7 +302,7 @@
                         }
 
                         // Store the cache key in each $list_keys list
-                        cache_lib::list_add(
+                        entity_meta_dao::list_add(
                             $this->cache_meta_engine,
                             $this->cache_meta_engine_pool_write,
                             $list_keys,
@@ -310,7 +310,7 @@
                         );
 
                         // Add the $list_key key to field list key - if it doesn't already exist
-                        cache_lib::list_add(
+                        entity_meta_dao::list_add(
                             $this->cache_meta_engine,
                             $this->cache_meta_engine_pool_write,
                             self::_build_key_list($field),
@@ -322,7 +322,7 @@
                         $list_key = self::_build_key_list($field, $value);
 
                         // Store the cache key in the $list_key list
-                        cache_lib::list_add(
+                        entity_meta_dao::list_add(
                             $this->cache_meta_engine,
                             $this->cache_meta_engine_pool_write,
                             $list_key,
@@ -330,7 +330,7 @@
                         );
 
                         // Add the $list_key key to field list key - if it doesn't already exist
-                        cache_lib::list_add(
+                        entity_meta_dao::list_add(
                             $this->cache_meta_engine,
                             $this->cache_meta_engine_pool_write,
                             self::_build_key_list($field),
@@ -343,7 +343,7 @@
                  * When no fieldvals (AKA the WHERE part of a query) are present, then add this cache key to the
                  * "ALWAYS" key (which clears the cache keys on every write).
                  */
-                cache_lib::list_add(
+                entity_meta_dao::list_add(
                     $this->cache_meta_engine,
                     $this->cache_meta_engine_pool_write,
                     static::ENTITY_NAME . ':' . self::ALWAYS,
@@ -351,7 +351,7 @@
                 );
             }
 
-            cache_lib::pipeline_execute($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
+            entity_meta_dao::pipeline_execute($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
         }
 
         /**
@@ -362,7 +362,7 @@
          */
         final public function _set_meta_cache_multi(array $cache_keys, array $fields=null) {
 
-            cache_lib::pipeline_start($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
+            entity_meta_dao::pipeline_start($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
 
             /**
              * Build lists of keys for deletion - when it's time to delete/modify the record
@@ -381,7 +381,7 @@
                     $field_list_key = self::_build_key_list_field($field);
 
                     // Store the cache key in $field_list_key list
-                    cache_lib::list_add(
+                    entity_meta_dao::list_add(
                         $this->cache_meta_engine,
                         $this->cache_meta_engine_pool_write,
                         $field_list_key,
@@ -389,7 +389,7 @@
                     );
 
                     // Add the $field_list_key key to the field list key - if it doesn't already exist
-                    cache_lib::list_add(
+                    entity_meta_dao::list_add(
                         $this->cache_meta_engine,
                         $this->cache_meta_engine_pool_write,
                         self::_build_key_list($field),
@@ -414,7 +414,7 @@
              * need to be destroyed (along with all 'id' cached result sets).
              */
             foreach ($cache_keys as $cache_key => $fieldvals) {
-                if ($fieldvals) {
+                if (is_array($fieldvals) && $fieldvals) {
 
                     // @todo bulk operations are better - $list_keys array containing cache_key(s) would be better
                     // @todo thereby doing fewer calls to list_add() (and potentially being able to get rid of the pipelining
@@ -428,7 +428,7 @@
                             }
 
                             // Store the cache key in each $list_keys list
-                            cache_lib::list_add(
+                            entity_meta_dao::list_add(
                                 $this->cache_meta_engine,
                                 $this->cache_meta_engine_pool_write,
                                 $list_keys,
@@ -436,7 +436,7 @@
                             );
 
                             // Add the $list_key key to field list key - if it doesn't already exist
-                            cache_lib::list_add(
+                            entity_meta_dao::list_add(
                                 $this->cache_meta_engine,
                                 $this->cache_meta_engine_pool_write,
                                 self::_build_key_list($field),
@@ -448,7 +448,7 @@
                             $list_key = self::_build_key_list($field, $value);
 
                             // Store the cache key in the $list_key list
-                            cache_lib::list_add(
+                            entity_meta_dao::list_add(
                                 $this->cache_meta_engine,
                                 $this->cache_meta_engine_pool_write,
                                 $list_key,
@@ -456,7 +456,7 @@
                             );
 
                             // Add the $list_key key to field list key - if it doesn't already exist
-                            cache_lib::list_add(
+                            entity_meta_dao::list_add(
                                 $this->cache_meta_engine,
                                 $this->cache_meta_engine_pool_write,
                                 self::_build_key_list($field),
@@ -469,7 +469,7 @@
                      * When no fieldvals (AKA the WHERE part of a query) are present, then add this cache key to the
                      * "ALWAYS" key (which clears the cache keys on every write).
                      */
-                    cache_lib::list_add(
+                    entity_meta_dao::list_add(
                         $this->cache_meta_engine,
                         $this->cache_meta_engine_pool_write,
                         static::ENTITY_NAME . ':' . self::ALWAYS,
@@ -478,7 +478,7 @@
                 }
             }
 
-            cache_lib::pipeline_execute($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
+            entity_meta_dao::pipeline_execute($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
         }
 
         /**
@@ -487,13 +487,12 @@
          * Do not wrap a batch execution around this function
          *
          * @param array $fieldvals list of fields/values
-         * @param array $list_keys list of keys to start off with (eg, key ALWAYS)
          */
-        final protected function _delete_meta_cache(array $fieldvals, $list_keys=[]) {
+        final protected function _delete_meta_cache(array $fieldvals) {
             $field_list_keys = [];
 
             // Always delete the stuff in the always list
-            $list_keys[] = static::ENTITY_NAME . ':' . self::ALWAYS;
+            $list_keys = [ static::ENTITY_NAME . ':' . self::ALWAYS ];
 
             foreach ($fieldvals as $field => $value) {
 
@@ -517,7 +516,7 @@
              * If any $field_list_keys keys need deleting (eg, meta[id]), get all list keys from them (eg, meta[id]:5)
              */
             if ($field_list_keys) {
-                $arr = cache_lib::list_get_union(
+                $arr = entity_meta_dao::list_get_union(
                     $this->cache_meta_engine,
                     $this->cache_meta_engine_pool_write,
                     $field_list_keys
@@ -534,7 +533,7 @@
              * Get a union of all field/value list keys - combined
              * eg, meta[id]:555 + meta:field[id] + meta[email]:aaa@aaa.com + meta:field[email]
              */
-            $cache_keys = cache_lib::list_get_union(
+            $cache_keys = entity_meta_dao::list_get_union(
                 $this->cache_meta_engine,
                 $this->cache_meta_engine_pool_write,
                 $list_keys
@@ -543,7 +542,7 @@
             cache_lib::pipeline_start($this->cache_engine, $this->cache_engine_pool_write);
 
             if ($this->cache_meta_engine !== $this->cache_engine || $this->cache_meta_engine_pool_write !== $this->cache_engine_pool_write) {
-                cache_lib::pipeline_start($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
+                entity_meta_dao::pipeline_start($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
             }
 
             if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
@@ -596,7 +595,7 @@
             }
 
             if ($this->cache_meta_engine !== $this->cache_engine || $this->cache_meta_engine_pool_write !== $this->cache_engine_pool_write) {
-                cache_lib::pipeline_execute($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
+                entity_meta_dao::pipeline_execute($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
             }
 
             cache_lib::pipeline_execute($this->cache_engine, $this->cache_engine_pool_write);
@@ -608,10 +607,10 @@
          * Do not wrap a batch execution around this function
          *
          * @param array $fieldvals_arr array containing lists of fields/values
-         * @param array $list_keys     list of keys to start off with (eg, key ALWAYS)
          */
-        final protected function _delete_meta_cache_multi(array $fieldvals_arr, $list_keys=[]) {
+        final protected function _delete_meta_cache_multi(array $fieldvals_arr) {
             $field_list_keys = [];
+            $list_keys       = [ static::ENTITY_NAME . ':' . self::ALWAYS ];
 
             foreach ($fieldvals_arr as $fieldvals) {
                 foreach ($fieldvals as $field => $value) {
@@ -637,7 +636,7 @@
              * If any $field_list_keys keys need deleting (eg, meta[id]), get all list keys from them (eg, meta[id]:5)
              */
             if ($field_list_keys) {
-                $arr = cache_lib::list_get_union(
+                $arr = entity_meta_dao::list_get_union(
                     $this->cache_meta_engine,
                     $this->cache_meta_engine_pool_write,
                     $field_list_keys
@@ -654,7 +653,7 @@
              * Get a union of all field/value list keys - combined
              * eg, meta[id]:555 + meta:field[id] + meta[email]:aaa@aaa.com + meta::field[email]
              */
-            $cache_keys = cache_lib::list_get_union(
+            $cache_keys = entity_meta_dao::list_get_union(
                 $this->cache_meta_engine,
                 $this->cache_meta_engine_pool_write,
                 $list_keys
@@ -663,7 +662,7 @@
             cache_lib::pipeline_start($this->cache_engine, $this->cache_engine_pool_write);
 
             if ($this->cache_meta_engine !== $this->cache_engine || $this->cache_meta_engine_pool_write !== $this->cache_engine_pool_write) {
-                cache_lib::pipeline_start($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
+                entity_meta_dao::pipeline_start($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
             }
 
             if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
@@ -716,7 +715,7 @@
             }
 
             if ($this->cache_meta_engine !== $this->cache_engine || $this->cache_meta_engine_pool_write !== $this->cache_engine_pool_write) {
-                cache_lib::pipeline_execute($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
+                entity_meta_dao::pipeline_execute($this->cache_meta_engine, $this->cache_meta_engine_pool_write);
             }
 
             cache_lib::pipeline_execute($this->cache_engine, $this->cache_engine_pool_write);

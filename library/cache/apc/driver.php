@@ -38,56 +38,6 @@
         }
 
         /**
-         * Create a list and/or Add a value to a list
-         *
-         * @param string       $pool
-         * @param string|array $key
-         * @param mixed        $value
-         *
-         * @throws cache_apc_exception
-         */
-        public static function list_add($pool, $key, $value) {
-            throw new cache_apc_exception('List commands are not supported by APC');
-        }
-
-        /**
-         * Get all members of a list or get matching members of a list
-         *
-         * @param string $pool
-         * @param string $key
-         *
-         * @throws cache_apc_exception
-         */
-        public static function list_get($pool, $key) {
-            throw new cache_apc_exception('List commands are not supported by APC');
-        }
-
-        /**
-         * Get all members of multiple list or get matching members of multiple lists
-         *
-         * @param string $pool
-         * @param array  $keys
-         *
-         * @throws cache_apc_exception
-         */
-        public static function list_get_union($pool, array $keys) {
-            throw new cache_apc_exception('List commands are not supported by APC');
-        }
-
-        /**
-         * Remove values from a list
-         *
-         * @param string $pool
-         * @param string $key
-         * @param mixed  $remove_key
-         *
-         * @throws cache_apc_exception
-         */
-        public static function list_remove($pool, $key, $remove_key) {
-            throw new cache_apc_exception('List commands are not supported by APC');
-        }
-
-        /**
          * Increment the value of a cached entry (only works if the value is an int)
          *
          * @param string  $pool

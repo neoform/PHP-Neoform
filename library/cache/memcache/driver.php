@@ -57,56 +57,6 @@
         }
 
         /**
-         * Create a list and/or Add a value to a list
-         *
-         * @param string       $pool
-         * @param string|array $key
-         * @param mixed        $value
-         *
-         * @throws cache_memcache_exception
-         */
-        public static function list_add($pool, $key, $value) {
-            throw new cache_memcache_exception('List commands are not supported by memcache');
-        }
-
-        /**
-         * Get all members of a list or get matching members of a list
-         *
-         * @param string $pool
-         * @param string $key
-         *
-         * @throws cache_memcache_exception
-         */
-        public static function list_get($pool, $key) {
-            throw new cache_memcache_exception('List commands are not supported by memcache');
-        }
-
-        /**
-         * Get all members of multiple list or get matching members of multiple lists
-         *
-         * @param string $pool
-         * @param array  $keys
-         *
-         * @throws cache_memcache_exception
-         */
-        public static function list_get_union($pool, array $keys) {
-            throw new cache_memcache_exception('List commands are not supported by memcache');
-        }
-
-        /**
-         * Remove values from a list
-         *
-         * @param string $pool
-         * @param string $key
-         * @param mixed  $remove_key
-         *
-         * @throws cache_memcache_exception
-         */
-        public static function list_remove($pool, $key, $remove_key) {
-            throw new cache_memcache_exception('List commands are not supported by memcache');
-        }
-
-        /**
          * Gets cached data.
          *  if record does exist, an array with a single element, containing the data.
          *  returns null if record does not exist

@@ -605,7 +605,7 @@
 
             $info[$pk] = $model->$pk;
 
-            if (core::sql($pool)->prepare("
+            if (! core::sql($pool)->prepare("
                 UPDATE `" . self::table($self::TABLE) . "`
                 SET " . join(", \n", $update_fields) . "
                 WHERE `{$pk}` = :{$pk}

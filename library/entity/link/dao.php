@@ -58,7 +58,7 @@
          * @throws entity_exception
          */
         final protected function _by_fields($cache_key_name, array $select_fields, array $fieldvals, array $order_by=null,
-                                           $offset=null,  $limit=null) {
+                                           $offset=null, $limit=null) {
 
             if ($order_by) {
                 $select_field = reset($select_fields);
@@ -85,7 +85,7 @@
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
                     $cache_key,
-                    function() use ($select_field, $fieldvals, $foreign_dao, $order_by, $limit, $offset) {
+                    function() use ($select_field, $fieldvals, $foreign_dao, $order_by, $offset, $limit) {
                         $source_driver = "entity_link_driver_{$this->source_engine}";
                         return $source_driver::by_fields_limit(
                             $this,
@@ -94,8 +94,8 @@
                             $foreign_dao,
                             $fieldvals,
                             $order_by,
-                            $limit,
-                            $offset
+                            $offset,
+                            $limit
                         );
                     },
                     function($cache_key, $results) use ($select_field, $fieldvals, $order_by, $foreign_dao) {
@@ -198,7 +198,7 @@
                             $fieldvals
                         );
                     },
-                    function($fieldvals_arr) use ($select_field, $foreign_dao, $order_by, $limit, $offset) {
+                    function($fieldvals_arr) use ($select_field, $foreign_dao, $order_by, $offset, $limit) {
                         $source_driver = "entity_link_driver_{$this->source_engine}";
                         return $source_driver::by_fields_limit_multi(
                             $this,

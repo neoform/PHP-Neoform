@@ -670,7 +670,7 @@
                 );
             }
 
-            $this->cache_batch_execute($this->cache_engine, $this->cache_engine_pool_write);
+            cache_lib::pipeline_execute($this->cache_engine, $this->cache_engine_pool_write);
 
             // Destroy cache based on the fields that were changed - do not wrap this function in a batch execution
             self::_delete_meta_cache(

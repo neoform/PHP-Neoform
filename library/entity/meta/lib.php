@@ -1,6 +1,6 @@
 <?php
 
-    class entity_meta_dao {
+    class entity_meta_lib {
 
         /**
          * Activate a pipelined (batch) query
@@ -9,10 +9,8 @@
          * @param string $engine_pool
          */
         public static function pipeline_start($engine, $engine_pool) {
-            if ($engine) {
-                $engine_driver = "entity_meta_driver_{$engine}";
-                $engine_driver::pipeline_start($engine_pool);
-            }
+            $engine_driver = "entity_meta_driver_{$engine}";
+            $engine_driver::pipeline_start($engine_pool);
         }
 
         /**
@@ -24,10 +22,8 @@
          * @return mixed result of batch operation
          */
         public static function pipeline_execute($engine, $engine_pool) {
-            if ($engine) {
-                $engine_driver = "entity_meta_driver_{$engine}";
-                return $engine_driver::pipeline_execute($engine_pool);
-            }
+            $engine_driver = "entity_meta_driver_{$engine}";
+            return $engine_driver::pipeline_execute($engine_pool);
         }
 
         /**

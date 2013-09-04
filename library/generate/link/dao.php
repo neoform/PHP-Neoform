@@ -70,6 +70,9 @@
                 $this->code .= "\t\t * Get " . self::ander($select_fields) . " by " . self::ander($where_fields) . "\n";
                 $this->code .= "\t\t *\n";
                 $this->code .= "\t\t" . join("\n\t\t", $params) . "\n";
+                $this->code .= "\t\t * @param array|null \$order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)\n";
+                $this->code .= "\t\t * @param integer|null \$offset get rows starting at this offset\n";
+                $this->code .= "\t\t * @param integer|null \$limit max number of rows to return\n";
                 $this->code .= "\t\t *\n";
                 $this->code .= "\t\t * @return array result set containing " . self::ander($select_fields) . "\n";
                 $this->code .= "\t\t */\n";
@@ -81,7 +84,7 @@
                     $function_params[] = '$' . $field->name;
                 }
 
-                $this->code .= "\t\tpublic function by_" . $name . "(" . join(', ', $function_params) . ") {\n";
+                $this->code .= "\t\tpublic function by_" . $name . "(" . join(', ', $function_params) . ", array \$order_by=null, \$offset=null, \$limit=null) {\n";
                 $this->code .= "\t\t\treturn parent::_by_fields(\n";
                 $this->code .= "\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
 
@@ -104,7 +107,10 @@
                         $this->code .= "\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") $" . $field->name . ",\n";
                     }
                 }
-                $this->code .= "\t\t\t\t]\n";
+                $this->code .= "\t\t\t\t],\n";
+                $this->code .= "\t\t\t\t\$order_by,\n";
+                $this->code .= "\t\t\t\t\$offset,\n";
+                $this->code .= "\t\t\t\t\$limit\n";
                 $this->code .= "\t\t\t);\n";
                 $this->code .= "\t\t}\n\n";
             }
@@ -130,13 +136,16 @@
                 $this->code .= "\t\t * Get multiple sets of " . self::ander($selected_fields) . " by a collection of " . $foreign_key_field->referenced_field->table->name . "s\n";
                 $this->code .= "\t\t *\n";
                 $this->code .= "\t\t * @param " . $foreign_key_field->referenced_field->table->name . "_collection|array \$" . $foreign_key_field->referenced_field->table->name . "_list\n";
+                $this->code .= "\t\t * @param array|null \$order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)\n";
+                $this->code .= "\t\t * @param integer|null \$offset get rows starting at this offset\n";
+                $this->code .= "\t\t * @param integer|null \$limit max number of rows to return\n";
                 $this->code .= "\t\t *\n";
                 $this->code .= "\t\t * @return array of result sets containing " . self::ander($selected_fields) . "\n";
                 $this->code .= "\t\t */\n";
 
                 // end comments
 
-                $this->code .= "\t\tpublic function by_" . $foreign_key_field->name_idless . "_multi($" . $foreign_key_field->referenced_field->table->name . "_list) {\n";
+                $this->code .= "\t\tpublic function by_" . $foreign_key_field->name_idless . "_multi($" . $foreign_key_field->referenced_field->table->name . "_list, array \$order_by=null, \$offset=null, \$limit=null) {\n";
 
                 $this->code .= "\t\t\t\$keys = [];\n";
 
@@ -178,15 +187,16 @@
                 }
                 $this->code .= "\t\t\t\t],\n";
 
-                $this->code .= "\t\t\t\t\$keys\n";
+                $this->code .= "\t\t\t\t\$keys,\n";
+                $this->code .= "\t\t\t\t\$order_by,\n";
+                $this->code .= "\t\t\t\t\$offset,\n";
+                $this->code .= "\t\t\t\t\$limit\n";
                 $this->code .= "\t\t\t);\n";
                 $this->code .= "\t\t}\n\n";
             }
         }
 
         protected function insert() {
-
-            $used_names = [];
 
             /**
              * Insert Folder link, created from an array of $info
@@ -205,75 +215,11 @@
             $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic function insert(array \$info) {\n\n";
-
-            if ($this->table->is_tiny() || count($this->table->all_index_combinations)) {
-
-                $this->code .= "\t\t\t// Insert link\n";
-                $this->code .= "\t\t\t\$return = parent::_insert(\$info);\n\n";
-
-                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
-                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
-
-                $this->code .= "\t\t\t// Delete Cache\n";
-
-                // ALL
-                if ($this->table->is_tiny()) {
-                    $this->code .= "\t\t\t// BY_ALL\n";
-                    $this->code .= "\t\t\tparent::_cache_delete(\n";
-                    $this->code .= "\t\t\t\tparent::_build_key(self::BY_ALL)\n";
-                    $this->code .= "\t\t\t);\n\n";
-                }
-
-                foreach ($this->table->all_index_combinations as $name => $index) {
-                    $issets        = [];
-                    $fields        = [];
-                    $longest_index = 0;
-                    foreach ($index as $field) {
-                        $fields[] = $field;
-                        $issets[] = "array_key_exists('" . $field->name . "', \$info)";
-                        if (strlen($field->name) > $longest_index) {
-                            $longest_index = strlen($field->name);
-                        }
-                    }
-
-                    // No duplicates
-                    if (in_array($name, $used_names)) {
-                        continue;
-                    }
-                    $used_names[] = $name;
-
-                    $this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
-                    $this->code .= "\t\t\tif (" . join(' && ', $issets) . ") {\n";
-                    $this->code .= "\t\t\t\tparent::_cache_delete(\n";
-                    $this->code .= "\t\t\t\t\tparent::_build_key(\n";
-                    $this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
-                    $this->code .= "\t\t\t\t\t\t[\n";
-                    foreach ($fields as $field) {
-                        if ($field->allows_null()) {
-                            $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_index + 1) . " => \$info['" . $field->name . "'] === null ? null : (" . $field->casting . ") \$info['" . $field->name . "'],\n";
-                        } else {
-                            $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_index + 1) . " => (" . $field->casting . ") \$info['" . $field->name . "'],\n";
-                        }
-                    }
-                    $this->code .= "\t\t\t\t\t\t]\n";
-                    $this->code .= "\t\t\t\t\t)\n";
-                    $this->code .= "\t\t\t\t);\n";
-                    $this->code .= "\t\t\t}\n\n";
-                }
-
-                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
-                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
-
-                $this->code .= "\t\t\treturn \$return;\n";
-            } else {
-                $this->code .= "\t\t\treturn parent::_insert(\$info);\n";
-            }
+            $this->code .= "\t\t\treturn parent::_insert(\$info);\n";
             $this->code .= "\t\t}\n\n";
         }
 
         protected function insert_multi() {
-
-            $used_names = [];
 
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Insert multiple " . ucwords(str_replace('_', ' ', $this->table->name)) . " links, created from an array of arrays of \$info\n";
@@ -284,81 +230,11 @@
             $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic function insert_multi(array \$infos) {\n\n";
-
-            if ($this->table->is_tiny() || count($this->table->all_index_combinations)) {
-
-                $this->code .= "\t\t\t// Insert links\n";
-                $this->code .= "\t\t\t\$return = parent::_insert_multi(\$infos);\n\n";
-
-                $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
-                $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
-
-                $this->code .= "\t\t\t// Delete Cache\n";
-
-                if ($this->table->is_tiny()) {
-                    $this->code .= "\t\t\t// BY_ALL\n";
-                    $this->code .= "\t\t\tparent::_cache_delete(\n";
-                    $this->code .= "\t\t\t\tparent::_build_key(self::BY_ALL)\n";
-                    $this->code .= "\t\t\t);\n\n";
-                }
-
-                if (count($this->table->all_index_combinations)) {
-                    $this->code .= "\t\t\tforeach (\$infos as \$info) {\n";
-
-                    foreach ($this->table->all_index_combinations as $name => $index) {
-                        $fields        = [];
-                        $issets        = [];
-                        $longest_index = 0;
-                        foreach ($index as $field) {
-                            $fields[] = $field;
-                            $issets[] = "array_key_exists('" . $field->name . "', \$info)";
-                            if (strlen($field->name) > $longest_index) {
-                                $longest_index = strlen($field->name);
-                            }
-                        }
-
-                        // No duplicates
-                        if (in_array($name, $used_names)) {
-                            continue;
-                        }
-                        $used_names[] = $name;
-
-                        $this->code .= "\t\t\t\t// BY_" . strtoupper($name) . "\n";
-                        $this->code .= "\t\t\t\tif (" . join(' && ', $issets) . ") {\n";
-                        $this->code .= "\t\t\t\t\tparent::_cache_delete(\n";
-                        $this->code .= "\t\t\t\t\t\tparent::_build_key(\n";
-                        $this->code .= "\t\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
-                        $this->code .= "\t\t\t\t\t\t\t[\n";
-                        foreach ($fields as $field) {
-                            if ($field->allows_null()) {
-                                $this->code .= "\t\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_index + 1) . " => \$info['" . $field->name . "'] === null ? null : (" . $field->casting . ") \$info['" . $field->name . "'],\n";
-                            } else {
-                                $this->code .= "\t\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_index + 1) . " => (" . $field->casting . ") \$info['" . $field->name . "'],\n";
-                            }
-                        }
-                        $this->code .= "\t\t\t\t\t\t\t]\n";
-                        $this->code .= "\t\t\t\t\t\t)\n";
-                        $this->code .= "\t\t\t\t\t);\n";
-                        $this->code .= "\t\t\t\t}\n\n";
-                    }
-
-                    $this->code = substr($this->code, 0, -1);
-                    $this->code .= "\t\t\t}\n\n";
-                }
-
-                $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
-                $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
-
-                $this->code .= "\t\t\treturn \$return;\n";
-            } else {
-                $this->code .= "\t\t\treturn parent::_insert_multi(\$infos);\n";
-            }
+            $this->code .= "\t\t\treturn parent::_insert_multi(\$infos);\n";
             $this->code .= "\t\t}\n\n";
         }
 
         protected function update() {
-
-            $used_names = [];
 
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Update " . ucwords(str_replace('_', ' ', $this->table->name)) . " link records based on \$where inputs\n";
@@ -370,86 +246,13 @@
             $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic function update(array \$new_info, array \$where) {\n\n";
-
             $this->code .= "\t\t\t// Update link\n";
-            $this->code .= "\t\t\t\$return = parent::_update(\$new_info, \$where);\n\n";
-
-            $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
-            $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
-
-            $this->code .= "\t\t\t// Delete Cache\n";
-
-            foreach ($this->table->all_index_combinations as $name => $index) {
-
-                // $new_info
-                $issets       = [];
-                $longest_part = $this->longest_length($index);
-                foreach ($index as $field) {
-                    $issets[] = "array_key_exists('" . $field->name . "', \$new_info)";
-                }
-
-                // No duplicates
-                if (in_array($name, $used_names)) {
-                    continue;
-                }
-                $used_names[] = $name;
-
-                $this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
-                $this->code .= "\t\t\tif (" . join(' && ', $issets) . ") {\n";
-                $this->code .= "\t\t\t\tparent::_cache_delete(\n";
-                $this->code .= "\t\t\t\t\tparent::_build_key(\n";
-                $this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
-                $this->code .= "\t\t\t\t\t\t[\n";
-                foreach ($index as $field) {
-                    if ($field->allows_null()) {
-                        $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => \$new_info['" . $field->name . "'] === null ? null : (" . $field->casting . ") \$new_info['" . $field->name . "'],\n";
-                    } else {
-                        $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") \$new_info['" . $field->name . "'],\n";
-                    }
-                }
-                $this->code .= "\t\t\t\t\t\t]\n";
-                $this->code .= "\t\t\t\t\t)\n";
-                $this->code .= "\t\t\t\t);\n";
-                $this->code .= "\t\t\t}\n";
-
-                // $where
-                $issets = [];
-                $names  = [];
-                foreach ($index as $field) {
-                    $issets[] = "array_key_exists('" . $field->name . "', \$where)";
-                    $names[]  = $field->name_idless;
-                }
-                $name = join('_',  $names);
-
-                $this->code .= "\t\t\tif (" . join(' && ', $issets) . ") {\n";
-                $this->code .= "\t\t\t\tparent::_cache_delete(\n";
-                $this->code .= "\t\t\t\t\tparent::_build_key(\n";
-                $this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
-                $this->code .= "\t\t\t\t\t\t[\n";
-                foreach ($index as $field) {
-                    if ($field->allows_null()) {
-                        $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => \$where['" . $field->name . "'] === null ? null : (" . $field->casting . ") \$where['" . $field->name . "'],\n";
-                    } else {
-                        $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") \$where['" . $field->name . "'],\n";
-                    }
-                }
-                $this->code .= "\t\t\t\t\t\t]\n";
-                $this->code .= "\t\t\t\t\t)\n";
-                $this->code .= "\t\t\t\t);\n";
-                $this->code .= "\t\t\t}\n\n";
-            }
-
-            $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
-            $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
-
-            $this->code .= "\t\t\treturn \$return;\n";
+            $this->code .= "\t\t\treturn parent::_update(\$new_info, \$where);\n\n";
             $this->code .= "\t\t}\n\n";
 
         }
 
         protected function delete() {
-
-            $used_names = [];
 
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Delete multiple " . ucwords(str_replace('_', ' ', $this->table->name)) . " link records based on an array of associative arrays\n";
@@ -460,52 +263,12 @@
             $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic function delete(array \$keys) {\n\n";
-
             $this->code .= "\t\t\t// Delete link\n";
-            $this->code .= "\t\t\t\$return = parent::_delete(\$keys);\n\n";
-
-            $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
-            $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
-
-            $this->code .= "\t\t\t// Delete Cache\n";
-
-            foreach ($this->table->all_index_combinations as $name => $index) {
-
-                // No duplicates
-                if (in_array($name, $used_names)) {
-                    continue;
-                }
-                $used_names[] = $name;
-
-                $longest_part = $this->longest_length($index);
-
-                $this->code .= "\t\t\t// BY_" . strtoupper($name) . "\n";
-                $this->code .= "\t\t\tparent::_cache_delete(\n";
-                $this->code .= "\t\t\t\tparent::_build_key(\n";
-                $this->code .= "\t\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
-                $this->code .= "\t\t\t\t\t[\n";
-                foreach ($index as $field) {
-                    if ($field->allows_null()) {
-                        $this->code .= "\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => \$keys['" . $field->name . "'] === null ? null : (" . $field->casting . ") \$keys['" . $field->name . "'],\n";
-                    } else {
-                        $this->code .= "\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => (" . $field->casting . ") \$keys['" . $field->name . "'],\n";
-                    }
-                }
-                $this->code .= "\t\t\t\t\t]\n";
-                $this->code .= "\t\t\t\t)\n";
-                $this->code .= "\t\t\t);\n\n";
-            }
-
-            $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
-            $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
-
-            $this->code .= "\t\t\treturn \$return;\n";
+            $this->code .= "\t\t\treturn parent::_delete(\$keys);\n\n";
             $this->code .= "\t\t}\n\n";
         }
 
         protected function delete_multi() {
-
-            $used_names = [];
 
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Delete multiple sets of " . ucwords(str_replace('_', ' ', $this->table->name)) . " link records based on an array of associative arrays\n";
@@ -516,69 +279,8 @@
             $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic function delete_multi(array \$keys_arr) {\n\n";
-
             $this->code .= "\t\t\t// Delete links\n";
-            $this->code .= "\t\t\t\$return = parent::_delete_multi(\$keys_arr);\n\n";
-
-            $this->code .= "\t\t\t// Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)\n";
-            $this->code .= "\t\t\tparent::cache_batch_start();\n\n";
-
-            $this->code .= "\t\t\t// PRIMARY KEYS\n";
-            foreach ($this->table->primary_keys as $field) {
-                $this->code .= "\t\t\t\$unique_" . $field->name . "_arr = [];\n";
-            }
-            $this->code .= "\t\t\tforeach (\$keys_arr as \$keys) {\n";
-
-            $idless = [];
-            foreach ($this->table->primary_keys as $field) {
-
-                // No duplicates
-                if (in_array($field->name_idless, $used_names)) {
-                    continue;
-                }
-                $used_names[] = $field->name_idless;
-
-                $idless[] = $field->name_idless;
-                $this->code .= "\t\t\t\t\$unique_" . $field->name . "_arr[(int) \$keys['" . $field->name . "']] = (" . $field->casting . ") \$keys['" . $field->name . "'];\n";
-            }
-
-            $this->code .= "\n";
-
-            $full_index = join('_', $idless);
-
-            $this->code .= "\t\t\t\t// BY_" . strtoupper($full_index) . "\n";
-            $this->code .= "\t\t\t\tparent::_cache_delete(\n";
-            $this->code .= "\t\t\t\t\tparent::_build_key(\n";
-            $this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($full_index) . ",\n";
-            $this->code .= "\t\t\t\t\t\t[\n";
-
-            $longest = $this->longest_length($this->table->primary_keys);
-            foreach ($this->table->primary_keys as $field) {
-                $this->code .= "\t\t\t\t\t\t\t'" . str_pad($field->name . "'", $longest +1) . " => (" . $field->casting . ") \$keys['" . $field->name . "'],\n";
-            }
-            $this->code .= "\t\t\t\t\t\t]\n";
-            $this->code .= "\t\t\t\t\t)\n";
-            $this->code .= "\t\t\t\t);\n";
-            $this->code .= "\t\t\t}\n\n";
-
-            foreach ($this->table->primary_keys as $field) {
-                $this->code .= "\t\t\t// BY_" . strtoupper($field->name_idless) . "\n";
-                $this->code .= "\t\t\tforeach (\$unique_" . $field->name . "_arr as $" . $field->name . ") {\n";
-                $this->code .= "\t\t\t\tparent::_cache_delete(\n";
-                $this->code .= "\t\t\t\t\tparent::_build_key(\n";
-                $this->code .= "\t\t\t\t\t\tself::BY_" . strtoupper($field->name_idless) . ",\n";
-                $this->code .= "\t\t\t\t\t\t[\n";
-                $this->code .= "\t\t\t\t\t\t\t'" . $field->name . "' => (" . $field->casting . ") $" . $field->name . ",\n";
-                $this->code .= "\t\t\t\t\t\t]\n";
-                $this->code .= "\t\t\t\t\t)\n";
-                $this->code .= "\t\t\t\t);\n";
-                $this->code .= "\t\t\t}\n\n";
-            }
-
-            $this->code .= "\t\t\t// Execute pipelined cache deletion queries (if supported by cache engine)\n";
-            $this->code .= "\t\t\tparent::cache_batch_execute();\n\n";
-
-            $this->code .= "\t\t\treturn \$return;\n";
+            $this->code .= "\t\t\treturn parent::_delete_multi(\$keys_arr);\n\n";
             $this->code .= "\t\t}\n";
         }
     }

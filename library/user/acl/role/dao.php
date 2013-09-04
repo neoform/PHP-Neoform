@@ -25,10 +25,13 @@
          * Get acl_role_id by user_id
          *
          * @param int $user_id
+         * @param array|null $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get rows starting at this offset
+         * @param integer|null $limit max number of rows to return
          *
          * @return array result set containing acl_role_id
          */
-        public function by_user($user_id) {
+        public function by_user($user_id, array $order_by=null, $offset=null, $limit=null) {
             return parent::_by_fields(
                 self::BY_USER,
                 [
@@ -36,7 +39,10 @@
                 ],
                 [
                     'user_id' => (int) $user_id,
-                ]
+                ],
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -45,10 +51,13 @@
          *
          * @param int $user_id
          * @param int $acl_role_id
+         * @param array|null $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get rows starting at this offset
+         * @param integer|null $limit max number of rows to return
          *
          * @return array result set containing user_id and acl_role_id
          */
-        public function by_user_acl_role($user_id, $acl_role_id) {
+        public function by_user_acl_role($user_id, $acl_role_id, array $order_by=null, $offset=null, $limit=null) {
             return parent::_by_fields(
                 self::BY_USER_ACL_ROLE,
                 [
@@ -58,7 +67,10 @@
                 [
                     'user_id'     => (int) $user_id,
                     'acl_role_id' => (int) $acl_role_id,
-                ]
+                ],
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -66,10 +78,13 @@
          * Get user_id by acl_role_id
          *
          * @param int $acl_role_id
+         * @param array|null $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get rows starting at this offset
+         * @param integer|null $limit max number of rows to return
          *
          * @return array result set containing user_id
          */
-        public function by_acl_role($acl_role_id) {
+        public function by_acl_role($acl_role_id, array $order_by=null, $offset=null, $limit=null) {
             return parent::_by_fields(
                 self::BY_ACL_ROLE,
                 [
@@ -77,7 +92,10 @@
                 ],
                 [
                     'acl_role_id' => (int) $acl_role_id,
-                ]
+                ],
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -85,10 +103,13 @@
          * Get multiple sets of acl_role_id by a collection of users
          *
          * @param user_collection|array $user_list
+         * @param array|null $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get rows starting at this offset
+         * @param integer|null $limit max number of rows to return
          *
          * @return array of result sets containing acl_role_id
          */
-        public function by_user_multi($user_list) {
+        public function by_user_multi($user_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
             if ($user_list instanceof user_collection) {
                 foreach ($user_list as $k => $user) {
@@ -111,7 +132,10 @@
                 [
                     'acl_role_id',
                 ],
-                $keys
+                $keys,
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -119,10 +143,13 @@
          * Get multiple sets of user_id by a collection of acl_roles
          *
          * @param acl_role_collection|array $acl_role_list
+         * @param array|null $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get rows starting at this offset
+         * @param integer|null $limit max number of rows to return
          *
          * @return array of result sets containing user_id
          */
-        public function by_acl_role_multi($acl_role_list) {
+        public function by_acl_role_multi($acl_role_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
             if ($acl_role_list instanceof acl_role_collection) {
                 foreach ($acl_role_list as $k => $acl_role) {
@@ -145,7 +172,10 @@
                 [
                     'user_id',
                 ],
-                $keys
+                $keys,
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -160,54 +190,7 @@
          */
         public function insert(array $info) {
 
-            // Insert link
-            $return = parent::_insert($info);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_USER
-            if (array_key_exists('user_id', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_USER,
-                        [
-                            'user_id' => (int) $info['user_id'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_USER_ACL_ROLE
-            if (array_key_exists('user_id', $info) && array_key_exists('acl_role_id', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_USER_ACL_ROLE,
-                        [
-                            'user_id'     => (int) $info['user_id'],
-                            'acl_role_id' => (int) $info['acl_role_id'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_ACL_ROLE
-            if (array_key_exists('acl_role_id', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ACL_ROLE,
-                        [
-                            'acl_role_id' => (int) $info['acl_role_id'],
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_insert($info);
         }
 
         /**
@@ -219,56 +202,7 @@
          */
         public function insert_multi(array $infos) {
 
-            // Insert links
-            $return = parent::_insert_multi($infos);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            foreach ($infos as $info) {
-                // BY_USER
-                if (array_key_exists('user_id', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_USER,
-                            [
-                                'user_id' => (int) $info['user_id'],
-                            ]
-                        )
-                    );
-                }
-
-                // BY_USER_ACL_ROLE
-                if (array_key_exists('user_id', $info) && array_key_exists('acl_role_id', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_USER_ACL_ROLE,
-                            [
-                                'user_id'     => (int) $info['user_id'],
-                                'acl_role_id' => (int) $info['acl_role_id'],
-                            ]
-                        )
-                    );
-                }
-
-                // BY_ACL_ROLE
-                if (array_key_exists('acl_role_id', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_ACL_ROLE,
-                            [
-                                'acl_role_id' => (int) $info['acl_role_id'],
-                            ]
-                        )
-                    );
-                }
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_insert_multi($infos);
         }
 
         /**
@@ -282,84 +216,8 @@
         public function update(array $new_info, array $where) {
 
             // Update link
-            $return = parent::_update($new_info, $where);
+            return parent::_update($new_info, $where);
 
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_USER
-            if (array_key_exists('user_id', $new_info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_USER,
-                        [
-                            'user_id' => (int) $new_info['user_id'],
-                        ]
-                    )
-                );
-            }
-            if (array_key_exists('user_id', $where)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_USER,
-                        [
-                            'user_id' => (int) $where['user_id'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_USER_ACL_ROLE
-            if (array_key_exists('user_id', $new_info) && array_key_exists('acl_role_id', $new_info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_USER_ACL_ROLE,
-                        [
-                            'user_id'     => (int) $new_info['user_id'],
-                            'acl_role_id' => (int) $new_info['acl_role_id'],
-                        ]
-                    )
-                );
-            }
-            if (array_key_exists('user_id', $where) && array_key_exists('acl_role_id', $where)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_USER_ACL_ROLE,
-                        [
-                            'user_id'     => (int) $where['user_id'],
-                            'acl_role_id' => (int) $where['acl_role_id'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_ACL_ROLE
-            if (array_key_exists('acl_role_id', $new_info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ACL_ROLE,
-                        [
-                            'acl_role_id' => (int) $new_info['acl_role_id'],
-                        ]
-                    )
-                );
-            }
-            if (array_key_exists('acl_role_id', $where)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ACL_ROLE,
-                        [
-                            'acl_role_id' => (int) $where['acl_role_id'],
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
         }
 
         /**
@@ -372,47 +230,8 @@
         public function delete(array $keys) {
 
             // Delete link
-            $return = parent::_delete($keys);
+            return parent::_delete($keys);
 
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_USER
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_USER,
-                    [
-                        'user_id' => (int) $keys['user_id'],
-                    ]
-                )
-            );
-
-            // BY_USER_ACL_ROLE
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_USER_ACL_ROLE,
-                    [
-                        'user_id'     => (int) $keys['user_id'],
-                        'acl_role_id' => (int) $keys['acl_role_id'],
-                    ]
-                )
-            );
-
-            // BY_ACL_ROLE
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_ACL_ROLE,
-                    [
-                        'acl_role_id' => (int) $keys['acl_role_id'],
-                    ]
-                )
-            );
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
         }
 
         /**
@@ -425,57 +244,7 @@
         public function delete_multi(array $keys_arr) {
 
             // Delete links
-            $return = parent::_delete_multi($keys_arr);
+            return parent::_delete_multi($keys_arr);
 
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // PRIMARY KEYS
-            $unique_user_id_arr = [];
-            $unique_acl_role_id_arr = [];
-            foreach ($keys_arr as $keys) {
-                $unique_user_id_arr[(int) $keys['user_id']] = (int) $keys['user_id'];
-                $unique_acl_role_id_arr[(int) $keys['acl_role_id']] = (int) $keys['acl_role_id'];
-
-                // BY_USER_ACL_ROLE
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_USER_ACL_ROLE,
-                        [
-                            'user_id'     => (int) $keys['user_id'],
-                            'acl_role_id' => (int) $keys['acl_role_id'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_USER
-            foreach ($unique_user_id_arr as $user_id) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_USER,
-                        [
-                            'user_id' => (int) $user_id,
-                        ]
-                    )
-                );
-            }
-
-            // BY_ACL_ROLE
-            foreach ($unique_acl_role_id_arr as $acl_role_id) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ACL_ROLE,
-                        [
-                            'acl_role_id' => (int) $acl_role_id,
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
         }
     }

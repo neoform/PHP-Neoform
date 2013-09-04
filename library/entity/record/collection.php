@@ -132,15 +132,16 @@
         /**
          * Get an array with the values of the models in the collection
          *
-         * @param string $field
+         * @param string      $field
+         * @param string|null $key
          *
          * @return array
          */
-        public function field($field) {
+        public function field($field, $key=null) {
             if (! array_key_exists($field, $this->_vars)) {
                 $arr = [];
                 foreach ($this as $k => $record) {
-                    $arr[$k] = $record->$field;
+                    $arr[$key ? $record->$key : $k] = $record->$field;
                 }
                 $this->_vars[$field] = $arr;
             }

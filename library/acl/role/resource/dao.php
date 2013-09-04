@@ -25,10 +25,13 @@
          * Get acl_resource_id by acl_role_id
          *
          * @param int $acl_role_id
+         * @param array|null $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get rows starting at this offset
+         * @param integer|null $limit max number of rows to return
          *
          * @return array result set containing acl_resource_id
          */
-        public function by_acl_role($acl_role_id) {
+        public function by_acl_role($acl_role_id, array $order_by=null, $offset=null, $limit=null) {
             return parent::_by_fields(
                 self::BY_ACL_ROLE,
                 [
@@ -36,7 +39,10 @@
                 ],
                 [
                     'acl_role_id' => (int) $acl_role_id,
-                ]
+                ],
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -45,10 +51,13 @@
          *
          * @param int $acl_role_id
          * @param int $acl_resource_id
+         * @param array|null $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get rows starting at this offset
+         * @param integer|null $limit max number of rows to return
          *
          * @return array result set containing acl_role_id and acl_resource_id
          */
-        public function by_acl_role_acl_resource($acl_role_id, $acl_resource_id) {
+        public function by_acl_role_acl_resource($acl_role_id, $acl_resource_id, array $order_by=null, $offset=null, $limit=null) {
             return parent::_by_fields(
                 self::BY_ACL_ROLE_ACL_RESOURCE,
                 [
@@ -58,7 +67,10 @@
                 [
                     'acl_role_id'     => (int) $acl_role_id,
                     'acl_resource_id' => (int) $acl_resource_id,
-                ]
+                ],
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -66,10 +78,13 @@
          * Get acl_role_id by acl_resource_id
          *
          * @param int $acl_resource_id
+         * @param array|null $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get rows starting at this offset
+         * @param integer|null $limit max number of rows to return
          *
          * @return array result set containing acl_role_id
          */
-        public function by_acl_resource($acl_resource_id) {
+        public function by_acl_resource($acl_resource_id, array $order_by=null, $offset=null, $limit=null) {
             return parent::_by_fields(
                 self::BY_ACL_RESOURCE,
                 [
@@ -77,7 +92,10 @@
                 ],
                 [
                     'acl_resource_id' => (int) $acl_resource_id,
-                ]
+                ],
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -85,10 +103,13 @@
          * Get multiple sets of acl_resource_id by a collection of acl_roles
          *
          * @param acl_role_collection|array $acl_role_list
+         * @param array|null $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get rows starting at this offset
+         * @param integer|null $limit max number of rows to return
          *
          * @return array of result sets containing acl_resource_id
          */
-        public function by_acl_role_multi($acl_role_list) {
+        public function by_acl_role_multi($acl_role_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
             if ($acl_role_list instanceof acl_role_collection) {
                 foreach ($acl_role_list as $k => $acl_role) {
@@ -111,7 +132,10 @@
                 [
                     'acl_resource_id',
                 ],
-                $keys
+                $keys,
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -119,10 +143,13 @@
          * Get multiple sets of acl_role_id by a collection of acl_resources
          *
          * @param acl_resource_collection|array $acl_resource_list
+         * @param array|null $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset get rows starting at this offset
+         * @param integer|null $limit max number of rows to return
          *
          * @return array of result sets containing acl_role_id
          */
-        public function by_acl_resource_multi($acl_resource_list) {
+        public function by_acl_resource_multi($acl_resource_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
             if ($acl_resource_list instanceof acl_resource_collection) {
                 foreach ($acl_resource_list as $k => $acl_resource) {
@@ -145,7 +172,10 @@
                 [
                     'acl_role_id',
                 ],
-                $keys
+                $keys,
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -160,54 +190,7 @@
          */
         public function insert(array $info) {
 
-            // Insert link
-            $return = parent::_insert($info);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ACL_ROLE
-            if (array_key_exists('acl_role_id', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ACL_ROLE,
-                        [
-                            'acl_role_id' => (int) $info['acl_role_id'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_ACL_ROLE_ACL_RESOURCE
-            if (array_key_exists('acl_role_id', $info) && array_key_exists('acl_resource_id', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ACL_ROLE_ACL_RESOURCE,
-                        [
-                            'acl_role_id'     => (int) $info['acl_role_id'],
-                            'acl_resource_id' => (int) $info['acl_resource_id'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_ACL_RESOURCE
-            if (array_key_exists('acl_resource_id', $info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ACL_RESOURCE,
-                        [
-                            'acl_resource_id' => (int) $info['acl_resource_id'],
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_insert($info);
         }
 
         /**
@@ -219,56 +202,7 @@
          */
         public function insert_multi(array $infos) {
 
-            // Insert links
-            $return = parent::_insert_multi($infos);
-
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            foreach ($infos as $info) {
-                // BY_ACL_ROLE
-                if (array_key_exists('acl_role_id', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_ACL_ROLE,
-                            [
-                                'acl_role_id' => (int) $info['acl_role_id'],
-                            ]
-                        )
-                    );
-                }
-
-                // BY_ACL_ROLE_ACL_RESOURCE
-                if (array_key_exists('acl_role_id', $info) && array_key_exists('acl_resource_id', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_ACL_ROLE_ACL_RESOURCE,
-                            [
-                                'acl_role_id'     => (int) $info['acl_role_id'],
-                                'acl_resource_id' => (int) $info['acl_resource_id'],
-                            ]
-                        )
-                    );
-                }
-
-                // BY_ACL_RESOURCE
-                if (array_key_exists('acl_resource_id', $info)) {
-                    parent::_cache_delete(
-                        parent::_build_key(
-                            self::BY_ACL_RESOURCE,
-                            [
-                                'acl_resource_id' => (int) $info['acl_resource_id'],
-                            ]
-                        )
-                    );
-                }
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
+            return parent::_insert_multi($infos);
         }
 
         /**
@@ -282,84 +216,8 @@
         public function update(array $new_info, array $where) {
 
             // Update link
-            $return = parent::_update($new_info, $where);
+            return parent::_update($new_info, $where);
 
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ACL_ROLE
-            if (array_key_exists('acl_role_id', $new_info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ACL_ROLE,
-                        [
-                            'acl_role_id' => (int) $new_info['acl_role_id'],
-                        ]
-                    )
-                );
-            }
-            if (array_key_exists('acl_role_id', $where)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ACL_ROLE,
-                        [
-                            'acl_role_id' => (int) $where['acl_role_id'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_ACL_ROLE_ACL_RESOURCE
-            if (array_key_exists('acl_role_id', $new_info) && array_key_exists('acl_resource_id', $new_info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ACL_ROLE_ACL_RESOURCE,
-                        [
-                            'acl_role_id'     => (int) $new_info['acl_role_id'],
-                            'acl_resource_id' => (int) $new_info['acl_resource_id'],
-                        ]
-                    )
-                );
-            }
-            if (array_key_exists('acl_role_id', $where) && array_key_exists('acl_resource_id', $where)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ACL_ROLE_ACL_RESOURCE,
-                        [
-                            'acl_role_id'     => (int) $where['acl_role_id'],
-                            'acl_resource_id' => (int) $where['acl_resource_id'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_ACL_RESOURCE
-            if (array_key_exists('acl_resource_id', $new_info)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ACL_RESOURCE,
-                        [
-                            'acl_resource_id' => (int) $new_info['acl_resource_id'],
-                        ]
-                    )
-                );
-            }
-            if (array_key_exists('acl_resource_id', $where)) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ACL_RESOURCE,
-                        [
-                            'acl_resource_id' => (int) $where['acl_resource_id'],
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
         }
 
         /**
@@ -372,47 +230,8 @@
         public function delete(array $keys) {
 
             // Delete link
-            $return = parent::_delete($keys);
+            return parent::_delete($keys);
 
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // Delete Cache
-            // BY_ACL_ROLE
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_ACL_ROLE,
-                    [
-                        'acl_role_id' => (int) $keys['acl_role_id'],
-                    ]
-                )
-            );
-
-            // BY_ACL_ROLE_ACL_RESOURCE
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_ACL_ROLE_ACL_RESOURCE,
-                    [
-                        'acl_role_id'     => (int) $keys['acl_role_id'],
-                        'acl_resource_id' => (int) $keys['acl_resource_id'],
-                    ]
-                )
-            );
-
-            // BY_ACL_RESOURCE
-            parent::_cache_delete(
-                parent::_build_key(
-                    self::BY_ACL_RESOURCE,
-                    [
-                        'acl_resource_id' => (int) $keys['acl_resource_id'],
-                    ]
-                )
-            );
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
         }
 
         /**
@@ -425,57 +244,7 @@
         public function delete_multi(array $keys_arr) {
 
             // Delete links
-            $return = parent::_delete_multi($keys_arr);
+            return parent::_delete_multi($keys_arr);
 
-            // Batch all cache deletion into one pipelined request to the cache engine (if supported by cache engine)
-            parent::cache_batch_start();
-
-            // PRIMARY KEYS
-            $unique_acl_role_id_arr = [];
-            $unique_acl_resource_id_arr = [];
-            foreach ($keys_arr as $keys) {
-                $unique_acl_role_id_arr[(int) $keys['acl_role_id']] = (int) $keys['acl_role_id'];
-                $unique_acl_resource_id_arr[(int) $keys['acl_resource_id']] = (int) $keys['acl_resource_id'];
-
-                // BY_ACL_ROLE_ACL_RESOURCE
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ACL_ROLE_ACL_RESOURCE,
-                        [
-                            'acl_role_id'     => (int) $keys['acl_role_id'],
-                            'acl_resource_id' => (int) $keys['acl_resource_id'],
-                        ]
-                    )
-                );
-            }
-
-            // BY_ACL_ROLE
-            foreach ($unique_acl_role_id_arr as $acl_role_id) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ACL_ROLE,
-                        [
-                            'acl_role_id' => (int) $acl_role_id,
-                        ]
-                    )
-                );
-            }
-
-            // BY_ACL_RESOURCE
-            foreach ($unique_acl_resource_id_arr as $acl_resource_id) {
-                parent::_cache_delete(
-                    parent::_build_key(
-                        self::BY_ACL_RESOURCE,
-                        [
-                            'acl_resource_id' => (int) $acl_resource_id,
-                        ]
-                    )
-                );
-            }
-
-            // Execute pipelined cache deletion queries (if supported by cache engine)
-            parent::cache_batch_execute();
-
-            return $return;
         }
     }

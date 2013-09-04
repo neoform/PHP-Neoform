@@ -303,7 +303,7 @@
             }
 
             $rs = core::sql($pool)->prepare(
-                join(" UNION ", $queries)
+                join(' UNION ALL ', $queries)
             );
             $rs->execute($vals);
 
@@ -382,7 +382,7 @@
                 )";
             }
 
-            $rs = core::sql($pool)->prepare(join(' UNION ', $queries));
+            $rs = core::sql($pool)->prepare(join(' UNION ALL ', $queries));
             $rs->execute($vals);
 
             $keys   = array_keys($fieldvals_arr);

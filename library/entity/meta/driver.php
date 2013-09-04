@@ -2,11 +2,9 @@
 
     interface entity_meta_driver {
 
-        public static function list_add($pool, $key, $value);
+        public static function push($pool, $cache_key, array $list_keys);
 
-        public static function list_get($pool, $key);
+        public static function push_multi($pool, array $list_keys);
 
-        public static function list_get_union($pool, array $keys);
-
-        public static function list_remove($pool, $key, $remove_key);
+        public static function pull($pool, array $list_keys);
     }

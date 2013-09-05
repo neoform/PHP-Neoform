@@ -137,9 +137,13 @@
         public static function count_multi(entity_record_dao $self, $pool, array $fieldvals_arr) {
             $queries = [];
             $vals    = [];
+            $counts  = [];
 
-            foreach ($fieldvals_arr as $fieldvals) {
-                $where = [];
+            foreach ($fieldvals_arr as $k => $fieldvals) {
+                $where      = [];
+                $counts[$k] = [];
+                $vals[]     = $k;
+
                 foreach ($fieldvals as $field => $val) {
                     if ($val === null) {
                         $where[] = "\"{$field}\" IS NULL";
@@ -150,7 +154,7 @@
                 }
 
                 $queries[] = "(
-                    SELECT COUNT(*) \"num\"
+                    SELECT COUNT(*) \"num\", ? k
                     FROM \"" . self::table($self::TABLE) . "\"
                     " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
                 )";
@@ -159,11 +163,10 @@
             $rs = core::sql($pool)->prepare(join(' UNION ALL ', $queries));
             $rs->execute($vals);
 
-            $keys   = array_keys($fieldvals_arr);
-            $counts = [];
-            foreach ($rs->fetchAll(PDO::FETCH_COLUMN, 0) as $k => $count) {
-                $counts[$keys[$k]] = (int) $count;
+            foreach ($rs->fetchAll() as $row) {
+                $counts[$row['k']] = (int) $row['num'];
             }
+
             return $counts;
         }
 
@@ -183,19 +186,12 @@
 
             if ($fieldvals) {
                 foreach ($fieldvals as $field => $val) {
-//                    if (is_array($val) && $val) {
-//                        foreach ($val as $arr_v) {
-//                            $vals[] = $arr_v;
-//                        }
-//                        $where[] = "\"{$field}\" IN(" . join(',', array_fill(0, count($v), '?')) . ")";
-//                    } else {
-                        if ($val === null) {
-                            $where[] = "\"{$field}\" IS NULL";
-                        } else {
-                            $vals[$field] = $val;
-                            $where[]      = "\"{$field}\" = ?";
-                        }
-//                    }
+                    if ($val === null) {
+                        $where[] = "\"{$field}\" IS NULL";
+                    } else {
+                        $vals[$field] = $val;
+                        $where[]      = "\"{$field}\" = ?";
+                    }
                 }
             }
 
@@ -404,30 +400,15 @@
          * @return array
          */
         public static function by_fields_offset_multi(entity_record_dao $dao, $pool, array $fieldvals_arr, $pk, array $order_by, $offset, $limit) {
-            $select_fields  = [ "\"{$pk}\"" ];
-            $reverse_lookup = [];
-            $return         = [];
-            $vals           = [];
-            $queries        = [];
-            $fields         = array_keys(reset($fieldvals_arr));
-
-            foreach ($fields as $k) {
-                $select_fields[] = "\"{$k}\"";
-            }
+            $return  = [];
+            $vals    = [];
+            $queries = [];
 
             // LIMIT
-            if ($limit) {
-                $limit = "LIMIT {$limit}";
-            } else {
-                $limit = '';
-            }
+            $limit = $limit ? "LIMIT {$limit}" : '';
 
             // OFFSET
-            if ($offset !== null) {
-                $offset = "OFFSET {$offset}";
-            } else {
-                $offset = '';
-            }
+            $offset = $offset !== null ? "OFFSET {$offset}" : '';
 
             $order = [];
             foreach ($order_by as $field => $sort_direction) {
@@ -435,25 +416,27 @@
             }
             $order_by = join(', ', $order);
 
+            $query = "
+                SELECT \"{$pk}\", ? __k__
+                FROM \"" . self::table($dao::TABLE) . "\"
+            ";
+
             foreach ($fieldvals_arr as $k => $fieldvals) {
-                $where         = [];
-                $return[$k]    = [];
-                $hashed_valued = [];
+                $where      = [];
+                $return[$k] = [];
+                $vals[]     = $k;
+
                 foreach ($fieldvals as $field => $val) {
                     if ($val === null) {
-                        $where[]         = "\"{$field}\" IS NULL";
-                        $hashed_valued[] = '';
+                        $where[] = "\"{$field}\" IS NULL";
                     } else {
-                        $vals[]          = $val;
-                        $where[]         = "\"{$field}\" = ?";
-                        $hashed_valued[] = md5($val);
+                        $vals[]  = $val;
+                        $where[] = "\"{$field}\" = ?";
                     }
                 }
-                $reverse_lookup[join(':', $hashed_valued)] = $k;
 
                 $queries[] = "(
-                    SELECT " . join(", ", $select_fields) . "
-                    FROM \"" . self::table($dao::TABLE) . "\"
+                    {$query}
                     WHERE " . join(" AND ", $where) . "
                     ORDER BY {$order_by}
                     {$limit} {$offset}
@@ -467,11 +450,7 @@
             $rs->execute($vals);
 
             foreach ($rs->fetchAll() as $row) {
-                $hashed = [];
-                foreach ($fields as $k) {
-                    $hashed[$row[$k]] = md5($row[$k]);
-                }
-                $return[$reverse_lookup[join(':', $hashed)]][] = $row[$pk];
+                $return[$row['__k__']][] = $row[$pk];
             }
 
             return $return;

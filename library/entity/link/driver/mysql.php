@@ -189,11 +189,7 @@
             }
 
             // OFFSET
-            if ($offset !== null) {
-                $offset = "OFFSET {$offset}";
-            } else {
-                $offset = '';
-            }
+            $offset = $offset !== null ? "OFFSET {$offset}" : '';
 
             // ORDER BY
             $order = [];
@@ -234,13 +230,9 @@
          */
         public static function by_fields_limit_multi(entity_link_dao $self, $pool, $local_field, entity_record_dao $foreign_dao,
                                                array $fieldvals_arr, array $order_by, $offset, $limit) {
-
-            $fieldvals_fields = array_keys(reset($fieldvals_arr));
-            $select_fields    = [];
-            $reverse_lookup   = [];
-            $return           = [];
-            $vals             = [];
-            $queries          = [];
+            $return  = [];
+            $vals    = [];
+            $queries = [];
 
             // LOCAL
             $quoted_table = self::table($self::TABLE);
@@ -248,11 +240,6 @@
             // FK Relation
             $quoted_foreign_table = self::table($foreign_dao::TABLE);
             $foreign_pk           = $foreign_dao::PRIMARY_KEY;
-
-            // SELECT
-            foreach (array_unique(array_merge([ $local_field ], $fieldvals_fields)) as $field) {
-                $select_fields[] = "`{$quoted_table}`.`{$field}`";
-            }
 
             // LIMIT
             if ($limit) {
@@ -264,11 +251,7 @@
             }
 
             // OFFSET
-            if ($offset !== null) {
-                $offset = "OFFSET {$offset}";
-            } else {
-                $offset = '';
-            }
+            $offset = $offset !== null ? "OFFSET {$offset}" : '';
 
             // ORDER BY
             $order = [];
@@ -279,26 +262,24 @@
 
             // QUERIES
             $query = "
-                SELECT " . join(',', $select_fields) . "
+                SELECT `{$local_field}`, ? `__k__`
                 FROM `" . self::table($self::TABLE) . "`
                 INNER JOIN `{$quoted_foreign_table}`
                 ON `{$quoted_foreign_table}`.`{$foreign_pk}` = `{$quoted_table}`.`{$local_field}`
             ";
             foreach ($fieldvals_arr as $k => $fieldvals) {
-                $where         = [];
-                $return[$k]    = [];
-                $hashed_valued = [];
+                $where      = [];
+                $return[$k] = [];
+                $vals[]     = $k;
+
                 foreach ($fieldvals as $field => $val) {
                     if ($val === null) {
-                        $where[]         = "`{$quoted_table}`.`{$field}` IS NULL";
-                        $hashed_valued[] = '';
+                        $where[] = "`{$quoted_table}`.`{$field}` IS NULL";
                     } else {
-                        $vals[]          = $val;
-                        $where[]         = "`{$quoted_table}`.`{$field}` = ?";
-                        $hashed_valued[] = md5($val);
+                        $vals[]  = $val;
+                        $where[] = "`{$quoted_table}`.`{$field}` = ?";
                     }
                 }
-                $reverse_lookup[join(':', $hashed_valued)] = $k;
                 $queries[] = "(
                     {$query}
                     WHERE" . join(" AND ", $where) . "
@@ -313,11 +294,7 @@
             $rs->execute($vals);
 
             foreach ($rs->fetchAll() as $row) {
-                $hashed = [];
-                foreach ($fieldvals_fields as $field) {
-                    $hashed[$row[$field]] = md5($row[$field]);
-                }
-                $return[$reverse_lookup[join(':', $hashed)]][] = $row[$local_field];
+                $return[$row['__k__']][] = $row[$local_field];
             }
 
             return $return;
@@ -368,9 +345,13 @@
         public static function count_multi(entity_record_dao $self, $pool, array $fieldvals_arr) {
             $queries = [];
             $vals    = [];
+            $counts  = [];
 
-            foreach ($fieldvals_arr as $fieldvals) {
-                $where = [];
+            foreach ($fieldvals_arr as $k => $fieldvals) {
+                $where      = [];
+                $counts[$k] = [];
+                $vals[]     = $k;
+
                 foreach ($fieldvals as $field => $val) {
                     if ($val === null) {
                         $where[] = "`{$field}` IS NULL";
@@ -381,7 +362,7 @@
                 }
 
                 $queries[] = "(
-                    SELECT COUNT(0) `num`
+                    SELECT COUNT(0) `num`, ? k
                     FROM `" . self::table($self::TABLE) . "`
                     " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
                 )";
@@ -390,11 +371,10 @@
             $rs = core::sql($pool)->prepare(join(' UNION ALL ', $queries));
             $rs->execute($vals);
 
-            $keys   = array_keys($fieldvals_arr);
-            $counts = [];
-            foreach ($rs->fetchAll(PDO::FETCH_COLUMN, 0) as $k => $count) {
-                $counts[$keys[$k]] = (int) $count;
+            foreach ($rs->fetchAll() as $row) {
+                $counts[$row['k']] = (int) $row['num'];
             }
+
             return $counts;
         }
 

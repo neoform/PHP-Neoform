@@ -110,8 +110,8 @@
                 $field = reset($select_fields);
                 foreach ($rs->fetchAll() as $row) {
                     $hashed = [];
-                    foreach ($fieldvals_fields as $field) {
-                        $hashed[$row[$field]] = md5($row[$field]);
+                    foreach ($fieldvals_fields as $k) {
+                        $hashed[$row[$field]] = md5($row[$k]);
                     }
                     $return[$reverse_lookup[join(':', $hashed)]][] = $row[$field];
                 }

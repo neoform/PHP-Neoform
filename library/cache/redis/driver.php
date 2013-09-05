@@ -100,13 +100,12 @@
          * @return array
          */
         public static function get_multi($pool, array $keys) {
-            $redis = core::redis($pool);
+            $redis = core::redis($pool)->multi();
 
             // Redis returns the results in order - if the key doesn't exist, false is returned - this problematic
             // since false might be an actual value being stored... therefore we check if the key exists if false is
             // returned
 
-            $redis->multi();
             foreach ($keys as $key) {
                 $redis->exists($key);
                 $redis->get($key);
@@ -140,9 +139,11 @@
         public static function set_multi($pool, array $rows, $ttl=null) {
             if ($ttl) {
                 $redis = core::redis($pool);
+                $redis->multi();
                 foreach ($rows as $k => $v) {
                     $redis->set($k, $v, $ttl);
                 }
+                $redis->exec();
             } else {
                 return core::redis($pool)->mset($rows);
             }
@@ -202,10 +203,11 @@
          */
         public static function expire_multi($pool, array $keys, $ttl=0) {
             if ($ttl) {
-                $redis = core::redis($pool);
+                $redis = core::redis($pool)->multi();
                 foreach ($keys as $key) {
                     $redis->expire($key, $ttl);
                 }
+                $redis->exec();
             } else {
                 core::redis($pool)->delete($keys, $ttl);
             }

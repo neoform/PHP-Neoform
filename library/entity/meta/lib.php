@@ -46,17 +46,17 @@
          *
          * @param string $engine
          * @param string $engine_pool
-         * @param array  $list_keys   keys are the cache keys, values are arrays of list keys
+         * @param array  $cache_keys  keys are the cache keys, values are arrays of list keys
          *
          * @return array|null
          */
-        public static function push_multi($engine, $engine_pool, array $list_keys) {
+        public static function push_multi($engine, $engine_pool, array $cache_keys) {
 
-            if (! $list_keys) {
+            if (! $cache_keys) {
                 return;
             }
 
             $engine_driver = "entity_meta_driver_{$engine}";
-            return $engine_driver::push_multi($engine_pool, $list_keys);
+            return $engine_driver::push_multi($engine_pool, $cache_keys);
         }
     }

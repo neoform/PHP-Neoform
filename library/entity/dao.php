@@ -256,6 +256,7 @@
                 $list_keys[] = static::ENTITY_NAME . ':' . self::ALWAYS;
             }
 
+            // Create meta data lists
             entity_meta_lib::push(
                 $this->cache_meta_engine,
                 $this->cache_meta_engine_pool_write,
@@ -301,6 +302,7 @@
                 }
             }
 
+            // Create meta data lists
             entity_meta_lib::push_multi(
                 $this->cache_meta_engine,
                 $this->cache_meta_engine_pool_write,

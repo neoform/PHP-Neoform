@@ -198,14 +198,6 @@
 
         protected function insert() {
 
-            /**
-             * Insert Folder link, created from an array of $info
-             *
-             * @param array $info associative array, keys matching columns in database for this entity
-             *
-             * @return boolean
-             */
-
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Insert " . ucwords(str_replace('_', ' ', $this->table->name)) . " link, created from an array of \$info\n";
             $this->code .= "\t\t *\n";

@@ -131,7 +131,7 @@
          */
         public function limit(array $order_by=null, $offset=null, $limit=null) {
             return self::_by_fields(
-                parent::LIMIT,
+                self::LIMIT,
                 [],
                 $order_by,
                 $offset,
@@ -150,7 +150,7 @@
          */
         public function limit_multi(array $order_by=null, $offset=null, $limit=null) {
             return self::_by_fields_multi(
-                parent::LIMIT,
+                self::LIMIT,
                 [],
                 $order_by,
                 $offset,

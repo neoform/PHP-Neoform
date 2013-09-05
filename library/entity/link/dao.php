@@ -143,10 +143,10 @@
                             if (array_key_exists($select_field, $fieldvals)) {
                                 $fieldvals[$select_field] = array_unique(array_merge(
                                     is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
-                                    $results
+                                    array_column($results, $select_field)
                                 ));
                             } else {
-                                $fieldvals[$select_field] = $results;
+                                $fieldvals[$select_field] = array_column($results, $select_field);
                             }
                         }
 
@@ -222,10 +222,10 @@
                             if (array_key_exists($select_field, $fieldvals)) {
                                 $fieldvals[$select_field] = array_unique(array_merge(
                                     is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
-                                    $results_arr[$k]
+                                    array_column($results_arr[$k], $select_field)
                                 ));
                             } else {
-                                $fieldvals[$select_field] = $results_arr[$k];
+                                $fieldvals[$select_field] = array_column($results_arr[$k], $select_field);
                             }
 
                             $cache_keys_fieldvals[$cache_key] = $fieldvals;
@@ -267,10 +267,10 @@
                                 if (array_key_exists($select_field, $fieldvals)) {
                                     $fieldvals[$select_field] = array_unique(array_merge(
                                         is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
-                                        $results_arr[$k]
+                                        array_column($results_arr[$k], $select_field)
                                     ));
                                 } else {
-                                    $fieldvals[$select_field] = $results_arr[$k];
+                                    $fieldvals[$select_field] = array_column($results_arr[$k], $select_field);
                                 }
                             }
 

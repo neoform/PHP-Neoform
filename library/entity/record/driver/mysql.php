@@ -232,49 +232,42 @@
          * @return array
          */
         public static function by_fields_multi(entity_record_dao $self, $pool, array $fieldvals_arr, $pk) {
-            $select_fields  = [ "`{$pk}`" ];
-            $reverse_lookup = [];
-            $return         = [];
-            $vals           = [];
-            $where          = [];
-            $fields         = array_keys(reset($fieldvals_arr));
+            $return  = [];
+            $vals    = [];
+            $queries = [];
 
-            foreach ($fields as $k) {
-                $select_fields[] = "`{$k}`";
-            }
-
+            $query = "
+                SELECT `{$pk}`, ? `__k__`
+                FROM `" . self::table($self::TABLE) . "`
+            ";
             foreach ($fieldvals_arr as $k => $fieldvals) {
-                $w             = [];
-                $return[$k]    = [];
-                $hashed_valued = [];
+                $where      = [];
+                $return[$k] = [];
+                $vals[]     = $k;
+
                 foreach ($fieldvals as $field => $val) {
                     if ($val === null) {
-                        $w[]             = "`{$field}` IS NULL";
-                        $hashed_valued[] = '';
+                        $where[] = "`{$field}` IS NULL";
                     } else {
-                        $vals[]          = $val;
-                        $w[]             = "`{$field}` = ?";
-                        $hashed_valued[] = md5($val);
+                        $vals[]  = $val;
+                        $where[] = "`{$field}` = ?";
                     }
                 }
-                $reverse_lookup[join(':', $hashed_valued)] = $k;
-                $where[] = '(' . join(" AND ", $w) . ')';
+
+                $queries[] = "(
+                    {$query}
+                    WHERE " . join(' AND ', $where) . "
+                )";
             }
 
-            $rs = core::sql($pool)->prepare("
-                SELECT " . join(", ", $select_fields) . "
-                FROM `" . self::table($self::TABLE) . "`
-                WHERE " . join(" OR ", $where) . "
-            ");
+            $rs = core::sql($pool)->prepare(
+                join(' UNION ALL ', $queries)
+            );
 
             $rs->execute($vals);
 
             foreach ($rs->fetchAll() as $row) {
-                $hashed = [];
-                foreach ($fields as $k) {
-                    $hashed[$row[$k]] = md5($row[$k]);
-                }
-                $return[$reverse_lookup[join(':', $hashed)]][] = $row[$pk];
+                $return[$row['__k__']][] = $row[$pk];
             }
 
             return $return;
@@ -378,7 +371,7 @@
 
             // QUERY
             $query = "
-                SELECT `{$pk}`, ? __k__
+                SELECT `{$pk}`, ? `__k__`
                 FROM `" . self::table($self::TABLE) . "`
             ";
 

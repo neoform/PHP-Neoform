@@ -70,70 +70,53 @@
          * @return array
          */
         public static function by_fields_multi(entity_link_dao $self, $pool, array $select_fields, array $fieldvals_arr) {
-            $fieldvals_fields     = array_keys(reset($fieldvals_arr));
             $quoted_select_fields = [];
-            $reverse_lookup       = [];
             $return               = [];
+            $queries              = [];
             $vals                 = [];
-            $where                = [];
 
-            foreach (array_unique(array_merge($select_fields, $fieldvals_fields)) as $field) {
+            foreach ($select_fields as $field) {
                 $quoted_select_fields[] = "`{$field}`";
             }
 
+            $query = "
+                SELECT " . join(',', $quoted_select_fields) . ", ? `__k__`
+                FROM `" . self::table($self::TABLE) . "`
+            ";
+
             foreach ($fieldvals_arr as $k => $fieldvals) {
-                $w             = [];
-                $return[$k]    = [];
-                $hashed_valued = [];
+                $where      = [];
+                $return[$k] = [];
+                $vals[]     = $k;
+
                 foreach ($fieldvals as $field => $val) {
                     if ($val === null) {
-                        $w[]             = "`{$field}` IS NULL";
-                        $hashed_valued[] = '';
+                        $where[] = "`{$field}` IS NULL";
                     } else {
-                        $vals[]          = $val;
-                        $w[]             = "`{$field}` = ?";
-                        $hashed_valued[] = md5($val);
+                        $vals[]  = $val;
+                        $where[] = "`{$field}` = ?";
                     }
                 }
-                $reverse_lookup[join(':', $hashed_valued)] = $k;
-                $where[] = '(' . join(" AND ", $w) . ')';
+                $queries[] = "(
+                    {$query}
+                    WHERE " . join(' AND ', $where) . "
+                )";
             }
 
-            $rs = core::sql($pool)->prepare("
-                SELECT " . join(',', $quoted_select_fields) . "
-                FROM `" . self::table($self::TABLE) . "`
-                WHERE " . join(' OR ', $where) . "
-            ");
+            $rs = core::sql($pool)->prepare(
+                join(' UNION ALL ', $queries)
+            );
             $rs->execute($vals);
 
             if (count($select_fields) === 1) {
                 $field = reset($select_fields);
                 foreach ($rs->fetchAll() as $row) {
-                    $hashed = [];
-                    foreach ($fieldvals_fields as $k) {
-                        $hashed[$row[$field]] = md5($row[$k]);
-                    }
-                    $return[$reverse_lookup[join(':', $hashed)]][] = $row[$field];
+                    $return[$row['__k__']][] = $row[$field];
                 }
             } else {
                 // If the selected field count is different than the requested fields, only return the requested fields
-                if (count($select_fields) !== count($quoted_select_fields)) {
-                    $select_fields = array_keys($select_fields);
-                    foreach ($rs->fetchAll() as $row) {
-                        $hashed = [];
-                        foreach ($fieldvals_fields as $field) {
-                            $hashed[$row[$field]] = md5($row[$field]);
-                        }
-                        $return[$reverse_lookup[join(':', $hashed)]][] = array_intersect_key($row, $select_fields);
-                    }
-                } else {
-                    foreach ($rs->fetchAll() as $row) {
-                        $hashed = [];
-                        foreach ($fieldvals_fields as $field) {
-                            $hashed[$row[$field]] = md5($row[$field]);
-                        }
-                        $return[$reverse_lookup[join(':', $hashed)]][] = $row;
-                    }
+                foreach ($rs->fetchAll() as $row) {
+                    $return[$row['__k__']][] = array_intersect_key($row, array_keys($select_fields));
                 }
             }
 
@@ -362,7 +345,7 @@
                 }
 
                 $queries[] = "(
-                    SELECT COUNT(0) `num`, ? k
+                    SELECT COUNT(0) `num`, ? `k`
                     FROM `" . self::table($self::TABLE) . "`
                     " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
                 )";

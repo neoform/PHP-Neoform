@@ -69,70 +69,52 @@
          * @return array
          */
         public static function by_fields_multi(entity_link_dao $self, $pool, array $select_fields, array $fieldvals_arr) {
-            $key_fields     = array_keys(reset($fieldvals_arr));
-            $fields         = [];
-            $reverse_lookup = [];
-            $return         = [];
-            $vals           = [];
-            $where          = [];
+            $fields  = [];
+            $return  = [];
+            $vals    = [];
+            $queries = [];
 
-            foreach (array_unique(array_merge($select_fields, $key_fields)) as $k) {
-                $fields[] = "\"{$k}\"";
+            foreach ($select_fields as $field) {
+                $fields[] = "\"{$field}\"";
             }
+
+            $query = "
+                SELECT " . join(',', $fields) . ", ? \"__k__\"
+                FROM \"" . self::table($self::TABLE) . "\"
+            ";
 
             foreach ($fieldvals_arr as $k => $fieldvals) {
-                $w = [];
+                $where      = [];
                 $return[$k] = [];
-                $hashed_valued = [];
+                $vals       = $k;
+
                 foreach ($fieldvals as $field => $val) {
                     if ($val === null) {
-                        $w[]             = "\"{$field}\" IS NULL";
-                        $hashed_valued[] = '';
+                        $where[] = "\"{$field}\" IS NULL";
                     } else {
-                        $vals[]          = $val;
-                        $w[]             = "\"{$field}\" = ?";
-                        $hashed_valued[] = md5($val);
+                        $vals[]  = $val;
+                        $where[] = "\"{$field}\" = ?";
                     }
                 }
-                $reverse_lookup[join(':', $hashed_valued)] = $k;
-                $where[] = '(' . join(" AND ", $w) . ')';
+                $queries[] = "(
+                    {$query}
+                    WHERE " . join(' OR ', $where) . "
+                )";
             }
 
-            $rs = core::sql($pool)->prepare("
-                SELECT " . join(',', $fields) . "
-                FROM \"" . self::table($self::TABLE) . "\"
-                WHERE " . join(' OR ', $where) . "
-            ");
+            $rs = core::sql($pool)->prepare(
+                join(' UNION ALL ', $queries)
+            );
             $rs->execute($vals);
 
             if (count($select_fields) === 1) {
                 $field = reset($select_fields);
                 foreach ($rs->fetchAll() as $row) {
-                    $hashed = [];
-                    foreach ($key_fields as $k) {
-                        $hashed[$row[$k]] = md5($row[$k]);
-                    }
-                    $return[$reverse_lookup[join(':', $hashed)]][] = $row[$field];
+                    $return[$row['__k__']][] = $row[$field];
                 }
             } else {
-                // If the selected field count is different than the requested fields, only return the requested fields
-                if (count($select_fields) !== count($fields)) {
-                    $select_fields = array_keys($select_fields);
-                    foreach ($rs->fetchAll() as $row) {
-                        $hashed = [];
-                        foreach ($key_fields as $k) {
-                            $hashed[$row[$k]] = md5($row[$k]);
-                        }
-                        $return[$reverse_lookup[join(':', $hashed)]][] = array_intersect_key($row, $select_fields);
-                    }
-                } else {
-                    foreach ($rs->fetchAll() as $row) {
-                        $hashed = [];
-                        foreach ($key_fields as $k) {
-                            $hashed[$row[$k]] = md5($row[$k]);
-                        }
-                        $return[$reverse_lookup[join(':', $hashed)]][] = $row;
-                    }
+                foreach ($rs->fetchAll() as $row) {
+                    $return[$row['__k__']][] = array_intersect_key($row, array_keys($select_fields));
                 }
             }
 
@@ -249,7 +231,7 @@
 
             // QUERIES
             $query = "
-                SELECT \"{$local_field}\", ? __k__
+                SELECT \"{$local_field}\", ? \"__k__\"
                 FROM \"" . self::table($self::TABLE) . "\"
                 INNER JOIN \"{$quoted_foreign_table}\"
                 ON \"{$quoted_foreign_table}\".\"{$foreign_pk}\" = \"{$quoted_table}\".\"{$local_field}\"

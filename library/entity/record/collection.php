@@ -367,12 +367,12 @@
          * Preload record/link counts based on fields
          *
          * @param string $entity
-         * @param array  $fields list of fields (from the model) to use to determine the count
          * @param string $model_var_name
+         * @param array  $fields list of fields (from the model) to use to determine the count
          *
          * @return entity_record_collection
          */
-        protected function _preload_counts($entity, array $fields, $model_var_name) {
+        protected function _preload_counts($entity, $model_var_name, array $fields) {
 
             $fieldvals = $this->export($fields);
 

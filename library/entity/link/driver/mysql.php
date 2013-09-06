@@ -286,13 +286,13 @@
         /**
          * Get a count
          *
-         * @param entity_record_dao $self
-         * @param string            $pool
-         * @param array             $fieldvals
+         * @param entity_link_dao $self
+         * @param string          $pool
+         * @param array           $fieldvals
          *
          * @return integer
          */
-        public static function count(entity_record_dao $self, $pool, array $fieldvals=null) {
+        public static function count(entity_link_dao $self, $pool, array $fieldvals=null) {
             $where = [];
             $vals  = [];
 
@@ -319,13 +319,13 @@
         /**
          * Get multiple counts
          *
-         * @param entity_record_dao $self
-         * @param string            $pool
-         * @param array             $fieldvals_arr
+         * @param entity_link_dao $self
+         * @param string          $pool
+         * @param array           $fieldvals_arr
          *
          * @return array
          */
-        public static function count_multi(entity_record_dao $self, $pool, array $fieldvals_arr) {
+        public static function count_multi(entity_link_dao $self, $pool, array $fieldvals_arr) {
             $queries = [];
             $vals    = [];
             $counts  = [];

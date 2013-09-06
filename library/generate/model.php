@@ -189,10 +189,11 @@
 
             $self_reference = $field->table === $this->table;
 
+            // Collection
             $name = $this->used(($self_reference ? 'child_' : '') . $field->table->name . '_collection');
 
             $this->code .= "\t\t/**\n";
-            $this->code .= "\t\t * " . ($self_reference ? 'Child ' : '') . ucwords(str_replace('_', ' ', $field->table->name . '_collection')) . "\n";
+            $this->code .= "\t\t * " . ($self_reference ? 'Child ' : '') . ucwords(str_replace('_', ' ', $field->table->name . ' Collection')) . "\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @param array|null   \$order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)\n";
             $this->code .= "\t\t * @param integer|null \$offset get PKs starting at this offset\n";
@@ -210,6 +211,25 @@
             $this->code .= "\t\t\t}\n";
             $this->code .= "\t\t\treturn \$this->_vars[\$key];\n";
             $this->code .= "\t\t}\n\n";
+
+            // Count
+            $name = $this->used(($self_reference ? 'child_' : '') . $field->table->name . '_count');
+
+            $this->code .= "\t\t/**\n";
+            $this->code .= "\t\t * " . ($self_reference ? 'Child ' : '') . ucwords(str_replace('_', ' ', $field->table->name . ' Count')) . "\n";
+            $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @return integer\n";
+            $this->code .= "\t\t */\n";
+            $this->code .= "\t\tpublic function {$name}() {\n";
+            $this->code .= "\t\t\t\$fieldvals = [\n";
+            $this->code .= "\t\t\t\t'{$field->name}' => ({$referenced_field->casting}) \$this->vars['{$referenced_field->name}'],\n";
+            $this->code .= "\t\t\t];\n\n";
+            $this->code .= "\t\t\t\$key = parent::_count_var_key('{$name}', \$fieldvals);\n";
+            $this->code .= "\t\t\tif (! array_key_exists(\$key, \$this->_vars)) {\n";
+            $this->code .= "\t\t\t\t\$this->_vars[\$key] = entity::dao('{$field->table->name}')->count(\$fieldvals);\n";
+            $this->code .= "\t\t\t}\n";
+            $this->code .= "\t\t\treturn \$this->_vars[\$key];\n";
+            $this->code .= "\t\t}\n\n";
         }
 
         protected function many_to_many(sql_parser_field $field) {
@@ -218,21 +238,47 @@
 
             $self_reference = $field->table === $this->table;
 
+            // Collection
             $name = $this->used(($self_reference ? 'child_' : '') . $referenced_field->referenced_field->table->name . "_collection");
 
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * " . ($self_reference ? 'Child ' : '') . ucwords(str_replace('_', ' ', $referenced_field->referenced_field->table->name)) . " Collection\n";
             $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @param array|null   \$order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)\n";
+            $this->code .= "\t\t * @param integer|null \$offset get PKs starting at this offset\n";
+            $this->code .= "\t\t * @param integer|null \$limit max number of PKs to return\n";
+            $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @return " . $referenced_field->referenced_field->table->name . "_collection\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic function {$name}() {\n";
-            $this->code .= "\t\t\tif (! array_key_exists('{$name}', \$this->_vars)) {\n";
-            $this->code .= "\t\t\t\t\$this->_vars['{$name}'] = new " . $referenced_field->referenced_field->table->name . "_collection(\n";
-            $this->code .= "\t\t\t\t\tentity::dao('{$field->table->name}')->by_{$field->name_idless}(\$this->vars['" . $field->referenced_field->name . "'])\n";
+            $this->code .= "\t\tpublic function {$name}(array \$order_by=null, \$offset=null, \$limit=null) {\n";
+            $this->code .= "\t\t\t\$key = self::_limit_var_key('{$name}', \$order_by, \$offset, \$limit);\n";
+            $this->code .= "\t\t\tif (! array_key_exists(\$key, \$this->_vars)) {\n";
+            $this->code .= "\t\t\t\t\$this->_vars[\$key] = new " . $referenced_field->referenced_field->table->name . "_collection(\n";
+            $this->code .= "\t\t\t\t\tentity::dao('{$field->table->name}')->by_{$field->name_idless}(\$this->vars['{$field->referenced_field->name}'], \$order_by, \$offset, \$limit)\n";
             $this->code .= "\t\t\t\t);\n";
             $this->code .= "\t\t\t}\n";
-            $this->code .= "\t\t\treturn \$this->_vars['{$name}'];\n";
+            $this->code .= "\t\t\treturn \$this->_vars[\$key];\n";
+            $this->code .= "\t\t}\n\n";
+
+
+            // Count
+            $name = $this->used(($self_reference ? 'child_' : '') . $referenced_field->referenced_field->table->name . "_count");
+
+            $this->code .= "\t\t/**\n";
+            $this->code .= "\t\t * " . ($self_reference ? 'Child ' : '') . ucwords(str_replace('_', ' ', $referenced_field->referenced_field->table->name)) . " count\n";
+            $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @return integer\n";
+            $this->code .= "\t\t */\n";
+            $this->code .= "\t\tpublic function {$name}() {\n";
+            $this->code .= "\t\t\t\$fieldvals = [\n";
+            $this->code .= "\t\t\t\t'{$field->name}' => ({$field->referenced_field->casting}) \$this->vars['{$field->referenced_field->name}'],\n";
+            $this->code .= "\t\t\t];\n\n";
+            $this->code .= "\t\t\t\$key = parent::_count_var_key('{$name}', \$fieldvals);\n";
+            $this->code .= "\t\t\tif (! array_key_exists(\$key, \$this->_vars)) {\n";
+            $this->code .= "\t\t\t\t\$this->_vars[\$key] = entity::dao('{$field->table->name}')->count(\$fieldvals);\n";
+            $this->code .= "\t\t\t}\n";
+            $this->code .= "\t\t\treturn \$this->_vars[\$key];\n";
             $this->code .= "\t\t}\n\n";
         }
     }

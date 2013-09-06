@@ -61,6 +61,23 @@
         }
 
         /**
+         * City Count
+         *
+         * @return integer
+         */
+        public function city_count() {
+            $fieldvals = [
+                'region_id' => (int) $this->vars['id'],
+            ];
+
+            $key = parent::_count_var_key('city_count', $fieldvals);
+            if (! array_key_exists($key, $this->_vars)) {
+                $this->_vars[$key] = entity::dao('city')->count($fieldvals);
+            }
+            return $this->_vars[$key];
+        }
+
+        /**
          * Country Model based on 'country_id'
          *
          * @return country_model

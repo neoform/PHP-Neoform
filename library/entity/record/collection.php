@@ -362,6 +362,33 @@
 
             return new $collection_name(null, $models);
         }
+
+        /**
+         * Preload record/link counts based on fields
+         *
+         * @param string $entity
+         * @param array  $fields list of fields (from the model) to use to determine the count
+         * @param string $model_var_name
+         *
+         * @return entity_record_collection
+         */
+        protected function _preload_counts($entity, array $fields, $model_var_name) {
+
+            $fieldvals = $this->export($fields);
+
+            $counts = entity::dao($entity)->count_multi($fieldvals);
+
+            foreach ($this as $k => $model) {
+                $model->_set_var(
+                    $model::_count_var_key(
+                        $model_var_name,
+                        $fieldvals[$k]
+                    ),
+                    isset($counts[$k]) ? $counts[$k] : 0
+                );
+            }
+            return $counts;
+        }
     }
 
 

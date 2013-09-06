@@ -50,4 +50,21 @@
             }
             return $this->_vars[$key];
         }
+
+        /**
+         * Region Count
+         *
+         * @return integer
+         */
+        public function region_count() {
+            $fieldvals = [
+                'country_id' => (int) $this->vars['id'],
+            ];
+
+            $key = parent::_count_var_key('region_count', $fieldvals);
+            if (! array_key_exists($key, $this->_vars)) {
+                $this->_vars[$key] = entity::dao('region')->count($fieldvals);
+            }
+            return $this->_vars[$key];
+        }
     }

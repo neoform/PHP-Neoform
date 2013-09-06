@@ -28,14 +28,21 @@
         /**
          * Preload the Acl Role models in this collection
          *
+         * @param array        $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset   get PKs starting at this offset
+         * @param integer|null $limit    max number of PKs to return
+         *
          * @return acl_role_collection
          */
-        public function acl_role_collection() {
+        public function acl_role_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'acl_role_resource',
                 'by_acl_resource',
                 'acl_role',
-                'acl_role_collection'
+                'acl_role_collection',
+                $order_by,
+                $offset,
+                $limit
             );
         }
 

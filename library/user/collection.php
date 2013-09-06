@@ -8,14 +8,21 @@
         /**
          * Preload the Acl Group models in this collection
          *
+         * @param array        $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset   get PKs starting at this offset
+         * @param integer|null $limit    max number of PKs to return
+         *
          * @return acl_group_collection
          */
-        public function acl_group_collection() {
+        public function acl_group_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'acl_group_user',
                 'by_user',
                 'acl_group',
-                'acl_group_collection'
+                'acl_group_collection',
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -40,16 +47,44 @@
         }
 
         /**
+         * Preload the Club models in this collection
+         *
+         * @param array        $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset   get PKs starting at this offset
+         * @param integer|null $limit    max number of PKs to return
+         *
+         * @return club_collection
+         */
+        public function club_collection(array $order_by=null, $offset=null, $limit=null) {
+            return $this->_preload_many_to_many(
+                'club_user',
+                'by_user',
+                'club',
+                'club_collection',
+                $order_by,
+                $offset,
+                $limit
+            );
+        }
+
+        /**
          * Preload the Acl Role models in this collection
+         *
+         * @param array        $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset   get PKs starting at this offset
+         * @param integer|null $limit    max number of PKs to return
          *
          * @return acl_role_collection
          */
-        public function acl_role_collection() {
+        public function acl_role_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'user_acl_role',
                 'by_user',
                 'acl_role',
-                'acl_role_collection'
+                'acl_role_collection',
+                $order_by,
+                $offset,
+                $limit
             );
         }
 
@@ -82,14 +117,21 @@
         /**
          * Preload the Site models in this collection
          *
+         * @param array        $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset   get PKs starting at this offset
+         * @param integer|null $limit    max number of PKs to return
+         *
          * @return site_collection
          */
-        public function site_collection() {
+        public function site_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'user_site',
                 'by_user',
                 'site',
-                'site_collection'
+                'site_collection',
+                $order_by,
+                $offset,
+                $limit
             );
         }
 

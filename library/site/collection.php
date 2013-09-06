@@ -8,14 +8,21 @@
         /**
          * Preload the User models in this collection
          *
+         * @param array        $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset   get PKs starting at this offset
+         * @param integer|null $limit    max number of PKs to return
+         *
          * @return user_collection
          */
-        public function user_collection() {
+        public function user_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'user_site',
                 'by_site',
                 'user',
-                'user_collection'
+                'user_collection',
+                $order_by,
+                $offset,
+                $limit
             );
         }
     }

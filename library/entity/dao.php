@@ -186,7 +186,7 @@
          * @return string
          */
         final protected static function _build_key_list_field($field_name) {
-            return static::ENTITY_NAME . ':' . self::META . "[{$field_name}]";
+            return static::ENTITY_NAME . ':' . self::META . ":{$field_name}";
         }
 
         /**

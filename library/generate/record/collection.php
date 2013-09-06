@@ -136,15 +136,22 @@
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Preload the " . ucwords(str_replace('_', ' ', $referenced_field->referenced_field->table->name)) . " models in this collection\n";
             $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @param array        \$order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)\n";
+            $this->code .= "\t\t * @param integer|null \$offset   get PKs starting at this offset\n";
+            $this->code .= "\t\t * @param integer|null \$limit    max number of PKs to return\n";
+            $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @return " . $referenced_field->referenced_field->table->name . "_collection\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic function {$name}() {\n";
+            $this->code .= "\t\tpublic function {$name}(array \$order_by=null, \$offset=null, \$limit=null) {\n";
             $this->code .= "\t\t\treturn \$this->_preload_many_to_many(\n";
             $this->code .= "\t\t\t\t'{$field->table->name}',\n";
             $this->code .= "\t\t\t\t'by_{$field->name_idless}',\n";
             $this->code .= "\t\t\t\t'{$referenced_field->referenced_field->table->name}',\n";
-            $this->code .= "\t\t\t\t'{$model_var_name}'\n";
+            $this->code .= "\t\t\t\t'{$model_var_name}',\n";
+            $this->code .= "\t\t\t\t\$order_by,\n";
+            $this->code .= "\t\t\t\t\$offset,\n";
+            $this->code .= "\t\t\t\t\$limit\n";
             $this->code .= "\t\t\t);\n";
             $this->code .= "\t\t}\n\n";
         }

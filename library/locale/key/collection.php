@@ -28,14 +28,21 @@
         /**
          * Preload the Locale models in this collection
          *
+         * @param array        $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
+         * @param integer|null $offset   get PKs starting at this offset
+         * @param integer|null $limit    max number of PKs to return
+         *
          * @return locale_collection
          */
-        public function locale_collection() {
+        public function locale_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'locale_key_message',
                 'by_key',
                 'locale',
-                'locale_collection'
+                'locale_collection',
+                $order_by,
+                $offset,
+                $limit
             );
         }
 

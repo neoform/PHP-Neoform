@@ -16,12 +16,25 @@
          */
         public function locale_key_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_one_to_many(
+                'locale_key_collection',
                 'locale_key',
                 'by_namespace',
-                'locale_key_collection',
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Preload the Locale Key counts
+         *
+         * @return array counts
+         */
+        public function locale_key_count() {
+            return $this->_preload_counts(
+                'locale_key_count',
+                'locale_key',
+                'namespace_id'
             );
         }
     }

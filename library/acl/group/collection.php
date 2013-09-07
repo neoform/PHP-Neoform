@@ -16,13 +16,26 @@
          */
         public function acl_role_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
+                'acl_role_collection',
                 'acl_group_role',
                 'by_acl_group',
                 'acl_role',
-                'acl_role_collection',
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Preload the Acl Role counts
+         *
+         * @return array counts
+         */
+        public function acl_role_count() {
+            return $this->_preload_counts(
+                'acl_role_count',
+                'acl_group_role',
+                'acl_group_id'
             );
         }
 
@@ -37,13 +50,26 @@
          */
         public function user_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
+                'user_collection',
                 'acl_group_user',
                 'by_acl_group',
                 'user',
-                'user_collection',
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Preload the User counts
+         *
+         * @return array counts
+         */
+        public function user_count() {
+            return $this->_preload_counts(
+                'user_count',
+                'acl_group_user',
+                'acl_group_id'
             );
         }
     }

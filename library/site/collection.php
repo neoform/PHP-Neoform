@@ -16,13 +16,26 @@
          */
         public function user_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
+                'user_collection',
                 'user_site',
                 'by_site',
                 'user',
-                'user_collection',
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Preload the User counts
+         *
+         * @return array counts
+         */
+        public function user_count() {
+            return $this->_preload_counts(
+                'user_count',
+                'user_site',
+                'site_id'
             );
         }
     }

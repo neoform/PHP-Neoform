@@ -16,13 +16,26 @@
          */
         public function acl_group_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
+                'acl_group_collection',
                 'acl_group_role',
                 'by_acl_role',
                 'acl_group',
-                'acl_group_collection',
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Preload the Acl Group counts
+         *
+         * @return array counts
+         */
+        public function acl_group_count() {
+            return $this->_preload_counts(
+                'acl_group_count',
+                'acl_group_role',
+                'acl_role_id'
             );
         }
 
@@ -37,13 +50,26 @@
          */
         public function acl_resource_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
+                'acl_resource_collection',
                 'acl_role_resource',
                 'by_acl_role',
                 'acl_resource',
-                'acl_resource_collection',
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Preload the Acl Resource counts
+         *
+         * @return array counts
+         */
+        public function acl_resource_count() {
+            return $this->_preload_counts(
+                'acl_resource_count',
+                'acl_role_resource',
+                'acl_role_id'
             );
         }
 
@@ -58,13 +84,26 @@
          */
         public function user_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
+                'user_collection',
                 'user_acl_role',
                 'by_acl_role',
                 'user',
-                'user_collection',
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Preload the User counts
+         *
+         * @return array counts
+         */
+        public function user_count() {
+            return $this->_preload_counts(
+                'user_count',
+                'user_acl_role',
+                'acl_role_id'
             );
         }
     }

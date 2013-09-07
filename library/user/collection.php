@@ -16,13 +16,26 @@
          */
         public function acl_group_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
+                'acl_group_collection',
                 'acl_group_user',
                 'by_user',
                 'acl_group',
-                'acl_group_collection',
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Preload the Acl Group counts
+         *
+         * @return array counts
+         */
+        public function acl_group_count() {
+            return $this->_preload_counts(
+                'acl_group_count',
+                'acl_group_user',
+                'user_id'
             );
         }
 
@@ -37,12 +50,25 @@
          */
         public function auth_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_one_to_many(
+                'auth_collection',
                 'auth',
                 'by_user',
-                'auth_collection',
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Preload the Auth counts
+         *
+         * @return array counts
+         */
+        public function auth_count() {
+            return $this->_preload_counts(
+                'auth_count',
+                'auth',
+                'user_id'
             );
         }
 
@@ -57,13 +83,26 @@
          */
         public function club_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
+                'club_collection',
                 'club_user',
                 'by_user',
                 'club',
-                'club_collection',
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Preload the Club counts
+         *
+         * @return array counts
+         */
+        public function club_count() {
+            return $this->_preload_counts(
+                'club_count',
+                'club_user',
+                'user_id'
             );
         }
 
@@ -78,13 +117,26 @@
          */
         public function acl_role_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
+                'acl_role_collection',
                 'user_acl_role',
                 'by_user',
                 'acl_role',
-                'acl_role_collection',
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Preload the Acl Role counts
+         *
+         * @return array counts
+         */
+        public function acl_role_count() {
+            return $this->_preload_counts(
+                'acl_role_count',
+                'user_acl_role',
+                'user_id'
             );
         }
 
@@ -96,8 +148,8 @@
         public function user_date_collection() {
             return $this->_preload_one_to_one(
                 'user_date',
-                'id',
-                'user_date'
+                'user_date',
+                'id'
             );
         }
 
@@ -109,8 +161,8 @@
         public function user_lostpassword_collection() {
             return $this->_preload_one_to_one(
                 'user_lostpassword',
-                'id',
-                'user_lostpassword'
+                'user_lostpassword',
+                'id'
             );
         }
 
@@ -125,13 +177,26 @@
          */
         public function site_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
+                'site_collection',
                 'user_site',
                 'by_user',
                 'site',
-                'site_collection',
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Preload the Site counts
+         *
+         * @return array counts
+         */
+        public function site_count() {
+            return $this->_preload_counts(
+                'site_count',
+                'user_site',
+                'user_id'
             );
         }
 
@@ -143,8 +208,8 @@
         public function user_hashmethod_collection() {
             return $this->_preload_one_to_one(
                 'user_hashmethod',
-                'password_hashmethod',
-                'user_hashmethod'
+                'user_hashmethod',
+                'password_hashmethod'
             );
         }
 
@@ -156,8 +221,8 @@
         public function user_status_collection() {
             return $this->_preload_one_to_one(
                 'user_status',
-                'status_id',
-                'user_status'
+                'user_status',
+                'status_id'
             );
         }
     }

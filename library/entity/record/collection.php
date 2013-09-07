@@ -132,15 +132,16 @@
         /**
          * Get an array with the values of the models in the collection
          *
-         * @param string $field
+         * @param string      $field
+         * @param string|null $key
          *
          * @return array
          */
-        public function field($field) {
+        public function field($field, $key=null) {
             if (! array_key_exists($field, $this->_vars)) {
                 $arr = [];
                 foreach ($this as $k => $record) {
-                    $arr[$k] = $record->$field;
+                    $arr[$key ? $record->$key : $k] = $record->$field;
                 }
                 $this->_vars[$field] = $arr;
             }
@@ -209,16 +210,17 @@
          * Get many groups of records all in one shot. This greatly reduces the number of requests to the cache service,
          * which can greatly speed up an application.
          *
-         * @param string       $entity         eg, user
-         * @param string       $by_function    eg, by_comments
-         * @param string       $model_var_name Key (in $model::$_var) that stores preloaded model data
-         * @param array        $order_by       array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
-         * @param integer|null $offset         get PKs starting at this offset
-         * @param integer|null $limit          max number of PKs to return
+         * @param string       $_var_key    Key (in $model::$_var) that stores preloaded model data
+         * @param string       $entity      eg, user
+         * @param string       $by_function eg, by_comments
+         * @param array|null   $order_by    array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param integer|null $offset      get PKs starting at this offset
+         * @param integer|null $limit       max number of PKs to return
          *
          * @return entity_record_collection
          */
-        protected function _preload_one_to_many($entity, $by_function, $model_var_name, array $order_by=null, $offset=null, $limit=null) {
+        protected function _preload_one_to_many($_var_key, $entity, $by_function, array $order_by=null, $offset=null,
+                                                $limit=null) {
 
             $collection_name  = "{$entity}_collection";
             $model_name       = "{$entity}_model";
@@ -237,13 +239,13 @@
             }
 
             // get all the records all in one shot
-            $models = new $collection_name(null, $dao->records($pks));
+            $collection = new $collection_name(null, $dao->records($pks));
 
             // sort flat array back into grouped data again
             foreach ($pks_groups as & $pks_group) {
                 foreach ($pks_group as $k => $pk) {
-                    if (isset($models[$pk])) {
-                        $pks_group[$k] = $models[$pk];
+                    if (isset($collection[$pk])) {
+                        $pks_group[$k] = $collection[$pk];
                     } else {
                         // this shouldn't actually happen... if it did, something went wrong in the DAO
                         unset($pks_group[$k]);
@@ -256,7 +258,7 @@
                 if (isset($pks_groups[$key])) {
                     $model->_set_var(
                         $model_name::_limit_var_key(
-                            $model_var_name,
+                            $_var_key,
                             $order_by,
                             $offset,
                             $limit
@@ -265,28 +267,31 @@
                     );
                 }
             }
-            return $models;
+            return $collection;
         }
 
         /**
          * Get many groups of records all in one shot. This greatly reduces the number of requests to the cache service,
          * which can greatly speed up an application.
          *
-         * @param string $entity         eg, user_permission
-         * @param string $by_function    eg, by_user
-         * @param string $foreign_type   eg, permission
-         * @param string $model_var_name Key (in $model::$_var) that stores preloaded model data
+         * @param string       $_var_key       Key (in $model::$_var) that stores preloaded model data
+         * @param string       $entity         eg, user_permission
+         * @param string       $by_function    eg, by_user
+         * @param string       $foreign_type   eg, permission
+         * @param array|null   $order_by       array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param integer|null $offset         get PKs starting at this offset
+         * @param integer|null $limit          max number of PKs to return
          *
          * @return entity_record_collection
          */
-        protected function _preload_many_to_many($entity, $by_function, $foreign_type, $model_var_name) {
+        protected function _preload_many_to_many($_var_key, $entity, $by_function, $foreign_type,
+                                                 array $order_by=null, $offset=null, $limit=null) {
 
             $by_function             .= '_multi';
             $foreign_collection_name  = "{$foreign_type}_collection";
-            $foreign_model_name       = "{$foreign_type}_model";
 
             // Get the ids for those
-            $pks_groups = entity::dao($entity)->$by_function($this);
+            $pks_groups = entity::dao($entity)->$by_function($this, $order_by, $offset, $limit);
             $pks        = [];
 
             // make a flat array of all keys, removing dupes along the way.
@@ -297,13 +302,13 @@
             }
 
             // get all the records all in one shot
-            $models = new $foreign_collection_name(null, entity::dao($foreign_type)->records($pks));
+            $collection = new $foreign_collection_name(null, entity::dao($foreign_type)->records($pks));
 
             // sort flat array back into grouped data again
             foreach ($pks_groups as & $pks_group) {
                 foreach ($pks_group as $k => $pk) {
-                    if (isset($models[$pk])) {
-                        $pks_group[$k] = $models[$pk];
+                    if (isset($collection[$pk])) {
+                        $pks_group[$k] = $collection[$pk];
                     } else {
                         // this shouldn't actually happen... if it did, something went wrong in the DAO
                         unset($pks_group[$k]);
@@ -314,25 +319,25 @@
             foreach ($this as $key => $model) {
                 if (isset($pks_groups[$key])) {
                     $model->_set_var(
-                        $model_var_name,
+                        $_var_key,
                         new $foreign_collection_name(null, $pks_groups[$key])
                     );
                 }
             }
-            return $models;
+            return $collection;
         }
 
         /**
          * Get many groups of records all in one shot. This greatly reduces the number of requests to the cache service,
          * which can greatly speed up an application.
          *
-         * @param string $entity         Name of the entity
-         * @param string $field          Corresponding field for that entity
-         * @param string $model_var_name Key (in $model::$_var) that stores preloaded model data
+         * @param string $_var_key Key (in $model::$_var) that stores preloaded model data
+         * @param string $entity   Name of the entity
+         * @param string $field    Corresponding field for that entity
          *
          * @return entity_record_collection
          */
-        protected function _preload_one_to_one($entity, $field, $model_var_name) {
+        protected function _preload_one_to_one($_var_key, $entity, $field) {
 
             $model_name      = "{$entity}_model";
             $collection_name = "{$entity}_collection";
@@ -349,13 +354,50 @@
                 $k = $model->$field;
                 if (isset($infos[$k])) {
                     $model->_set_var(
-                        $model_var_name,
+                        $_var_key,
                         $models[$key] = new $model_name(null, $infos[$k])
                     );
                 }
             }
 
             return new $collection_name(null, $models);
+        }
+
+        /**
+         * Preload record/link counts based on fields
+         *
+         * @param string $_var_key
+         * @param string $entity
+         * @param string $foreign_field_name field name used to filter the dao count
+         *
+         * @return entity_record_collection
+         */
+        protected function _preload_counts($_var_key, $entity, $foreign_field_name) {
+
+            $pk = static::PRIMARY_KEY;
+
+            // Build list of keyvals to filter the counts
+            $fieldvals = [];
+            foreach ($this as $k => $model) {
+                $fieldvals[$k] = [ $foreign_field_name => $model->$pk, ];
+            }
+
+            // Get the counts (as a multi get)
+            $counts = entity::dao($entity)->count_multi($fieldvals);
+
+            // Insert the counts into each model's $_var cache
+            foreach ($this as $k => $model) {
+                $model->_set_var(
+                    $model::_count_var_key(
+                        $_var_key,
+                        $fieldvals[$k]
+                    ),
+                    $counts[$k]
+                );
+            }
+
+            // Return the counts
+            return $counts;
         }
     }
 

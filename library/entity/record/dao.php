@@ -12,57 +12,15 @@
      * since that list is possibly no longer accurate. Also, since the result sets use limit/offsets, there are often
      * more than on result set cached away, so *all* cached result sets that used email to be ordered, most be destroyed.
      */
-    abstract class entity_record_dao {
-
-        protected $source_engine;
-        protected $source_engine_pool_read;
-        protected $source_engine_pool_write;
-
-        protected $cache_engine;
-        protected $cache_engine_pool_read;
-        protected $cache_engine_pool_write;
-
-        protected $cache_list_engine;
-        protected $cache_list_engine_pool_read;
-        protected $cache_list_engine_pool_write;
-
-        protected $cache_delete_expire_ttl;
+    abstract class entity_record_dao extends entity_dao {
 
         protected $binary_pk;
-
-        /**
-         * Order By
-         */
-        const SORT_ASC  = 0;
-        const SORT_DESC = 1;
-
-        /**
-         * Types
-         */
-        const TYPE_STRING  = 1;
-        const TYPE_INTEGER = 2;
-        const TYPE_BINARY  = 3;
-        const TYPE_FLOAT   = 4;
-        const TYPE_DECIMAL = 5;
-        const TYPE_BOOL    = 6;
 
         // Key name used for primary key lookups
         const RECORD = 'record';
 
-        // Counts
-        const COUNT = 'count';
-
         // All records
         const ALL = 'all';
-
-        // List key - Always clear these keys on every change
-        const ALWAYS = 'always';
-
-        // List key
-        const META = 'meta';
-
-        // Offset key - Offset related record PK lists
-        const OFFSET = 'offset';
 
         // Generic orderby/limit/offset (with no WHERE)
         const LIMIT = 'limit';
@@ -73,227 +31,8 @@
          * @param array $config
          */
         public function __construct(array $config) {
-            $this->source_engine                = $config['source_engine'];
-            $this->source_engine_pool_read      = $config['source_engine_pool_read'];
-            $this->source_engine_pool_write     = $config['source_engine_pool_write'];
-
-            $this->cache_engine                 = $config['cache_engine'];
-            $this->cache_engine_pool_read       = $config['cache_engine_pool_read'];
-            $this->cache_engine_pool_write      = $config['cache_engine_pool_write'];
-
-            $this->cache_list_engine            = $config['cache_list_engine'];
-            $this->cache_list_engine_pool_read  = $config['cache_list_engine_pool_read'];
-            $this->cache_list_engine_pool_write = $config['cache_list_engine_pool_write'];
-
-            $this->cache_delete_expire_ttl      = $config['cache_delete_expire_ttl'];
-
-            $this->binary_pk = $this->field_bindings[static::PRIMARY_KEY] === self::TYPE_BINARY;
-        }
-
-        /**
-         * Get the PDO binding of a given column
-         *
-         * @param string $field_name name of column in this entity
-         *
-         * @return integer
-         */
-        public function field_binding($field_name) {
-            return $this->field_bindings[$field_name];
-        }
-
-        /**
-         * Get the PDO bindings of all columns
-         *
-         * @return array
-         */
-        public function field_bindings() {
-            return $this->field_bindings;
-        }
-
-        /**
-         * Bind an field's values to its appropriate variable type
-         *
-         * @param string $field_name
-         * @param mixed  $value
-         *
-         * @return mixed
-         */
-        protected function bind_field($field_name, $value) {
-            switch ($this->field_bindings[$field_name]) {
-                case self::TYPE_STRING:
-                    return (string) $value;
-
-                case self::TYPE_INTEGER:
-                    return (int) $value;
-
-                case self::TYPE_BINARY:
-                    return (binary) $value;
-
-                case self::TYPE_FLOAT:
-                case self::TYPE_DECIMAL:
-                    return (float) $value;
-
-                case self::TYPE_BOOL:
-                    return (bool) $value;
-            }
-        }
-
-        /**
-         * Bind an array's values to their appropriate variable types
-         *
-         * @param array $fields
-         */
-        protected function bind_fields(array &$fields) {
-            foreach ($fields as $k => &$v) {
-                switch ($this->field_bindings[$k]) {
-                    case self::TYPE_STRING:
-                        $v = (string) $v;
-                        break;
-
-                    case self::TYPE_INTEGER:
-                        $v = (int) $v;
-                        break;
-
-                    case self::TYPE_BINARY:
-                        $v = (binary) $v;
-                        break;
-
-                    case self::TYPE_FLOAT:
-                    case self::TYPE_DECIMAL:
-                        $v = (float) $v;
-                        break;
-
-                    case self::TYPE_BOOL:
-                        $v = (bool) $v;
-                        break;
-                }
-            }
-        }
-
-        /**
-         * Get a cached recordset
-         *
-         * @access protected
-         * @static
-         * @final
-         * @param string   $key full cache key with namespace - it's recomended that entity_record_dao::_build_key() is used to create this key
-         * @param callable $get closure function that retreieves the recordset from its origin
-         * @return array   the cached recordset
-         */
-        final protected function _single($key, $get) {
-            return cache_lib::single(
-                $this->cache_engine,
-                $this->cache_engine_pool_read,
-                $this->cache_engine_pool_write,
-                $key,
-                $get
-            );
-        }
-
-        /**
-         * Start batched query pipeline
-         *
-         * @param string $engine
-         * @param string $pool
-         */
-        final protected function cache_batch_start($engine, $pool) {
-            cache_lib::pipeline_start(
-                $engine,
-                $pool
-            );
-        }
-
-        /**
-         * Execute batched cache queries
-         *
-         * @param string $engine
-         * @param string $pool
-         *
-         * @return mixed result from batch execution
-         */
-        final protected function cache_batch_execute($engine, $pool) {
-            return cache_lib::pipeline_execute(
-                $engine,
-                $pool
-            );
-        }
-
-        /**
-         * Delete a cached record
-         *
-         * @access protected
-         * @static
-         * @final
-         * @param string|array $key full cache key with namespace - it's recomended that entity_record_dao::_build_key() is used to create this key
-         */
-        final protected function _cache_delete($key) {
-            if (is_array($key)) {
-                cache_lib::delete_multi(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
-                    $key
-                );
-            } else {
-                cache_lib::delete(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
-                    $key
-                );
-            }
-        }
-
-        /**
-         * Build a cache key used by the cache_lib by combining the dao class name, the cache key and the variables found in the $params
-         *
-         * @access public
-         * @static
-         * @final
-         * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
-         * @param array   $params         optional - array of table keys and their values being looked up in the table
-         * @return string a cache key that is unqiue to the application
-         */
-        final protected static function _build_key($cache_key_name, array $params=[]) {
-            // each key is namespaced with the name of the class, then the name of the function ($cache_key_name)
-            $param_count = count($params);
-            if ($param_count === 1) {
-                return static::ENTITY_NAME . ":{$cache_key_name}:" . md5(reset($params));
-            } else if ($param_count === 0) {
-                return static::ENTITY_NAME . ":{$cache_key_name}:";
-            } else {
-                ksort($params);
-                foreach ($params as & $param) {
-                    $param = base64_encode($param);
-                }
-                // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
-                return static::ENTITY_NAME . ":{$cache_key_name}:" . md5(json_encode(array_values($params)));
-            }
-        }
-
-        /**
-         * Build a list cache key with an optional field value
-         *
-         * @param String $field_name  name of field/column
-         * @param mixed  $field_value value of field/column
-         *
-         * @return string
-         */
-        final protected static function _build_key_list($field_name, $field_value=null) {
-            if ($field_value === null) {
-                return static::ENTITY_NAME . ':' . self::META . "[{$field_name}]";
-            } else {
-                return static::ENTITY_NAME . ':' . self::META . "[{$field_name}]:" . md5($field_value);
-            }
-        }
-
-        /**
-         * Build a list cache key for ordered fields
-         *
-         * @param String $field_name name of field/column
-         *
-         * @return string
-         */
-        final protected static function _build_key_order($field_name) {
-            return static::ENTITY_NAME . ':' . self::META . ":order_by[{$field_name}]";
+            parent::__construct($config);
+            $this->binary_pk = $this->field_bindings[static::PRIMARY_KEY] === parent::TYPE_BINARY;
         }
 
         /**
@@ -304,18 +43,19 @@
          * @final
          * @param string       $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
          * @param array        $order_by       optional - array of order bys
-         * @param integer      $offset         what starting position to get records from
+         * @param integer|null $offset         what starting position to get records from
          * @param integer|null $limit          how many records to select
          * @param array        $params         optional - array of table keys and their values being looked up in the table
          * @return string a cache key that is unqiue to the application
          */
-        final protected static function _build_key_offset($cache_key_name, array $order_by, $offset, $limit=null, array $params=[]) {
+        final protected static function _build_key_limit($cache_key_name, array $order_by, $offset=null, $limit=null, array $params=[]) {
             ksort($order_by);
 
             // each key is namespaced with the name of the class, then the name of the function ($cache_key_name)
             $param_count = count($params);
             if ($param_count === 1) {
-                return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by)) . ':' . md5(reset($params));
+                return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by)) .
+                       ':' . md5(reset($params));
             } else if ($param_count === 0) {
                 return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by)) . ':';
             } else {
@@ -324,7 +64,8 @@
                     $param = base64_encode($param);
                 }
                 // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
-                return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by)) . ':' . md5(json_encode(array_values($params)));
+                return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by)) .
+                       ':' . md5(json_encode(array_values($params)));
             }
         }
 
@@ -399,7 +140,7 @@
         }
 
         /**
-         * Get list of PKs, ordered and limited
+         * Get multiple list of PKs, ordered and limited
          *
          * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
          * @param integer|null $offset get PKs starting at this offset
@@ -407,7 +148,7 @@
          *
          * @return array of User ids
          */
-        public function limits(array $order_by=null, $offset=null, $limit=null) {
+        public function limit_multi(array $order_by=null, $offset=null, $limit=null) {
             return self::_by_fields_multi(
                 self::LIMIT,
                 [],
@@ -418,32 +159,30 @@
         }
 
         /**
-         * Gets the full record(s) that match the $keys
+         * Gets the full record(s) that match the $fieldvals
          *
-         * @access protected
-         * @static
-         * @final
-         * @param array $keys array of table keys and their values being looked up in the table
+         * @param array $fieldvals array of table keys and their values being looked up in the table
+         *
          * @return array pks of records from cache
          * @throws entity_exception
          */
-        public function all(array $keys=null) {
+        public function all(array $fieldvals=null) {
 
-            if ($keys) {
-                $this->bind_fields($keys);
+            if ($fieldvals) {
+                $this->bind_fields($fieldvals);
             }
 
             return cache_lib::single(
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
-                self::_build_key(self::ALL),
-                function() use ($keys) {
+                parent::_build_key(self::ALL),
+                function() use ($fieldvals) {
                     $source_driver = "entity_record_driver_{$this->source_engine}";
-                    return $source_driver::all($this, $this->source_engine_pool_read, $this::PRIMARY_KEY, $keys);
+                    return $source_driver::all($this, $this->source_engine_pool_read, $this::PRIMARY_KEY, $fieldvals);
                 },
                 function($cache_key) {
-                    $this->_set_meta_cache_always($cache_key);
+                    $this->_set_meta_cache($cache_key);
                 }
             );
         }
@@ -451,53 +190,93 @@
         /**
          * Get a record count
          *
-         * @param array $keys
+         * @param array|null $fieldvals
          *
          * @return integer
          */
-        public function count(array $keys=null) {
+        public function count(array $fieldvals=null) {
 
-            if ($keys) {
-                $this->bind_fields($keys);
+            if ($fieldvals) {
+                $this->bind_fields($fieldvals);
             }
 
             return cache_lib::single(
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
-                self::_build_key(self::COUNT, $keys ?: []),
-                function() use ($keys) {
+                parent::_build_key(parent::COUNT, $fieldvals ?: []),
+                function() use ($fieldvals) {
                     $source_driver = "entity_record_driver_{$this->source_engine}";
-                    return $source_driver::count($this, $this->source_engine_pool_read, $keys);
+                    return $source_driver::count($this, $this->source_engine_pool_read, $fieldvals);
                 },
-                function($cache_key) use ($keys) {
-                    $this->_set_meta_cache_count($cache_key, $keys);
+                function($cache_key) use ($fieldvals) {
+                    $this->_set_meta_cache($cache_key, $fieldvals);
                 }
             );
         }
 
         /**
-         * Gets the primary keys of records that match the $keys
+         * Get multiple record count
+         *
+         * @param array $fieldvals_arr
+         *
+         * @return array
+         */
+        public function count_multi(array $fieldvals_arr) {
+
+            foreach ($fieldvals_arr as $fieldvals) {
+                $this->bind_fields($fieldvals);
+            }
+
+            return cache_lib::multi(
+                $this->cache_engine,
+                $this->cache_engine_pool_read,
+                $this->cache_engine_pool_write,
+                $fieldvals_arr,
+                function($fieldvals) {
+                    return $this::_build_key($this::COUNT, $fieldvals ?: []);
+                },
+                function(array $fieldvals_arr) {
+                    $source_driver = "entity_record_driver_{$this->source_engine}";
+                    return $source_driver::count_multi(
+                        $this,
+                        $this->source_engine_pool_read,
+                        $fieldvals_arr
+                    );
+                },
+                function(array $cache_keys, array $fieldvals_arr) {
+                    // Can't use array_combine since the keys might not be in the same order (possibly)
+                    $cache_keys_fieldvals = [];
+                    foreach ($cache_keys as $k => $cache_key) {
+                        $cache_keys_fieldvals[$cache_key] = $fieldvals_arr[$k];
+                    }
+                    $this->_set_meta_cache_multi($cache_keys_fieldvals);
+                }
+            );
+        }
+
+        /**
+         * Gets the primary keys of records that match the $fieldvals
          *
          * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
-         * @param array   $keys           array of fields/values being looked up in the table
+         * @param array   $fieldvals      array of fields/values being looked up in the table
          * @param array   $order_by       array of fields to order by - key = field, val = order direction
          * @param integer $offset         records starting at what offset
          * @param integer $limit          max number of record to return
          *
          * @return mixed
          */
-        final protected function _by_fields($cache_key_name, array $keys, array $order_by=null, $offset=null, $limit=null) {
+        final protected function _by_fields($cache_key_name, array $fieldvals, array $order_by=null, $offset=null, $limit=null) {
             if ($order_by) {
-                $limit  = (int) $limit;
+                $limit  = $limit === null ? null : (int) $limit;
                 $offset = $offset === null ? null : (int) $offset;
 
-                $cache_key = self::_build_key_offset(
+                $cache_key = self::_build_key_limit(
                     $cache_key_name,
                     $order_by,
-                    (int) $offset,
-                    (int) $limit,
-                    $keys
+                    $offset,
+                    $limit,
+                    $fieldvals
                 );
 
                 return cache_lib::single(
@@ -505,20 +284,30 @@
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
                     $cache_key,
-                    function() use ($cache_key, $keys, $order_by, $offset, $limit) {
+                    function() use ($cache_key, $fieldvals, $order_by, $offset, $limit) {
                         $source_driver = "entity_record_driver_{$this->source_engine}";
                         return $source_driver::by_fields_offset(
                             $this,
                             $this->source_engine_pool_read,
-                            $keys,
+                            $fieldvals,
                             $this::PRIMARY_KEY,
                             $order_by,
                             $offset,
                             $limit
                         );
                     },
-                    function($cache_key) use ($keys, $order_by) {
-                        $this->_set_meta_cache($cache_key, $keys, $order_by);
+                    function($cache_key, $pks) use ($fieldvals, $order_by) {
+
+                        if (array_key_exists($this::PRIMARY_KEY, $fieldvals)) {
+                            $fieldvals[$this::PRIMARY_KEY] = array_unique(array_merge(
+                                is_array($fieldvals[$this::PRIMARY_KEY]) ? $fieldvals[$this::PRIMARY_KEY] : [ $fieldvals[$this::PRIMARY_KEY] ],
+                                $pks
+                            ));
+                        } else {
+                            $fieldvals[$this::PRIMARY_KEY] = $pks;
+                        }
+
+                        $this->_set_meta_cache($cache_key, $fieldvals, array_keys($order_by));
                     }
                 );
             } else {
@@ -526,13 +315,31 @@
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
-                    self::_build_key($cache_key_name, $keys),
-                    function() use ($keys) {
+                    parent::_build_key($cache_key_name, $fieldvals),
+                    function() use ($fieldvals) {
                         $source_driver = "entity_record_driver_{$this->source_engine}";
-                        return $source_driver::by_fields($this, $this->source_engine_pool_read, $keys, $this::PRIMARY_KEY);
+                        return $source_driver::by_fields(
+                            $this,
+                            $this->source_engine_pool_read,
+                            $fieldvals,
+                            $this::PRIMARY_KEY
+                        );
                     },
-                    function($cache_key) use ($keys) {
-                        $this->_set_meta_cache($cache_key, $keys);
+                    function($cache_key, $pks) use ($fieldvals) {
+
+                        $pk = $this::PRIMARY_KEY;
+
+                        // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
+                        if (array_key_exists($pk, $fieldvals)) {
+                            $fieldvals[$pk] = array_unique(array_merge(
+                                is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
+                                $pks
+                            ));
+                        } else {
+                            $fieldvals[$pk] = $pks;
+                        }
+
+                        $this->_set_meta_cache($cache_key, $fieldvals);
                     }
                 );
             }
@@ -545,46 +352,67 @@
          * @static
          * @final
          * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
-         * @param array   $keys_arr       array of arrays of table keys and their values being looked up in the table - each sub-array must have matching keys
+         * @param array   $fieldvals_arr       array of arrays of table keys and their values being looked up in the table - each sub-array must have matching keys
          * @param array   $order_by       array of fields to order by - key = field, val = order direction
          * @param integer $offset         records starting at what offset
          * @param integer $limit          max number of record to return
          * @return array  pks of records from cache
          * @throws entity_exception
          */
-        final protected function _by_fields_multi($cache_key_name, array $keys_arr, array $order_by=null, $offset=null, $limit=null) {
+        final protected function _by_fields_multi($cache_key_name, array $fieldvals_arr, array $order_by=null, $offset=null, $limit=null) {
             if ($order_by) {
-                $limit  = (int) $limit;
+                $limit  = $limit === null ? null : (int) $limit;
                 $offset = $offset === null ? null : (int) $offset;
 
                 return cache_lib::multi(
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
-                    $keys_arr,
-                    function($fields) use ($cache_key_name, $order_by, $offset, $limit) {
-                        return $this::_build_key_offset(
+                    $fieldvals_arr,
+                    function($fieldvals) use ($cache_key_name, $order_by, $offset, $limit) {
+                        return $this::_build_key_limit(
                             $cache_key_name,
                             $order_by,
-                            (int) $offset,
-                            (int) $limit,
-                            $fields
+                            $offset,
+                            $limit,
+                            $fieldvals
                         );
                     },
-                    function(array $keys_arr) use ($order_by, $offset, $limit) {
+                    function(array $fieldvals_arr) use ($order_by, $offset, $limit) {
                         $source_driver = "entity_record_driver_{$this->source_engine}";
                         return $source_driver::by_fields_offset_multi(
                             $this,
                             $this->source_engine_pool_read,
-                            $keys_arr,
+                            $fieldvals_arr,
                             $this::PRIMARY_KEY,
                             $order_by,
                             $offset,
                             $limit
                         );
                     },
-                    function(array $cache_keys) use ($order_by) {
-                        $this->_set_meta_cache_multi($cache_keys, $order_by);
+                    function(array $cache_keys, array $fieldvals_arr, array $pks_arr) use ($order_by) {
+
+                        $pk = $this::PRIMARY_KEY;
+
+                        $cache_keys_fieldvals = [];
+                        foreach ($cache_keys as $k => $cache_key) {
+
+                            // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
+                            $fieldvals = & $fieldvals_arr[$k];
+
+                            if (array_key_exists($pk, $fieldvals)) {
+                                $fieldvals[$pk] = array_unique(array_merge(
+                                    is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
+                                    $pks_arr[$k]
+                                ));
+                            } else {
+                                $fieldvals[$pk] = $pks_arr[$k];
+                            }
+
+                            $cache_keys_fieldvals[$cache_key] = $fieldvals;
+                        }
+
+                        $this->_set_meta_cache_multi($cache_keys_fieldvals, array_keys($order_by));
                     }
                 );
             } else {
@@ -592,16 +420,41 @@
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
-                    $keys_arr,
-                    function($fields) use ($cache_key_name) {
-                        return $this::_build_key($cache_key_name, $fields);
+                    $fieldvals_arr,
+                    function($fieldvals) use ($cache_key_name) {
+                        return $this::_build_key($cache_key_name, $fieldvals);
                     },
-                    function(array $keys_arr) {
+                    function(array $fieldvals_arr) {
                         $source_driver = "entity_record_driver_{$this->source_engine}";
-                        return $source_driver::by_fields_multi($this, $this->source_engine_pool_read, $keys_arr, $this::PRIMARY_KEY);
+                        return $source_driver::by_fields_multi(
+                            $this,
+                            $this->source_engine_pool_read,
+                            $fieldvals_arr,
+                            $this::PRIMARY_KEY
+                        );
                     },
-                    function(array $cache_keys) {
-                        $this->_set_meta_cache_multi($cache_keys);
+                    function(array $cache_keys, array $fieldvals_arr, array $pks_arr) {
+                        $pk = $this::PRIMARY_KEY;
+
+                        $cache_keys_fieldvals = [];
+                        foreach ($cache_keys as $k => $cache_key) {
+
+                            // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
+                            $fieldvals = & $fieldvals_arr[$k];
+
+                            if (array_key_exists($pk, $fieldvals)) {
+                                $fieldvals[$pk] = array_unique(array_merge(
+                                    is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
+                                    $pks_arr[$k]
+                                ));
+                            } else {
+                                $fieldvals[$pk] = $pks_arr[$k];
+                            }
+
+                            $cache_keys_fieldvals[$cache_key] = $fieldvals;
+                        }
+
+                        $this->_set_meta_cache_multi($cache_keys_fieldvals);
                     }
                 );
             }
@@ -610,25 +463,27 @@
         /**
          * Inserts a record into the database
          *
-         * @access protected
-         * @static
          * @param array   $info                   an associative array of into to be put into the database
          * @param boolean $replace                optional - user REPLACE INTO instead of INSERT INTO
          * @param boolean $return_model           optional - return a model of the new record
          * @param boolean $load_model_from_source optional - after insert, load data from source - this is needed if the DB changes values on insert (eg, timestamps)
+         *
          * @return entity_record_model|boolean    if $return_model is set to true, the model created from the info is returned
-         * @throws entity_exception
          */
         protected function _insert(array $info, $replace=false, $return_model=true, $load_model_from_source=false) {
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            $info          = $source_driver::insert(
-                $this,
-                $this->source_engine_pool_write,
-                $info,
-                static::AUTOINCREMENT,
-                $replace
-            );
+            try {
+                $info = $source_driver::insert(
+                    $this,
+                    $this->source_engine_pool_write,
+                    $info,
+                    static::AUTOINCREMENT,
+                    $replace
+                );
+            } catch (entity_exception $e) {
+                return false;
+            }
 
             if ($load_model_from_source) {
                 // Use master to avoid race condition
@@ -643,7 +498,7 @@
                 $info
             );
 
-            self::_delete_meta_cache_by_fields($info);
+            self::_delete_meta_cache($info);
 
             if ($return_model) {
                 $model = static::ENTITY_NAME . '_model';
@@ -656,27 +511,31 @@
         /**
          * Inserts multiple record into the database
          *
-         * @access protected
-         * @static
          * @param array   $infos                    an array of associative arrays of into to be put into the database, if this dao represents multiple tables, the info will be split up across the applicable tables.
          * @param boolean $keys_match               optional - if all the records being inserted have the same array keys this should be true. it is faster to insert all the records at the same time, but this can only be done if they all have the same keys.
          * @param boolean $replace                  optional - user REPLACE INTO instead of INSERT INTO
          * @param boolean $return_collection        optional - return a collection of models created
          * @param boolean $load_models_from_source  optional - after insert, load data from source - this is needed if the DB changes values on insert (eg, timestamps)
+         *
          * @return entity_record_collection|boolean if $return_collection is true function returns a collection
          * @throws entity_exception
          */
-        protected function _inserts(array $infos, $keys_match=true, $replace=false, $return_collection=true, $load_models_from_source=false) {
+        protected function _insert_multi(array $infos, $keys_match=true, $replace=false, $return_collection=true,
+                                    $load_models_from_source=false) {
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            $infos         = $source_driver::inserts(
-                $this,
-                $this->source_engine_pool_write,
-                $infos,
-                $keys_match,
-                static::AUTOINCREMENT,
-                $replace
-            );
+            try {
+                $infos = $source_driver::insert_multi(
+                    $this,
+                    $this->source_engine_pool_write,
+                    $infos,
+                    $keys_match,
+                    static::AUTOINCREMENT,
+                    $replace
+                );
+            } catch (entity_exception $e) {
+                return false;
+            }
 
             if ($load_models_from_source) {
                 $ids = [];
@@ -690,7 +549,8 @@
 
             $insert_cache_data = [];
             foreach ($infos as $info) {
-                $insert_cache_data[static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY])] = $info;
+                $insert_cache_data[static::ENTITY_NAME . ':' . self::RECORD . ':' .
+                    ($this->binary_pk ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY])] = $info;
             }
 
             cache_lib::set_multi(
@@ -699,7 +559,7 @@
                 $insert_cache_data
             );
 
-            self::_delete_meta_cache_by_fields_multi($infos);
+            self::_delete_meta_cache_multi($infos);
 
             if ($load_models_from_source) {
                 return $return_collection ? new $collection(null, $infos) : true;
@@ -716,16 +576,16 @@
         /**
          * Updates a record in the database
          *
-         * @access protected
-         * @static
          * @param entity_record_model $model                    the model that is to be updated
          * @param array               $new_info                 the new info to be put into the model
          * @param boolean             $return_model             optional - return a model of the new record
          * @param boolean             $reload_model_from_source optional - after update, load data from source - this is needed if the DB changes values on update (eg, timestamps)
+         *
          * @return entity_record_model|bool                     if $return_model is true, an updated model is returned
          * @throws entity_exception
          */
-        protected function _update(entity_record_model $model, array $new_info, $return_model=true, $reload_model_from_source=false) {
+        protected function _update(entity_record_model $model, array $new_info, $return_model=true,
+                                   $reload_model_from_source=false) {
 
             if (! $new_info) {
                 return $return_model ? $model : false;
@@ -745,7 +605,17 @@
             $pk = static::PRIMARY_KEY;
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            $source_driver::update($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $model, $new_info);
+            try {
+                $source_driver::update(
+                    $this,
+                    $this->source_engine_pool_write,
+                    static::PRIMARY_KEY,
+                    $model,
+                    $new_info
+                );
+            } catch (entity_exception $e) {
+                return false;
+            }
 
             /**
              * Reload model from source based on current (or newly updated) PK
@@ -760,7 +630,7 @@
                 );
             }
 
-            $this->cache_batch_start($this->cache_engine, $this->cache_engine_pool_write);
+            cache_lib::pipeline_start($this->cache_engine, $this->cache_engine_pool_write);
 
             /**
              * If the primary key was changed, bust the cache for that new key too
@@ -800,12 +670,14 @@
                 );
             }
 
-            $this->cache_batch_execute($this->cache_engine, $this->cache_engine_pool_write);
+            cache_lib::pipeline_execute($this->cache_engine, $this->cache_engine_pool_write);
 
             // Destroy cache based on the fields that were changed - do not wrap this function in a batch execution
-            self::_delete_meta_cache_by_fields(
-                array_diff($new_info, $old_info),
-                array_diff($old_info, $new_info)
+            self::_delete_meta_cache(
+                array_merge_recursive(
+                    array_diff($new_info, $old_info),
+                    array_diff($old_info, $new_info)
+                )
             );
 
             if ($return_model) {
@@ -824,9 +696,8 @@
         /**
          * Deletes a record from the database
          *
-         * @access protected
-         * @static
          * @param entity_record_model $model the model that is to be deleted
+         *
          * @return boolean returns true on success
          * @throws entity_exception
          */
@@ -835,7 +706,11 @@
             $pk = static::PRIMARY_KEY;
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            $source_driver::delete($this, $this->source_engine_pool_write, $pk, $model);
+            try {
+                $source_driver::delete($this, $this->source_engine_pool_write, $pk, $model);
+            } catch (entity_exception $e) {
+                return false;
+            }
 
             if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
                 cache_lib::expire(
@@ -852,8 +727,8 @@
                 );
             }
 
-            // Destroy cache based on table fields - do not wrap this function in a batch execution
-            self::_delete_meta_cache_by_fields(array_keys(static::field_bindings()));
+            // Destroy cache based on table fieldvals - do not wrap this function in a batch execution
+            self::_delete_meta_cache($model->export());
 
             return true;
         }
@@ -861,27 +736,35 @@
         /**
          * Deletes a record from the database
          *
-         * @access protected
-         * @static
          * @param entity_record_collection $collection the collection of models that is to be deleted
+         *
          * @return boolean returns true on success
          * @throws entity_exception
          */
-        protected function _deletes(entity_record_collection $collection) {
+        protected function _delete_multi(entity_record_collection $collection) {
 
             if (! count($collection)) {
                 return;
             }
 
             $source_driver = "entity_record_driver_{$this->source_engine}";
-            $source_driver::deletes($this, $this->source_engine_pool_write, static::PRIMARY_KEY, $collection);
+            try {
+                $source_driver::delete_multi(
+                    $this,
+                    $this->source_engine_pool_write,
+                    static::PRIMARY_KEY,
+                    $collection
+                );
+            } catch (entity_exception $e) {
+                return false;
+            }
 
             $delete_cache_keys = [];
             foreach ($collection->field(static::PRIMARY_KEY) as $pk) {
                 $delete_cache_keys[] = static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? ':' . md5($pk) : ":{$pk}");
             }
 
-            $this->cache_batch_start($this->cache_engine, $this->cache_engine_pool_write);
+            cache_lib::pipeline_start($this->cache_engine, $this->cache_engine_pool_write);
 
             if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
                 cache_lib::expire_multi(
@@ -898,516 +781,17 @@
                 );
             }
 
-            $this->cache_batch_execute($this->cache_engine, $this->cache_engine_pool_write);
+            cache_lib::pipeline_execute($this->cache_engine, $this->cache_engine_pool_write);
 
-            // Destroy cache based on table fields - do not wrap this function in a batch execution
-            self::_delete_meta_cache_by_fields(array_keys(static::field_bindings()));
+            // Destroy cache based on table fieldvals - do not wrap this function in a batch execution
+            $collection_data           = $collection->export();
+            $collection_data_organized = [];
+            foreach (array_keys(reset($collection_data)) as $field) {
+                $collection_data_organized[$field] = array_column($collection_data, $field);
+            }
+
+            self::_delete_meta_cache($collection_data_organized);
 
             return true;
-        }
-
-        /**
-         * Create the meta data (lists) to identify which cache keys to destroy when the record or field values have been changed
-         *
-         * @param string                  $cache_key
-         * @param array                   $keys
-         * @param array                   $order_by
-         */
-        final protected function _set_meta_cache($cache_key, array $keys, array $order_by=[]) {
-
-            $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
-
-            /**
-             * Build lists of keys for deletion - when it's time to delete/modify the record
-             */
-
-            /**
-             * Order by - goes first, since it's wider reaching, if there is overlap between $order_by fields
-             * and $keys fields, we wont use those fields in $keys. (since they'll both contain the same cache
-             * keys to destroy.
-             *
-             * An entry for each $order_by field must be created (linking back to this set's $cache_key)
-             */
-            foreach ($order_by as $field => $direction) {
-                // Create list key for order by field
-                $order_by_list_key = self::_build_key_order($field);
-
-                // Store the cache key in $order_by_list_key list
-                cache_lib::list_add(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
-                    $order_by_list_key,
-                    $cache_key
-                );
-
-                // Add the $order_by_list_key key to the field list key - if it doesn't already exist
-                cache_lib::list_add(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
-                    self::_build_key_list($field),
-                    $order_by_list_key
-                );
-            }
-
-            /**
-             * Keys - An entry for each key and value must be created (linking back to this set's $cache_key)
-             *
-             * array_diff_key() is used to avoid doubling the deletion of keys when it's completely unnecessary.
-             * If we're going to clear a field (because it's used in the order by), there's no point in also
-             * clearing if because it's used as a field/value. (yes, I realize this is complicated and possibly confusing)
-             *
-             * Example: If you get records where id = 10 and you order by that same 'id' field, then every cached
-             * result set that uses id for anything needs to be destroyed when any id changes in the table. Since
-             * ordering by a field might be affected by any id, all resulting sets that involve that 'id' field,
-             * must be cleared out.
-             *
-             * If foo_id = 10 and order by 'id' was used, then only cached result sets with foo_id = 10 would
-             * need to be destroyed (along with all 'id' cached result sets).
-             */
-            foreach (array_diff_key($keys, $order_by) as $field => $value) {
-                // Create a list key for the field/value
-                $list_key = self::_build_key_list($field, $value);
-
-                // Store the cache key in the $list_key list
-                cache_lib::list_add(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
-                    $list_key,
-                    $cache_key
-                );
-
-                // Add the $list_key key to field list key - if it doesn't already exist
-                cache_lib::list_add(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
-                    self::_build_key_list($field),
-                    $list_key
-                );
-            }
-
-            $this->cache_batch_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
-        }
-
-        /**
-         * Create the meta data (lists) to identify which cache keys to destroy when the record or field values have been changed
-         *
-         * @param array $cache_keys
-         * @param array $order_by
-         */
-        final protected function _set_meta_cache_multi(array $cache_keys, array $order_by=[]) {
-
-            $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
-
-            /**
-             * Build lists of keys for deletion - when it's time to delete/modify the record
-             */
-
-            /**
-             * Order by - goes first, since it's wider reaching, if there is overlap between $order_by fields
-             * and $keys fields, we wont use those fields in $keys. (since they'll both contain the same cache
-             * keys to destroy.
-             *
-             * An entry for each $order_by field must be created (linking back to this set's $cache_key)
-             */
-            foreach ($order_by as $field => $direction) {
-                // Create list key for order by field
-                $order_by_list_key = self::_build_key_order($field);
-
-                // Store the cache key in $order_by_list_key list
-                cache_lib::list_add(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
-                    $order_by_list_key,
-                    array_keys($cache_keys)
-                );
-
-                // Add the $order_by_list_key key to the field list key - if it doesn't already exist
-                cache_lib::list_add(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
-                    self::_build_key_list($field),
-                    $order_by_list_key
-                );
-            }
-
-            /**
-             * Keys - An entry for each key and value must be created (linking back to this set's $cache_key)
-             *
-             * array_diff_key() is used to avoid doubling the deletion of keys when it's completely unnecessary.
-             * If we're going to clear a field (because it's used in the order by), there's no point in also
-             * clearing if because it's used as a field/value. (yes, I realize this is complicated and possibly confusing)
-             *
-             * Example: If you get records where id = 10 and you order by that same 'id' field, then every cached
-             * result set that uses id for anything needs to be destroyed when any id changes in the table. Since
-             * ordering by a field might be affected by any id, all resulting sets that involve that 'id' field,
-             * must be cleared out.
-             *
-             * If foo_id = 10 and order by 'id' was used, then only cached result sets with foo_id = 10 would
-             * need to be destroyed (along with all 'id' cached result sets).
-             */
-            foreach ($cache_keys as $cache_key => $keys) {
-                foreach (array_diff_key($keys, $order_by) as $field => $value) {
-                    // Create a list key for the field/value
-                    $list_key = self::_build_key_list($field, $value);
-
-                    // Store the cache key in the $list_key list
-                    cache_lib::list_add(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
-                        $list_key,
-                        $cache_key
-                    );
-
-                    // Add the $list_key key to field list key - if it doesn't already exist
-                    cache_lib::list_add(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
-                        self::_build_key_list($field),
-                        $list_key
-                    );
-                }
-            }
-
-            $this->cache_batch_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
-        }
-
-        /**
-         * Delete all cache keys and field/value and field order lists - by fields
-         *
-         * Do not wrap a batch execution around this function
-         *
-         * @param array $fields           list of fields/values - key = field
-         * @param array $secondary_fields list of fields/values - key = field
-         */
-        final protected function _delete_meta_cache_by_fields(array $fields, array $secondary_fields=null) {
-            $field_list_keys      = [];
-            $list_keys            = [ static::ENTITY_NAME . ':' . self::ALWAYS, ];
-            $list_items_to_remove = [];
-
-            foreach ($fields as $field => $value) {
-
-                // Which list does this field/value key belong to - we need to remove it from that list
-                $field_list_key = self::_build_key_list($field);
-
-                // Order by list key
-                $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_order($field);
-
-                /**
-                 * If the value is null, it means it's a parent $field_list_keys key (eg, limit[id])
-                 * instead of a $list_keys (eg, limit[id]:5 or limit[id]:order_by)
-                 */
-                if ($value === null) {
-                    $field_list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field);
-                } else {
-                    $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $value);
-                }
-
-                // This gets used when an update took place - there is a new and old value
-                if ($secondary_fields && array_key_exists($field, $secondary_fields)) {
-                    $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $secondary_fields[$field]);
-                }
-            }
-
-            /**
-             * If any $field_list_keys keys need deleting (eg, limit[id]), get all list keys from them (eg, limit[id]:5)
-             */
-            if ($field_list_keys) {
-                $arr = cache_lib::list_get_union(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
-                    $field_list_keys
-                );
-
-                if ($arr) {
-                    $list_keys = array_unique(
-                        array_merge($list_keys, $arr)
-                    );
-                }
-            }
-
-            /**
-             * Get a union of all field/value list keys - combined
-             * eg, limit[id]:555 + limit[id]:order_by + limit[email]:aaa@aaa.com + limit[email]:order_by
-             */
-            $cache_keys = cache_lib::list_get_union(
-                $this->cache_list_engine,
-                $this->cache_list_engine_pool_write,
-                $list_keys
-            );
-
-            $this->cache_batch_start($this->cache_engine, $this->cache_engine_pool_write);
-
-            if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
-                $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
-            }
-
-            if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
-                /**
-                 * Expire all the keys selected above
-                 */
-                if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
-                    cache_lib::expire_multi(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
-                        array_merge($list_keys, $field_list_keys),
-                        $this->cache_delete_expire_ttl
-                    );
-                    cache_lib::expire_multi(
-                        $this->cache_engine,
-                        $this->cache_engine_pool_write,
-                        $cache_keys,
-                        $this->cache_delete_expire_ttl
-                    );
-                } else {
-                    cache_lib::expire_multi(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
-                        array_merge($cache_keys, $list_keys, $field_list_keys),
-                        $this->cache_delete_expire_ttl
-                    );
-                }
-            } else {
-                /**
-                 * Delete all the keys selected above
-                 */
-                if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
-                    cache_lib::delete_multi(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
-                        array_merge($list_keys, $field_list_keys)
-                    );
-                    cache_lib::delete_multi(
-                        $this->cache_engine,
-                        $this->cache_engine_pool_write,
-                        $cache_keys
-                    );
-                } else {
-                    cache_lib::delete_multi(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
-                        array_merge($cache_keys, $list_keys, $field_list_keys)
-                    );
-                }
-            }
-
-            /**
-             * Since we just deleted $field_list_keys, we now remove those values from their parent lists
-             * (Remove list field/value keys and order by keys from field lists)
-             */
-            foreach ($list_items_to_remove as $field_list_key => $remove_keys) {
-                cache_lib::list_remove(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
-                    $field_list_key,
-                    array_unique($remove_keys)
-                );
-            }
-
-            if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
-                $this->cache_batch_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
-            }
-
-            $this->cache_batch_execute($this->cache_engine, $this->cache_engine_pool_write);
-        }
-
-        /**
-         * Delete all cache keys and field/value and field order lists - by fields
-         *
-         * Do not wrap a batch execution around this function
-         *
-         * @param array $fields_arr array containing lists of fields/values - key = field
-         */
-        final protected function _delete_meta_cache_by_fields_multi(array $fields_arr) {
-            $field_list_keys      = [];
-            $list_keys            = [ static::ENTITY_NAME . ':' . self::ALWAYS, ];
-            $list_items_to_remove = [];
-
-            foreach ($fields_arr as $fields) {
-                foreach ($fields as $field => $value) {
-
-                    // @todo i'm fairly certain this can be made more efficient
-
-                    // Which list does this field/value key belong to - we need to remove it from that list
-                    $field_list_key = self::_build_key_list($field);
-
-                    // Order by list key
-                    $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_order($field);
-
-                    /**
-                     * If the value is null, it means it's a parent $field_list_keys key (eg, limit[id])
-                     * instead of a $list_keys (eg, limit[id]:5 or limit[id]:order_by)
-                     */
-                    if ($value === null) {
-                        $field_list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field);
-                    } else {
-                        $list_keys[] = $list_items_to_remove[$field_list_key][] = self::_build_key_list($field, $value);
-                    }
-                }
-            }
-
-            /**
-             * If any $field_list_keys keys need deleting (eg, limit[id]), get all list keys from them (eg, limit[id]:5)
-             */
-            if ($field_list_keys) {
-
-                $arr = cache_lib::list_get_union(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
-                    $field_list_keys
-                );
-
-                if ($arr) {
-                    $list_keys = array_unique(
-                        array_merge($list_keys, $arr)
-                    );
-                }
-            }
-
-            /**
-             * Get a union of all field/value list keys - combined
-             * eg, limit[id]:555 + limit[id]:order_by + limit[email]:aaa@aaa.com + limit[email]:order_by
-             */
-            $cache_keys = cache_lib::list_get_union(
-                $this->cache_list_engine,
-                $this->cache_list_engine_pool_write,
-                $list_keys
-            );
-
-            $this->cache_batch_start($this->cache_engine, $this->cache_engine_pool_write);
-
-            if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
-                $this->cache_batch_start($this->cache_list_engine, $this->cache_list_engine_pool_write);
-            }
-
-            if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
-                /**
-                 * Expire all the keys selected above
-                 */
-                if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
-                    cache_lib::expire_multi(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
-                        array_merge($list_keys, $field_list_keys),
-                        $this->cache_delete_expire_ttl
-                    );
-                    cache_lib::expire_multi(
-                        $this->cache_engine,
-                        $this->cache_engine_pool_write,
-                        $cache_keys,
-                        $this->cache_delete_expire_ttl
-                    );
-                } else {
-                    cache_lib::expire_multi(
-                        $this->cache_engine,
-                        $this->cache_engine_pool_write,
-                        array_merge($cache_keys, $list_keys, $field_list_keys),
-                        $this->cache_delete_expire_ttl
-                    );
-                }
-            } else {
-                /**
-                 * Delete all the keys selected above
-                 */
-                if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
-                    cache_lib::delete_multi(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
-                        array_merge($list_keys, $field_list_keys)
-                    );
-                    cache_lib::delete_multi(
-                        $this->cache_engine,
-                        $this->cache_engine_pool_write,
-                        $cache_keys
-                    );
-                } else {
-                    cache_lib::delete_multi(
-                        $this->cache_engine,
-                        $this->cache_engine_pool_write,
-                        array_merge($cache_keys, $list_keys, $field_list_keys)
-                    );
-                }
-            }
-
-            if ($this->cache_list_engine !== $this->cache_engine || $this->cache_list_engine_pool_write !== $this->cache_engine_pool_write) {
-                $this->cache_batch_execute($this->cache_list_engine, $this->cache_list_engine_pool_write);
-            }
-
-            $this->cache_batch_execute($this->cache_engine, $this->cache_engine_pool_write);
-        }
-
-        /**
-         * Create the meta data (lists) to identify which cache keys to destroy when the record or field values have been changed
-         *
-         * @param string     $cache_key
-         * @param array|null $keys
-         */
-        final protected function _set_meta_cache_count($cache_key, array $keys=null) {
-
-            /**
-             * Build lists of keys for deletion - when it's time to delete/modify the record
-             */
-            if ($keys) {
-                $this->cache_batch_start($this->cache_engine, $this->cache_engine_pool_write);
-
-                /**
-                 * Keys - An entry for each key and value must be created (linking back to this set's $cache_key)
-                 *
-                 * array_diff_key() is used to avoid doubling the deletion of keys when it's completely unnecessary.
-                 * If we're going to clear a field (because it's used in the order by), there's no point in also
-                 * clearing if because it's used as a field/value. (yes, I realize this is complicated and possibly confusing)
-                 *
-                 * Example: If you get records where id = 10 and you order by that same 'id' field, then every cached
-                 * result set that uses id for anything needs to be destroyed when any id changes in the table. Since
-                 * ordering by a field might be affected by any id, all resulting sets that involve that 'id' field,
-                 * must be cleared out.
-                 *
-                 * If foo_id = 10 and order by 'id' was used, then only cached result sets with foo_id = 10 would
-                 * need to be destroyed (along with all 'id' cached result sets).
-                 */
-                foreach ($keys as $field => $value) {
-                    // Create a list key for the field/value
-                    $list_key = self::_build_key_list($field, $value);
-
-                    // Store the cache key in the $list_key list
-                    cache_lib::list_add(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
-                        $list_key,
-                        $cache_key
-                    );
-
-                    // Add the $list_key key to field list key - if it doesn't already exist
-                    cache_lib::list_add(
-                        $this->cache_list_engine,
-                        $this->cache_list_engine_pool_write,
-                        self::_build_key_list($field),
-                        $list_key
-                    );
-                }
-
-                $this->cache_batch_execute($this->cache_engine, $this->cache_engine_pool_write);
-            } else {
-                // Add the $list_key key to field list key - if it doesn't already exist
-                cache_lib::list_add(
-                    $this->cache_list_engine,
-                    $this->cache_list_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::ALWAYS,
-                    $cache_key
-                );
-            }
-        }
-
-        /**
-         * Add a cache key to destroy any time any field in any record (of this type) changes
-         *
-         * @param string $cache_key
-         */
-        final protected function _set_meta_cache_always($cache_key) {
-            cache_lib::list_add(
-                $this->cache_list_engine,
-                $this->cache_list_engine_pool_write,
-                static::ENTITY_NAME . ':' . self::ALWAYS,
-                $cache_key
-            );
         }
     }

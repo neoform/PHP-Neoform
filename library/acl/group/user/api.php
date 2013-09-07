@@ -25,7 +25,7 @@
                     'user_id'      => (int) $user->id,
                 ];
             }
-            return entity::dao('acl_group_user')->deletes($keys);
+            return entity::dao('acl_group_user')->delete_multi($keys);
         }
 
         public static function delete_by_user(user_model $user, acl_group_collection $acl_group_collection) {
@@ -36,7 +36,7 @@
                     'acl_group_id' => (int) $acl_group->id,
                 ];
             }
-            return entity::dao('acl_group_user')->deletes($keys);
+            return entity::dao('acl_group_user')->delete_multi($keys);
         }
 
         public static function _validate_insert(input_collection $input) {

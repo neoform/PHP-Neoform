@@ -16,12 +16,25 @@
          */
         public function region_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_one_to_many(
+                'region_collection',
                 'region',
                 'by_country',
-                'region_collection',
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Preload the Region counts
+         *
+         * @return array counts
+         */
+        public function region_count() {
+            return $this->_preload_counts(
+                'region_count',
+                'region',
+                'country_id'
             );
         }
     }

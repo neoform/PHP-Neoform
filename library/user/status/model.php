@@ -44,4 +44,21 @@
             }
             return $this->_vars[$key];
         }
+
+        /**
+         * User Count
+         *
+         * @return integer
+         */
+        public function user_count() {
+            $fieldvals = [
+                'status_id' => (int) $this->vars['id'],
+            ];
+
+            $key = parent::_count_var_key('user_count', $fieldvals);
+            if (! array_key_exists($key, $this->_vars)) {
+                $this->_vars[$key] = entity::dao('user')->count($fieldvals);
+            }
+            return $this->_vars[$key];
+        }
     }

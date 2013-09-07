@@ -9,7 +9,7 @@
          *
          * @param string $name name of the dao
          *
-         * @return record_dao|link_dao
+         * @return entity_record_dao|entity_link_dao
          */
         public static function dao($name) {
             if (! isset(self::$daos[$name])) {

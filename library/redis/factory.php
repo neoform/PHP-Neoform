@@ -45,7 +45,7 @@
                 }
 
                 $redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
-                $redis->setOption(Redis::OPT_PREFIX, "{$config['key_prefix']}:");
+                $redis->setOption(Redis::OPT_PREFIX, isset($server['key_prefix']) ? "{$server['key_prefix']}:" : "{$config['key_prefix']}:");
 
             } catch (RedisException $e) {
                 throw new redis_exception("Could not create redis instance \"{$name}\" -- " . $e->getMessage());

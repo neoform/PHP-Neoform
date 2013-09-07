@@ -63,7 +63,7 @@
          * @param boolean $return_collection optional - return a collection of models created
          * @return entity_record_collection|true if $return_collection is true function returns a collection
          */
-        protected function _inserts(array $infos, $keys_match = true, $replace=false, $return_collection=true) {
+        protected function _insert_multi(array $infos, $keys_match = true, $replace=false, $return_collection=true) {
             foreach ($infos as & $info) {
                 if (isset($info[static::BLOB]) && is_array($info[static::BLOB])) {
                     $info[static::BLOB] = json_encode(type_array_lib::collapse($info[static::BLOB], false));

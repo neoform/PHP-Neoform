@@ -13,8 +13,8 @@
         public function locale_key_collection() {
             return $this->_preload_one_to_one(
                 'locale_key',
-                'key_id',
-                'locale_key'
+                'locale_key',
+                'key_id'
             );
         }
 

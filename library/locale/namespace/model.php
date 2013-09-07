@@ -44,4 +44,21 @@
             }
             return $this->_vars[$key];
         }
+
+        /**
+         * Locale Key Count
+         *
+         * @return integer
+         */
+        public function locale_key_count() {
+            $fieldvals = [
+                'namespace_id' => (int) $this->vars['id'],
+            ];
+
+            $key = parent::_count_var_key('locale_key_count', $fieldvals);
+            if (! array_key_exists($key, $this->_vars)) {
+                $this->_vars[$key] = entity::dao('locale_key')->count($fieldvals);
+            }
+            return $this->_vars[$key];
+        }
     }

@@ -265,10 +265,10 @@
          *
          * @return region_collection
          */
-        public function inserts(array $infos) {
+        public function insert_multi(array $infos) {
 
             // Insert record
-            return parent::_inserts($infos);
+            return parent::_insert_multi($infos);
         }
 
         /**
@@ -306,9 +306,9 @@
          *
          * @return bool
          */
-        public function deletes(region_collection $region_collection) {
+        public function delete_multi(region_collection $region_collection) {
 
             // Delete records
-            return parent::_deletes($region_collection);
+            return parent::_delete_multi($region_collection);
         }
     }

@@ -27,7 +27,7 @@
                 $user = $input->email->data('model');
 
                 //delete all previous reset keys
-                entity::dao('user_lostpassword')->deletes(
+                entity::dao('user_lostpassword')->delete_multi(
                     new user_lostpassword_collection(
                         entity::dao('user_lostpassword')->by_user($user->id)
                     )

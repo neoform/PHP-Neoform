@@ -16,12 +16,25 @@
          */
         public function city_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_one_to_many(
+                'city_collection',
                 'city',
                 'by_region',
-                'city_collection',
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Preload the City counts
+         *
+         * @return array counts
+         */
+        public function city_count() {
+            return $this->_preload_counts(
+                'city_count',
+                'city',
+                'region_id'
             );
         }
 
@@ -33,8 +46,8 @@
         public function country_collection() {
             return $this->_preload_one_to_one(
                 'country',
-                'country_id',
-                'country'
+                'country',
+                'country_id'
             );
         }
     }

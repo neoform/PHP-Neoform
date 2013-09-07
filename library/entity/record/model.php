@@ -103,8 +103,28 @@
          *
          * @return string
          */
-        final public static function _limit_var_key($name, $limit=null, $offset=null, array $order_by=null) {
-            return "{$name}:{$offset}:{$limit}:" . json_encode($order_by);
+        final public static function _limit_var_key($name, array $order_by=null, $limit=null, $offset=null) {
+            if ($order_by) {
+                ksort($order_by);
+                return "{$name}:{$offset}:{$limit}:" . json_encode($order_by); // @todo what if there are binary values...? :(
+            } else {
+                return $name;
+            }
+        }
+
+        /**
+         * @param string $name
+         * @param array  $fieldvals
+         *
+         * @return string
+         */
+        final public static function _count_var_key($name, array $fieldvals=null) {
+            if ($fieldvals) {
+                ksort($fieldvals);
+                return "{$name}:" . json_encode($fieldvals); // @todo what if there are binary values...? :(
+            } else {
+                return $name;
+            }
         }
 
         /**

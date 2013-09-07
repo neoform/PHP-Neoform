@@ -16,12 +16,25 @@
          */
         public function user_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_one_to_many(
+                'user_collection',
                 'user',
                 'by_status',
-                'user_collection',
                 $order_by,
                 $offset,
                 $limit
+            );
+        }
+
+        /**
+         * Preload the User counts
+         *
+         * @return array counts
+         */
+        public function user_count() {
+            return $this->_preload_counts(
+                'user_count',
+                'user',
+                'status_id'
             );
         }
     }

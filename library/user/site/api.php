@@ -25,7 +25,7 @@
                     'user_id' => (int) $user->id,
                 ];
             }
-            return entity::dao('user_site')->deletes($keys);
+            return entity::dao('user_site')->delete_multi($keys);
         }
 
         public static function delete_by_user(user_model $user, site_collection $site_collection) {
@@ -36,7 +36,7 @@
                     'site_id' => (int) $site->id,
                 ];
             }
-            return entity::dao('user_site')->deletes($keys);
+            return entity::dao('user_site')->delete_multi($keys);
         }
 
         public static function _validate_insert(input_collection $input) {

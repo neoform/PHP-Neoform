@@ -70,7 +70,7 @@
                 ];
             }
 
-            entity::dao('user_acl_role')->inserts($user_acl_roles);
+            entity::dao('user_acl_role')->insert_multi($user_acl_roles);
 
             echo self::color_text('Done', 'green', true) . "\n";
         }

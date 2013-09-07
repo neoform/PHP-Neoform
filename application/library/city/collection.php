@@ -13,8 +13,8 @@
         public function region_collection() {
             return $this->_preload_one_to_one(
                 'region',
-                'region_id',
-                'region'
+                'region',
+                'region_id'
             );
         }
     }

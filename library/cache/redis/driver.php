@@ -57,96 +57,6 @@
         }
 
         /**
-         * Create a list and/or Add a value to a list
-         * It is recommended this function be wrapped in a batch operation
-         *
-         * @param string $pool
-         * @param string $key
-         * @param mixed  $value
-         *
-         * @return bool
-         */
-        public static function list_add($pool, $key, $value) {
-            // Redis >=2.4 can do multiple adds in one command.
-            if (is_array($value)) {
-                $redis = core::redis($pool);
-                foreach ($value as $v) {
-                    $redis->sAdd($key, $v);
-                }
-
-                // Interestingly, PHP doesn't seem to have a max number of function arguments... so this shouldn't cause
-                // any problems...
-                // However PHPRedis seems to have poor support for this... bah.
-//                return call_user_func_array(
-//                    [ core::redis($pool), 'sAdd' ],
-//                    array_merge([ $key ], $value)
-//                );
-            } else {
-                return core::redis($pool)->sAdd($key, $value);
-            }
-        }
-
-        /**
-         * Get all members of a list or get matching members of a list (via filter array)
-         *
-         * @param string $pool
-         * @param string $key
-         * @param array  $filter list of keys, an intersection is done
-         *
-         * @return array
-         */
-        public static function list_get($pool, $key, array $filter = null) {
-            if ($filter) {
-                return array_values(array_intersect(core::redis($pool)->sMembers($key), $filter));
-            } else {
-                return core::redis($pool)->sMembers($key);
-            }
-        }
-
-        /**
-         * Get all members of multiple list or get matching members of multiple lists (via filter array)
-         *
-         * @param string $pool
-         * @param array  $keys
-         * @param array  $filter list of keys, an intersection is done
-         *
-         * @return array
-         */
-        public static function list_get_union($pool, array $keys, array $filter = null) {
-            if ($filter) {
-                return array_values(array_intersect(core::redis($pool)->sUnion($keys), $filter));
-            } else {
-                return core::redis($pool)->sUnion($keys);
-            }
-        }
-
-        /**
-         * Remove values from a list
-         * It is recommended this function be wrapped in a batch operation
-         *
-         * @param string $pool
-         * @param string $key
-         * @param mixed  $remove_key
-         */
-        public static function list_remove($pool, $key, $remove_key) {
-            // Redis >=2.4 can do multiple removes in one command.
-            if (is_array($remove_key)) {
-                $redis = core::redis($pool);
-                foreach ($remove_key as $v) {
-                    $redis->sRemove($key, $v);
-                }
-
-                // PHPRedis has poor support for batch removals.
-//                call_user_func_array(
-//                    [ core::redis($pool), 'sRemove' ],
-//                    array_merge([ $key ], $remove_key)
-//                );
-            } else {
-                core::redis($pool)->sRemove($key, $remove_key);
-            }
-        }
-
-        /**
          * Gets cached data.
          *  if record does exist, an array with a single element, containing the data.
          *  returns null if record does not exist
@@ -190,13 +100,12 @@
          * @return array
          */
         public static function get_multi($pool, array $keys) {
-            $redis = core::redis($pool);
+            $redis = core::redis($pool)->multi();
 
             // Redis returns the results in order - if the key doesn't exist, false is returned - this problematic
             // since false might be an actual value being stored... therefore we check if the key exists if false is
             // returned
 
-            $redis->multi();
             foreach ($keys as $key) {
                 $redis->exists($key);
                 $redis->get($key);
@@ -230,9 +139,11 @@
         public static function set_multi($pool, array $rows, $ttl=null) {
             if ($ttl) {
                 $redis = core::redis($pool);
+                $redis->multi();
                 foreach ($rows as $k => $v) {
                     $redis->set($k, $v, $ttl);
                 }
+                $redis->exec();
             } else {
                 return core::redis($pool)->mset($rows);
             }
@@ -292,10 +203,11 @@
          */
         public static function expire_multi($pool, array $keys, $ttl=0) {
             if ($ttl) {
-                $redis = core::redis($pool);
+                $redis = core::redis($pool)->multi();
                 foreach ($keys as $key) {
                     $redis->expire($key, $ttl);
                 }
+                $redis->exec();
             } else {
                 core::redis($pool)->delete($keys, $ttl);
             }

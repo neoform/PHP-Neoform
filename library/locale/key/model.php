@@ -50,17 +50,56 @@
         }
 
         /**
+         * Locale Key Message Count
+         *
+         * @return integer
+         */
+        public function locale_key_message_count() {
+            $fieldvals = [
+                'key_id' => (int) $this->vars['id'],
+            ];
+
+            $key = parent::_count_var_key('locale_key_message_count', $fieldvals);
+            if (! array_key_exists($key, $this->_vars)) {
+                $this->_vars[$key] = entity::dao('locale_key_message')->count($fieldvals);
+            }
+            return $this->_vars[$key];
+        }
+
+        /**
          * Locale Collection
+         *
+         * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return locale_collection
          */
-        public function locale_collection() {
-            if (! array_key_exists('locale_collection', $this->_vars)) {
-                $this->_vars['locale_collection'] = new locale_collection(
-                    entity::dao('locale_key_message')->by_key($this->vars['id'])
+        public function locale_collection(array $order_by=null, $offset=null, $limit=null) {
+            $key = self::_limit_var_key('locale_collection', $order_by, $offset, $limit);
+            if (! array_key_exists($key, $this->_vars)) {
+                $this->_vars[$key] = new locale_collection(
+                    entity::dao('locale_key_message')->by_key($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
-            return $this->_vars['locale_collection'];
+            return $this->_vars[$key];
+        }
+
+        /**
+         * Locale count
+         *
+         * @return integer
+         */
+        public function locale_count() {
+            $fieldvals = [
+                'key_id' => (int) $this->vars['id'],
+            ];
+
+            $key = parent::_count_var_key('locale_count', $fieldvals);
+            if (! array_key_exists($key, $this->_vars)) {
+                $this->_vars[$key] = entity::dao('locale_key_message')->count($fieldvals);
+            }
+            return $this->_vars[$key];
         }
 
         /**

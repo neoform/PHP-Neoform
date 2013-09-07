@@ -153,15 +153,37 @@
         /**
          * Acl Group Collection
          *
+         * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
+         *
          * @return acl_group_collection
          */
-        public function acl_group_collection() {
-            if (! array_key_exists('acl_group_collection', $this->_vars)) {
-                $this->_vars['acl_group_collection'] = new acl_group_collection(
-                    entity::dao('acl_group_user')->by_user($this->vars['id'])
+        public function acl_group_collection(array $order_by=null, $offset=null, $limit=null) {
+            $key = self::_limit_var_key('acl_group_collection', $order_by, $offset, $limit);
+            if (! array_key_exists($key, $this->_vars)) {
+                $this->_vars[$key] = new acl_group_collection(
+                    entity::dao('acl_group_user')->by_user($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
-            return $this->_vars['acl_group_collection'];
+            return $this->_vars[$key];
+        }
+
+        /**
+         * Acl Group count
+         *
+         * @return integer
+         */
+        public function acl_group_count() {
+            $fieldvals = [
+                'user_id' => (int) $this->vars['id'],
+            ];
+
+            $key = parent::_count_var_key('acl_group_count', $fieldvals);
+            if (! array_key_exists($key, $this->_vars)) {
+                $this->_vars[$key] = entity::dao('acl_group_user')->count($fieldvals);
+            }
+            return $this->_vars[$key];
         }
 
         /**
@@ -184,17 +206,56 @@
         }
 
         /**
+         * Auth Count
+         *
+         * @return integer
+         */
+        public function auth_count() {
+            $fieldvals = [
+                'user_id' => (int) $this->vars['id'],
+            ];
+
+            $key = parent::_count_var_key('auth_count', $fieldvals);
+            if (! array_key_exists($key, $this->_vars)) {
+                $this->_vars[$key] = entity::dao('auth')->count($fieldvals);
+            }
+            return $this->_vars[$key];
+        }
+
+        /**
          * Acl Role Collection
+         *
+         * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
          *
          * @return acl_role_collection
          */
-        public function acl_role_collection() {
-            if (! array_key_exists('acl_role_collection', $this->_vars)) {
-                $this->_vars['acl_role_collection'] = new acl_role_collection(
-                    entity::dao('user_acl_role')->by_user($this->vars['id'])
+        public function acl_role_collection(array $order_by=null, $offset=null, $limit=null) {
+            $key = self::_limit_var_key('acl_role_collection', $order_by, $offset, $limit);
+            if (! array_key_exists($key, $this->_vars)) {
+                $this->_vars[$key] = new acl_role_collection(
+                    entity::dao('user_acl_role')->by_user($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
-            return $this->_vars['acl_role_collection'];
+            return $this->_vars[$key];
+        }
+
+        /**
+         * Acl Role count
+         *
+         * @return integer
+         */
+        public function acl_role_count() {
+            $fieldvals = [
+                'user_id' => (int) $this->vars['id'],
+            ];
+
+            $key = parent::_count_var_key('acl_role_count', $fieldvals);
+            if (! array_key_exists($key, $this->_vars)) {
+                $this->_vars[$key] = entity::dao('user_acl_role')->count($fieldvals);
+            }
+            return $this->_vars[$key];
         }
 
         /**
@@ -218,15 +279,37 @@
         /**
          * Site Collection
          *
+         * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param integer|null $offset get PKs starting at this offset
+         * @param integer|null $limit max number of PKs to return
+         *
          * @return site_collection
          */
-        public function site_collection() {
-            if (! array_key_exists('site_collection', $this->_vars)) {
-                $this->_vars['site_collection'] = new site_collection(
-                    entity::dao('user_site')->by_user($this->vars['id'])
+        public function site_collection(array $order_by=null, $offset=null, $limit=null) {
+            $key = self::_limit_var_key('site_collection', $order_by, $offset, $limit);
+            if (! array_key_exists($key, $this->_vars)) {
+                $this->_vars[$key] = new site_collection(
+                    entity::dao('user_site')->by_user($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
-            return $this->_vars['site_collection'];
+            return $this->_vars[$key];
+        }
+
+        /**
+         * Site count
+         *
+         * @return integer
+         */
+        public function site_count() {
+            $fieldvals = [
+                'user_id' => (int) $this->vars['id'],
+            ];
+
+            $key = parent::_count_var_key('site_count', $fieldvals);
+            if (! array_key_exists($key, $this->_vars)) {
+                $this->_vars[$key] = entity::dao('user_site')->count($fieldvals);
+            }
+            return $this->_vars[$key];
         }
 
         /**

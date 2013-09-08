@@ -1,8 +1,10 @@
 #!/usr/bin/env php
 <?php
 
+    use neoform;
+
     $root = realpath(__DIR__ . '/..');
-    require_once($root . '/library/core.php');
+    require_once($root . '/neoform/core.php');
 
     core::init([
         'extension'   => 'php',

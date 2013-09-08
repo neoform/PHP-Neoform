@@ -18,7 +18,7 @@
             update: function() {
 
                 $.ajax({
-                    url: "/account/ajax/update?rc=<?php echo core::http()->get_ref(); ?>",
+                    url: "/account/ajax/update?rc=<?php echo neoform\core::http()->get_ref(); ?>",
                     data: {
                         name_first: $("input[name='name_first']", page.div).val(),
                         name_last:     $("input[name='name_last']", page.div).val(),
@@ -62,7 +62,7 @@
 
             cities: function(province) {
                 $.ajax({
-                    url: "/listing/ajax/cities/province:" + province + "?rc=<?php echo core::http()->get_ref(); ?>",
+                    url: "/listing/ajax/cities/province:" + province + "?rc=<?php echo neoform\core::http()->get_ref(); ?>",
                     success: function(response) {
 
                         var select = $("select[name='city']", page.div);

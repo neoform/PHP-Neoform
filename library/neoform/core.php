@@ -2,6 +2,8 @@
 
     namespace neoform;
 
+    \date_default_timezone_set('America/Los_Angeles');
+
     /**
      * Register the start time of the app
      */
@@ -22,9 +24,6 @@
     */
     \spl_autoload_register(
         function($name) {
-
-            echo \str_replace(['\\', '_'], DIRECTORY_SEPARATOR, $name) . '.' . EXT . "\n\n";
-
             if (! include(\str_replace(['\\', '_'], DIRECTORY_SEPARATOR, $name) . '.' . EXT)) {
                 throw new \exception('Could not load file "' . $name . '"');
             }

@@ -4,7 +4,7 @@
 
     new liner([
         'application',
-        'library',
+        'library/neoform',
     ]);
 
     class liner {

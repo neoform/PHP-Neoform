@@ -2,8 +2,8 @@
 <?php
 
     $root = realpath(__DIR__ . '/..');
-    require_once("{$root}/library/core.php");
-    core::init([
+    require_once("{$root}/neoform/core.php");
+    neoform\core::init([
         'extension'   => 'php',
         'environment' => 'sling',
 
@@ -13,10 +13,10 @@
         'website'     => "{$root}/www/",
     ]);
 
-    class regenerate_config extends cli_model {
+    class regenerate_config extends neoform\cli_model {
 
         public function init() {
-            config_dao::set(
+            neoform\config_dao::set(
                 $this->opt('file'),
                 $this->opt('env')
             );

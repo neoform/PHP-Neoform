@@ -1,8 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity\generate\record;
 
-    class generate_record_collection extends generate_collection {
+    use neoform\entity\generate;
+    use neoform\sql\parser\field;
+
+    class collection extends generate\collection {
 
         protected $used_function_names = [];
         protected $used_var_key_names = [];
@@ -11,7 +14,7 @@
             $suffix     = '';
             $final_name = $name;
             $i          = 1;
-            while (\in_array($final_name, $arr)) {
+            while (in_array($final_name, $arr)) {
                 $final_name = $name . $suffix;
                 $suffix     = $i++;
             }
@@ -24,14 +27,14 @@
             $this->code .= '<?php'."\n\n";
 
             $this->code .= "\t/**\n";
-            $this->code .= "\t * " . \ucwords(\str_replace('_', ' ', $this->table->name)) . " collection\n";
+            $this->code .= "\t * " . ucwords(str_replace('_', ' ', $this->table->name)) . " collection\n";
             $this->code .= "\t */\n";
 
-            $this->code .= "\tclass " . $this->table->name . "_collection extends entity_record_collection implements " . $this->table->name . "_definition {\n\n";
+            $this->code .= "\tclass {$this->table->name}_collection extends entity_record_collection implements {$this->table->name}_definition {\n\n";
 
             $this->preloaders();
 
-            $this->code = \substr($this->code, 0, -1);
+            $this->code = substr($this->code, 0, -1);
             $this->code .= "\t}\n";
         }
 
@@ -79,7 +82,7 @@
 
         // these are all labelled as _collections because that's what they return as a value. :P
 
-        protected function one_to_one(sql_parser_field $field, sql_parser_field $referenced_field) {
+        protected function one_to_one(field $field, field $referenced_field) {
 
             $self_reference = $referenced_field->table === $this->table;
 
@@ -87,7 +90,7 @@
             $_var_key = $this->used($this->used_var_key_names, ($self_reference ? 'parent_' : '') . $referenced_field->table->name);
 
             $this->code .= "\t\t/**\n";
-            $this->code .= "\t\t * Preload the " . \ucwords(\str_replace('_', ' ', $referenced_field->table->name)) . " models in this collection\n";
+            $this->code .= "\t\t * Preload the " . ucwords(str_replace('_', ' ', $referenced_field->table->name)) . " models in this collection\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @return {$referenced_field->table->name}_collection\n";
             $this->code .= "\t\t */\n";
@@ -101,7 +104,7 @@
             $this->code .= "\t\t}\n\n";
         }
 
-        protected function one_to_many(sql_parser_field $field) {
+        protected function one_to_many(field $field) {
 
             $self_reference = $field->table === $this->table;
 
@@ -110,7 +113,7 @@
             $_var_key = $this->used($this->used_var_key_names, ($self_reference ? 'child_' : '') . $field->table->name . '_collection');
 
             $this->code .= "\t\t/**\n";
-            $this->code .= "\t\t * Preload the " . ($self_reference ? 'child ' : '') . \ucwords(\str_replace('_', ' ', $field->table->name)) . " models in this collection\n";
+            $this->code .= "\t\t * Preload the " . ($self_reference ? 'child ' : '') . ucwords(str_replace('_', ' ', $field->table->name)) . " models in this collection\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @param array|null   \$order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)\n";
             $this->code .= "\t\t * @param integer|null \$offset get PKs starting at this offset\n";
@@ -131,11 +134,11 @@
             $this->code .= "\t\t}\n\n";
 
             // Count
-            $name     = $this->used($this->used_function_names, ($self_reference ? 'child_' : '') . $field->table->name . '_count');
-            $_var_key = $this->used($this->used_var_key_names, ($self_reference ? 'child_' : '') . $field->table->name . '_count');
+            $name     = $this->used($this->used_function_names, ($self_reference ? 'child_' : '') . "{$field->table->name}_count");
+            $_var_key = $this->used($this->used_var_key_names, ($self_reference ? 'child_' : '') . "{$field->table->name}_count");
 
             $this->code .= "\t\t/**\n";
-            $this->code .= "\t\t * Preload the " . ($self_reference ? 'child ' : '') . \ucwords(\str_replace('_', ' ', $field->table->name)) . " counts\n";
+            $this->code .= "\t\t * Preload the " . ($self_reference ? 'child ' : '') . ucwords(str_replace('_', ' ', $field->table->name)) . " counts\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @return array counts\n";
             $this->code .= "\t\t */\n";
@@ -148,20 +151,20 @@
             $this->code .= "\t\t}\n\n";
         }
 
-        protected function many_to_many(sql_parser_field $field, sql_parser_field $referenced_field) {
+        protected function many_to_many(field $field, field $referenced_field) {
 
             // Collection
-            $name     = $this->used($this->used_function_names, $referenced_field->referenced_field->table->name . '_collection');
-            $_var_key = $this->used($this->used_var_key_names, $referenced_field->referenced_field->table->name . '_collection');
+            $name     = $this->used($this->used_function_names, "{$referenced_field->referenced_field->table->name}_collection");
+            $_var_key = $this->used($this->used_var_key_names, "{$referenced_field->referenced_field->table->name}_collection");
 
             $this->code .= "\t\t/**\n";
-            $this->code .= "\t\t * Preload the " . \ucwords(\str_replace('_', ' ', $referenced_field->referenced_field->table->name)) . " models in this collection\n";
+            $this->code .= "\t\t * Preload the " . ucwords(str_replace('_', ' ', $referenced_field->referenced_field->table->name)) . " models in this collection\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @param array        \$order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)\n";
             $this->code .= "\t\t * @param integer|null \$offset   get PKs starting at this offset\n";
             $this->code .= "\t\t * @param integer|null \$limit    max number of PKs to return\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @return " . $referenced_field->referenced_field->table->name . "_collection\n";
+            $this->code .= "\t\t * @return {$referenced_field->referenced_field->table->name}_collection\n";
             $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic function {$name}(array \$order_by=null, \$offset=null, \$limit=null) {\n";
@@ -177,11 +180,11 @@
             $this->code .= "\t\t}\n\n";
 
             // Count
-            $name     = $this->used($this->used_function_names, $referenced_field->referenced_field->table->name . '_count');
-            $_var_key = $this->used($this->used_var_key_names, $referenced_field->referenced_field->table->name . '_count');
+            $name     = $this->used($this->used_function_names, "{$referenced_field->referenced_field->table->name}_count");
+            $_var_key = $this->used($this->used_var_key_names, "{$referenced_field->referenced_field->table->name}_count");
 
             $this->code .= "\t\t/**\n";
-            $this->code .= "\t\t * Preload the " . \ucwords(\str_replace('_', ' ', $referenced_field->referenced_field->table->name)) . " counts\n";
+            $this->code .= "\t\t * Preload the " . ucwords(str_replace('_', ' ', $referenced_field->referenced_field->table->name)) . " counts\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @return array counts\n";
             $this->code .= "\t\t */\n";

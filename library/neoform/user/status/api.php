@@ -74,7 +74,7 @@
             // name
             $input->name->cast('string')->optional()->length(1, 255)->callback(function($name) use ($user_status) {
                 $id_arr = entity::dao('user_status')->by_name($name->val());
-                if (\is_array($id_arr) && $id_arr && (int) \current($id_arr) !== $user_status->id) {
+                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $user_status->id) {
                     $name->errors('already in use');
                 }
             });

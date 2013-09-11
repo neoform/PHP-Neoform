@@ -1,8 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity;
 
-    abstract class entity_dao {
+    use neoform;
+
+    abstract class dao {
 
         protected $source_engine;
         protected $source_engine_pool_read;
@@ -145,22 +147,23 @@
          *
          * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
          * @param array   $fieldvals      optional - array of table keys and their values being looked up in the table
+         *
          * @return string a cache key that is unqiue to the application
          */
         final protected static function _build_key($cache_key_name, array $fieldvals=[]) {
             // each key is namespaced with the name of the class, then the name of the function ($cache_key_name)
-            $param_count = \count($fieldvals);
+            $param_count = count($fieldvals);
             if ($param_count === 1) {
-                return static::ENTITY_NAME . ":{$cache_key_name}:" . \md5(\reset($fieldvals));
+                return static::ENTITY_NAME . ":{$cache_key_name}:" . md5(reset($fieldvals));
             } else if ($param_count === 0) {
                 return static::ENTITY_NAME . ":{$cache_key_name}:";
             } else {
-                \ksort($fieldvals);
+                ksort($fieldvals);
                 foreach ($fieldvals as & $val) {
-                    $val = \base64_encode($val);
+                    $val = base64_encode($val);
                 }
                 // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
-                return static::ENTITY_NAME . ":{$cache_key_name}:" . \md5(\json_encode(\array_values($fieldvals)));
+                return static::ENTITY_NAME . ":{$cache_key_name}:" . md5(json_encode(array_values($fieldvals)));
             }
         }
 
@@ -176,7 +179,7 @@
             if ($fieldval === null) {
                 return static::ENTITY_NAME . ':' . self::META . "[{$field_name}]";
             } else {
-                return static::ENTITY_NAME . ':' . self::META . "[{$field_name}]:" . \md5($fieldval);
+                return static::ENTITY_NAME . ':' . self::META . "[{$field_name}]:" . md5($fieldval);
             }
         }
 
@@ -202,7 +205,7 @@
          * @return array   the cached recordset
          */
         final protected function _single($key, callable $get) {
-            return cache_lib::single(
+            return neoform\cache\lib::single(
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
@@ -220,7 +223,7 @@
          * @param string   $key full cache key with namespace - it's recomended that entity_record_dao::_build_key() is used to create this key
          */
         final protected function _cache_delete($key) {
-            cache_lib::delete(
+            neoform\cache\lib::delete(
                 $this->cache_engine,
                 $this->cache_engine_pool_write,
                 $key
@@ -245,8 +248,8 @@
             }
 
             if ($fieldvals) {
-                foreach ($fields ? \array_diff_key($fieldvals, \array_flip($fields)) : $fieldvals as $field => $value) {
-                    if (\is_array($value)) {
+                foreach ($fields ? array_diff_key($fieldvals, array_flip($fields)) : $fieldvals as $field => $value) {
+                    if (is_array($value)) {
                         foreach ($value as $val) {
                             $list_keys[] = self::_build_key_list($field, $val);
                         }
@@ -259,7 +262,7 @@
             }
 
             // Create meta data lists
-            entity_meta_lib::push(
+            neoform\entity\meta\lib::push(
                 $this->cache_meta_engine,
                 $this->cache_meta_engine_pool_write,
                 $cache_key,
@@ -283,15 +286,15 @@
                     $build_key_list_fields[] = self::_build_key_list_field($field);
                 }
 
-                foreach (\array_keys($cache_keys) as $cache_key) {
+                foreach (array_keys($cache_keys) as $cache_key) {
                     $list_keys[$cache_key] = $build_key_list_fields;
                 }
             }
 
             foreach ($cache_keys as $cache_key => $fieldvals) {
-                if (\is_array($fieldvals) && $fieldvals) {
-                    foreach ($fields ? \array_diff_key($fieldvals, \array_flip($fields)) : $fieldvals as $field => $value) {
-                        if (\is_array($value)) {
+                if (is_array($fieldvals) && $fieldvals) {
+                    foreach ($fields ? array_diff_key($fieldvals, array_flip($fields)) : $fieldvals as $field => $value) {
+                        if (is_array($value)) {
                             foreach ($value as $val) {
                                 $list_keys[$cache_key][] = self::_build_key_list($field, $val);
                             }
@@ -305,7 +308,7 @@
             }
 
             // Create meta data lists
-            entity_meta_lib::push_multi(
+            neoform\entity\meta\lib::push_multi(
                 $this->cache_meta_engine,
                 $this->cache_meta_engine_pool_write,
                 $list_keys
@@ -328,7 +331,7 @@
 
                 $list_keys[] = self::_build_key_list_field($field);
 
-                if (\is_array($value)) {
+                if (is_array($value)) {
                     foreach ($value as $val) {
                         $list_keys[] = self::_build_key_list($field, $val);
                     }
@@ -337,30 +340,31 @@
                 }
             }
 
-            if ($list_keys = \array_unique($list_keys)) {
-                $cache_keys = entity_meta_lib::pull(
+            if ($list_keys = array_unique($list_keys)) {
+                $cache_keys = neoform\entity\meta\lib::pull(
                     $this->cache_meta_engine,
                     $this->cache_meta_engine_pool_write,
                     $list_keys
                 );
-            }
 
-            if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
-                cache_lib::expire_multi(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
-                    $cache_keys,
-                    $this->cache_delete_expire_ttl
-                );
-            } else {
-                cache_lib::delete_multi(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
-                    $cache_keys
-                );
+                if ($cache_keys) {
+                    if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
+                        neoform\cache\lib::expire_multi(
+                            $this->cache_engine,
+                            $this->cache_engine_pool_write,
+                            $cache_keys,
+                            $this->cache_delete_expire_ttl
+                        );
+                    } else {
+                        neoform\cache\lib::delete_multi(
+                            $this->cache_engine,
+                            $this->cache_engine_pool_write,
+                            $cache_keys
+                        );
+                    }
+                }
             }
         }
-
         /**
          * Delete all cache keys and field/value and field order lists - by fields
          *
@@ -377,7 +381,7 @@
 
                     $list_keys[] = self::_build_key_list_field($field);
 
-                    if (\is_array($value)) {
+                    if (is_array($value)) {
                         foreach ($value as $val) {
                             $list_keys[] = self::_build_key_list($field, $val);
                         }
@@ -387,27 +391,29 @@
                 }
             }
 
-            if ($list_keys = \array_unique($list_keys)) {
-                $cache_keys = entity_meta_lib::pull(
+            if ($list_keys = array_unique($list_keys)) {
+                $cache_keys = neoform\entity\meta\lib::pull(
                     $this->cache_meta_engine,
                     $this->cache_meta_engine_pool_write,
                     $list_keys
                 );
-            }
 
-            if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
-                cache_lib::expire_multi(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
-                    $cache_keys,
-                    $this->cache_delete_expire_ttl
-                );
-            } else {
-                cache_lib::delete_multi(
-                    $this->cache_engine,
-                    $this->cache_engine_pool_write,
-                    $cache_keys
-                );
+                if ($cache_keys) {
+                    if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
+                        neoform\cache\lib::expire_multi(
+                            $this->cache_engine,
+                            $this->cache_engine_pool_write,
+                            $cache_keys,
+                            $this->cache_delete_expire_ttl
+                        );
+                    } else {
+                        neoform\cache\lib::delete_multi(
+                            $this->cache_engine,
+                            $this->cache_engine_pool_write,
+                            $cache_keys
+                        );
+                    }
+                }
             }
         }
     }

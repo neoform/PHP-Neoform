@@ -39,7 +39,7 @@
          */
         public function locale_key_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('locale_key_collection', $order_by, $offset, $limit);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new locale_key_collection(
                     entity::dao('locale_key')->by_namespace($this->vars['id'], $order_by, $offset, $limit)
                 );
@@ -58,7 +58,7 @@
             ];
 
             $key = parent::_count_var_key('locale_key_count', $fieldvals);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = entity::dao('locale_key')->count($fieldvals);
             }
             return $this->_vars[$key];

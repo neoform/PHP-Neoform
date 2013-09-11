@@ -1,14 +1,16 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\http\flash;
+
+    use neoform;
 
     /**
      * Short term data storage - useful for very short lived sessions, data is highly volatile and not guarantied to
      * exist on read. Best uses are for redirect session data.
      */
-    class http_flash_instance {
+    class instance {
 
-        use core_instance;
+        use neoform\core\instance;
 
         protected $session_engine;
         protected $hash;
@@ -19,7 +21,7 @@
 
         public function __construct(array $config) {
             //initialize the session storage engine
-            $this->hash = \base64_encode(auth_lib::get_hash_cookie());
+            $this->hash = base64_encode(neoform\auth\lib::get_hash_cookie());
 
             $this->flash_cache_engine     = $config['flash_cache_engine'];
             $this->flash_cache_pool_read  = $config['flash_cache_pool_read'];
@@ -36,7 +38,7 @@
          * @return mixed
          */
         public function get($key) {
-            $engine = "neoform\\cache_{$this->flash_cache_engine}_driver";
+            $engine = "\\neoform\\cache\\{$this->flash_cache_engine}\\driver";
             return $engine::get($this->flash_cache_pool_read, "http_flash:{$this->hash}:{$key}");
         }
 
@@ -50,7 +52,7 @@
          * @return mixed
          */
         public function set($key, $val, $ttl=null) {
-            $engine = "neoform\\cache_{$this->flash_cache_engine}_driver";
+            $engine = "\\neoform\\cache\\{$this->flash_cache_engine}\\driver";
             return $engine::set(
                 $this->flash_cache_pool_write,
                 "http_flash:{$this->hash}:{$key}",
@@ -67,7 +69,7 @@
          * @return mixed
          */
         public function del($key) {
-            $engine = "neoform\\cache_{$this->flash_cache_engine}_driver";
+            $engine = "\\neoform\\cache\\{$this->flash_cache_engine}\\driver";
             return $engine::delete($this->flash_cache_pool_write, "http_flash:{$this->hash}:{$key}");
         }
     }

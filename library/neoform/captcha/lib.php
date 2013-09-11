@@ -1,27 +1,29 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\captcha;
 
-    class captcha_lib {
+    use neoform;
+
+    class lib {
 
         const RECAPTCHA_API_SERVER            = "http://www.google.com/recaptcha/api";
         const RECAPTCHA_API_SECURE_SERVER     = "https://www.google.com/recaptcha/api";
         const RECAPTCHA_VERIFY_SERVER         = "www.google.com";
 
         public static function public_key() {
-            return core::config('recaptcha')->api['public'];
+            return neoform\core::config('recaptcha')->api['public'];
         }
 
         //only run this once the user has entered a valid captcha - validity of session is 60 seconds
         public static function session_make() {
-            core::http_flash()->set('captcha', 1, 60);
+            neoform\core::http_flash()->set('captcha', 1, 60);
         }
 
         public static function session_validate() {
 
-            $return = (bool) core::http_flash()->get('captcha');
+            $return = (bool) neoform\core::http_flash()->get('captcha');
             if ($return) {
-                core::http_flash()->del('captcha');
+                neoform\core::http_flash()->del('captcha');
             }
 
             return $return;
@@ -35,11 +37,11 @@
         protected static function _recaptcha_qsencode($data) {
             $req = "";
             foreach ($data as $key => $value) {
-                $req .= $key . '=' . \urlencode(\stripslashes($value)) . '&';
+                $req .= "{$key}=" . urlencode(stripslashes($value)) . '&';
             }
 
             // Cut the last '&'
-            $req = \substr($req, 0, \strlen($req) - 1);
+            $req = substr($req, 0, strlen($req) - 1);
             return $req;
         }
 
@@ -58,32 +60,30 @@
 
             $req = self::_recaptcha_qsencode($data);
 
-            $http_request  = "POST " . $path . " HTTP/1.0\r\n";
-            $http_request .= "Host: " . $host . "\r\n";
+            $http_request  = "POST {$path} HTTP/1.0\r\n";
+            $http_request .= "Host: {$host}\r\n";
             $http_request .= "Content-Type: application/x-www-form-urlencoded;\r\n";
-            $http_request .= "Content-Length: " . \strlen($req) . "\r\n";
+            $http_request .= "Content-Length: " . strlen($req) . "\r\n";
             $http_request .= "User-Agent: reCAPTCHA/PHP\r\n";
             $http_request .= "\r\n";
             $http_request .= $req;
 
             $response = '';
-            if (false == ($fs = @\fsockopen($host, $port, $errno, $errstr, 10))) {
+            if (false == ($fs = @fsockopen($host, $port, $errno, $errstr, 10))) {
                 throw new \exception('Could not open socket');
             }
 
-            \fwrite($fs, $http_request);
+            fwrite($fs, $http_request);
 
-            while (! \feof($fs)) {
-                $response .= \fgets($fs, 1160); // One TCP-IP packet
+            while (! feof($fs)) {
+                $response .= fgets($fs, 1160); // One TCP-IP packet
             }
 
-            \fclose($fs);
-            $response = \explode("\r\n\r\n", $response, 2);
+            fclose($fs);
+            $response = explode("\r\n\r\n", $response, 2);
 
             return $response;
         }
-
-
 
         /**
          * Gets the challenge HTML (javascript and non-javascript version).
@@ -106,13 +106,13 @@
             $errorpart = "";
 
             if ($error) {
-               $errorpart = "&amp;error=" . $error;
+               $errorpart = "&amp;error={$error}";
             }
 
-            return '<script type="text/javascript" src="'. $server . '/challenge?k=' . core::config('recaptcha')->api['public'] . $errorpart . '"></script>
+            return '<script type="text/javascript" src="'. $server . '/challenge?k=' . neoform\core::config('recaptcha')->api['public'] . $errorpart . '"></script>
 
             <noscript>
-                  <iframe src="'. $server . '/noscript?k=' . core::config('recaptcha')->api['public'] . $errorpart . '" height="300" width="500" frameborder="0"></iframe><br/>
+                  <iframe src="'. $server . '/noscript?k=' . neoform\core::config('recaptcha')->api['public'] . $errorpart . '" height="300" width="500" frameborder="0"></iframe><br/>
                   <textarea name="recaptcha_challenge_field" rows="3" cols="40"></textarea>
                   <input type="hidden" name="recaptcha_response_field" value="manual_challenge"/>
             </noscript>';
@@ -135,7 +135,7 @@
             }
 
             //discard spam submissions
-            if ($challenge == null || strlen($challenge) === 0 || $response === null || \strlen($response) === 0) {
+            if ($challenge == null || strlen($challenge) === 0 || $response === null || strlen($response) === 0) {
                 $recaptcha_response = new ReCaptchaResponse();
                 $recaptcha_response->is_valid = false;
                 $recaptcha_response->error = 'incorrect-captcha-sol';
@@ -146,17 +146,17 @@
                 self::RECAPTCHA_VERIFY_SERVER,
                 "/recaptcha/api/verify",
                 [
-                    'privatekey'     => core::config('recaptcha')->api['private'],
-                    'remoteip'         => $remoteip,
-                    'challenge'     => $challenge,
-                    'response'         => $response,
+                    'privatekey' => neoform\core::config('recaptcha')->api['private'],
+                    'remoteip'   => $remoteip,
+                    'challenge'  => $challenge,
+                    'response'   => $response,
                 ] + $extra_params
             );
 
             $answers = \explode ("\n", $response[1]);
             $recaptcha_response = new ReCaptchaResponse();
 
-            if (\trim($answers [0]) == 'true') {
+            if (trim($answers [0]) == 'true') {
                 $recaptcha_response->is_valid = true;
             } else {
                 $recaptcha_response->is_valid = false;
@@ -190,8 +190,8 @@
          */
         protected static function _recaptcha_aes_pad($val) {
             $block_size = 16;
-            $numpad = $block_size - (\strlen ($val) % $block_size);
-            return \str_pad($val, \strlen ($val) + $numpad, \chr($numpad));
+            $numpad = $block_size - (strlen($val) % $block_size);
+            return str_pad($val, strlen($val) + $numpad, \chr($numpad));
         }
 
         /**
@@ -199,16 +199,16 @@
          * @param $ky
          *
          * @return string
-         * @throws \exception
+         * @throws exception
          */
         protected static function _recaptcha_aes_encrypt($val, $ky) {
-            if (! \function_exists("mcrypt_encrypt")) {
+            if (! function_exists("mcrypt_encrypt")) {
                 throw new exception("To use reCAPTCHA Mailhide, you need to have the mcrypt php module installed.");
             }
             $mode = MCRYPT_MODE_CBC;
-            $enc = MCRYPT_RIJNDAEL_128;
-            $val = self::_recaptcha_aes_pad($val);
-            return \mcrypt_encrypt($enc, $ky, $val, $mode, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+            $enc  = MCRYPT_RIJNDAEL_128;
+            $val  = self::_recaptcha_aes_pad($val);
+            return mcrypt_encrypt($enc, $ky, $val, $mode, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
         }
 
         /**
@@ -217,7 +217,7 @@
          * @return string
          */
         protected static function _recaptcha_mailhide_urlbase64($x) {
-            return \strtr(\base64_encode($x), '+/', '-_');
+            return strtr(base64_encode($x), '+/', '-_');
         }
 
         /**
@@ -236,7 +236,7 @@
             //    );
             //}
 
-            $ky = @\pack('H*', self::EMAIL_PRIVATE_KEY);
+            $ky = @pack('H*', self::EMAIL_PRIVATE_KEY);
             $cryptmail = self::_recaptcha_aes_encrypt($email, self::EMAIL_PRIVATE_KEY);
 
             return "http://www.google.com/recaptcha/mailhide/d?k=" . core::config('recaptcha')->api['public'] . "&c=" . self::_recaptcha_mailhide_urlbase64($cryptmail);
@@ -253,14 +253,14 @@
          */
         protected static function _recaptcha_mailhide_email_parts($email) {
 
-            $arr = \preg_split("/@/", $email );
+            $arr = preg_split("/@/", $email );
 
-            if (\strlen ($arr[0]) <= 4) {
-                $arr[0] = \substr ($arr[0], 0, 1);
-            } else if (\strlen ($arr[0]) <= 6) {
-                $arr[0] = \substr ($arr[0], 0, 3);
+            if (strlen($arr[0]) <= 4) {
+                $arr[0] = substr($arr[0], 0, 1);
+            } else if (strlen($arr[0]) <= 6) {
+                $arr[0] = substr($arr[0], 0, 3);
             } else {
-                $arr[0] = \substr ($arr[0], 0, 4);
+                $arr[0] = substr($arr[0], 0, 4);
             }
             return $arr;
         }
@@ -279,8 +279,8 @@
             $emailparts = self::_recaptcha_mailhide_email_parts($email);
             $url = self::recaptcha_mailhide_url(self::EMAIL_PUBLIC_KEY, self::EMAIL_PRIVATE_KEY, $email);
 
-            return \htmlentities($emailparts[0]) . "<a href='" . \htmlentities ($url) .
-                "' onclick=\"window.open('" . \htmlentities ($url) . "', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;\" title=\"Reveal this e-mail address\">...</a>@" . \htmlentities($emailparts[1]);
+            return htmlentities($emailparts[0]) . "<a href='" . htmlentities($url) .
+                "' onclick=\"window.open('" . htmlentities($url) . "', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;\" title=\"Reveal this e-mail address\">...</a>@" . htmlentities($emailparts[1]);
 
         }
     }

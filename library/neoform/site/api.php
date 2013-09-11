@@ -48,7 +48,7 @@
             // name
             $input->name->cast('string')->length(1, 64)->callback(function($name) {
                 $id_arr = entity::dao('site')->by_name($name->val());
-                if (\is_array($id_arr) && $id_arr) {
+                if (is_array($id_arr) && $id_arr) {
                     $name->errors('already in use');
                 }
             });
@@ -62,7 +62,7 @@
             // name
             $input->name->cast('string')->optional()->length(1, 64)->callback(function($name) use ($site) {
                 $id_arr = entity::dao('site')->by_name($name->val());
-                if (\is_array($id_arr) && $id_arr && (int) \current($id_arr) !== $site->id) {
+                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $site->id) {
                     $name->errors('already in use');
                 }
             });

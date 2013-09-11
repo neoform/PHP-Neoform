@@ -31,7 +31,7 @@
             $parent = $this->xml;
             $p = '';
 
-            foreach (\preg_split('`/`', $path, 0, PREG_SPLIT_NO_EMPTY) as $nodeName) {
+            foreach (preg_split('`/`', $path, 0, PREG_SPLIT_NO_EMPTY) as $nodeName) {
                 $p .= '/' . $nodeName;
                 $element = $this->xPath->query($p)->item(0);
                 if ($element === null) {

@@ -81,7 +81,7 @@
             // name
             $input->name->cast('string')->optional()->length(1, 32)->callback(function($name) use ($acl_resource) {
                 $id_arr = entity::dao('acl_resource')->by_name($name->val());
-                if (\is_array($id_arr) && $id_arr && (int) \current($id_arr) !== $acl_resource->id) {
+                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $acl_resource->id) {
                     $name->errors('already in use');
                 }
             });

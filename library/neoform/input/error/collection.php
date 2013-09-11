@@ -1,10 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\input\error;
 
-    use ArrayObject;
-
-    class input_error_collection extends ArrayObject {
+    class collection extends \arrayobject {
 
         public function __construct(array $errors = null) {
             if ($errors) {
@@ -27,6 +25,6 @@
         }
 
         public function count() {
-            return \count($this);
+            return count($this);
         }
     }

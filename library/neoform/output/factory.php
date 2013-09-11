@@ -1,10 +1,12 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\output;
 
-    class output_factory implements core_factory {
+    use neoform\core;
+
+    class factory implements core\factory {
 
         public static function init(array $args) {
-            return new output_instance;
+            return new instance;
         }
     }

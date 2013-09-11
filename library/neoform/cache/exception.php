@@ -1,5 +1,5 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\cache;
 
-    class cache_exception extends \exception {}
+    class exception extends \exception {}

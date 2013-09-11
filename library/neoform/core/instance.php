@@ -1,10 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\core;
 
     /**
      * Base interface for a core instance
      */
-    trait core_instance {
+    trait instance {
         public function kill() { }
     }

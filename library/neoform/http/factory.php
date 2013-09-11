@@ -1,15 +1,17 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\http;
 
-    class http_factory implements core_factory {
+    use neoform;
+
+    class factory implements neoform\core\factory {
 
         public static function init(array $args) {
             if ($args) {
-                return new http_instance(
+                return new instance(
                     $args[0],
-                    core::config()['http'],
-                    core::config()['locale'],
+                    neoform\core::config()['http'],
+                    neoform\core::config()['locale'],
                     $args[1],
                     $args[2],
                     $args[3],
@@ -17,10 +19,10 @@
                     $args[5]
                 );
             } else {
-                return new http_instance(
+                return new instance(
                     '',
-                    core::config()['http'],
-                    core::config()['locale'],
+                    neoform\core::config()['http'],
+                    neoform\core::config()['locale'],
                     [],
                     [],
                     [],

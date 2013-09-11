@@ -1,8 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\http;
 
-    class http_config extends entity_config_defaults {
+    use neoform;
+
+    class config extends neoform\config\defaults {
 
         protected function defaults() {
             return [
@@ -73,32 +75,32 @@
         /**
          * Validate the config values
          *
-         * @throws config_exception
+         * @throws neoform\config\exception
          */
         public function validate() {
 
             if (empty($this->config['domain'])) {
-                throw new config_exception('"domain" must be set');
+                throw new neoform\config\exception('"domain" must be set');
             }
 
             if (empty($this->config['session']['ref_secret'])) {
-                throw new config_exception('[\'session\'][\'ref_secret\'] must be set');
+                throw new neoform\config\exception('[\'session\'][\'ref_secret\'] must be set');
             }
 
             if (empty($this->config['session']['flash_cache_engine'])) {
-                throw new config_exception('[\'session\'][\'flash_cache_engine\'] must be set');
+                throw new neoform\config\exception('[\'session\'][\'flash_cache_engine\'] must be set');
             }
 
             if (empty($this->config['session']['flash_cache_engine'])) {
-                throw new config_exception('$this->config[\'session\'][\'flash_cache_engine\'] must be set');
+                throw new neoform\config\exception('$this->config[\'session\'][\'flash_cache_engine\'] must be set');
             }
 
             if (empty($this->config['session']['flash_cache_pool_read'])) {
-                throw new config_exception('$this->config[\'session\'][\'flash_cache_pool_read\'] must be set');
+                throw new neoform\config\exception('$this->config[\'session\'][\'flash_cache_pool_read\'] must be set');
             }
 
             if (empty($this->config['session']['flash_cache_pool_write'])) {
-                throw new config_exception('$this->config[\'session\'][\'flash_cache_pool_write\'] must be set');
+                throw new neoform\config\exception('$this->config[\'session\'][\'flash_cache_pool_write\'] must be set');
             }
         }
     }

@@ -39,7 +39,7 @@
          */
         public function user_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('user_collection', $order_by, $offset, $limit);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new user_collection(
                     entity::dao('user')->by_password_hashmethod($this->vars['id'], $order_by, $offset, $limit)
                 );
@@ -58,7 +58,7 @@
             ];
 
             $key = parent::_count_var_key('user_count', $fieldvals);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = entity::dao('user')->count($fieldvals);
             }
             return $this->_vars[$key];
@@ -80,7 +80,7 @@
             }
 
             // Seems pointless to make an object here, except PHP doesn't allow abstract static functions, weak
-            $hashmethod = "neoform\\user_hashmethod_driver_{$this->name}";
+            $hashmethod = "\\neoform\\user\\hashmethod\\driver\\{$this->name}";
             $hashmethod = new $hashmethod;
             return $hashmethod->hash($password, $salt, $cost);
         }

@@ -1,6 +1,9 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity\record;
+
+    use neoform\entity\exception;
+    use neoform;
 
     /**
      * entity_record_dao Standard database access, each extended DAO class must have a corresponding table with a primary key
@@ -14,7 +17,7 @@
      * since that list is possibly no longer accurate. Also, since the result sets use limit/offsets, there are often
      * more than on result set cached away, so *all* cached result sets that used email to be ordered, most be destroyed.
      */
-    abstract class entity_record_dao extends entity_dao {
+    abstract class dao extends neoform\entity\dao {
 
         protected $binary_pk;
 
@@ -38,36 +41,34 @@
         }
 
         /**
-         * Build a cache key used by the cache_lib by combining the dao class name, the cache key and the variables found in the $params
+         * Build a cache key used by the neoform\cache\lib by combining the dao class name, the cache key and the variables found in the $params
          *
-         * @access public
-         * @static
-         * @final
          * @param string       $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
          * @param array        $order_by       optional - array of order bys
          * @param integer|null $offset         what starting position to get records from
          * @param integer|null $limit          how many records to select
          * @param array        $params         optional - array of table keys and their values being looked up in the table
+         *
          * @return string a cache key that is unqiue to the application
          */
         final protected static function _build_key_limit($cache_key_name, array $order_by, $offset=null, $limit=null, array $params=[]) {
-            \ksort($order_by);
+            ksort($order_by);
 
             // each key is namespaced with the name of the class, then the name of the function ($cache_key_name)
-            $param_count = \count($params);
+            $param_count = count($params);
             if ($param_count === 1) {
-                return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . \md5(\json_encode($order_by)) .
-                       ':' . \md5(\reset($params));
+                return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by)) .
+                       ':' . md5(reset($params));
             } else if ($param_count === 0) {
-                return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . \md5(\json_encode($order_by)) . ':';
+                return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by)) . ':';
             } else {
-                \ksort($params);
+                ksort($params);
                 foreach ($params as & $param) {
-                    $param = \base64_encode($param);
+                    $param = base64_encode($param);
                 }
                 // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
-                return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . \md5(\json_encode($order_by)) .
-                       ':' . \md5(\json_encode(\array_values($params)));
+                return static::ENTITY_NAME . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by)) .
+                       ':' . md5(json_encode(array_values($params)));
             }
         }
 
@@ -77,16 +78,16 @@
          * @param int $pk primary key of a record
          *
          * @return array cached record data
-         * @throws entity_exception
+         * @throws exception
          */
         public function record($pk) {
-            return cache_lib::single(
+            return neoform\cache\lib::single(
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
-                static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? \md5($pk) : $pk),
+                static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($pk) : $pk),
                 function() use ($pk) {
-                    $source_driver = "neoform\\entity_record_driver_{$this->source_engine}";
+                    $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
                     return $source_driver::record($this, $this->source_engine_pool_read, $pk);
                 }
             );
@@ -95,11 +96,10 @@
         /**
          * Pulls a single record's information from the database
          *
-         * @access public
-         * @static
-         * @param array   $pks primary key of a records
-         * @return array  cached records data - with preserved key names from $pks.
-         * @throws entity_exception
+         * @param array  $pks primary key of a records
+         *
+         * @return array cached records data - with preserved key names from $pks.
+         * @throws exception
          */
         public function records(array $pks) {
 
@@ -107,16 +107,16 @@
                 return [];
             }
 
-            return cache_lib::multi(
+            return neoform\cache\lib::multi(
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
                 $pks,
                 function($pk) {
-                    return $this::ENTITY_NAME . ':' . $this::RECORD . ':' . ($this->binary_pk ? \md5($pk) : $pk);
+                    return $this::ENTITY_NAME . ':' . $this::RECORD . ':' . ($this->binary_pk ? md5($pk) : $pk);
                 },
                 function(array $pks) {
-                    $source_driver = "neoform\\entity_record_driver_{$this->source_engine}";
+                    $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
                     return $source_driver::records($this, $this->source_engine_pool_read, $pks);
                 }
             );
@@ -166,7 +166,7 @@
          * @param array $fieldvals array of table keys and their values being looked up in the table
          *
          * @return array pks of records from cache
-         * @throws entity_exception
+         * @throws exception
          */
         public function all(array $fieldvals=null) {
 
@@ -174,13 +174,13 @@
                 $this->bind_fields($fieldvals);
             }
 
-            return cache_lib::single(
+            return neoform\cache\lib::single(
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
                 parent::_build_key(self::ALL),
                 function() use ($fieldvals) {
-                    $source_driver = "neoform\\entity_record_driver_{$this->source_engine}";
+                    $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
                     return $source_driver::all($this, $this->source_engine_pool_read, $this::PRIMARY_KEY, $fieldvals);
                 },
                 function($cache_key) {
@@ -202,13 +202,13 @@
                 $this->bind_fields($fieldvals);
             }
 
-            return cache_lib::single(
+            return neoform\cache\lib::single(
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
                 parent::_build_key(parent::COUNT, $fieldvals ?: []),
                 function() use ($fieldvals) {
-                    $source_driver = "neoform\\entity_record_driver_{$this->source_engine}";
+                    $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
                     return $source_driver::count($this, $this->source_engine_pool_read, $fieldvals);
                 },
                 function($cache_key) use ($fieldvals) {
@@ -230,7 +230,7 @@
                 $this->bind_fields($fieldvals);
             }
 
-            return cache_lib::multi(
+            return neoform\cache\lib::multi(
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
@@ -239,7 +239,7 @@
                     return $this::_build_key($this::COUNT, $fieldvals ?: []);
                 },
                 function(array $fieldvals_arr) {
-                    $source_driver = "neoform\\entity_record_driver_{$this->source_engine}";
+                    $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
                     return $source_driver::count_multi(
                         $this,
                         $this->source_engine_pool_read,
@@ -281,13 +281,13 @@
                     $fieldvals
                 );
 
-                return cache_lib::single(
+                return neoform\cache\lib::single(
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
                     $cache_key,
                     function() use ($cache_key, $fieldvals, $order_by, $offset, $limit) {
-                        $source_driver = "neoform\\entity_record_driver_{$this->source_engine}";
+                        $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
                         return $source_driver::by_fields_offset(
                             $this,
                             $this->source_engine_pool_read,
@@ -300,26 +300,26 @@
                     },
                     function($cache_key, $pks) use ($fieldvals, $order_by) {
 
-                        if (\array_key_exists($this::PRIMARY_KEY, $fieldvals)) {
-                            $fieldvals[$this::PRIMARY_KEY] = \array_unique(\array_merge(
-                                \is_array($fieldvals[$this::PRIMARY_KEY]) ? $fieldvals[$this::PRIMARY_KEY] : [ $fieldvals[$this::PRIMARY_KEY] ],
+                        if (array_key_exists($this::PRIMARY_KEY, $fieldvals)) {
+                            $fieldvals[$this::PRIMARY_KEY] = array_unique(\array_merge(
+                                is_array($fieldvals[$this::PRIMARY_KEY]) ? $fieldvals[$this::PRIMARY_KEY] : [ $fieldvals[$this::PRIMARY_KEY] ],
                                 $pks
                             ));
                         } else {
                             $fieldvals[$this::PRIMARY_KEY] = $pks;
                         }
 
-                        $this->_set_meta_cache($cache_key, $fieldvals, \array_keys($order_by));
+                        $this->_set_meta_cache($cache_key, $fieldvals, array_keys($order_by));
                     }
                 );
             } else {
-                return cache_lib::single(
+                return neoform\cache\lib::single(
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
                     parent::_build_key($cache_key_name, $fieldvals),
                     function() use ($fieldvals) {
-                        $source_driver = "neoform\\entity_record_driver_{$this->source_engine}";
+                        $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
                         return $source_driver::by_fields(
                             $this,
                             $this->source_engine_pool_read,
@@ -332,9 +332,9 @@
                         $pk = $this::PRIMARY_KEY;
 
                         // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
-                        if (\array_key_exists($pk, $fieldvals)) {
-                            $fieldvals[$pk] = \array_unique(\array_merge(
-                                \is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
+                        if (array_key_exists($pk, $fieldvals)) {
+                            $fieldvals[$pk] = array_unique(\array_merge(
+                                is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
                                 $pks
                             ));
                         } else {
@@ -350,23 +350,21 @@
         /**
          * Gets the pks of more than one set of key values
          *
-         * @access protected
-         * @static
-         * @final
          * @param string  $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
          * @param array   $fieldvals_arr       array of arrays of table keys and their values being looked up in the table - each sub-array must have matching keys
          * @param array   $order_by       array of fields to order by - key = field, val = order direction
          * @param integer $offset         records starting at what offset
          * @param integer $limit          max number of record to return
+         *
          * @return array  pks of records from cache
-         * @throws entity_exception
+         * @throws exception
          */
         final protected function _by_fields_multi($cache_key_name, array $fieldvals_arr, array $order_by=null, $offset=null, $limit=null) {
             if ($order_by) {
                 $limit  = $limit === null ? null : (int) $limit;
                 $offset = $offset === null ? null : (int) $offset;
 
-                return cache_lib::multi(
+                return neoform\cache\lib::multi(
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
@@ -381,7 +379,7 @@
                         );
                     },
                     function(array $fieldvals_arr) use ($order_by, $offset, $limit) {
-                        $source_driver = "neoform\\entity_record_driver_{$this->source_engine}";
+                        $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
                         return $source_driver::by_fields_offset_multi(
                             $this,
                             $this->source_engine_pool_read,
@@ -402,9 +400,9 @@
                             // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
                             $fieldvals = & $fieldvals_arr[$k];
 
-                            if (\array_key_exists($pk, $fieldvals)) {
-                                $fieldvals[$pk] = \array_unique(\array_merge(
-                                    \is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
+                            if (array_key_exists($pk, $fieldvals)) {
+                                $fieldvals[$pk] = array_unique(\array_merge(
+                                    is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
                                     $pks_arr[$k]
                                 ));
                             } else {
@@ -414,11 +412,11 @@
                             $cache_keys_fieldvals[$cache_key] = $fieldvals;
                         }
 
-                        $this->_set_meta_cache_multi($cache_keys_fieldvals, \array_keys($order_by));
+                        $this->_set_meta_cache_multi($cache_keys_fieldvals, array_keys($order_by));
                     }
                 );
             } else {
-                return cache_lib::multi(
+                return neoform\cache\lib::multi(
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
@@ -427,7 +425,7 @@
                         return $this::_build_key($cache_key_name, $fieldvals);
                     },
                     function(array $fieldvals_arr) {
-                        $source_driver = "neoform\\entity_record_driver_{$this->source_engine}";
+                        $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
                         return $source_driver::by_fields_multi(
                             $this,
                             $this->source_engine_pool_read,
@@ -444,9 +442,9 @@
                             // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
                             $fieldvals = & $fieldvals_arr[$k];
 
-                            if (\array_key_exists($pk, $fieldvals)) {
-                                $fieldvals[$pk] = \array_unique(\array_merge(
-                                    \is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
+                            if (array_key_exists($pk, $fieldvals)) {
+                                $fieldvals[$pk] = array_unique(\array_merge(
+                                    is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
                                     $pks_arr[$k]
                                 ));
                             } else {
@@ -470,11 +468,11 @@
          * @param boolean $return_model           optional - return a model of the new record
          * @param boolean $load_model_from_source optional - after insert, load data from source - this is needed if the DB changes values on insert (eg, timestamps)
          *
-         * @return entity_record_model|boolean    if $return_model is set to true, the model created from the info is returned
+         * @return model|boolean if $return_model is set to true, the model created from the info is returned
          */
         protected function _insert(array $info, $replace=false, $return_model=true, $load_model_from_source=false) {
 
-            $source_driver = "neoform\\entity_record_driver_{$this->source_engine}";
+            $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
             try {
                 $info = $source_driver::insert(
                     $this,
@@ -483,7 +481,7 @@
                     static::AUTOINCREMENT,
                     $replace
                 );
-            } catch (entity_exception $e) {
+            } catch (exception $e) {
                 return false;
             }
 
@@ -493,17 +491,17 @@
             }
 
             // In case a blank record was cached
-            cache_lib::set(
+            neoform\cache\lib::set(
                 $this->cache_engine,
                 $this->cache_engine_pool_write,
-                static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? \md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY]),
+                static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY]),
                 $info
             );
 
             self::_delete_meta_cache($info);
 
             if ($return_model) {
-                $model = 'neoform\\' . static::ENTITY_NAME . '_model';
+                $model = '\\neoform\\' . static::ENTITY_NAME . '\\model';
                 return new $model(null, $info);
             } else {
                 return true;
@@ -519,13 +517,13 @@
          * @param boolean $return_collection        optional - return a collection of models created
          * @param boolean $load_models_from_source  optional - after insert, load data from source - this is needed if the DB changes values on insert (eg, timestamps)
          *
-         * @return entity_record_collection|boolean if $return_collection is true function returns a collection
-         * @throws entity_exception
+         * @return collection|boolean if $return_collection is true function returns a collection
+         * @throws exception
          */
         protected function _insert_multi(array $infos, $keys_match=true, $replace=false, $return_collection=true,
                                     $load_models_from_source=false) {
 
-            $source_driver = "neoform\\entity_record_driver_{$this->source_engine}";
+            $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
             try {
                 $infos = $source_driver::insert_multi(
                     $this,
@@ -535,7 +533,7 @@
                     static::AUTOINCREMENT,
                     $replace
                 );
-            } catch (entity_exception $e) {
+            } catch (exception $e) {
                 return false;
             }
 
@@ -552,10 +550,10 @@
             $insert_cache_data = [];
             foreach ($infos as $info) {
                 $insert_cache_data[static::ENTITY_NAME . ':' . self::RECORD . ':' .
-                    ($this->binary_pk ? \md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY])] = $info;
+                    ($this->binary_pk ? md5($info[static::PRIMARY_KEY]) : $info[static::PRIMARY_KEY])] = $info;
             }
 
-            cache_lib::set_multi(
+            neoform\cache\lib::set_multi(
                 $this->cache_engine,
                 $this->cache_engine_pool_write,
                 $insert_cache_data
@@ -567,7 +565,7 @@
                 return $return_collection ? new $collection(null, $infos) : true;
             } else {
                 if ($return_collection) {
-                    $collection = 'neoform\\' . static::ENTITY_NAME . '_collection';
+                    $collection = '\\neoform\\' . static::ENTITY_NAME . '\\collection';
                     return new $collection(null, $infos);
                 } else {
                     return true;
@@ -578,15 +576,15 @@
         /**
          * Updates a record in the database
          *
-         * @param entity_record_model $model                    the model that is to be updated
-         * @param array               $new_info                 the new info to be put into the model
-         * @param boolean             $return_model             optional - return a model of the new record
-         * @param boolean             $reload_model_from_source optional - after update, load data from source - this is needed if the DB changes values on update (eg, timestamps)
+         * @param model   $model                    the model that is to be updated
+         * @param array   $new_info                 the new info to be put into the model
+         * @param boolean $return_model             optional - return a model of the new record
+         * @param boolean $reload_model_from_source optional - after update, load data from source - this is needed if the DB changes values on update (eg, timestamps)
          *
-         * @return entity_record_model|bool                     if $return_model is true, an updated model is returned
-         * @throws entity_exception
+         * @return model|bool                     if $return_model is true, an updated model is returned
+         * @throws exception
          */
-        protected function _update(entity_record_model $model, array $new_info, $return_model=true,
+        protected function _update(model $model, array $new_info, $return_model=true,
                                    $reload_model_from_source=false) {
 
             if (! $new_info) {
@@ -598,7 +596,7 @@
              * cache if nothing actually changed
              */
             $old_info = $model->export();
-            $new_info = \array_diff($new_info, $old_info);
+            $new_info = array_diff($new_info, $old_info);
 
             if (! $new_info) {
                 return $return_model ? $model : false;
@@ -606,7 +604,7 @@
 
             $pk = static::PRIMARY_KEY;
 
-            $source_driver = "neoform\\entity_record_driver_{$this->source_engine}";
+            $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
             try {
                 $source_driver::update(
                     $this,
@@ -615,7 +613,7 @@
                     $model,
                     $new_info
                 );
-            } catch (entity_exception $e) {
+            } catch (exception $e) {
                 return false;
             }
 
@@ -628,57 +626,57 @@
                 $new_info = $source_driver::record(
                     $this,
                     $this->source_engine_pool_write,
-                    \array_key_exists($pk, $new_info) ? $new_info[$pk] : $model->$pk
+                    array_key_exists($pk, $new_info) ? $new_info[$pk] : $model->$pk
                 );
             }
 
-            cache_lib::pipeline_start($this->cache_engine, $this->cache_engine_pool_write);
+            neoform\cache\lib::pipeline_start($this->cache_engine, $this->cache_engine_pool_write);
 
             /**
              * If the primary key was changed, bust the cache for that new key too
              * technically the PK should never change though... that kinda defeats the purpose of a record PK...
              */
-            if (\array_key_exists($pk, $new_info)) {
+            if (array_key_exists($pk, $new_info)) {
                 // Set the cache record
-                cache_lib::set(
+                neoform\cache\lib::set(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? \md5($new_info[$pk]) : $new_info[$pk]),
+                    static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($new_info[$pk]) : $new_info[$pk]),
                     $new_info + $old_info
                 );
 
                 // Destroy the old key
                 if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
-                    cache_lib::expire(
+                    neoform\cache\lib::expire(
                         $this->cache_engine,
                         $this->cache_engine_pool_write,
-                        static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? \md5($model->$pk) : $model->$pk),
+                        static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($model->$pk) : $model->$pk),
                         $this->cache_delete_expire_ttl
                     );
                 } else {
-                    cache_lib::delete(
+                    neoform\cache\lib::delete(
                         $this->cache_engine,
                         $this->cache_engine_pool_write,
-                        static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? \md5($model->$pk) : $model->$pk)
+                        static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($model->$pk) : $model->$pk)
                     );
                 }
             } else {
                 // Update cache record
-                cache_lib::set(
+                neoform\cache\lib::set(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? \md5($model->$pk) : $model->$pk),
+                    static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($model->$pk) : $model->$pk),
                     $new_info + $old_info
                 );
             }
 
-            cache_lib::pipeline_execute($this->cache_engine, $this->cache_engine_pool_write);
+            neoform\cache\lib::pipeline_execute($this->cache_engine, $this->cache_engine_pool_write);
 
             // Destroy cache based on the fields that were changed - do not wrap this function in a batch execution
             self::_delete_meta_cache(
-                \array_merge_recursive(
-                    \array_diff($new_info, $old_info),
-                    \array_diff($old_info, $new_info)
+                array_merge_recursive(
+                    array_diff($new_info, $old_info),
+                    array_diff($old_info, $new_info)
                 )
             );
 
@@ -698,34 +696,34 @@
         /**
          * Deletes a record from the database
          *
-         * @param entity_record_model $model the model that is to be deleted
+         * @param model $model the model that is to be deleted
          *
          * @return boolean returns true on success
-         * @throws entity_exception
+         * @throws exception
          */
-        protected function _delete(entity_record_model $model) {
+        protected function _delete(model $model) {
 
             $pk = static::PRIMARY_KEY;
 
-            $source_driver = "neoform\\entity_record_driver_{$this->source_engine}";
+            $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
             try {
                 $source_driver::delete($this, $this->source_engine_pool_write, $pk, $model);
-            } catch (entity_exception $e) {
+            } catch (exception $e) {
                 return false;
             }
 
             if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
-                cache_lib::expire(
+                neoform\cache\lib::expire(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? \md5($model->$pk) : $model->$pk),
+                    static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($model->$pk) : $model->$pk),
                     $this->cache_delete_expire_ttl
                 );
             } else {
-                cache_lib::delete(
+                neoform\cache\lib::delete(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
-                    static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? \md5($model->$pk) : $model->$pk)
+                    static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($model->$pk) : $model->$pk)
                 );
             }
 
@@ -738,18 +736,18 @@
         /**
          * Deletes a record from the database
          *
-         * @param entity_record_collection $collection the collection of models that is to be deleted
+         * @param collection $collection the collection of models that is to be deleted
          *
          * @return boolean returns true on success
-         * @throws entity_exception
+         * @throws exception
          */
-        protected function _delete_multi(entity_record_collection $collection) {
+        protected function _delete_multi(collection $collection) {
 
-            if (! \count($collection)) {
+            if (! count($collection)) {
                 return;
             }
 
-            $source_driver = "neoform\\entity_record_driver_{$this->source_engine}";
+            $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
             try {
                 $source_driver::delete_multi(
                     $this,
@@ -757,39 +755,39 @@
                     static::PRIMARY_KEY,
                     $collection
                 );
-            } catch (entity_exception $e) {
+            } catch (exception $e) {
                 return false;
             }
 
             $delete_cache_keys = [];
             foreach ($collection->field(static::PRIMARY_KEY) as $pk) {
-                $delete_cache_keys[] = static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? ':' . \md5($pk) : ":{$pk}");
+                $delete_cache_keys[] = static::ENTITY_NAME . ':' . self::RECORD . ':' . ($this->binary_pk ? ':' . md5($pk) : ":{$pk}");
             }
 
-            cache_lib::pipeline_start($this->cache_engine, $this->cache_engine_pool_write);
+            neoform\cache\lib::pipeline_start($this->cache_engine, $this->cache_engine_pool_write);
 
             if ($this->cache_engine_pool_read !== $this->cache_engine_pool_write) {
-                cache_lib::expire_multi(
+                neoform\cache\lib::expire_multi(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
                     $delete_cache_keys,
                     $this->cache_delete_expire_ttl
                 );
             } else {
-                cache_lib::delete_multi(
+                neoform\cache\lib::delete_multi(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
                     $delete_cache_keys
                 );
             }
 
-            cache_lib::pipeline_execute($this->cache_engine, $this->cache_engine_pool_write);
+            neoform\cache\lib::pipeline_execute($this->cache_engine, $this->cache_engine_pool_write);
 
             // Destroy cache based on table fieldvals - do not wrap this function in a batch execution
             $collection_data           = $collection->export();
             $collection_data_organized = [];
-            foreach (\array_keys(\reset($collection_data)) as $field) {
-                $collection_data_organized[$field] = \array_column($collection_data, $field);
+            foreach (array_keys(reset($collection_data)) as $field) {
+                $collection_data_organized[$field] = array_column($collection_data, $field);
             }
 
             self::_delete_meta_cache($collection_data_organized);

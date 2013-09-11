@@ -1,28 +1,25 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\render;
 
-    class render_dialog {
+    use neoform\core;
+
+    class dialog {
 
         protected $vars;
         protected $path;
 
         const JS_EXT = 'js';
 
-        public function __construct($path, $preload_vars=null) {
+        public function __construct($path, array $preload_vars=[]) {
             $this->path = $path;
-
-            if (\is_array($preload_vars)) {
-                $this->vars = $preload_vars;
-            } else {
-                $this->vars = [];
-            }
+            $this->vars = $preload_vars;
 
             $this->vars['_ref'] = core::http()->get_ref();
         }
 
         public function render() {
-            core::output()->output_type('json')->body(\json_encode($this->vars));
+            core::output()->output_type('json')->body(json_encode($this->vars));
         }
 
         public function __tostring() {
@@ -34,7 +31,7 @@
                 $this->vars['css'] = [];
             }
 
-            if (\is_array($k)) {
+            if (is_array($k)) {
                 $this->vars['css'] += $k;
             } else {
                 $this->vars['css'][$k] = $v;
@@ -48,17 +45,17 @@
         }
 
         public function content($name, array $vars = []) {
-            $html = new render_dialog_view($this->path . '/' . $name, $vars);
+            $html = new dialog\view($this->path . "/{$name}", $vars);
             $this->vars['content'][$name] = (string) $html;
             return $this;
         }
 
         public function callback($name) {
-            $js_view = core::path('application') . '/dialogs/' . $this->path . '/' . $name . '.' . self::JS_EXT;
+            $js_view = core::path('application') . "/dialogs/{$this->path}/{$name}." . self::JS_EXT;
 
-            if (\file_exists($js_view))    {
+            if (file_exists($js_view)) {
                 try {
-                    $this->vars['callbacks'][$name] = \file_get_contents($js_view);
+                    $this->vars['callbacks'][$name] = file_get_contents($js_view);
                 } catch (\exception $e) {
                     throw new \exception('Error occured while reading JS file');
                 }

@@ -14,9 +14,9 @@
 
             $input->email->cast('string')->trim()->length(1,255)->is_email()->callback(function($email) use ($site) {
                 if (! $email->errors()) {
-                    if ($user_id = \current(entity::dao('user')->by_email($email->val()))) {
+                    if ($user_id = current(entity::dao('user')->by_email($email->val()))) {
                         $user = new user_model($user_id);
-                        if (\count(entity::dao('user_site')->by_site_user($site->id, $user->id))) {
+                        if (count(entity::dao('user_site')->by_site_user($site->id, $user->id))) {
                             return $email->data('model', $user);
                         }
                     }
@@ -159,7 +159,7 @@
             // user_id
             $input->user_id->cast('int')->optional()->digit(0, 4294967295)->callback(function($user_id) use ($user_lostpassword) {
                 $hash_arr = entity::dao('user_lostpassword')->by_user($user_id->val());
-                if (\is_array($hash_arr) && \count($hash_arr) && (string) \current($hash_arr) !== $user_lostpassword->hash) {
+                if (is_array($hash_arr) && count($hash_arr) && (string) current($hash_arr) !== $user_lostpassword->hash) {
                     $user_id->errors('already in use');
                 }
             })->callback(function($user_id){

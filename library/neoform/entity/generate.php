@@ -1,6 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity;
+
+    use neoform\sql\parser\table;
 
     /**
      * Generate entity files
@@ -11,10 +13,10 @@
         protected $code = '';
 
         /**
-         * @param sql_parser_table $table
-         * @param array            $options
+         * @param table $table
+         * @param array $options
          */
-        public function __construct(sql_parser_table $table, array $options = []) {
+        public function __construct(table $table, array $options = []) {
             $this->table = $table;
             $this->code();
         }
@@ -36,8 +38,8 @@
          * @return string
          */
         protected function ander(array $arr) {
-            $tail = \count($arr) > 1 ? ' and ' . \array_pop($arr) : '';
-            return \join(', ', $arr) . $tail;
+            $tail = count($arr) > 1 ? ' and ' . \array_pop($arr) : '';
+            return join(', ', $arr) . $tail;
         }
 
         /**
@@ -57,13 +59,13 @@
                     continue;
                 }
 
-                if (\is_string($field)) {
-                    if (\strlen($field) > $len) {
-                        $len = \strlen($field);
+                if (is_string($field)) {
+                    if (strlen($field) > $len) {
+                        $len = strlen($field);
                     }
                 } else {
-                    if (\strlen($idless ? $field->name_idless : $field->name) > $len) {
-                        $len = \strlen($idless ? $field->name_idless : $field->name);
+                    if (strlen($idless ? $field->name_idless : $field->name) > $len) {
+                        $len = strlen($idless ? $field->name_idless : $field->name);
                     }
                 }
             }

@@ -1,8 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\type;
 
-    class type_mapping {
+    class mapping {
         protected $id;
         protected $name;
 

@@ -1,3 +1,6 @@
 <?php
-    class redirect_login_exception extends redirect_exception {}
+
+    namespace neoform\redirect\login;
+
+    class exception extends \neoform\redirect\exception {}
 

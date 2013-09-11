@@ -1,10 +1,12 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\http\flash;
 
-    class http_flash_factory implements core_factory {
+    use neoform\core;
+
+    class factory implements core\factory {
 
         public static function init(array $args) {
-            return new http_flash_instance(core::config()['http']['session']);
+            return new instance(core::config()['http']['session']);
         }
     }

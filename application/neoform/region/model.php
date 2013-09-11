@@ -54,7 +54,7 @@
          */
         public function city_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('city_collection', $order_by, $offset, $limit);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new city_collection(
                     entity::dao('city')->by_region($this->vars['id'], $order_by, $offset, $limit)
                 );
@@ -73,7 +73,7 @@
             ];
 
             $key = parent::_count_var_key('city_count', $fieldvals);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = entity::dao('city')->count($fieldvals);
             }
             return $this->_vars[$key];

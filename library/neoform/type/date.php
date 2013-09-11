@@ -1,12 +1,13 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\type;
 
-    use DateTime;
+    use datetime;
+    use datetimezone;
 
-    class type_date extends DateTime
+    class date extends datetime
     {
-        public function __construct($time = "now", DateTimeZone $timezone = null) {
+        public function __construct($time = 'now', datetimezone $timezone = null) {
             if ($timezone !== null) {
                 parent::__construct($time, $timezone);
             } else {
@@ -29,7 +30,7 @@
         public function human($show_time=true) {
             $time_code = $show_time ? 'g:ia' : '';
 
-            $now = new DateTime();
+            $now = new datetime;
             $diff = $now->diff($this);
             $this_date = $this->format('Y-m-d');
 
@@ -37,30 +38,30 @@
             if ($diff->invert === 1) {
                 //more than a year from now
                 if ($diff->y) {
-                    return $this->format('M j, Y' . ($time_code ? ', ' . $time_code : ''));
+                    return $this->format('M j, Y' . ($time_code ? ", {$time_code}" : ''));
                 } else {
                     //more than a month from now
                     if ($diff->m) {
-                        return $this->format('D M j' . ($time_code ? ', ' . $time_code : ''));
+                        return $this->format('D M j' . ($time_code ? ", {$time_code}" : ''));
                     } else {
 
                         $today = $now->format('Y-m-d');
-                        $yesterday = new DateTime();
+                        $yesterday = new datetime;
                         $yesterday->modify('-1 day');
                         $yesterday = $yesterday->format('Y-m-d');
 
                         //today
                         if ($this_date === $today) {
-                            return 'Today' . ($time_code ? ' ' .$this->format($time_code) : '');
+                            return 'Today' . ($time_code ? ' ' . $this->format($time_code) : '');
                         //tomorrow
                         } else if ($this_date === $yesterday) {
-                            return 'Yesterday' . ($time_code ? ' ' .$this->format($time_code) : '');
+                            return 'Yesterday' . ($time_code ? ' ' . $this->format($time_code) : '');
                         //this week
                         //} else if ($diff->d < 7) {
                         //    return 'This past ' . $this->format('l'. ($time_code ? ' ' . $time_code : ''));
                         //the rest of the month
                         } else {
-                            return $this->format('D M j' . ($time_code ? ', ' . $time_code : ''));
+                            return $this->format('D M j' . ($time_code ? ", {$time_code}" : ''));
                         }
                     }
                 }
@@ -69,14 +70,14 @@
             } else {
                 //more than a year from now
                 if ($diff->y) {
-                    return $this->format('M j, Y' . ($time_code ? ', ' . $time_code : ''));
+                    return $this->format('M j, Y' . ($time_code ? ", {$time_code}" : ''));
                 } else {
                     //more than a month from now
                     if ($diff->m) {
                         if ((int) $now->format('Y') === (int) $this->format('Y')) {
-                            return $this->format('D M j' . ($time_code ? ', ' . $time_code : ''));
+                            return $this->format('D M j' . ($time_code ? ", {$time_code}" : ''));
                         } else {
-                            return $this->format('D M j, Y' . ($time_code ? ', ' . $time_code : ''));
+                            return $this->format('D M j, Y' . ($time_code ? ", {$time_code}" : ''));
                         }
                     } else {
 
@@ -87,21 +88,20 @@
 
                         //today
                         if ($this_date === $today) {
-                            return 'Today' . ($time_code ? ' ' .$this->format($time_code) : '');
+                            return 'Today' . ($time_code ? ' ' . $this->format($time_code) : '');
                         //tomorrow
                         } else if ($this_date === $tomorrow) {
-                            return 'Tomorrow' . ($time_code ? ' ' .$this->format($time_code) : '');
+                            return 'Tomorrow' . ($time_code ? ' ' . $this->format($time_code) : '');
                         //this week
                         } else if ($diff->d < 7) {
-                            return $this->format('l'. ($time_code ? ' ' . $time_code : ''));
+                            return $this->format('l' . ($time_code ? " {$time_code}" : ''));
                         //the rest of the month
                         } else {
-                            return $this->format('D M j' . ($time_code ? ', ' . $time_code : ''));
+                            return $this->format('D M j' . ($time_code ? ", {$time_code}" : ''));
                         }
                     }
                 }
             }
-
         }
 
         public function __invoke() {
@@ -110,7 +110,7 @@
 
         public function ago() {
 
-            $now = new DateTime();
+            $now = new datetime;
             $ago = $now->diff($this);
 
             //past
@@ -119,13 +119,13 @@
                     if ($ago->y === 1) {
                         return 'a year ago';
                     } else {
-                        return $ago->y . ' years ago';
+                        return "{$ago->y} years ago";
                     }
                 } else if ($ago->m) {
                     if ($ago->m === 1) {
                         return 'a month ago';
                     } else {
-                        return $ago->m . ' months ago';
+                        return "{$ago->m} months ago";
                     }
                 } else if ($ago->d) {
                     if ($ago->d === 1) {
@@ -138,13 +138,13 @@
                     } else if ($ago->d < 21) {
                         return '2 weeks ago';
                     } else {
-                        return $ago->d . ' days ago';
+                        return "{$ago->d} days ago";
                     }
                 } else if ($ago->h) {
                     if ($ago->h === 1) {
                         return 'about an hour ago';
                     } else {
-                        return $ago->h . ' hours ago';
+                        return "{$ago->h} hours ago";
                     }
                 } else if ($ago->i) {
                     if ($ago->i === 1) {
@@ -154,7 +154,7 @@
                     } else if ($ago->i === 3) {
                         return 'a few minutes ago';
                     } else {
-                        return $ago->i . ' minutes ago';
+                        return "{$ago->i} minutes ago";
                     }
                 } else if ($ago->s) {
                     if ($ago->s === 1) {
@@ -164,7 +164,7 @@
                     } else if ($ago->s === 3) {
                         return 'a few seconds ago';
                     } else {
-                        return $ago->s . ' seconds ago';
+                        return "{$ago->s} seconds ago";
                     }
                 } else {
                     return 'right now';
@@ -176,25 +176,25 @@
                     if ($ago->y === 1) {
                         return 'in a year';
                     } else {
-                        return 'in ' . $ago->y . ' years';
+                        return "in {$ago->y} years";
                     }
                 } else if ($ago->m) {
                     if ($ago->m === 1) {
                         return 'in a month';
                     } else {
-                        return 'in ' . $ago->m . ' months';
+                        return "in {$ago->m} months";
                     }
                 } else if ($ago->d) {
                     if ($ago->d === 1) {
                         return 'tomorrow';
                     } else {
-                        return 'in ' . $ago->d . ' days';
+                        return "in {$ago->d} days";
                     }
                 } else if ($ago->h) {
                     if ($ago->h === 1) {
                         return 'in about an hour';
                     } else {
-                        return $ago->h . ' hours';
+                        return "{$ago->h} hours";
                     }
                 } else if ($ago->i) {
                     if ($ago->i === 1) {
@@ -204,7 +204,7 @@
                     } else if ($ago->i === 3) {
                         return 'in a few minutes';
                     } else {
-                        return 'in ' . $ago->i . ' minutes';
+                        return "in {$ago->i} minutes";
                     }
                 } else if ($ago->s) {
                     if ($ago->s === 1) {
@@ -214,7 +214,7 @@
                     } else if ($ago->s === 3) {
                         return 'in a few seconds';
                     } else {
-                        return 'in ' . $ago->s . ' seconds';
+                        return "in {$ago->s} seconds";
                     }
                 } else {
                     return 'right now';
@@ -224,30 +224,30 @@
 
 
         public function age() {
-            $now = new DateTime();
+            $now = new datetime();
             $age = $now->diff($this, true);
 
             return (int) $age->y;
         }
 
-        public function older_than(type_date $date) {
+        public function older_than(date $date) {
             return $this->timestmap() < $date->timestmap();
         }
 
-        public function newer_than(type_date $date) {
+        public function newer_than(date $date) {
             return $this->timestmap() > $date->timestmap();
         }
 
-        public function equals(type_date $date) {
+        public function equals(date $date) {
             return $this->timestmap() === $date->timestmap();
         }
 
         public function is_past() {
-            return $this->older_than(new type_date());
+            return $this->older_than(new date);
         }
 
         public function is_future() {
-            return $this->newer_than(new type_date());
+            return $this->newer_than(new date);
         }
     }
 

@@ -1,11 +1,13 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\sql;
+
+    use pdo;
 
     /**
      * A wrapper for PDO, useful for debuging queries that are running and failing
      */
-    class sql_debug extends \pdo {
+    class debug extends pdo {
 
         protected $queries = [];
 
@@ -15,11 +17,11 @@
          * @param string $statement
          * @param array  $driver_options
          *
-         * @return PDOStatement
+         * @return \PDOStatement
          */
         public function prepare($statement, array $driver_options=[]) {
             $this->queries[] = $statement;
-            if (\count($driver_options)) {
+            if (count($driver_options)) {
                 return parent::prepare($statement, $driver_options);
             } else {
                 return parent::prepare($statement);

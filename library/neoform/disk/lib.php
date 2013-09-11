@@ -1,8 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\disk;
 
-    class disk_lib {
+    use exception;
+    use neoform;
+
+    class lib {
 
         const READ  = 1;
         const WRITE = 2;
@@ -10,25 +13,25 @@
         /**
          * Read directory (recursively) and return file paths
          *
-         * @param      $path
-         * @param bool $recursive
+         * @param string $path
+         * @param bool   $recursive
          *
          * @return array file paths
          */
         public static function readdir($path, $recursive=false) {
             $return = [];
-            if ($handle = \opendir($path)) {
-                while (($file = \readdir($handle)) !== false) {
+            if ($handle = opendir($path)) {
+                while (($file = readdir($handle)) !== false) {
                     if ($file !== '.' && $file !== '..') {
-                        $filepath = $path . '/' . $file;
-                        if ($recursive && \is_dir($filepath)) {
+                        $filepath = "{$path}/{$file}";
+                        if ($recursive && is_dir($filepath)) {
                             $return[$file] = self::readdir($filepath, $recursive);
                         } else {
-                            $return[$file] = (\is_readable($filepath) ? self::READ : 0) | (\is_writeable($filepath) ? self::WRITE : 0);
+                            $return[$file] = (is_readable($filepath) ? self::READ : 0) | (is_writeable($filepath) ? self::WRITE : 0);
                         }
                     }
                 }
-                \closedir($handle);
+                closedir($handle);
             }
             return $return;
         }
@@ -43,22 +46,22 @@
          */
         public static function file_put_contents($path, $contents) {
 
-            $dir = \dirname($path);
+            $dir = dirname($path);
 
-            if (! \file_exists($dir)) {
+            if (! file_exists($dir)) {
                 try {
-                    \mkdir($dir, 0777, true);
+                    mkdir($dir, 0777, true);
                     self::www_chown($dir);
-                } catch (\exception $e) {
+                } catch (exception $e) {
 
                 }
             }
 
             try {
-                $return = \file_put_contents($path, $contents);
+                $return = file_put_contents($path, $contents);
                 self::www_chown($path);
                 return $return;
-            } catch (\exception $e) {
+            } catch (exception $e) {
 
             }
 
@@ -77,26 +80,26 @@
         public static function read($fp, $offset, $length) {
             $data = null;
             try {
-                if (! \is_resource($fp)) {
-                    $fp = \fopen($fp, 'r');
+                if (! is_resource($fp)) {
+                    $fp = fopen($fp, 'r');
                 }
 
                 // move the pointer to the offset
-                \fseek($fp, $offset, SEEK_SET);
+                fseek($fp, $offset, SEEK_SET);
 
                 // if file is at the end, nothing to return
-                if (\feof($fp)) {
+                if (feof($fp)) {
                     return null;
                 }
 
-                $data = \fread($fp, $length);
+                $data = fread($fp, $length);
 
-            } catch (\exception $e) {
+            } catch (exception $e) {
 
             }
 
-            if ($fp && \is_resource($fp)) {
-                @\fclose($fp);
+            if ($fp && is_resource($fp)) {
+                @fclose($fp);
             }
 
             return $data;
@@ -108,9 +111,9 @@
          * @param $path
          */
         public static function www_chown($path) {
-            if (core::context() === 'cli') {
-                @\chown($path, 'www-data');
-                @\chgrp($path, 'www-data');
+            if (neoform\core::context() === 'cli') {
+                @chown($path, 'www-data');
+                @chgrp($path, 'www-data');
             }
         }
     }

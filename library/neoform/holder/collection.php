@@ -1,27 +1,27 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\holder;
 
-    use ArrayObject;
+    use neoform\entity\exception;
 
-    class holder_collection extends ArrayObject {
+    class collection extends \arrayobject {
 
         protected $_vars = []; //caching
 
         public function __construct(array $infos=null, $map_field=null) {
 
-            if (\count($infos)) {
-                $model = 'neoform\\' . static::MODEL;
+            if ($infos) {
+                $model = '\\neoform\\' . static::MODEL;
                 foreach ($infos as $key => $info) {
                     try {
-                        if (\is_array($info)) {
+                        if (is_array($info)) {
                             if ($map_field !== null) {
                                 $this[$info[$map_field]] = new $model($info);
                             } else {
                                 $this[(int) $key] = new $model($info);
                             }
                         }
-                    } catch (entity_exception $e) {
+                    } catch (exception $e) {
 
                     }
                 }
@@ -29,12 +29,8 @@
         }
 
         public function add(array $info, $map_field=null) {
-            if (\is_array($info)) {
-                $model = 'neoform\\' . static::MODEL;
-                $v = new $model($info);
-            } else {
-                $v = $info === null ? null : (int) $info;
-            }
+            $model = '\\neoform\\' . static::MODEL;
+            $v = new $model($info);
 
             if ($map_field !== null) {
                 $this[$info[$map_field]] = $v;
@@ -66,7 +62,7 @@
         }
 
         public function field($field) {
-            if (! \array_key_exists($field, $this->_vars)) {
+            if (! array_key_exists($field, $this->_vars)) {
                 $this->_vars[$field] = [];
                 foreach ($this as $record) {
                     $this->_vars[$field][] = $record->$field;
@@ -85,7 +81,7 @@
         }
 
         public function sort($f, $order='asc') {
-            if (\is_callable($f)) {
+            if (is_callable($f)) {
                 $this->uasort(function ($a, $b) use ($f, $order) {
                     $a = $f($a);
                     $b = $f($b);

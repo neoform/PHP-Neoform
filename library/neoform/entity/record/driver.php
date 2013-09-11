@@ -1,35 +1,35 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity\record;
 
-    interface entity_record_driver {
-        public static function record(entity_record_dao $self, $pool, $pk);
+    interface driver {
 
-        public static function records(entity_record_dao $self, $pool, array $pks);
+        public static function record(dao $self, $pool, $pk);
 
-        public static function count(entity_record_dao $self, $pool, array $keys=null);
+        public static function records(dao $self, $pool, array $pks);
 
-        public static function count_multi(entity_record_dao $self, $pool, array $fieldvals_arr);
+        public static function count(dao $self, $pool, array $keys=null);
 
-        public static function all(entity_record_dao $self, $pool, $pk, array $keys=null);
+        public static function count_multi(dao $self, $pool, array $fieldvals_arr);
 
-        public static function by_fields(entity_record_dao $self, $pool, array $keys, $pk);
+        public static function all(dao $self, $pool, $pk, array $keys=null);
 
-        public static function by_fields_multi(entity_record_dao $self, $pool, array $keys_arr, $pk);
+        public static function by_fields(dao $self, $pool, array $keys, $pk);
 
-        public static function by_fields_offset(entity_record_dao $self, $pool, array $keys, $pk, array $order_by,
-                                                $offset, $limit);
+        public static function by_fields_multi(dao $self, $pool, array $keys_arr, $pk);
 
-        public static function by_fields_offset_multi(entity_record_dao $self, $pool, array $keys_arr, $pk,
-                                                      array $order_by, $offset, $limit);
+        public static function by_fields_offset(dao $self, $pool, array $keys, $pk, array $order_by, $offset, $limit);
 
-        public static function insert(entity_record_dao $self, $pool, array $info, $autoincrement, $replace);
+        public static function by_fields_offset_multi(dao $self, $pool, array $keys_arr, $pk, array $order_by, $offset,
+                                                      $limit);
 
-        public static function insert_multi(entity_record_dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace);
+        public static function insert(dao $self, $pool, array $info, $autoincrement, $replace);
 
-        public static function update(entity_record_dao $self, $pool, $pk, entity_record_model $model, array $info);
+        public static function insert_multi(dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace);
 
-        public static function delete(entity_record_dao $self, $pool, $pk, entity_record_model $model);
+        public static function update(dao $self, $pool, $pk, model $model, array $info);
 
-        public static function delete_multi(entity_record_dao $self, $pool, $pk, entity_record_collection $collection);
+        public static function delete(dao $self, $pool, $pk, model $model);
+
+        public static function delete_multi(dao $self, $pool, $pk, collection $collection);
     }

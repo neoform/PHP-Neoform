@@ -67,8 +67,8 @@
 
             $input->email->cast('string')->trim()->tolower()->length(1, 255)->is_email()->callback(function($email) use (& $attemtped_user, $site) {
                 try {
-                    if ($user_id = \current(entity::dao('user')->by_email($email->val()))) {
-                        if (\count(entity::dao('user_site')->by_site_user($site->id, $user_id))) {
+                    if ($user_id = current(entity::dao('user')->by_email($email->val()))) {
+                        if (count(entity::dao('user_site')->by_site_user($site->id, $user_id))) {
                             return $attemtped_user = new user_model($user_id);
                         }
                     }

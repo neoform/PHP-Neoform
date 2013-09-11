@@ -1,8 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\cache\apc;
 
-    class cache_apc_driver implements cache_driver {
+    use neoform;
+
+    class driver implements neoform\cache\driver {
 
         /**
          * Activate a pipelined (batch) query - this doesn't do anything, so ignore
@@ -32,9 +34,9 @@
          */
         public static function exists($pool, $key) {
             try {
-                core::apc()->get($key);
+                neoform\core::apc()->get($key);
                 return true;
-            } catch (apc_exception $e) {
+            } catch (neoform\apc\exception $e) {
                 return false;
             }
         }
@@ -47,7 +49,7 @@
          * @param integer $offset
          */
         public static function increment($pool, $key, $offset=1){
-            core::apc()->increment($key, $offset);
+            neoform\core::apc()->increment($key, $offset);
         }
 
         /**
@@ -58,7 +60,7 @@
          * @param integer $offset
          */
         public static function decrement($pool, $key, $offset=1){
-            core::apc()->decrement($key, $offset);
+            neoform\core::apc()->decrement($key, $offset);
         }
 
         /**
@@ -74,9 +76,9 @@
         public static function get($pool, $key) {
             try {
                 return [
-                    core::apc()->get($key),
+                    neoform\core::apc()->get($key),
                 ];
-            } catch (cache_apc_exception $e) {
+            } catch (neoform\apc\exception $e) {
 
             }
         }
@@ -90,7 +92,7 @@
          * @return mixed
          */
         public static function set($pool, $key, $data, $ttl=null) {
-            return core::apc()->set($key, $data, $ttl);
+            return neoform\core::apc()->set($key, $data, $ttl);
         }
 
         /**
@@ -103,14 +105,14 @@
          */
         public static function get_multi($pool, array $keys) {
 
-            $apc = core::apc();
+            $apc = neoform\core::apc();
 
             $matched_rows = [];
             foreach ($keys as $index => $key) {
                 try {
                     $matched_rows[$index] = $apc->get($key);
                     //unset($keys[$index]);
-                } catch (apc_exception $e) {
+                } catch (neoform\apc\exception $e) {
 
                 }
             }
@@ -126,7 +128,7 @@
          * @param integer|null $ttl
          */
         public static function set_multi($pool, array $rows, $ttl=null) {
-            $apc = core::apc();
+            $apc = neoform\core::apc();
             foreach ($rows as $key => $row) {
                 $apc->set($key, $row, $ttl);
             }
@@ -139,7 +141,7 @@
          * @param string $key
          */
         public static function delete($pool, $key) {
-            core::apc()->del($key);
+            neoform\core::apc()->del($key);
         }
 
         /**
@@ -149,8 +151,8 @@
          * @param array  $keys
          */
         public static function delete_multi($pool, array $keys) {
-            if (\count($keys)) {
-                $apc = core::apc();
+            if ($keys) {
+                $apc = neoform\core::apc();
                 foreach ($keys as $key) {
                     $apc->del($key);
                 }
@@ -164,10 +166,10 @@
          * @param string  $key
          * @param integer $ttl how many seconds left for this key to live - if not set, it will expire now
          *
-         * @throws cache_apc_exception
+         * @throws exception
          */
         public static function expire($pool, $key, $ttl=0) {
-            throw new cache_apc_exception('Expire commands are not supported by APC');
+            throw new exception('Expire commands are not supported by APC');
         }
 
         /**
@@ -177,9 +179,9 @@
          * @param array   $keys
          * @param integer $ttl how many seconds left for this key to live - if not set, it will expire now
          *
-         * @throws cache_apc_exception
+         * @throws exception
          */
         public static function expire_multi($pool, array $keys, $ttl=0) {
-            throw new cache_apc_exception('Expire commands are not supported by APC');
+            throw new exception('Expire commands are not supported by APC');
         }
     }

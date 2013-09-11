@@ -1,15 +1,18 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\output;
+
+    use neoform\core;
+    use neoform;
 
     /**
      * Handle all output that goes to the browser, this includes headers
      *
      * Standard usage: core::output()
      */
-    class output_instance {
+    class instance {
 
-        use core_instance;
+        use core\instance;
 
         protected $http_response_code = 200;
         protected $headers = [];
@@ -23,7 +26,7 @@
         protected $output_type  = self::HTML;
 
         public function __construct() {
-            $this->header('Core', 'v0.2');
+            $this->header('Core', 'v0.3');
             $this->header('cache-control', 'private, max-age=0');
         }
 
@@ -33,11 +36,11 @@
          * @param string      $type
          * @param string|null $val
          *
-         * @return output_instance
+         * @return instance
          */
         public function header($type, $val=null) {
             $header = $type . ($val ? ": {$val}" : '');
-            $hash   = \md5($header);
+            $hash   = md5($header);
             if (! isset($this->headers[$hash])) {
                 $this->headers[$hash] = $header;
             }
@@ -57,14 +60,14 @@
 
             $config = core::config();
 
-            if ($ttl === null || ! \is_numeric($ttl)) {
-                $ttl = \time() + $config['cookies']['ttl'];
+            if ($ttl === null || ! is_numeric($ttl)) {
+                $ttl = time() + $config['cookies']['ttl'];
             }
 
             return setcookie(
                 $key,
-                \base64_encode($val),
-                \time() + \intval($ttl),
+                base64_encode($val),
+                time() + intval($ttl),
                 isset($config['cookies']['path']) ? $config['cookies']['path'] : core::http()->server('subdir'),
                 $config['http']['domain'],
                 (bool) $config['cookies']['secure'],
@@ -75,16 +78,16 @@
         /**
          * Delete a cookie from browser
          *
-         * @param $key name of cookie
+         * @param string $key name of cookie
          *
          * @return bool
          */
         public static function cookie_delete($key) {
             $config = core::config();
-            return \setcookie(
+            return setcookie(
                 $key,
                 '',
-                \time() - 100000,
+                time() - 100000,
                 isset($config['cookies']['path']) ? $config['cookies']['path'] : core::http()->server('subdir'),
                 $config['core']['domain']
             );
@@ -96,20 +99,20 @@
          * @return array
          */
         public function get_headers() {
-            return \array_values($this->headers);
+            return array_values($this->headers);
         }
 
         /**
          * Send all HTTP headers to browser
          *
-         * @return output_instance
+         * @return instance
          */
         public function send_headers() {
             if (! $this->headers_sent) {
                 $this->headers_sent = true;
-                \http_response_code($this->http_response_code);
+                http_response_code($this->http_response_code);
                 foreach ($this->headers as $header) {
-                    \header($header);
+                    header($header);
                 }
             }
             return $this;
@@ -120,7 +123,7 @@
          *
          * @param string|null $str
          *
-         * @return string|output_instance
+         * @return string|instance
          */
         public function body($str=null) {
             if ($str === null) {
@@ -136,7 +139,7 @@
          *
          * @param string $type 'json', 'xml', defaults to 'html', if null passed the output type is returned
          *
-         * @return output_instance|string
+         * @return instance|string
          */
         public function output_type($type='') {
             if ($type !== null) {
@@ -174,11 +177,11 @@
          * @param string $url
          * @param int    $http_code
          *
-         * @return output_instance
+         * @return instance
          */
         public function redirect($url='', $http_code=303) {
-            $base_url = \substr(core::http()->server('url'), 0, -1);
-            if (\substr($url, 0, 1) !== '/') {
+            $base_url = substr(core::http()->server('url'), 0, -1);
+            if (substr($url, 0, 1) !== '/') {
                 $this->header('Location', $base_url . core::locale()->route("/{$url}"), true, $http_code);
             } else {
                 $this->header('Location', $base_url . core::locale()->route($url), true, $http_code);
@@ -203,7 +206,7 @@
 
             if ($this->output_type === self::JSON) {
 
-                $json = new render_json;
+                $json = new neoform\render\json;
                 $json->status = 'fault';
 
                 if ($title && $message) {
@@ -219,7 +222,7 @@
             } else {
 
                 try {;
-                    controller::error($status_code, $title, $message);
+                    neoform\controller::error($status_code, $title, $message);
                 } catch (\exception $e) {
                     $this->body = $message;
                 }
@@ -232,7 +235,7 @@
         public function flush() {
             try {
                 //trash anything that was going to be outputted
-                while (\ob_get_status() && \ob_end_clean()) {
+                while (ob_get_status() && ob_end_clean()) {
 
                 }
             } catch (\exception $e) {
@@ -247,7 +250,7 @@
          *
          * @param integer|null $code if passed, changes the current http status code, if not set, returns the current code
          *
-         * @return int|output_instance
+         * @return int|instance
          */
         public function http_status_code($code=null) {
             if ($code === null) {

@@ -1,5 +1,5 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\core;
 
-    class core_exception extends \exception {}
+    class exception extends \exception {}

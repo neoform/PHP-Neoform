@@ -1,14 +1,16 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\memcache;
+
+    use neoform\core;
 
     /**
      * Memcache Instance
      * to use: core::memcache($pool)
      */
-    class memcache_instance extends \memcached {
+    class instance extends \memcached {
 
-        use core_instance;
+        use core\instance;
 
         public function __construct($name) {
             //only maintain persistent connections for each site (key_prefix is used for this)

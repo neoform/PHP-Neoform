@@ -1,13 +1,14 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity\link;
 
-    use arrayaccess;
+    use neoform\entity\record;
+    use neoform\entity\exception;
 
     /**
      * Link model - this class is not commonly used, but included for consistency
      */
-    abstract class entity_link_model implements arrayaccess {
+    abstract class model implements \arrayaccess {
 
         /**
          * @var array of entity data
@@ -64,12 +65,12 @@
          * @param string $model name of model to load
          * @param mixed $default
          *
-         * @return entity_record_model|entity_link_model|mixed
+         * @return record\model|model|mixed
          */
         protected function _model($key, $pk, $model, $default=null) {
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 if ($pk !== null) {
-                    $model = "neoform\\{$model}";
+                    $model = "\\neoform\\{$model}";
                     $this->_vars[$key] = new $model($pk);
                 } else {
                     $this->_vars[$key] = $default;
@@ -86,8 +87,8 @@
          * @return array
          */
         public function export(array $fields=null) {
-            if ($fields !== null && \count($fields)) {
-                return \array_intersect_key($this->vars, \array_flip($fields));
+            if ($fields) {
+                return array_intersect_key($this->vars, array_flip($fields));
             } else {
                 return $this->vars;
             }
@@ -105,17 +106,17 @@
         }
 
         /**
-         * @param string        $name
-         * @param integer|null  $limit
-         * @param integer|null  $offset
-         * @param array|null    $order_by
+         * @param string       $name
+         * @param integer|null $limit
+         * @param integer|null $offset
+         * @param array|null   $order_by
          *
          * @return string
          */
         final public static function _limit_var_key($name, array $order_by=null, $limit=null, $offset=null) {
             if ($order_by) {
-                \ksort($order_by);
-                return "{$name}:{$offset}:{$limit}:" . \json_encode($order_by); // @todo what if there are binary values...? :(
+                ksort($order_by);
+                return "{$name}:{$offset}:{$limit}:" . json_encode($order_by); // @todo what if there are binary values...? :(
             } else {
                 return $name;
             }
@@ -129,8 +130,8 @@
          */
         final public static function _count_var_key($name, array $fieldvals=null) {
             if ($fieldvals) {
-                \ksort($fieldvals);
-                return "{$name}:" . \json_encode($fieldvals); // @todo what if there are binary values...? :(
+                ksort($fieldvals);
+                return "{$name}:" . json_encode($fieldvals); // @todo what if there are binary values...? :(
             } else {
                 return $name;
             }
@@ -142,10 +143,10 @@
          * @param string $k
          * @param mixed $v
          *
-         * @throws entity_exception
+         * @throws exception
          */
         public function offsetSet($k, $v) {
-            $exception = 'neoform\\' . static::ENTITY_NAME . '_exception';
+            $exception = '\\neoform\\' . static::ENTITY_NAME . '\\exception';
             throw new $exception('This is not an active record. Use the _update() function instead.');
         }
 
@@ -165,10 +166,10 @@
          *
          * @param string $k
          *
-         * @throws entity_exception
+         * @throws exception
          */
         public function offsetUnset($k) {
-            $exception = 'neoform\\' . static::ENTITY_NAME . '_exception';
+            $exception = '\\neoform\\' . static::ENTITY_NAME . '\\exception';
             throw new $exception('This is not an active record. You cannot unset values in this way.');
         }
 

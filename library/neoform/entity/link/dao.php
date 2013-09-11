@@ -1,6 +1,9 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity\link;
+
+    use neoform\entity;
+    use neoform\cache;
 
     /**
      * Link DAO Standard database access, for accessing tables that do not have a single primary key but instead a
@@ -9,10 +12,10 @@
      * It is strongly discouraged to include any other fields in this record type, as it breaks the convention of a
      * linking table. If you must have a linking record with additional fields, use a record entity instead.
      */
-    abstract class entity_link_dao extends entity_dao {
+    abstract class dao extends entity\dao {
 
         /**
-         * Build a cache key used by the cache_lib by combining the dao class name, the cache key and the variables found in the $params
+         * Build a cache key used by the cache\lib by combining the dao class name, the cache key and the variables found in the $params
          *
          * @param string       $cache_key_name word used to identify this cache entry, it should be unique to the dao class its found in
          * @param string       $select_field
@@ -25,24 +28,24 @@
          */
         final protected static function _build_key_limit($cache_key_name, $select_field, array $order_by, $offset=null,
                                                          $limit=null, array $fieldvals=[]) {
-            \ksort($order_by);
+            ksort($order_by);
 
             // each key is namespaced with the name of the class, then the name of the function ($cache_key_name)
-            $param_count = \count($fieldvals);
+            $param_count = count($fieldvals);
             if ($param_count === 1) {
                 return static::ENTITY_NAME . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
-                       \md5(json_encode($order_by)) . ':' . \md5(reset($fieldvals));
+                       md5(json_encode($order_by)) . ':' . md5(reset($fieldvals));
             } else if ($param_count === 0) {
                 return static::ENTITY_NAME . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
-                       \md5(\json_encode($order_by)) . ':';
+                       md5(json_encode($order_by)) . ':';
             } else {
-                \ksort($fieldvals);
+                ksort($fieldvals);
                 foreach ($fieldvals as & $val) {
-                    $val = \base64_encode($val);
+                    $val = base64_encode($val);
                 }
-                // Use only the \array_values() and not the named array, since each $cache_key_name is unique per function
+                // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
                 return static::ENTITY_NAME . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
-                       \md5(json_encode($order_by)) . ':' . \md5(json_encode(\array_values($fieldvals)));
+                       md5(json_encode($order_by)) . ':' . md5(json_encode(array_values($fieldvals)));
             }
         }
 
@@ -57,18 +60,18 @@
          * @param null   $limit
          *
          * @return array  array of records from cache
-         * @throws entity_exception
+         * @throws entity\exception
          */
         final protected function _by_fields($cache_key_name, array $select_fields, array $fieldvals, array $order_by=null,
                                            $offset=null, $limit=null) {
 
             if ($order_by) {
-                $select_field = \reset($select_fields);
+                $select_field = reset($select_fields);
                 $limit        = $limit === null ? null : (int) $limit;
                 $offset       = $offset === null ? null : (int) $offset;
 
                 if (! isset($this->foreign_keys[$select_field])) {
-                    throw new entity_exception("Unknown foreign key field \"{$select_field}\" in " . $this::ENTITY_NAME . '.');
+                    throw new entity\exception("Unknown foreign key field \"{$select_field}\" in " . $this::ENTITY_NAME . '.');
                 }
 
                 $foreign_dao = entity::dao($this->foreign_keys[$select_field]);
@@ -82,13 +85,13 @@
                     $fieldvals
                 );
 
-                return cache_lib::single(
+                return cache\lib::single(
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
                     $cache_key,
                     function() use ($select_field, $fieldvals, $foreign_dao, $order_by, $offset, $limit) {
-                        $source_driver = "neoform\\entity_link_driver_{$this->source_engine}";
+                        $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
                         return $source_driver::by_fields_limit(
                             $this,
                             $this->source_engine_pool_read,
@@ -103,9 +106,9 @@
                     function($cache_key, $results) use ($select_field, $fieldvals, $order_by, $foreign_dao) {
 
                         // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
-                        if (\array_key_exists($select_field, $fieldvals)) {
-                            $fieldvals[$select_field] = \array_unique(array_merge(
-                                \is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
+                        if (array_key_exists($select_field, $fieldvals)) {
+                            $fieldvals[$select_field] = array_unique(array_merge(
+                                is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
                                 $results
                             ));
                         } else {
@@ -117,17 +120,17 @@
 
                         // Foreign DAO
                         $order_by[$foreign_dao::PRIMARY_KEY] = true; // add primary key to the list of fields
-                        $foreign_dao->_set_meta_cache($cache_key, null, \array_keys($order_by));
+                        $foreign_dao->_set_meta_cache($cache_key, null, array_keys($order_by));
                     }
                 );
             } else {
-                return cache_lib::single(
+                return cache\lib::single(
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
                     parent::_build_key($cache_key_name, $fieldvals),
                     function() use ($select_fields, $fieldvals) {
-                        $source_driver = "neoform\\entity_link_driver_{$this->source_engine}";
+                        $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
                         return $source_driver::by_fields(
                             $this,
                             $this->source_engine_pool_read,
@@ -142,13 +145,13 @@
                          * but instead, the data that has been returned from source. This means less cache busting.
                          */
                         foreach ($select_fields as $select_field) {
-                            if (\array_key_exists($select_field, $fieldvals)) {
-                                $fieldvals[$select_field] = \array_unique(\array_merge(
-                                    \is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
-                                    \array_column($results, $select_field)
+                            if (array_key_exists($select_field, $fieldvals)) {
+                                $fieldvals[$select_field] = array_unique(\array_merge(
+                                    is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
+                                    array_column($results, $select_field)
                                 ));
                             } else {
-                                $fieldvals[$select_field] = \array_column($results, $select_field);
+                                $fieldvals[$select_field] = array_column($results, $select_field);
                             }
                         }
 
@@ -169,23 +172,23 @@
          * @param integer|null $limit
          *
          * @return array  ids of records from cache
-         * @throws entity_exception
+         * @throws entity\exception
          */
         final protected function _by_fields_multi($cache_key_name, array $select_fields, array $keys_arr, array $order_by=null,
                                                   $offset=null, $limit=null) {
             if ($order_by) {
                 // Limit ranges only work on single keys
-                $select_field = \reset($select_fields);
+                $select_field = reset($select_fields);
                 $limit        = $limit === null ? null : (int) $limit;
                 $offset       = $offset === null ? null : (int) $offset;
 
                 if (! isset($this->foreign_keys[$select_field])) {
-                    throw new entity_exception("Unknown foreign key field \"{$select_field}\" in " . $this::ENTITY_NAME . '.');
+                    throw new entity\exception("Unknown foreign key field \"{$select_field}\" in " . $this::ENTITY_NAME . '.');
                 }
 
                 $foreign_dao = entity::dao($this->foreign_keys[$select_field]);
 
-                return cache_lib::multi(
+                return cache\lib::multi(
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
@@ -201,7 +204,7 @@
                         );
                     },
                     function($fieldvals_arr) use ($select_field, $foreign_dao, $order_by, $offset, $limit) {
-                        $source_driver = "neoform\\entity_link_driver_{$this->source_engine}";
+                        $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
                         return $source_driver::by_fields_limit_multi(
                             $this,
                             $this->source_engine_pool_read,
@@ -221,13 +224,13 @@
                             // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
                             $fieldvals = & $fieldvals_arr[$k];
 
-                            if (\array_key_exists($select_field, $fieldvals)) {
-                                $fieldvals[$select_field] = \array_unique(\array_merge(
-                                    \is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
-                                    \array_column($results_arr[$k], $select_field)
+                            if (array_key_exists($select_field, $fieldvals)) {
+                                $fieldvals[$select_field] = array_unique(\array_merge(
+                                    is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
+                                    array_column($results_arr[$k], $select_field)
                                 ));
                             } else {
-                                $fieldvals[$select_field] = \array_column($results_arr[$k], $select_field);
+                                $fieldvals[$select_field] = array_column($results_arr[$k], $select_field);
                             }
 
                             $cache_keys_fieldvals[$cache_key] = $fieldvals;
@@ -238,11 +241,11 @@
 
                         // Foreign DAO
                         $order_by[$foreign_dao::PRIMARY_KEY] = true; // add primary key to the list of fields
-                        $foreign_dao->_set_meta_cache_multi(\array_flip($cache_keys), \array_keys($order_by));
+                        $foreign_dao->_set_meta_cache_multi(array_flip($cache_keys), array_keys($order_by));
                     }
                 );
             } else {
-                return cache_lib::multi(
+                return cache\lib::multi(
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
@@ -251,7 +254,7 @@
                         return $this::_build_key($cache_key_name, $fieldvals);
                     },
                     function($fieldvals_arr) use ($select_fields) {
-                        $source_driver = "neoform\\entity_link_driver_{$this->source_engine}";
+                        $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
                         return $source_driver::by_fields_multi($this, $this->source_engine_pool_read, $select_fields, $fieldvals_arr);
                     },
                     function(array $cache_keys, array $fieldvals_arr, array $results_arr) use ($select_fields) {
@@ -266,13 +269,13 @@
                             $fieldvals = & $fieldvals_arr[$k];
 
                             foreach ($select_fields as $select_field) {
-                                if (\array_key_exists($select_field, $fieldvals)) {
-                                    $fieldvals[$select_field] = \array_unique(\array_merge(
-                                        \is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
-                                        \array_column($results_arr[$k], $select_field)
+                                if (array_key_exists($select_field, $fieldvals)) {
+                                    $fieldvals[$select_field] = array_unique(\array_merge(
+                                        is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
+                                        array_column($results_arr[$k], $select_field)
                                     ));
                                 } else {
-                                    $fieldvals[$select_field] = \array_column($results_arr[$k], $select_field);
+                                    $fieldvals[$select_field] = array_column($results_arr[$k], $select_field);
                                 }
                             }
 
@@ -298,13 +301,13 @@
                 $this->bind_fields($fieldvals);
             }
 
-            return cache_lib::single(
+            return cache\lib::single(
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
                 parent::_build_key(parent::COUNT, $fieldvals ?: []),
                 function() use ($fieldvals) {
-                    $source_driver = "neoform\\entity_link_driver_{$this->source_engine}";
+                    $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
                     return $source_driver::count($this, $this->source_engine_pool_read, $fieldvals);
                 },
                 function($cache_key) use ($fieldvals) {
@@ -326,7 +329,7 @@
                 $this->bind_fields($fieldvals);
             }
 
-            return cache_lib::multi(
+            return cache\lib::multi(
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
@@ -335,7 +338,7 @@
                     return $this::_build_key($this::COUNT, $fieldvals ?: []);
                 },
                 function(array $fieldvals_arr) {
-                    $source_driver = "neoform\\entity_link_driver_{$this->source_engine}";
+                    $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
                     return $source_driver::count_multi(
                         $this,
                         $this->source_engine_pool_read,
@@ -360,10 +363,10 @@
          * @param boolean $replace optional - user REPLACE INTO instead of INSERT INTO
          *
          * @return boolean
-         * @throws entity_exception
+         * @throws entity\exception
          */
         protected function _insert(array $info, $replace=false) {
-            $source_driver = "neoform\\entity_link_driver_{$this->source_engine}";
+            $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
             try {
                 $info = $source_driver::insert(
                     $this,
@@ -371,7 +374,7 @@
                     $info,
                     $replace
                 );
-            } catch (entity_exception $e) {
+            } catch (entity\exception $e) {
                 return false;
             }
 
@@ -388,17 +391,17 @@
          * @param boolean $replace optional - user REPLACE INTO instead of INSERT INTO
          *
          * @return boolean
-         * @throws entity_exception
+         * @throws entity\exception
          */
         protected function _insert_multi(array $infos, $replace=false) {
             if (! $infos) {
                 return;
             }
 
-            $source_driver = "neoform\\entity_link_driver_{$this->source_engine}";
+            $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
             try {
                 $infos = $source_driver::insert_multi($this, $this->source_engine_pool_write, $infos, $replace);
-            } catch (entity_exception $e) {
+            } catch (entity\exception $e) {
                 return false;
             }
 
@@ -414,19 +417,19 @@
          * @param array $where    return a model of the new record
          *
          * @return boolean
-         * @throws entity_exception
+         * @throws entity\exception
          */
         protected function _update(array $new_info, array $where) {
             if ($new_info) {
-                $source_driver = "neoform\\entity_link_driver_{$this->source_engine}";
+                $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
                 try {
                     $source_driver::update($this, $this->source_engine_pool_write, $new_info, $where);
-                } catch (entity_exception $e) {
+                } catch (entity\exception $e) {
                     return false;
                 }
 
                 // Delete any cache relating to the $new_info or the $where
-                self::_delete_meta_cache(\array_merge_recursive($new_info, $where));
+                self::_delete_meta_cache(array_merge_recursive($new_info, $where));
 
                 return true;
             }
@@ -440,13 +443,13 @@
          * @param array $keys the where of the query
          *
          * @return boolean
-         * @throws entity_exception
+         * @throws entity\exception
          */
         protected function _delete(array $keys) {
-            $source_driver = "neoform\\entity_link_driver_{$this->source_engine}";
+            $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
             try {
                 $source_driver::delete($this, $this->source_engine_pool_write, $keys);
-            } catch (entity_exception $e) {
+            } catch (entity\exception $e) {
                 return false;
             }
 
@@ -461,13 +464,13 @@
          * @param array $keys_arr arrays matching the PKs of the link
          *
          * @return boolean returns true on success
-         * @throws entity_exception
+         * @throws entity\exception
          */
         protected function _delete_multi(array $keys_arr) {
-            $source_driver = "neoform\\entity_link_driver_{$this->source_engine}";
+            $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
             try {
                 $source_driver::delete_multi($this, $this->source_engine_pool_write, $keys_arr);
-            } catch (entity_exception $e) {
+            } catch (entity\exception $e) {
                 return false;
             }
 

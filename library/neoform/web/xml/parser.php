@@ -140,7 +140,7 @@
         * @return   number
         */
         public function getTotalItems() {
-            return \count($this->items);
+            return count($this->items);
         }
 
         /**
@@ -166,7 +166,7 @@
         * @return   string
         */
         public function getChannel($tagName) {
-            if (\array_key_exists(strtoupper($tagName), $this->channels)) {
+            if (array_key_exists(strtoupper($tagName), $this->channels)) {
                 return isset($this->channels[strtoupper($tagName)]) ? $this->channels[strtoupper($tagName)] : array();
             } else {
                 //throw new \exception("Channel tag $tagName not found.");
@@ -211,7 +211,7 @@
             if ($URLContent) {
                 $segments   = \str_split($URLContent, 4096);
                 foreach($segments as $index=>$data) {
-                    $lastPiese = ((\count($segments)-1) == $index)? true : false;
+                    $lastPiese = ((count($segments)-1) == $index)? true : false;
                     if (! \xml_parse($this->xmlParser, $data, $lastPiese)) {
                         //throw new \exception(sprintf("XML error: %s at line %d", \xml_error_string(\xml_get_error_code($this->xmlParser)), \xml_get_current_line_number($this->xmlParser)));
                     }
@@ -269,7 +269,7 @@
         * @return   void
         */
         private function endElement($parser, $tagName) {
-            if (\in_array($tagName, $this->itemTags)) {
+            if (in_array($tagName, $this->itemTags)) {
                $this->itemIndex++;
             }
 
@@ -287,29 +287,29 @@
         */
         private function characterData($parser, $data) {
             //Converting all date formats to timestamp
-            if (\in_array($this->currentTag, $this->dateTags)) {
+            if (in_array($this->currentTag, $this->dateTags)) {
                 $data = \strtotime($data);
             }
 
            if ($this->inChannel()) {
                 // If has subtag, make current element an array and assign subtags as it's element
-                if (\in_array($this->getParentTag(), $this->hasSubTags)) {
+                if (in_array($this->getParentTag(), $this->hasSubTags)) {
                     if (! isset($this->channels[$this->getParentTag()])) {
                         $this->channels[$this->getParentTag()] = null;
                     }
 
-                    if (! \is_array($this->channels[$this->getParentTag()])) {
+                    if (! is_array($this->channels[$this->getParentTag()])) {
                         $this->channels[$this->getParentTag()] = array();
                     }
 
-                    $this->channels[$this->getParentTag()][$this->currentTag] .= \strip_tags($this->unhtmlentities((\trim($data))));
+                    $this->channels[$this->getParentTag()][$this->currentTag] .= \strip_tags($this->unhtmlentities((trim($data))));
                     return;
                 } else {
-                    if (! \in_array($this->currentTag, $this->hasSubTags)) {
+                    if (! in_array($this->currentTag, $this->hasSubTags)) {
                         if (isset($this->channels[$this->currentTag])) {
-                            $this->channels[$this->currentTag] .= \strip_tags($this->unhtmlentities((\trim($data))));
+                            $this->channels[$this->currentTag] .= \strip_tags($this->unhtmlentities((trim($data))));
                         } else {
-                            $this->channels[$this->currentTag] = \strip_tags($this->unhtmlentities((\trim($data))));
+                            $this->channels[$this->currentTag] = \strip_tags($this->unhtmlentities((trim($data))));
                         }
                     }
                 }
@@ -318,9 +318,9 @@
                     $this->channels[$this->currentTag . '_ATTRS'] = $this->currentAttr;
 
                     //If the tag has no value
-                    if (\strlen($this->channels[$this->currentTag]) < 2) {
+                    if (strlen($this->channels[$this->currentTag]) < 2) {
                         //If there is only one attribute, assign the attribute value as channel value
-                        if (\count($this->currentAttr) == 1) {
+                        if (count($this->currentAttr) == 1) {
                             foreach($this->currentAttr as $attrVal) {
                                 $this->channels[$this->currentTag] = $attrVal;
                             }
@@ -332,19 +332,19 @@
                 }
            } elseif ($this->inItem()) {
                // If has subtag, make current element an array and assign subtags as it's elements
-               if (\in_array($this->getParentTag(), $this->hasSubTags)) {
-                    if (! \is_array($this->items[$this->itemIndex][$this->getParentTag()])){
+               if (in_array($this->getParentTag(), $this->hasSubTags)) {
+                    if (! is_array($this->items[$this->itemIndex][$this->getParentTag()])){
                         $this->items[$this->itemIndex][$this->getParentTag()] = array();
                     }
 
-                    $this->items[$this->itemIndex][$this->getParentTag()][$this->currentTag] .= \strip_tags($this->unhtmlentities((\trim($data))));
+                    $this->items[$this->itemIndex][$this->getParentTag()][$this->currentTag] .= \strip_tags($this->unhtmlentities((trim($data))));
                     return;
                 } else {
-                    if (! \in_array($this->currentTag, $this->hasSubTags)) {
+                    if (! in_array($this->currentTag, $this->hasSubTags)) {
                         if (isset($this->items[$this->itemIndex][$this->currentTag])) {
-                            $this->items[$this->itemIndex][$this->currentTag] .= \strip_tags($this->unhtmlentities((\trim($data))));
+                            $this->items[$this->itemIndex][$this->currentTag] .= \strip_tags($this->unhtmlentities((trim($data))));
                         } else {
-                            $this->items[$this->itemIndex][$this->currentTag] = \strip_tags($this->unhtmlentities((\trim($data))));
+                            $this->items[$this->itemIndex][$this->currentTag] = \strip_tags($this->unhtmlentities((trim($data))));
                         }
                     }
                 }
@@ -355,9 +355,9 @@
 
                     //If the tag has no value
 
-                    if (\strlen($this->items[$this->itemIndex][$this->currentTag]) < 2) {
+                    if (strlen($this->items[$this->itemIndex][$this->currentTag]) < 2) {
                         //If there is only one attribute, assign the attribute value as feed element's value
-                        if (\count($this->currentAttr) == 1) {
+                        if (count($this->currentAttr) == 1) {
                             foreach($this->currentAttr as $attrVal) {
                                $this->items[$this->itemIndex][$this->currentTag] = $attrVal;
                             }
@@ -379,9 +379,9 @@
         * @return   void
         */
         private function findVersion($tagName, $attrs) {
-            $namespace = \array_values($attrs);
+            $namespace = array_values($attrs);
             foreach($this->namespaces as $value =>$version) {
-                if (\in_array($value, $namespace)) {
+                if (in_array($value, $namespace)) {
                     $this->version = $version;
                     return;
                 }
@@ -400,15 +400,15 @@
         */
         private function inChannel() {
             if ($this->version == 'RSS 1.0') {
-                if (\in_array('CHANNEL', $this->insideItem) && $this->currentTag != 'CHANNEL') {
+                if (in_array('CHANNEL', $this->insideItem) && $this->currentTag != 'CHANNEL') {
                     return true;
                 }
             } elseif ($this->version == 'RSS 2.0') {
-                if (\in_array('CHANNEL', $this->insideItem) && ! \in_array('ITEM', $this->insideItem) && $this->currentTag != 'CHANNEL') {
+                if (in_array('CHANNEL', $this->insideItem) && ! in_array('ITEM', $this->insideItem) && $this->currentTag != 'CHANNEL') {
                     return true;
                 }
             } elseif ($this->version == 'ATOM 1') {
-                if (\in_array('FEED', $this->insideItem) && ! \in_array('ENTRY', $this->insideItem) && $this->currentTag != 'FEED') {
+                if (in_array('FEED', $this->insideItem) && ! in_array('ENTRY', $this->insideItem) && $this->currentTag != 'FEED') {
                     return true;
                 }
             }
@@ -424,11 +424,11 @@
         */
         private function inItem() {
             if ($this->version == 'RSS 1.0' || $this->version == 'RSS 2.0') {
-                if (\in_array('ITEM', $this->insideItem) && $this->currentTag != 'ITEM') {
+                if (in_array('ITEM', $this->insideItem) && $this->currentTag != 'ITEM') {
                     return true;
                 }
             } elseif ($this->version == 'ATOM 1') {
-                if (\in_array('ENTRY', $this->insideItem) && $this->currentTag != 'ENTRY') {
+                if (in_array('ENTRY', $this->insideItem) && $this->currentTag != 'ENTRY') {
                     return true;
                 }
             }

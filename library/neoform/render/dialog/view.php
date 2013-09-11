@@ -1,8 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\render\dialog;
 
-    class render_dialog_view {
+    use neoform\core;
+
+    class view {
 
         protected $__vars;
         protected $__html;
@@ -15,18 +17,18 @@
 
             $__path = core::path('application') . '/dialogs/' . $__path . '.' . self::VIEW_EXT;
 
-            \ob_start();
+            ob_start();
 
-            if (\file_exists($__path))    {
+            if (file_exists($__path))    {
                 if ($__vars !== null) {
-                    \extract($__vars);
+                    extract($__vars);
                 }
                 require($__path);
 
                 try {
                     $this->__html = '';
-                    while (\ob_get_length()) {
-                        $this->__html .= \ob_get_clean();
+                    while (ob_get_length()) {
+                        $this->__html .= ob_get_clean();
                     }
                 } catch (\exception $e) {
                     throw new \exception('Output buffer error occurred');
@@ -48,7 +50,7 @@
         }
 
         protected function variables() {
-            return \array_keys($this->__vars);
+            return array_keys($this->__vars);
         }
     }
 

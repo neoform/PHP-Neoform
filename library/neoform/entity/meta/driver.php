@@ -1,8 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity\meta;
 
-    interface entity_meta_driver {
+    interface driver {
 
         public static function pull($pool, array $list_keys);
 

@@ -1,8 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\holder;
 
-    abstract class holder_model {
+    abstract class model {
 
         protected $vars;
         protected $_vars = []; // calculated fields
@@ -34,15 +34,15 @@
         }
 
         public function export(array $fields=null) {
-            if ($fields !== null && \count($fields)) {
-                return \array_intersect_key($this->vars, \array_flip($fields));
+            if ($fields) {
+                return array_intersect_key($this->vars, array_flip($fields));
             } else {
                 return $this->vars;
             }
         }
 
         protected function _model($key, $id, $model, $default=null) {
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 if ($id !== null) {
                     $this->_vars[$key] = new $model($id);
                 } else {

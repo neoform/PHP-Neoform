@@ -1,37 +1,41 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\auth;
 
-    class auth_lib {
+    use neoform;
+    use dateinterval;
+    use datetime;
+
+    class lib {
 
         /**
          * Activate an auth session
          *
-         * @param user_model $user
-         * @param bool       $remember
+         * @param neoform\user\model $user
+         * @param bool               $remember
          *
-         * @return auth_model the newly created session
+         * @return neoform\auth\model the newly created session
          */
-        public static function activate_session(user_model $user, $remember=false) {
+        public static function activate_session(neoform\user\model $user, $remember=false) {
 
             // Create expiry date for session
-            $expires = new \datetime;
+            $expires = new datetime;
             if ($remember) {
-                $expires->add(new \DateInterval('P' . core::config()['auth']['long_auth_lifetime']));
+                $expires->add(new dateinterval('P' . neoform\core::config()['auth']['long_auth_lifetime']));
             } else {
-                $expires->add(new \DateInterval('P' . core::config()['auth']['normal_auth_lifetime']));
+                $expires->add(new dateinterval('P' . neoform\core::config()['auth']['normal_auth_lifetime']));
             }
 
             // Create session
-            $return = entity::dao('auth')->insert([
+            $return = neoform\entity::dao('auth')->insert([
                 'user_id'    => $user->id,
                 'expires_on' => $expires->format('Y-m-d H:i:s'),
                 'hash'       => self::get_hash_cookie(),
             ]);
 
             // Update last login
-            $now = new type_date();
-            entity::dao('user_date')->update(
+            $now = new neoform\type\date();
+            neoform\entity::dao('user_date')->update(
                 $user->user_date(),
                 [
                     'last_login' => $now->datetime(),
@@ -47,7 +51,7 @@
          * @return null|string
          */
         public static function get_hash_cookie() {
-            if (\strlen($hash = core::http()->cookie(core::config()['auth']['cookie'])) === 40) {
+            if (strlen($hash = neoform\core::http()->cookie(neoform\core::config()['auth']['cookie'])) === 40) {
                 return $hash;
             } else {
                 return self::create_hash_cookie();
@@ -67,8 +71,8 @@
                 $hash = self::generate_hash();
             }
 
-            core::output()->cookie_set(
-                core::config()['auth']['cookie'],
+            neoform\core::output()->cookie_set(
+                neoform\core::config()['auth']['cookie'],
                 $hash
             );
 
@@ -81,6 +85,6 @@
          * @return string
          */
         public static function generate_hash() {
-            return encrypt_lib::rand(40);
+            return neoform\encrypt\lib::rand(40);
         }
     }

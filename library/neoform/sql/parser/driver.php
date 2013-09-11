@@ -1,8 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\sql\parser;
 
-    abstract class sql_parser_driver {
+    abstract class driver {
 
         /**
          * When these ENUM values are encountered, the model will treat these values as boolean and return true/false instead

@@ -2,16 +2,16 @@
 
     namespace neoform;
 
-    class sample extends config_environment {
+    class sample extends config\environment {
 
         public function __construct() {
             $this->merge([
 
-                'core' => new core_config([
+                'core' => new core\config([
                     'site_name' => 'Sample Site',
                 ]),
 
-                'http' => new http_config([
+                'http' => new http\config([
                     'domain' => 'localhost.local',
 
                     // Required subdomains - default
@@ -36,7 +36,7 @@
                     ],
                 ]),
 
-                'locale' => new locale_config([
+                'locale' => new locale\config([
 
                     // locale translations active
                     'active' => false,
@@ -58,7 +58,7 @@
                     'cache_engine_write' => 'master',
                 ]),
 
-                'sql' => new sql_config([
+                'sql' => new sql\config([
 
                     // Which server is used when reading
                     'default_pool_read' => 'master',
@@ -79,9 +79,9 @@
                 ]),
 
                 // Use default auth config values
-                'auth' => new auth_config,
+                'auth' => new auth\config,
 
-                'memcache' => new memcache_config([
+                'memcache' => new memcache\config([
                     //leave black (empty string) if no prefix is needed
                     //this prefix is useful if you have multiple instances of the same code on the same memcache pool (maybe prod/dev on one memcache pool)
                     'key_prefix' => 'sample',
@@ -96,7 +96,7 @@
                     ],
                 ]),
 
-                'redis' => new redis_config([
+                'redis' => new redis\config([
                     //leave black (empty string) if no prefix is needed
                     //this prefix is useful if you have multiple instances of the same code base
                     'key_prefix' => 'sample',
@@ -115,17 +115,17 @@
                     ],
                 ]),
 
-                'apc' => new apc_config([
+                'apc' => new apc\config([
                     // Prefix key
                     'key_prefix' => 'sample',
                 ]),
 
-                'email' => new email_config([
+                'email' => new email\config([
                     // Hash secret used for generating email unsubscribe links - should be as random as possible
                     'unsubscribe_secret' => 'AAABBBCCCDDDEEEFFF12345678901234567890123456789012345678901234567890',
                 ]),
 
-                'entity' => new entity_config([
+                'entity' => new entity\config([
 
                     'defaults' => [
                         'source_engine'            => 'mysql',

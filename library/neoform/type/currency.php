@@ -1,8 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\type;
 
-    class type_currency {
+    class currency {
 
         protected $int;
         protected $float;
@@ -18,21 +18,21 @@
 
         public function formatted($abs=false) {
             if ($abs) {
-                $float = \abs($this->float);
-                $int   = \abs($this->int);
+                $float = abs($this->float);
+                $int   = abs($this->int);
 
                 //check if the rounded version is the same
-                if (\round($float, 2) == $int) {
+                if (round($float, 2) == $int) {
                     return (string) $int;
                 } else {
-                    return (string) \number_format($float, 2);
+                    return (string) number_format($float, 2);
                 }
             } else {
                 //check if the rounded version is the same
-                if (\round($this->float, 2) == $this->int) {
-                    return (string) \number_format($this->int);
+                if (round($this->float, 2) == $this->int) {
+                    return (string) number_format($this->int);
                 } else {
-                    return (string) \number_format($this->float, 2);
+                    return (string) number_format($this->float, 2);
                 }
             }
         }

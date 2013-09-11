@@ -1,10 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\sql;
 
-    use PDO;
+    use \exception;
 
-    class sql_pdo extends pdo {
+    class pdo extends \pdo {
 
         protected $driver_name;
 
@@ -15,7 +15,7 @@
          */
         public function driver() {
             if (! $this->driver_name) {
-                $this->driver_name = $this->getAttribute(PDO::ATTR_DRIVER_NAME);
+                $this->driver_name = $this->getAttribute(self::ATTR_DRIVER_NAME);
             }
             return $this->driver_name;
         }
@@ -41,7 +41,7 @@
          * @param \PDOStatement $query
          *
          * @return string
-         * @throws \exception
+         * @throws exception
          */
         public static function dump_query(\PDOStatement $query) {
             ob_start();
@@ -54,8 +54,8 @@
                     $buffer .= ob_get_clean();
                 }
                 return $buffer;
-            } catch (\exception $e) {
-                throw new \exception('Output buffer error occurred');
+            } catch (exception $e) {
+                throw new exception('Output buffer error occurred');
             }
         }
     }

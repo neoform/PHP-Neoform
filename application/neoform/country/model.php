@@ -45,7 +45,7 @@
          */
         public function region_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('region_collection', $order_by, $offset, $limit);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new region_collection(
                     entity::dao('region')->by_country($this->vars['id'], $order_by, $offset, $limit)
                 );
@@ -64,7 +64,7 @@
             ];
 
             $key = parent::_count_var_key('region_count', $fieldvals);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = entity::dao('region')->count($fieldvals);
             }
             return $this->_vars[$key];

@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\cache\memory;
 
     /**
      * Cache variables in memory
      */
-    class cache_memory_dao {
+    class dao {
 
         /**
          * @var array holds the cache
@@ -20,7 +20,7 @@
          * @return bool
          */
         public static function exists($k) {
-            return \array_key_exists($k, self::$local);
+            return array_key_exists($k, self::$local);
         }
 
         /**
@@ -33,7 +33,7 @@
          * @return mixed
          */
         public static function single($key, callable $source_func, $args=null) {
-            if (! \array_key_exists($key, self::$local)) {
+            if (! array_key_exists($key, self::$local)) {
                 self::$local[$key] = $source_func($args);
             }
             return self::$local[$key];
@@ -53,14 +53,14 @@
         public static function multiple(array $rows, callable $key_func, callable $db_func, $args=null) {
 
             //this function will preserve the order of the ids
-            if (! \count($rows)) {
+            if (! count($rows)) {
                 return [];
             }
 
             //make a list of keys
             $keys = [];
             foreach ($rows as $k => $row) {
-                if (\is_array($row)) {
+                if (is_array($row)) {
                     $keys[$k] = \call_user_func_array($key_func, $row);
                 } else {
                     $keys[$k] = $key_func($row);
@@ -71,16 +71,16 @@
             $valid_rows = [];
             foreach ($rows as $k => $row) {
                 $key = $keys[$k];
-                if (\array_key_exists($key, self::$local)) {
+                if (array_key_exists($key, self::$local)) {
                     $valid_rows[$k] = self::$local[$key];
                     unset($rows[$k]);
                 }
             }
 
             //if not all was pulled from memory
-            if (\count($rows)) {
+            if (count($rows)) {
                 $db_rows = $db_func($rows, $args);
-                if (\is_array($db_rows) && $db_rows) {
+                if (is_array($db_rows) && $db_rows) {
                     $valid_rows += $db_rows;
                     foreach ($db_rows as $k => $row) {
                         self::$local[$keys[$k]] = $row;
@@ -88,7 +88,7 @@
                 }
 
                 //if this is not 100% from memory, sort it
-                \ksort($valid_rows);
+                ksort($valid_rows);
             }
 
             return $valid_rows;
@@ -100,7 +100,7 @@
          * @param string $key
          */
         public static function delete($key){
-            if (\array_key_exists($key, self::$local)) {
+            if (array_key_exists($key, self::$local)) {
                 unset(self::$local[$key]);
             }
         }
@@ -111,9 +111,9 @@
          * @param array $keys
          */
         public static function delete_multi(array $keys){
-            if (\count($keys)) {
+            if (count($keys)) {
                 foreach ($keys as $key) {
-                    if (\array_key_exists($key, self::$local)) {
+                    if (array_key_exists($key, self::$local)) {
                         unset(self::$local[$key]);
                     }
                 }
@@ -126,13 +126,13 @@
          * @param string $k key
          *
          * @return mixed
-         * @throws cache_memory_exception
+         * @throws exception
          */
         public static function get($k) {
-            if (\array_key_exists($k, self::$local)) {
+            if (array_key_exists($k, self::$local)) {
                 return self::$local[$k];
             } else {
-                throw new cache_memory_exception('Variable does not exist in memory');
+                throw new exception('Variable does not exist in memory');
             }
         }
 
@@ -158,7 +158,7 @@
         public static function get_multi(array $keys) {
             $matches = [];
             foreach ($keys as $index => $key) {
-                if (\array_key_exists($key, self::$local)) {
+                if (array_key_exists($key, self::$local)) {
                     $matches[$index] = self::$local[$key];
                 }
             }
@@ -201,7 +201,7 @@
          * @return mixed
          */
         public static function increment($key, $offset=1){
-            if (\array_key_exists($key, self::$local)) {
+            if (array_key_exists($key, self::$local)) {
                 self::$local[$key] += $offset;
                 return self::$local[$key];
             }
@@ -216,7 +216,7 @@
          * @return mixed
          */
         public static function decrement($key, $offset=1){
-            if (\array_key_exists($key, self::$local)) {
+            if (array_key_exists($key, self::$local)) {
                 self::$local[$key] -= $offset;
                 return self::$local[$key];
             }

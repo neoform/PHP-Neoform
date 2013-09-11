@@ -1,34 +1,35 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\sql;
 
     use PDO;
+    use neoform;
 
-    class sql_factory implements core_factory {
+    class factory implements neoform\core\factory {
 
         public static function init(array $args) {
-            $name = $args ? \current($args) : null;
+            $name = $args ? current($args) : null;
 
             //get the class that instatiated this singleton
-            $config = core::config()['sql'];
+            $config = neoform\core::config()['sql'];
 
             if (! isset($config['pools'][$name])) {
                 if ($name !== $config['default_pool_write'] && $config['default_pool_write']) {
                     //try fallback connection
-                    return core::sql($config['default_pool_write']);
+                    return neoform\core::sql($config['default_pool_write']);
                 } else {
-                    throw new error_exception("The database connection \"{$name}\" configuration could not be found.");
+                    throw new neoform\error\exception("The database connection \"{$name}\" configuration could not be found.");
                 }
             }
 
             //select a random connection:
-            $connection = $config['pools'][$name][array_rand($config['pools'][$name])];
+            $connection = $config['pools'][$name][\array_rand($config['pools'][$name])];
 
             $dsn  = isset($connection['dsn']) ? $connection['dsn'] : null;
             $user = isset($connection['user']) ? $connection['user'] : null;
 
             if (! $dsn || ! $user) {
-                throw new error_exception("The database connection \"{$name}\" has not been configured properly.");
+                throw new neoform\error\exception("The database connection \"{$name}\" has not been configured properly.");
             }
 
             try {
@@ -44,15 +45,15 @@
                 }
 
                 //return new sql_debug(
-                return new sql_pdo(
+                return new neoform\sql\pdo(
                     $dsn,
                     $user,
                     isset($connection['password']) ? $connection['password'] : '',
                     $options
                 );
             } catch (\exception $e) {
-                core::log("Could not connect to database configuration \"{$name}\" -- " . $e->getMessage(), 'CRITICAL');
-                throw new error_exception('We are experiencing a brief interruption of service', 'Please try again in a few moments...');
+                neoform\core::log("Could not connect to database configuration \"{$name}\" -- " . $e->getMessage(), 'CRITICAL');
+                throw new neoform\error\exception('We are experiencing a brief interruption of service', 'Please try again in a few moments...');
             }
         }
     }

@@ -43,7 +43,7 @@
          */
         public function locale_key_message_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('locale_key_message_collection', $order_by, $offset, $limit);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new locale_key_message_collection(
                     entity::dao('locale_key_message')->by_key($this->vars['id'], $order_by, $offset, $limit)
                 );
@@ -62,7 +62,7 @@
             ];
 
             $key = parent::_count_var_key('locale_key_message_count', $fieldvals);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = entity::dao('locale_key_message')->count($fieldvals);
             }
             return $this->_vars[$key];
@@ -79,7 +79,7 @@
          */
         public function locale_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('locale_collection', $order_by, $offset, $limit);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new locale_collection(
                     entity::dao('locale_key_message')->by_key($this->vars['id'], $order_by, $offset, $limit)
                 );
@@ -98,7 +98,7 @@
             ];
 
             $key = parent::_count_var_key('locale_count', $fieldvals);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = entity::dao('locale_key_message')->count($fieldvals);
             }
             return $this->_vars[$key];
@@ -131,9 +131,9 @@
          */
         public function message($locale) {
             $k = "message:{$locale}";
-            if (! \array_key_exists($k, $this->_vars)) {
+            if (! array_key_exists($k, $this->_vars)) {
                 $this->_vars[$k] = new locale_key_message_model(
-                    \current(entity::dao('locale_key_message')->by_locale_key($locale, $this->id))
+                    current(entity::dao('locale_key_message')->by_locale_key($locale, $this->id))
                 );
             }
             return $this->_vars[$k];

@@ -1,8 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\encrypt;
 
-    class encrypt_lib {
+    class lib {
 
         /**
          * Get the max allowed length of the cipher's key
@@ -12,7 +12,7 @@
          * @return int
          */
         public static function max_key_length($cipher) {
-            return \mcrypt_get_key_size($cipher, MCRYPT_MODE_CBC);
+            return mcrypt_get_key_size($cipher, MCRYPT_MODE_CBC);
         }
 
         /**
@@ -26,17 +26,17 @@
          * @return string
          */
         public static function encrypt($key, $plaintext) {
-            $max_key_len = \mcrypt_get_key_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_CBC);
+            $max_key_len = mcrypt_get_key_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_CBC);
 
-            if (\strlen($key) > $max_key_len) {
-                $key = \substr($key, 0, $max_key_len);
+            if (strlen($key) > $max_key_len) {
+                $key = substr($key, 0, $max_key_len);
             }
 
-            $iv     = \mcrypt_create_iv(\mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_CBC), MCRYPT_RAND);
-            $prefix = \str_pad(MCRYPT_RIJNDAEL_256 . ':' . MCRYPT_MODE_CBC, 128, "\x00");
+            $iv     = mcrypt_create_iv(\mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_CBC), MCRYPT_RAND);
+            $prefix = str_pad(MCRYPT_RIJNDAEL_256 . ':' . MCRYPT_MODE_CBC, 128, "\x00");
 
             // IV (initialization vector) is not a secret, but it is necessary to give a CBC string the entropy it needs
-            return "{$prefix}{$iv}" . \mcrypt_encrypt(
+            return "{$prefix}{$iv}" . mcrypt_encrypt(
                 MCRYPT_RIJNDAEL_256,
                 $key,
                 $prefix . $plaintext,
@@ -54,34 +54,34 @@
          * @return string|null on error
          */
         public static function decrypt($key, $encrypted_str) {
-            $prefix = \substr($encrypted_str, 0, 128);
-            $header = \explode(':', $prefix);
+            $prefix = substr($encrypted_str, 0, 128);
+            $header = explode(':', $prefix);
 
-            if (\count($header) !== 2) {
+            if (count($header) !== 2) {
                 return;
             }
 
-            $cipher        = \trim($header[0]);
-            $mode          = \trim($header[1]);
-            $encrypted_str = \substr($encrypted_str, 128);
-            $max_key_len   = \mcrypt_get_key_size($cipher, $mode);
+            $cipher        = trim($header[0]);
+            $mode          = trim($header[1]);
+            $encrypted_str = substr($encrypted_str, 128);
+            $max_key_len   = mcrypt_get_key_size($cipher, $mode);
 
-            if (\strlen($key) > $max_key_len) {
-                $key = \substr($key, 0, $max_key_len);
+            if (strlen($key) > $max_key_len) {
+                $key = substr($key, 0, $max_key_len);
             }
 
-            $iv_length = \mcrypt_get_iv_size($cipher, $mode);
-            $iv        = \substr($encrypted_str, 0, $iv_length);
+            $iv_length = mcrypt_get_iv_size($cipher, $mode);
+            $iv        = substr($encrypted_str, 0, $iv_length);
 
-            $unencrypted_string =  \mcrypt_decrypt(
+            $unencrypted_string = mcrypt_decrypt(
                 $cipher,
                 $key,
-                \substr($encrypted_str, $iv_length),
+                substr($encrypted_str, $iv_length),
                 $mode,
                 $iv
             );
 
-            return \substr($unencrypted_string, 0, 128) === $prefix ? \substr($unencrypted_string, 128) : null;
+            return substr($unencrypted_string, 0, 128) === $prefix ? substr($unencrypted_string, 128) : null;
         }
 
         /**
@@ -94,7 +94,7 @@
         public static function rand($length) {
             do
             {
-                $rand = \openssl_random_pseudo_bytes($length, $good);
+                $rand = openssl_random_pseudo_bytes($length, $good);
             } while (! $good);
 
             return $rand;

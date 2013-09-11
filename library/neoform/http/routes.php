@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\http;
 
-    interface http_routes {
+    interface routes {
         public static function get();
     }

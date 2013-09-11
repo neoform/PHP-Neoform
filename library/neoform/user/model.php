@@ -66,7 +66,7 @@
 
             // Check if the resources provided exist in this user's resources, if any are missing, access denied
             foreach ($resource_ids as $resource_id) {
-                if (! \in_array((int) $resource_id, $role_resource_ids, true)) {
+                if (! in_array((int) $resource_id, $role_resource_ids, true)) {
                     return false;
                 }
             }
@@ -92,7 +92,7 @@
          * @return bool
          */
         public function has_resource($resource_name) {
-            return \in_array($resource_name, $this->acl_resource_collection()->field('name'));
+            return in_array($resource_name, $this->acl_resource_collection()->field('name'));
         }
 
         /**
@@ -116,7 +116,7 @@
                     }
                 }
 
-                $this->_vars['role_ids'] = \array_unique($role_ids);
+                $this->_vars['role_ids'] = array_unique($role_ids);
             }
 
             return $this->_vars['role_ids'];
@@ -146,7 +146,7 @@
                     }
                 }
 
-                $this->_vars['role_resource_ids'] = \array_unique($role_resource_ids);
+                $this->_vars['role_resource_ids'] = array_unique($role_resource_ids);
             }
 
             return $this->_vars['role_resource_ids'];
@@ -163,7 +163,7 @@
          */
         public function acl_group_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('acl_group_collection', $order_by, $offset, $limit);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new acl_group_collection(
                     entity::dao('acl_group_user')->by_user($this->vars['id'], $order_by, $offset, $limit)
                 );
@@ -182,7 +182,7 @@
             ];
 
             $key = parent::_count_var_key('acl_group_count', $fieldvals);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = entity::dao('acl_group_user')->count($fieldvals);
             }
             return $this->_vars[$key];
@@ -199,7 +199,7 @@
          */
         public function auth_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('auth_collection', $order_by, $offset, $limit);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new auth_collection(
                     entity::dao('auth')->by_user($this->vars['id'], $order_by, $offset, $limit)
                 );
@@ -218,7 +218,7 @@
             ];
 
             $key = parent::_count_var_key('auth_count', $fieldvals);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = entity::dao('auth')->count($fieldvals);
             }
             return $this->_vars[$key];
@@ -235,7 +235,7 @@
          */
         public function acl_role_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('acl_role_collection', $order_by, $offset, $limit);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new acl_role_collection(
                     entity::dao('user_acl_role')->by_user($this->vars['id'], $order_by, $offset, $limit)
                 );
@@ -254,7 +254,7 @@
             ];
 
             $key = parent::_count_var_key('acl_role_count', $fieldvals);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = entity::dao('user_acl_role')->count($fieldvals);
             }
             return $this->_vars[$key];
@@ -289,7 +289,7 @@
          */
         public function site_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('site_collection', $order_by, $offset, $limit);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new site_collection(
                     entity::dao('user_site')->by_user($this->vars['id'], $order_by, $offset, $limit)
                 );
@@ -308,7 +308,7 @@
             ];
 
             $key = parent::_count_var_key('site_count', $fieldvals);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = entity::dao('user_site')->count($fieldvals);
             }
             return $this->_vars[$key];

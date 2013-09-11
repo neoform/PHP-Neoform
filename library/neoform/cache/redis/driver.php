@@ -1,8 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\cache\redis;
 
-    class cache_redis_driver implements cache_driver {
+    use neoform;
+
+    class driver implements neoform\cache\driver {
 
         /**
          * Activate a pipelined (batch) query
@@ -10,7 +12,7 @@
          * @param string $pool
          */
         public static function pipeline_start($pool) {
-            core::redis($pool)->multi();
+            neoform\core::redis($pool)->multi();
         }
 
         /**
@@ -21,7 +23,7 @@
          * @return array result of batch operation
          */
         public static function pipeline_execute($pool) {
-            return core::redis($pool)->exec();
+            return neoform\core::redis($pool)->exec();
         }
 
         /**
@@ -32,7 +34,7 @@
          * @param integer $offset
          */
         public static function increment($pool, $key, $offset=1) {
-            core::redis($pool)->incrBy($key, $offset);
+            neoform\core::redis($pool)->incrBy($key, $offset);
         }
 
         /**
@@ -43,7 +45,7 @@
          * @param integer $offset
          */
         public static function decrement($pool, $key, $offset=1) {
-            core::redis($pool)->incrBy($key, -$offset);
+            neoform\core::redis($pool)->incrBy($key, -$offset);
         }
 
         /**
@@ -55,7 +57,7 @@
          * @return boolean
          */
         public static function exists($pool, $key) {
-            return (bool) core::redis($pool)->exists($key);
+            return (bool) neoform\core::redis($pool)->exists($key);
         }
 
         /**
@@ -69,14 +71,14 @@
          * @return array|null returns null if record does not exist.
          */
         public static function get($pool, $key) {
-            $redis = core::redis($pool);
 
             // Batch execute since phpredis returns false if the key doesn't exist on a GET command, which might actually
             // be the stored value... which is not helpful.
-            $redis->multi();
-            $redis->exists($key);
-            $redis->get($key);
-            $result = $redis->exec();
+            $result = neoform\core::redis($pool)
+                ->multi()
+                ->exists($key)
+                ->get($key)
+                ->exec();
 
             return $result[0] === true ? [ $result[1] ] : null;
         }
@@ -90,7 +92,7 @@
          * @return mixed
          */
         public static function set($pool, $key, $data, $ttl=null) {
-            return core::redis($pool)->set($key, $data, $ttl);
+            return neoform\core::redis($pool)->set($key, $data, $ttl);
         }
 
         /**
@@ -102,7 +104,7 @@
          * @return array
          */
         public static function get_multi($pool, array $keys) {
-            $redis = core::redis($pool)->multi();
+            $redis = neoform\core::redis($pool)->multi();
 
             // Redis returns the results in order - if the key doesn't exist, false is returned - this problematic
             // since false might be an actual value being stored... therefore we check if the key exists if false is
@@ -140,14 +142,14 @@
          */
         public static function set_multi($pool, array $rows, $ttl=null) {
             if ($ttl) {
-                $redis = core::redis($pool);
+                $redis = neoform\core::redis($pool);
                 $redis->multi();
                 foreach ($rows as $k => $v) {
                     $redis->set($k, $v, $ttl);
                 }
                 $redis->exec();
             } else {
-                return core::redis($pool)->mset($rows);
+                return neoform\core::redis($pool)->mset($rows);
             }
         }
 
@@ -160,7 +162,7 @@
          * @return integer the number of keys deleted
          */
         public static function delete($pool, $key) {
-            return core::redis($pool)->delete($key);
+            return neoform\core::redis($pool)->delete($key);
         }
 
         /**
@@ -173,7 +175,7 @@
          */
         public static function delete_multi($pool, array $keys) {
             if ($keys) {
-                return core::redis($pool)->delete($keys);
+                return neoform\core::redis($pool)->delete($keys);
             }
         }
 
@@ -188,9 +190,9 @@
          */
         public static function expire($pool, $key, $ttl=0) {
             if ($ttl) {
-                return core::redis($pool)->expire($key, $ttl);
+                return neoform\core::redis($pool)->expire($key, $ttl);
             } else {
-                return core::redis($pool)->delete($key);
+                return neoform\core::redis($pool)->delete($key);
             }
         }
 
@@ -205,13 +207,13 @@
          */
         public static function expire_multi($pool, array $keys, $ttl=0) {
             if ($ttl) {
-                $redis = core::redis($pool)->multi();
+                $redis = neoform\core::redis($pool)->multi();
                 foreach ($keys as $key) {
                     $redis->expire($key, $ttl);
                 }
                 $redis->exec();
             } else {
-                core::redis($pool)->delete($keys, $ttl);
+                neoform\core::redis($pool)->delete($keys, $ttl);
             }
         }
     }

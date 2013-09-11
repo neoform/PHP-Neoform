@@ -1,5 +1,5 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\redis;
 
-    class redis_exception extends \exception {}
+    class exception extends \exception {}

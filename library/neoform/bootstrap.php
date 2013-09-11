@@ -53,27 +53,27 @@
                 )->execute();
 
             // Error Exception
-            } catch (error_exception $e) {
+            } catch (error\exception $e) {
                 core::output()->error($e->message(), $e->description());
 
-            } catch (user_status_exception $e) {
-                auth_api::logout(core::auth());
+            } catch (user\status\exception $e) {
+                auth\api::logout(core::auth());
                 core::output()->redirect();
 
             // Model Exception
-            } catch (entity_exception $e) {
+            } catch (entity\exception $e) {
                 core::output()->error($e->message(), $e->description());
 
             // Force user to login exception
-            } catch (redirect_login_exception $e) {
+            } catch (redirect\login\exception $e) {
                 if ($e->url() !== null) {
                     core::http_flash()->set('login_bounce', $e->url());
                 }
                 if ($e->message() !== null) {
                     core::http_flash()->set('login_message', $e->message());
                 }
-                if (core::output()->output_type() === output_instance::JSON) {
-                    $json = new render_json;
+                if (core::output()->output_type() === output\instance::JSON) {
+                    $json = new render\json;
                     $json->status = 'login';
                     $json->render();
                 } else {
@@ -81,8 +81,8 @@
                 }
 
             // Force user to enter a captcha exception
-            } catch (captcha_exception $e) {
-                $json = new render_json;
+            } catch (captcha\exception $e) {
+                $json = new render\json;
                 $json->status = 'captcha';
                 $json->render();
             }

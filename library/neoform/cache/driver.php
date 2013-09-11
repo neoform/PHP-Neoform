@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\cache;
 
     /**
      * Driver interface for cache classes
      */
-    interface cache_driver {
+    interface driver {
         public static function increment($pool, $key, $offset=1);
         public static function decrement($pool, $key, $offset=1);
         public static function exists($pool, $key);

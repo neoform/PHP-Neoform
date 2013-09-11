@@ -1,10 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity;
 
     //crush all the built in exception crap since we don't need to know anything relating to stack trace for these model exceptions...
 
-    class entity_exception extends \exception {
+    class exception extends \exception {
 
         protected $message;
         protected $description;

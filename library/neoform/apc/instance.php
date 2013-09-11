@@ -1,16 +1,16 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\apc;
 
-    use ArrayObject;
+    use neoform;
 
     /**
      * APC cache instance
      * to use: core::cache_apc()
      */
-    class apc_instance extends ArrayObject {
+    class instance extends \ArrayObject {
 
-        use core_instance;
+        use neoform\core\instance;
 
         protected $key_prefix;
 
@@ -24,14 +24,14 @@
          * @param $key
          *
          * @return mixed
-         * @throws apc_exception
+         * @throws neoform\apc\exception
          */
         public function __get($key) {
-            $data = \apc_fetch("{$this->key_prefix}{$key}", $success);
+            $data = apc_fetch($this->key_prefix . $key, $success);
             if ($success) {
                 return $data;
             } else {
-                throw new apc_exception('Cache does not exist');
+                throw new neoform\apc\exception('Cache does not exist');
             }
         }
 
@@ -41,14 +41,14 @@
          * @param $key
          *
          * @return mixed
-         * @throws apc_exception
+         * @throws neoform\apc\exception
          */
         public function get($key) {
-            $data = \apc_fetch("{$this->key_prefix}{$key}", $success);
+            $data = apc_fetch($this->key_prefix . $key, $success);
             if ($success) {
                 return $data;
             } else {
-                throw new apc_exception('Cache does not exist');
+                throw new neoform\apc\exception('Cache does not exist');
             }
         }
 
@@ -62,7 +62,7 @@
          * @return bool
          */
         public function set($key, $val, $ttl=0) {
-            return \apc_store("{$this->key_prefix}{$key}", $val, $ttl);
+            return apc_store($this->key_prefix . $key, $val, $ttl);
         }
 
         /**
@@ -73,7 +73,7 @@
          * @return bool|string[]
          */
         public function __unset($key) {
-            return \apc_delete("{$this->key_prefix}{$key}");
+            return apc_delete($this->key_prefix . $key);
         }
 
         /**
@@ -84,7 +84,7 @@
          * @return bool|string[]
          */
         public function del($key) {
-            return \apc_delete("{$this->key_prefix}{$key}");
+            return apc_delete($this->key_prefix . $key);
         }
 
         /**
@@ -95,7 +95,7 @@
          * @return bool|string[]
          */
         public function __isset($key) {
-            return \apc_exists("{$this->key_prefix}{$key}");
+            return apc_exists($this->key_prefix . $key);
         }
 
         /**
@@ -107,7 +107,7 @@
          * @return bool|int
          */
         public function increment($key, $step=1) {
-            return \apc_inc("{$this->key_prefix}{$key}", $step);
+            return apc_inc($this->key_prefix . $key, $step);
         }
 
         /**
@@ -119,7 +119,7 @@
          * @return bool|int
          */
         public function decrement($key, $step=1) {
-            return \apc_dec("{$this->key_prefix}{$key}", $step);
+            return apc_dec($this->key_prefix . $key, $step);
         }
 
         /**
@@ -128,7 +128,7 @@
          * @return bool
          */
         public function flush() {
-            return \apc_clear_cache();
+            return apc_clear_cache();
         }
 
         /**
@@ -137,6 +137,6 @@
          * @return array|bool
          */
         public function info() {
-            return \apc_cache_info();
+            return apc_cache_info();
         }
     }

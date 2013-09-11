@@ -1,12 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\type\string;
 
-    class type_string_json
-    {
-        public static function last_error()
-        {
-            switch (\json_last_error()) {
+    class json {
+
+        public static function last_error() {
+            switch (json_last_error()) {
                 case JSON_ERROR_NONE:           return 'No errors';
                 case JSON_ERROR_DEPTH:          return 'Maximum stack depth exceeded';
                 case JSON_ERROR_STATE_MISMATCH: return 'Underflow or the modes mismatch';

@@ -1,12 +1,12 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\input;
 
-    class input_exception extends \exception {
+    class exception extends \exception {
 
         protected $errors;
 
-        public function __construct(input_error_collection $errors) {
+        public function __construct(error\collection $errors) {
             $this->errors = $errors;
         }
 
@@ -24,10 +24,10 @@
             }
         }
 
-        protected static function _to_array(input_error_collection $collection) {
+        protected static function _to_array(error\collection $collection) {
             $arr = [];
             foreach ($collection->all() as $k => $error) {
-                if ($error instanceof input_error_collection) {
+                if ($error instanceof error\collection) {
                     $arr[$k] = self::_to_array($error);
                 } else {
                     $arr[$k] = $error;

@@ -11,7 +11,7 @@
                 $json->status = 'close';
 
                 if ($bounce = core::http_flash()->get('login_bounce')) {
-                    $json->bounce = \current($bounce);
+                    $json->bounce = current($bounce);
                     core::http_flash()->del('login_bounce');
                 }
 

@@ -1,8 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\cache\memcache;
 
-    class cache_memcache_driver implements cache_driver {
+    use neoform;
+
+    class driver implements neoform\cache\driver {
 
         /**
          * Activate a pipelined (batch) query - this doesn't exist in memcache, so ignore
@@ -30,7 +32,7 @@
          * @param integer $offset
          */
         public static function increment($pool, $key, $offset=1) {
-            core::memcache($pool)->increment($key, $offset);
+            neoform\core::memcache($pool)->increment($key, $offset);
         }
 
         /**
@@ -41,7 +43,7 @@
          * @param integer $offset
          */
         public static function decrement($pool, $key, $offset=1) {
-            core::memcache($pool)->decrement($key, $offset);
+            neoform\core::memcache($pool)->decrement($key, $offset);
         }
 
         /**
@@ -53,7 +55,7 @@
          * @return boolean
          */
         public static function exists($pool, $key) {
-            $memcache = core::memcache($pool);
+            $memcache = neoform\core::memcache($pool);
             $memcache->get($key);
             return (bool) $memcache->row_found();
         }
@@ -69,7 +71,7 @@
          * @return array|null returns null if record does not exist.
          */
         public static function get($pool, $key) {
-            $memcache = core::memcache($pool);
+            $memcache = neoform\core::memcache($pool);
             $data = $memcache->get($key);
             if ($memcache->row_found()) {
                 return [
@@ -87,7 +89,7 @@
          * @return mixed
          */
         public static function set($pool, $key, $data, $ttl=null) {
-            return core::memcache($pool)->set(
+            return neoform\core::memcache($pool)->set(
                 $key,
                 $data,
                 $ttl
@@ -103,10 +105,10 @@
          * @return array
          */
         public static function get_multi($pool, array $keys) {
-            $mc_results = core::memcache($pool)->getMulti($keys);
+            $mc_results = neoform\core::memcache($pool)->getMulti($keys);
             $results = [];
             foreach ($keys as $k => $key) {
-                if (\array_key_exists($key, $mc_results)) {
+                if (array_key_exists($key, $mc_results)) {
                     $results[$k] = $mc_results[$key];
                 }
             }
@@ -123,7 +125,7 @@
          * @return mixed
          */
         public static function set_multi($pool, array $rows, $ttl=null) {
-            return core::memcache($pool)->setMulti($rows, $ttl);
+            return neoform\core::memcache($pool)->setMulti($rows, $ttl);
         }
 
         /**
@@ -133,7 +135,7 @@
          * @param string $key
          */
         public static function delete($pool, $key) {
-            core::memcache($pool)->delete($key);
+            neoform\core::memcache($pool)->delete($key);
         }
 
         /**
@@ -144,7 +146,7 @@
          */
         public static function delete_multi($pool, array $keys) {
             if ($keys) {
-                $mc = core::memcache($pool);
+                $mc = neoform\core::memcache($pool);
                 foreach ($keys as $key) {
                     $mc->delete($key);
                 }
@@ -160,9 +162,9 @@
          */
         public static function expire($pool, $key, $ttl=0) {
             if ($ttl === 0) {
-                core::memcache($pool)->delete($key);
+                neoform\core::memcache($pool)->delete($key);
             } else {
-                core::memcache($pool)->touch($key, $ttl);
+                neoform\core::memcache($pool)->touch($key, $ttl);
             }
         }
 
@@ -175,7 +177,7 @@
          */
         public static function expire_multi($pool, array $keys, $ttl=0) {
             if ($keys) {
-                $mc = core::memcache($pool);
+                $mc = neoform\core::memcache($pool);
                 if ($ttl === 0) {
                     foreach ($keys as $key) {
                         $mc->delete($key);

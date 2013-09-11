@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\config;
 
     /**
      * Default config object - extend this to define config values for an entity
      */
-    abstract class entity_config_defaults {
+    abstract class defaults {
 
         protected $config;
 
@@ -15,7 +15,7 @@
          * @param array $config
          */
         final public function __construct(array $config=[]) {
-            $this->config = \array_replace_recursive($this->defaults(), $config);
+            $this->config = array_replace_recursive($this->defaults(), $config);
         }
 
         /**
@@ -28,7 +28,7 @@
         /**
          * Validate the config values
          *
-         * @throws config_exception
+         * @throws exception
          */
         abstract public function validate();
 

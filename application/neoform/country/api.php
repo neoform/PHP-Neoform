@@ -84,7 +84,7 @@
             // name
             $input->name->cast('string')->optional()->length(1, 255)->callback(function($name) use ($country) {
                 $id_arr = entity::dao('country')->by_name($name->val());
-                if (is_array($id_arr) && $id_arr && (int) \current($id_arr) !== $country->id) {
+                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $country->id) {
                     $name->errors('already in use');
                 }
             });
@@ -92,7 +92,7 @@
             // name_normalized
             $input->name_normalized->cast('string')->optional()->length(1, 255)->callback(function($name_normalized) use ($country) {
                 $id_arr = entity::dao('country')->by_name_normalized($name_normalized->val());
-                if (is_array($id_arr) && $id_arr && (int) \current($id_arr) !== $country->id) {
+                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $country->id) {
                     $name_normalized->errors('already in use');
                 }
             });
@@ -100,7 +100,7 @@
             // iso2
             $input->iso2->cast('string')->optional()->length(1, 2)->callback(function($iso2) use ($country) {
                 $id_arr = entity::dao('country')->by_iso2($iso2->val());
-                if (\is_array($id_arr) && $id_arr && (int) \current($id_arr) !== $country->id) {
+                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $country->id) {
                     $iso2->errors('already in use');
                 }
             });
@@ -108,7 +108,7 @@
             // iso3
             $input->iso3->cast('string')->optional()->length(1, 3)->callback(function($iso3) use ($country) {
                 $id_arr = entity::dao('country')->by_iso3($iso3->val());
-                if (\is_array($id_arr) && $id_arr && (int) \current($id_arr) !== $country->id) {
+                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $country->id) {
                     $iso3->errors('already in use');
                 }
             });

@@ -1,2 +1,5 @@
 <?php
-    class captcha_exception extends \exception {}
+
+    namespace neoform\captcha;
+
+    class exception extends \exception {}

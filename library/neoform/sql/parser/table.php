@@ -1,21 +1,23 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\sql\parser;
+
+    use neoform;
 
     /**
      * An object representation of an SQL table
      *
      * @var string             $name               table name
-     * @var sql_parser_field[] $fields             table fields
-     * @var sql_parser_field[] $primary_keys       table primary key(s)
-     * @var sql_parser_field[] $unique_keys        table unique keys, does not include primary keys
-     * @var sql_parser_field[] $indexes            table indexes (does not include PKs or UKs)
-     * @var sql_parser_field[] $all_indexes        primary keys, unique keys, indexes, in one array
-     * @var sql_parser_field[] $all_unique_indexes primary keys and unique keys, in one array
-     * @var sql_parser_field[] $foreign_keys       array of foreign keys
-     * @var sql_parser_field[] $referencing_fields any/all fields that reference fields in this table
+     * @var field[] $fields             table fields
+     * @var field[] $primary_keys       table primary key(s)
+     * @var field[] $unique_keys        table unique keys, does not include primary keys
+     * @var field[] $indexes            table indexes (does not include PKs or UKs)
+     * @var field[] $all_indexes        primary keys, unique keys, indexes, in one array
+     * @var field[] $all_unique_indexes primary keys and unique keys, in one array
+     * @var field[] $foreign_keys       array of foreign keys
+     * @var field[] $referencing_fields any/all fields that reference fields in this table
      */
-    class sql_parser_table {
+    class table {
 
         protected $name;
         protected $primary_key;
@@ -37,8 +39,8 @@
                 $this->primary_keys[$primary_key] = $this->fields[$primary_key];
             }
 
-            if ($this->primary_keys && \count($this->primary_keys) === 1) {
-                $this->primary_key = \current($this->primary_keys);
+            if ($this->primary_keys && count($this->primary_keys) === 1) {
+                $this->primary_key = current($this->primary_keys);
             }
 
             foreach ($info['unique_keys'] as $k => $unique_key) {
@@ -99,8 +101,8 @@
                         $indexed_fields[join(':', $key)] = $index;
                     }
                     foreach (\array_merge($this->unique_keys, $this->primary_keys) as $index) {
-                        if (\count($index) > 1) {
-                            $index = \array_slice($index, 0, \count($index) - 1);
+                        if (count($index) > 1) {
+                            $index = array_slice($index, 0, count($index) - 1);
                             $key = [];
                             foreach ($index as $field) {
                                 $key[] = $field->name;
@@ -108,7 +110,7 @@
                             $indexed_fields[join(':', $key)] = $index;
                         }
                     }
-                    return \array_values($indexed_fields);
+                    return array_values($indexed_fields);
 
                 case 'all_non_pk_indexes':
                     return \array_merge(
@@ -179,7 +181,7 @@
          * @return bool
          */
         public function is_record() {
-            return \count($this->primary_keys) === 1;
+            return count($this->primary_keys) === 1;
         }
 
         /**
@@ -218,8 +220,8 @@
         public function longest_field_length($idless=false) {
             $len = 0;
             foreach ($this->fields as $field) {
-                if ($len < \strlen($idless ? $field->name_idless : $field->name)) {
-                    $len = \strlen($idless ? $field->name_idless : $field->name);
+                if ($len < strlen($idless ? $field->name_idless : $field->name)) {
+                    $len = strlen($idless ? $field->name_idless : $field->name);
                 }
             }
             return $len;
@@ -237,8 +239,8 @@
 
             foreach ($this->all_indexes as $index) {
                 foreach ($index as $field) {
-                    if ($len < \strlen($idless ? $field->name_idless : $field->name)) {
-                        $len = \strlen($idless ? $field->name_idless : $field->name);
+                    if ($len < strlen($idless ? $field->name_idless : $field->name)) {
+                        $len = strlen($idless ? $field->name_idless : $field->name);
                     }
                 }
             }
@@ -254,8 +256,8 @@
         public function longest_non_pk_index_combinations() {
             $len = 0;
             foreach ($this->all_non_pk_index_combinations as $key => $fields) {
-                if ($len < \strlen($key)) {
-                    $len = \strlen($key);
+                if ($len < strlen($key)) {
+                    $len = strlen($key);
                 }
             }
             return $len;
@@ -270,8 +272,8 @@
         public function longest_index_combinations() {
             $len = 0;
             foreach ($this->all_index_combinations as $key => $fields) {
-                if ($len < \strlen($key)) {
-                    $len = \strlen($key);
+                if ($len < strlen($key)) {
+                    $len = strlen($key);
                 }
             }
             return $len;
@@ -283,6 +285,6 @@
          * @return bool
          */
         public function is_tiny() {
-            return sql_parser::is_table_tiny($this);
+            return neoform\sql\parser::is_table_tiny($this);
         }
     }

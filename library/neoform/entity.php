@@ -11,11 +11,11 @@
          *
          * @param string $name name of the dao
          *
-         * @return entity_record_dao|entity_link_dao
+         * @return entity\record\dao|entity\link\dao
          */
         public static function dao($name) {
             if (! isset(self::$daos[$name])) {
-                $class_name = "neoform\\{$name}_dao";
+                $class_name = "\\neoform\\{$name}\\dao";
                 $config     = core::config()['entity'];
 
                 if (isset($config['overrides'][$name])) {

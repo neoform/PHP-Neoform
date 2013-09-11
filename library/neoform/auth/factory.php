@@ -1,20 +1,22 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\auth;
 
-    class auth_factory implements core_factory {
+    use neoform;
+
+    class factory implements neoform\core\factory {
 
         public static function init(array $args) {
             if (! $args) {
                 try {
-                    $auth = new auth_model(core::http()->cookie(core::config()['auth']['cookie']));
-                    if ((new type_date)->getTimestamp() > $auth->expires_on->getTimestamp()) {
-                        entity::dao('auth')->delete($auth);
+                    $auth = new neoform\auth\model(neoform\core::http()->cookie(neoform\core::config()['auth']['cookie']));
+                    if ((new neoform\type\date)->getTimestamp() > $auth->expires_on->getTimestamp()) {
+                        neoform\entity::dao('auth')->delete($auth);
                         $auth->reset();
                     }
                     return $auth;
-                } catch (auth_exception $e) {
-                    return new auth_model(null, []);
+                } catch (neoform\auth\exception $e) {
+                    return new neoform\auth\model(null, []);
                 }
             }
         }

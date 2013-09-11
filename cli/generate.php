@@ -36,7 +36,7 @@
         case 'api':
         case 'lib':
         case 'model':
-            $class = 'neoform\\generate_' . $table_info->table_type() . '_' . $entity;
+            $class = '\\neoform\\generate\\' . $table_info->table_type() . "\\{$entity}";
             $code  = new $class($table_info, $options);
 
             if (in_array('--install', $options)) {
@@ -57,7 +57,7 @@
 
         case 'all':
             foreach (['definition', 'dao', 'model', 'collection', 'lib', 'api', 'exception'] as $entity) {
-                $class = 'neoform\\generate_' . $table_info->table_type() . '_' . $entity;
+                $class = '\\neoform\\generate\\' . $table_info->table_type() . "\\{$entity}";
                 $code  = new $class($table_info, $options);
 
                 if (in_array('--install', $options)) {

@@ -1,10 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\error;
 
-    use exception;
-
-    class error_exception extends exception {
+    class exception extends \exception {
 
         protected $description;
 

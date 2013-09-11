@@ -14,8 +14,8 @@
          * @return string
          */
         protected static function table($table) {
-            if (\strpos($table, '.') !== false) {
-                $table = \explode('.', $table);
+            if (strpos($table, '.') !== false) {
+                $table = explode('.', $table);
                 return "{$table[0]}`.`{$table[1]}";
             } else {
                 return $table;
@@ -49,14 +49,14 @@
             }
 
             $rs = core::sql($pool)->prepare("
-                SELECT " . \join(',', $select_fields) . "
+                SELECT " . join(',', $select_fields) . "
                 FROM `" . self::table($self::TABLE) . "`
-                " . (\count($where) ? "WHERE " . \join(" AND ", $where) : "") . "
+                " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
             ");
 
             $rs->execute($vals);
 
-            if (\count($select_fields) === 1) {
+            if (count($select_fields) === 1) {
                 return $rs->fetchAll(PDO::FETCH_COLUMN, 0);
             } else {
                 return $rs->fetchAll();
@@ -84,7 +84,7 @@
             }
 
             $query = "
-                SELECT " . \join(',', $quoted_select_fields) . ", ? `__k__`
+                SELECT " . join(',', $quoted_select_fields) . ", ? `__k__`
                 FROM `" . self::table($self::TABLE) . "`
             ";
 
@@ -103,24 +103,24 @@
                 }
                 $queries[] = "(
                     {$query}
-                    WHERE " . \join(' AND ', $where) . "
+                    WHERE " . join(' AND ', $where) . "
                 )";
             }
 
             $rs = core::sql($pool)->prepare(
-                \join(' UNION ALL ', $queries)
+                join(' UNION ALL ', $queries)
             );
             $rs->execute($vals);
 
-            if (\count($select_fields) === 1) {
-                $field = \reset($select_fields);
+            if (count($select_fields) === 1) {
+                $field = reset($select_fields);
                 foreach ($rs->fetchAll() as $row) {
                     $return[$row['__k__']][] = $row[$field];
                 }
             } else {
                 // If the selected field count is different than the requested fields, only return the requested fields
                 foreach ($rs->fetchAll() as $row) {
-                    $return[$row['__k__']][] = \array_intersect_key($row, \array_keys($select_fields));
+                    $return[$row['__k__']][] = array_intersect_key($row, array_keys($select_fields));
                 }
             }
 
@@ -183,14 +183,14 @@
             foreach ($order_by as $field => $sort_direction) {
                 $order[] = "`{$quoted_foreign_table}`.`{$field}` " . (entity_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
             }
-            $order_by = \join(', ', $order);
+            $order_by = join(', ', $order);
 
             $rs = core::sql($pool)->prepare("
                 SELECT `{$quoted_foreign_table}`.`{$foreign_pk}`
                 FROM `{$quoted_table}`
                 INNER JOIN `{$quoted_foreign_table}`
                 ON `{$quoted_foreign_table}`.`{$foreign_pk}` = `{$quoted_table}`.`{$local_field}`
-                " . (\count($where) ? "WHERE " . \join(" AND ", $where) : "") . "
+                " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
                 ORDER BY {$order_by}
                 {$limit} {$offset}
             ");
@@ -245,7 +245,7 @@
             foreach ($order_by as $field => $sort_direction) {
                 $order[] = "`{$quoted_foreign_table}`.`{$field}` " . (entity_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
             }
-            $order_by = \join(', ', $order);
+            $order_by = join(', ', $order);
 
             // QUERIES
             $query = "
@@ -269,14 +269,14 @@
                 }
                 $queries[] = "(
                     {$query}
-                    WHERE" . \join(" AND ", $where) . "
+                    WHERE" . join(" AND ", $where) . "
                     ORDER BY {$order_by}
                     {$limit} {$offset}
                 )";
             }
 
             $rs = core::sql($pool)->prepare(
-                \join(' UNION ALL ', $queries)
+                join(' UNION ALL ', $queries)
             );
             $rs->execute($vals);
 
@@ -314,7 +314,7 @@
             $rs = core::sql($pool)->prepare("
                 SELECT COUNT(0) `num`
                 FROM `" . self::table($self::TABLE) . "`
-                " . ($where ? " WHERE " . \join(" AND ", $where) : '') . "
+                " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
             ");
             $rs->execute($vals);
             return (int) $rs->fetch()['num'];
@@ -351,11 +351,11 @@
                 $queries[] = "(
                     SELECT COUNT(0) `num`, ? `k`
                     FROM `" . self::table($self::TABLE) . "`
-                    " . ($where ? " WHERE " . \join(" AND ", $where) : '') . "
+                    " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
                 )";
             }
 
-            $rs = core::sql($pool)->prepare(\join(' UNION ALL ', $queries));
+            $rs = core::sql($pool)->prepare(join(' UNION ALL ', $queries));
             $rs->execute($vals);
 
             foreach ($rs->fetchAll() as $row) {
@@ -385,12 +385,12 @@
             $insert = core::sql($pool)->prepare("
                 " . ($replace ? 'REPLACE' : 'INSERT') . " INTO
                 `" . self::table($self::TABLE) . "`
-                ( " . \join(', ', $insert_fields) . " )
+                ( " . join(', ', $insert_fields) . " )
                 VALUES
-                ( " . \join(',', \array_fill(0, \count($info), '?')) . " )
+                ( " . join(',', \array_fill(0, count($info), '?')) . " )
             ");
 
-            if (! $insert->execute(\array_values($info))) {
+            if (! $insert->execute(array_values($info))) {
                 $error = core::sql($pool)->errorInfo();
                 throw new entity_exception("Insert failed - {$error[0]}: {$error[2]}");
             }
@@ -408,9 +408,9 @@
          */
         public static function insert_multi(entity_link_dao $self, $pool, array $infos, $replace) {
             $insert_fields = [];
-            $info          = \current($infos);
+            $info          = current($infos);
             $sql           = core::sql($pool);
-            $multi         = \count($infos) > 1;
+            $multi         = count($infos) > 1;
 
 
             if ($multi) {
@@ -423,13 +423,13 @@
 
             $insert = $sql->prepare("
                 " . ($replace ? 'REPLACE' : 'INSERT') . " INTO `" . self::table($self::TABLE) . "`
-                ( " . \join(', ', $insert_fields) . " )
+                ( " . join(', ', $insert_fields) . " )
                 VALUES
-                ( " . \join(',', \array_fill(0, \count($info), '?')) . " )
+                ( " . join(',', \array_fill(0, count($info), '?')) . " )
             ");
 
             foreach ($infos as $info) {
-                if (! $insert->execute(\array_values($info))) {
+                if (! $insert->execute(array_values($info))) {
                     $error = $sql->errorInfo();
                     $sql->rollback();
                     throw new entity_exception("Insert multi failed - {$error[0]}: {$error[2]}");
@@ -473,8 +473,8 @@
 
             if (! core::sql($pool)->prepare("
                 UPDATE `" . self::table($self::TABLE) . "`
-                SET " . \join(", \n", $update_fields) . "
-                WHERE " . \join(" AND \n", $where_fields) . "
+                SET " . join(", \n", $update_fields) . "
+                WHERE " . join(" AND \n", $where_fields) . "
             ")->execute($vals)) {
                 $error = core::sql($pool)->errorInfo();
                 throw new entity_exception("Update failed - {$error[0]}: {$error[2]}");
@@ -505,7 +505,7 @@
 
             if (! core::sql($pool)->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
-                WHERE " . \join(" AND ", $where) . "
+                WHERE " . join(" AND ", $where) . "
             ")->execute($vals)) {
                 $error = core::sql($pool)->errorInfo();
                 throw new entity_exception("Delete failed - {$error[0]}: {$error[2]}");
@@ -535,12 +535,12 @@
                         $w[]    = "`{$field}` = ?";
                     }
                 }
-                $where[] = "(" . \join(" AND ", $w) . ")";
+                $where[] = "(" . join(" AND ", $w) . ")";
             }
 
             if (! core::sql($pool)->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
-                WHERE " . \join(" OR ", $where) . "
+                WHERE " . join(" OR ", $where) . "
             ")->execute($vals)) {
                 $error = core::sql($pool)->errorInfo();
                 throw new entity_exception("Delete multi failed - {$error[0]}: {$error[2]}");

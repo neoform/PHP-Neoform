@@ -111,7 +111,7 @@
             // iso2
             $input->iso2->cast('string')->optional()->length(1, 2)->callback(function($iso2) use ($region) {
                 $id_arr = entity::dao('region')->by_iso2($iso2->val());
-                if (\is_array($id_arr) && $id_arr && (int) \current($id_arr) !== $region->id) {
+                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $region->id) {
                     $iso2->errors('already in use');
                 }
             });

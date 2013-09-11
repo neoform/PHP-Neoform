@@ -1,23 +1,25 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\sql\parser;
+
+    use neoform;
 
     /**
      * An object representation of a field in an SQL table
      *
-     * @var string             $name
-     * @var string             $name_idless
-     * @var sql_parser_table   $table
-     * @var string             $type
-     * @var integer            $size
-     * @var sql_parser_field   $referenced_field
-     * @var sql_parser_field[] $referencing_fields
-     * @var string             $casting
-     * @var string             $casting_extended
-     * @var string             $bool_true_value
-     * @var array              $info
+     * @var string  $name
+     * @var string  $name_idless
+     * @var table   $table
+     * @var string  $type
+     * @var integer $size
+     * @var field   $referenced_field
+     * @var field[] $referencing_fields
+     * @var string  $casting
+     * @var string  $casting_extended
+     * @var string  $bool_true_value
+     * @var array   $info
      */
-    class sql_parser_field {
+    class field {
 
         protected $info;
         protected $table;
@@ -26,12 +28,12 @@
 
         /**
          * Expects array passed to it to contain:
-         *  string           name
-         *  sql_parser_table table
-         *  string           type
-         *  integer          size
-         *  sql_parser_field referenced_field
-         *  array            referencing_fields
+         *  string  name
+         *  table   table
+         *  string  type
+         *  integer size
+         *  field   referenced_field
+         *  array   referencing_fields
          *
          * @param array $info
          */
@@ -42,18 +44,18 @@
         /**
          * Set the parent table
          *
-         * @param sql_parser_table $table
+         * @param table $table
          */
-        public function _set_table(sql_parser_table $table) {
+        public function _set_table(table $table) {
             $this->table = $table;
         }
 
         /**
          * Set the field this field references (if there is a FK on it)
          *
-         * @param sql_parser_field $field
+         * @param field $field
          */
-        public function _set_referenced_field(sql_parser_field $field) {
+        public function _set_referenced_field(field $field) {
             $this->referenced_field = $field;
             $field->_add_referencing_field($this);
         }
@@ -62,9 +64,9 @@
          * Add to an array of fields that reference this one
          * This gets called by _set_referenced_field() implicitly.
          *
-         * @param sql_parser_field $field
+         * @param field $field
          */
-        public function _add_referencing_field(sql_parser_field $field) {
+        public function _add_referencing_field(field $field) {
             $this->referencing_fields[] = $field;
         }
 
@@ -75,10 +77,10 @@
 
                 // Get the name of the field without a "_id" suffix if it exists
                 case 'name_idless':
-                    if (\substr($this->info['name'], -3) === '_id') {
-                        return \substr($this->info['name'], 0, -3);
-                    } else if (\substr($this->info['name'], -2) === 'Id') { // covers camelCase DBs (yuck)
-                        return \substr($this->info['name'], 0, -2);
+                    if (substr($this->info['name'], -3) === '_id') {
+                        return substr($this->info['name'], 0, -3);
+                    } else if (substr($this->info['name'], -2) === 'Id') { // covers camelCase DBs (yuck)
+                        return substr($this->info['name'], 0, -2);
                     } else {
                         return $this->info['name'];
                     }
@@ -213,7 +215,7 @@
          * @return bool
          */
         public function is_unique() {
-            if (\count($this->table->primary_keys) === 1) {
+            if (count($this->table->primary_keys) === 1) {
                 foreach ($this->table->primary_keys as $key) {
                     if ($key->name === $this->info['name']) {
                         return true;
@@ -222,7 +224,7 @@
             }
 
             foreach ($this->table->unique_keys as $uk) {
-                if (\count($uk) === 1) {
+                if (count($uk) === 1) {
                     foreach ($uk as $key) {
                         if ($key->name === $this->info['name']) {
                             return true;
@@ -240,7 +242,7 @@
          * @return bool
          */
         public function is_referenced() {
-            return (bool) \count($this->referencing_fields);
+            return (bool) count($this->referencing_fields);
         }
 
         /**
@@ -267,7 +269,7 @@
          * @return bool
          */
         public function is_field_lookupable() {
-            return sql_parser::is_field_lookupable($this);
+            return neoform\sql\parser::is_field_lookupable($this);
         }
 
         /**
@@ -297,15 +299,15 @@
          * @return bool
          */
         public function is_single_key_index() {
-            if (\count($this->table->primary_keys) === 1) {
-                if (\current($pk)->name === $this->info['name']) {
+            if (count($this->table->primary_keys) === 1) {
+                if (current($pk)->name === $this->info['name']) {
                     return true;
                 }
             }
 
             foreach ($this->table->indexes as $index) {
-                if (\count($index) === 1) {
-                    if (\current($index)->name === $this->info['name']) {
+                if (count($index) === 1) {
+                    if (current($index)->name === $this->info['name']) {
                         return true;
                     }
                 }
@@ -321,7 +323,7 @@
          */
         public function is_link_index() {
             foreach ($this->table->all_unique_indexes as $uk) {
-                if (\count($uk) === 2) {
+                if (count($uk) === 2) {
                     $found = false;
                     foreach ($uk as $field) {
                         if ($field->name === $field->info['name']) {
@@ -331,7 +333,7 @@
 
                     if ($found) {
                         // check if they both link to another table
-                        $uk = \array_values($uk);
+                        $uk = array_values($uk);
                         if ($uk[0]->referenced_field && $uk[1]->referenced_field) {
                             return true;
                         }
@@ -346,11 +348,11 @@
          * If this field part of a link (2-key index where both keys reference other tables) index, return the other field
          * in the link.
          *
-         * @return sql_parse_field|null
+         * @return field|null
          */
         public function get_other_link_index_field() {
             foreach ($this->table->all_unique_indexes as $uk) {
-                if (\count($uk) === 2) {
+                if (count($uk) === 2) {
                     $found = false;
                     foreach ($uk as $field) {
                         if ($field->name === $field->info['name']) {
@@ -360,7 +362,7 @@
 
                     if ($found) {
                         // check if they both link to another table
-                        $uk = \array_values($uk);
+                        $uk = array_values($uk);
                         if ($uk[0]->referenced_field && $uk[1]->referenced_field) {
                             if ($uk[0] === $this) {
                                 return $uk[1];

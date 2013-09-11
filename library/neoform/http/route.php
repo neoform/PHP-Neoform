@@ -1,12 +1,14 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\http;
+
+    use neoform;
 
     /**
      * This class is used in the route.php config file, which contains all the site's routing information.
      * Each instance of a route is points to a single controller based on a url segment or pattern.
      */
-    class http_route {
+    class route {
 
         /**
          * Class name of the controller
@@ -66,9 +68,9 @@
             $this->action_name      = isset($info['action']) ? (string) $info['action'] : null;
             $this->secure           = isset($info['secure']) ? (bool) $info['secure'] : false;
             $this->resource         = isset($info['resources']) ? $info['resources'] : null;
-            $this->locale           = isset($info['locale']) && \is_array($info['locale']) && \count($info['locale']) ? $info['locale'] : null;
-            $this->children         = isset($info['children']) && \is_array($info['children']) && \count($info['children']) ? $info['children'] : null;
-            $this->segments         = isset($info['segments']) && \is_array($info['segments']) && \count($info['segments']) ? $info['segments'] : null;
+            $this->locale           = isset($info['locale']) && is_array($info['locale']) && $info['locale'] ? $info['locale'] : null;
+            $this->children         = isset($info['children']) && is_array($info['children']) && $info['children'] ? $info['children'] : null;
+            $this->segments         = isset($info['segments']) && is_array($info['segments']) && $info['segments'] ? $info['segments'] : null;
         }
 
         // Don't use these functions in the routes file, they're intended for the core http classes.
@@ -76,14 +78,14 @@
         /**
          * Get all routes as a compressed array
          *
-         * @param string     $locale
-         * @param http_route $route
-         * @param string     $route_url
-         * @param string     $locale_url
+         * @param string $locale
+         * @param route  $route
+         * @param string $route_url
+         * @param string $locale_url
          *
          * @return array
          */
-        public function _routes($locale, http_route $route, $route_url='', $locale_url='') {
+        public function _routes($locale, route $route, $route_url='', $locale_url='') {
 
             $routes = [];
 
@@ -91,13 +93,13 @@
                 foreach ($route->children as $struct => $subroute) {
 
                     if ($subroute->locale && isset($subroute->locale[$locale])) {
-                        $routes[$route_url . '/' . $struct] = $locale_url . '/' . $subroute->locale[$locale];
+                        $routes["{$route_url}/{$struct}"] = "{$locale_url}/{$subroute->locale[$locale]}";
 
                     } else {
-                        $routes[$route_url . '/' . $struct] = $locale_url . '/' . $struct;
+                        $routes["{$route_url}/{$struct}"] = "{$locale_url}/{$struct}";
                     }
 
-                    $routes += $subroute->_routes($locale, $subroute, $route_url . '/' . $struct, $routes[$route_url . '/' . $struct]);
+                    $routes += $subroute->_routes($locale, $subroute, "{$route_url}/{$struct}", $routes["{$route_url}/{$struct}"]);
                 }
             }
 
@@ -110,7 +112,7 @@
          * @param string $locale
          *
          * @return array
-         * @throws acl_resource_exception
+         * @throws neoform\acl\resource\exception
          */
         public function _controllers($locale) {
 
@@ -123,13 +125,13 @@
 
             $resource_ids = [];
             if ($this->resource) {
-                $resources = \is_array($this->resource) ? $this->resource : [ $this->resource ];
-                foreach (entity::dao('acl_resource')->by_name_multi($resources) as $resource_id) {
-                    if ($resource_id = (int) \current($resource_id)) {
+                $resources = is_array($this->resource) ? $this->resource : [ $this->resource ];
+                foreach (neoform\entity::dao('acl_resource')->by_name_multi($resources) as $resource_id) {
+                    if ($resource_id = (int) current($resource_id)) {
                         $resource_ids[$resource_id] = $resource_id;
                     } else {
-                        throw new acl_resource_exception(
-                            'Resource' . (\count($resources) > 1 ? 's' : '') . ' "' . \join(", ", $resources) . '" do' . (\count($resources) > 1 ? 'es' : '') . ' not exist'
+                        throw new neoform\acl\resource\exception(
+                            'Resource' . (count($resources) > 1 ? 's' : '') . ' "' . join(", ", $resources) . '" do' . (count($resources) > 1 ? 'es' : '') . ' not exist'
                         );
                     }
                 }
@@ -137,10 +139,10 @@
 
             return [
                 'secure'           => $this->secure,
-                'resource_ids'     => \array_values($resource_ids),
+                'resource_ids'     => array_values($resource_ids),
                 'controller_class' => $this->controller_class,
                 'action_name'      => $this->action_name,
-                'children'         => \count($children) ? $children : null,
+                'children'         => $children ? $children : null,
                 'segments'         => $this->segments,
             ];
         }

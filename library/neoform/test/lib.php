@@ -18,9 +18,9 @@
                 echo "Test: {$name}\n";
             }
 
-            $t = \microtime(1);
+            $t = microtime(1);
             $f();
-            $t = \microtime(1) - $t;
+            $t = microtime(1) - $t;
 
             if ($echo) {
                 echo "Seconds: {$t}\n";

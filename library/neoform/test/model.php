@@ -11,14 +11,14 @@
 
             echo "Tests:    " . $this->tests . "\n";
 
-            if (\count($this->failures)) {
-                echo 'Failures: ' . \count($this->failures) . "\n";
+            if (count($this->failures)) {
+                echo 'Failures: ' . count($this->failures) . "\n";
                 foreach ($this->failures as $failure) {
                     echo "Failed on line " . $failure . "\n";
                 }
                 echo self::color_text('TESTS CONTAINED FAILURES', 'red', true, true) . "\n";
             } else {
-                echo "Failures: " . \count($this->failures) . "\n";
+                echo "Failures: " . count($this->failures) . "\n";
                 echo self::color_text('ALL TESTS PASSED', 'green', true, true) . "\n";
             }
         }

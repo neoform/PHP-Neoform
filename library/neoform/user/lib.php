@@ -33,7 +33,7 @@
             $len = self::max_salt_length();
             for ($i=0; $i < $len; $i++) {
                 do {
-                    $ord = \mt_rand(32, 126);
+                    $ord = mt_rand(32, 126);
                 } while ($ord === 92); //backslashes are evil
                 $salt .= \chr($ord);
             }

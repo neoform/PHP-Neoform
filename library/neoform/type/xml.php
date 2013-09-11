@@ -1,8 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\type;
 
-    class type_xml {
+    class xml {
 
         public static function to_array($xml) {
             self::normalize_simple_xml(\simplexml_load_string($xml), $result);
@@ -16,7 +16,7 @@
                 $data = \get_object_vars($data);
             }
 
-            if (\is_array($data)) {
+            if (is_array($data)) {
                 foreach ($data as $key => $value) {
                     $res = null;
                     self::normalize_simple_xml($value, $res);

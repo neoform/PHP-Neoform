@@ -1,8 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\cache;
 
-    class cache_test extends test_model {
+    use neoform\cache\memory;
+    use neoform;
+
+    class test extends neoform\test\model {
 
         public function init() {
 
@@ -14,15 +17,15 @@
             $cache_engine_class      = "cache_{$cache_engine}_driver";
 
             // Delete cache
-            cache_lib::delete($cache_engine, $cache_engine_pool_write, "{$key_prefix}{$key}:111");
-            cache_lib::delete($cache_engine, $cache_engine_pool_write, "{$key_prefix}{$key}:222");
+            neoform\cache\lib::delete($cache_engine, $cache_engine_pool_write, "{$key_prefix}{$key}:111");
+            neoform\cache\lib::delete($cache_engine, $cache_engine_pool_write, "{$key_prefix}{$key}:222");
 
 
 
 
             // Pull data for the first time
             $pulled = false;
-            $result = cache_lib::single(
+            $result = neoform\cache\lib::single(
                 $cache_engine,
                 $cache_engine_pool_read,
                 $cache_engine_pool_write,
@@ -41,7 +44,7 @@
 
             // Pull the same data again, this time it should not get from origin, instead from cache
             $pulled = false;
-            $result = cache_lib::single(
+            $result = neoform\cache\lib::single(
                 $cache_engine,
                 $cache_engine_pool_read,
                 $cache_engine_pool_write,
@@ -55,17 +58,17 @@
             $this->assert_true(! $pulled, __LINE__);
             $this->assert_true($result === "Hey sexy pants", __LINE__);
 
-            $this->assert_true(cache_memory_dao::exists("{$key_prefix}{$key}:111"), __LINE__);
+            $this->assert_true(memory\dao::exists("{$key_prefix}{$key}:111"), __LINE__);
             $this->assert_true($cache_engine_class::exists($cache_engine_pool_read, "{$key_prefix}{$key}:111"), __LINE__);
 
 
 
 
             // Pull multi - only one record should get pulled from origin
-            cache_memory_dao::delete("{$key_prefix}{$key}:111"); //don't let it pull from memory
+            memory\dao::delete("{$key_prefix}{$key}:111"); //don't let it pull from memory
 
             $pulled = 0;
-            $result = cache_lib::multi(
+            $result = neoform\cache\lib::multi(
                 $cache_engine,
                 $cache_engine_pool_read,
                 $cache_engine_pool_write,
@@ -96,11 +99,11 @@
 
 
             // Pull multi - same keys, none should get pulled from origin
-            cache_memory_dao::delete("{$key_prefix}{$key}:111"); //don't let it pull from memory
-            cache_memory_dao::delete("{$key_prefix}{$key}:222"); //don't let it pull from memory
+            memory\dao::delete("{$key_prefix}{$key}:111"); //don't let it pull from memory
+            memory\dao::delete("{$key_prefix}{$key}:222"); //don't let it pull from memory
 
             $pulled = 0;
-            $result = cache_lib::multi(
+            $result = neoform\cache\lib::multi(
                 $cache_engine,
                 $cache_engine_pool_read,
                 $cache_engine_pool_write,
@@ -121,8 +124,8 @@
             );
 
 
-            $this->assert_true(cache_memory_dao::exists("{$key_prefix}{$key}:111"), __LINE__);
-            $this->assert_true(cache_memory_dao::exists("{$key_prefix}{$key}:222"), __LINE__);
+            $this->assert_true(memory\dao::exists("{$key_prefix}{$key}:111"), __LINE__);
+            $this->assert_true(memory\dao::exists("{$key_prefix}{$key}:222"), __LINE__);
             $this->assert_true($cache_engine_class::exists($cache_engine_pool_read, "{$key_prefix}{$key}:111"), __LINE__);
             $this->assert_true($cache_engine_class::exists($cache_engine_pool_read, "{$key_prefix}{$key}:222"), __LINE__);
 
@@ -132,8 +135,8 @@
             $this->assert_true($result[3] === "Hey sexy pants", __LINE__);
             $this->assert_true($result[9] === "Looking good, buuuudy", __LINE__);
 
-            $this->assert_true(cache_memory_dao::exists("{$key_prefix}{$key}:111"), __LINE__);
-            $this->assert_true(cache_memory_dao::exists("{$key_prefix}{$key}:222"), __LINE__);
+            $this->assert_true(memory\dao::exists("{$key_prefix}{$key}:111"), __LINE__);
+            $this->assert_true(memory\dao::exists("{$key_prefix}{$key}:222"), __LINE__);
             $this->assert_true($cache_engine_class::exists($cache_engine_pool_read, "{$key_prefix}{$key}:111"), __LINE__);
             $this->assert_true($cache_engine_class::exists($cache_engine_pool_read, "{$key_prefix}{$key}:222"), __LINE__);
 
@@ -144,13 +147,13 @@
             core::$cache_engine($cache_engine_pool_write)->delete("{$key_prefix}{$key}:111");
             core::$cache_engine($cache_engine_pool_write)->delete("{$key_prefix}{$key}:222");
 
-            $this->assert_true(cache_memory_dao::exists("{$key_prefix}{$key}:111"), __LINE__);
-            $this->assert_true(cache_memory_dao::exists("{$key_prefix}{$key}:222"), __LINE__);
+            $this->assert_true(memory\dao::exists("{$key_prefix}{$key}:111"), __LINE__);
+            $this->assert_true(memory\dao::exists("{$key_prefix}{$key}:222"), __LINE__);
             $this->assert_true(! $cache_engine_class::exists($cache_engine_pool_read, "{$key_prefix}{$key}:111"), __LINE__);
             $this->assert_true(! $cache_engine_class::exists($cache_engine_pool_read, "{$key_prefix}{$key}:222"), __LINE__);
 
             $pulled = 0;
-            $result = cache_lib::multi(
+            $result = neoform\cache\lib::multi(
                 $cache_engine,
                 $cache_engine_pool_read,
                 $cache_engine_pool_write,

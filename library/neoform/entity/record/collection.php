@@ -1,13 +1,14 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity\record;
 
-    use ArrayObject;
+    use neoform\entity\exception;
+    use neoform\entity;
 
     /**
      * Record Collection
      */
-    class entity_record_collection extends ArrayObject {
+    class collection extends \arrayobject {
 
         /**
          * @var array locally cached data
@@ -17,9 +18,9 @@
         /**
          * Construct
          *
-         * @param array              $pks       Primary keys
-         * @param array|entity_record_model $infos     Preloaded data array
-         * @param string|null        $map_field Assign collection keys based on this field (taken from the models)
+         * @param array       $pks       Primary keys
+         * @param array|model $infos     Preloaded data array
+         * @param string|null $map_field Assign collection keys based on this field (taken from the models)
          */
         public function __construct(array $pks=null, array $infos=null, $map_field=null) {
 
@@ -28,15 +29,15 @@
             }
 
             if ($infos !== null && $infos) {
-                $model = 'neoform\\' . static::ENTITY_NAME . '_model';
+                $model = '\\neoform\\' . static::ENTITY_NAME . '\\model';
                 foreach ($infos as $key => $info) {
                     try {
-                        if (\is_array($info)) {
+                        if (is_array($info)) {
                             $this[$map_field !== null ? $info[$map_field] : $key] = new $model(null, $info);
                         } else if ($info instanceof $model) {
                             $this[$map_field !== null ? $info->$map_field : $key] = $info;
                         }
-                    } catch (entity_exception $e) {
+                    } catch (exception $e) {
 
                     }
                 }
@@ -49,12 +50,12 @@
          * this is just a shortcut for new folder_collection(entity::dao('folder')->by_parent(5));
          *
          * @param string $name
-         * @param array $args
+         * @param array  $args
          *
-         * @return entity_record_collection
+         * @return collection
          */
         public static function __callstatic($name, array $args) {
-            $collection = 'neoform\\' . static::ENTITY_NAME . '_collection';
+            $collection = '\\neoform\\' . static::ENTITY_NAME . '\\collection';
             if ($name === 'all' || $name === 'records') {
                 return new $collection(null, \call_user_func_array([entity::dao(static::ENTITY_NAME), $name], $args));
             } else {
@@ -65,16 +66,16 @@
         /**
          * Add a model to the collection
          *
-         * @param array|entity_record_model $info
-         * @param string|null        $map_field Assign collection keys based on this field (taken from the models)
+         * @param array|model $info
+         * @param string|null $map_field Assign collection keys based on this field (taken from the models)
          *
-         * @return entity_record_collection $this
+         * @return collection $this
          */
         public function add($info, $map_field=null) {
-            $model = 'neoform\\' . static::ENTITY_NAME . '_model';
+            $model = '\\neoform\\' . static::ENTITY_NAME . '\\model';
             if ($info instanceof $model) {
                 $v = $info;
-            } else if (\is_array($info)) {
+            } else if (is_array($info)) {
                 $v = new $model(null, $info);
             } else {
                 $v = new $model($info);
@@ -97,7 +98,7 @@
          *
          * @param mixed $k Key
          *
-         * @return entity_record_collection $this
+         * @return collection $this
          */
         public function del($k) {
             unset($this[$k]);
@@ -114,7 +115,7 @@
          * @param string $field
          * @param bool   $ignore_null
          *
-         * @return entity_record_collection $this
+         * @return collection $this
          */
         public function remap($field, $ignore_null=false) {
             $new = [];
@@ -142,7 +143,7 @@
          * @return array
          */
         public function field($field, $key=null) {
-            if (! \array_key_exists($field, $this->_vars)) {
+            if (! array_key_exists($field, $this->_vars)) {
                 $arr = [];
                 foreach ($this as $k => $record) {
                     $arr[$key ? $record->$key : $k] = $record->$field;
@@ -173,10 +174,10 @@
          * @param callable|string $f
          * @param string          $order
          *
-         * @return entity_record_collection
+         * @return collection
          */
         public function sort($f, $order='asc') {
-            if (\is_callable($f)) {
+            if (is_callable($f)) {
                 $this->uasort(function ($a, $b) use ($f, $order) {
                     $a = $f($a);
                     $b = $f($b);
@@ -221,13 +222,13 @@
          * @param integer|null $offset      get PKs starting at this offset
          * @param integer|null $limit       max number of PKs to return
          *
-         * @return entity_record_collection
+         * @return collection
          */
         protected function _preload_one_to_many($_var_key, $entity, $by_function, array $order_by=null, $offset=null,
                                                 $limit=null) {
 
-            $collection_name  = "neoform\\{$entity}_collection";
-            $model_name       = "neoform\\{$entity}_model";
+            $collection_name  = "\\neoform\\{$entity}\\collection";
+            $model_name       = "\\neoform\\{$entity}\\model";
             $dao              = entity::dao($entity);
             $by_function     .= '_multi';
 
@@ -286,13 +287,13 @@
          * @param integer|null $offset         get PKs starting at this offset
          * @param integer|null $limit          max number of PKs to return
          *
-         * @return entity_record_collection
+         * @return collection
          */
         protected function _preload_many_to_many($_var_key, $entity, $by_function, $foreign_type,
                                                  array $order_by=null, $offset=null, $limit=null) {
 
             $by_function             .= '_multi';
-            $foreign_collection_name  = "neoform\\{$foreign_type}_collection";
+            $foreign_collection_name  = "\\neoform\\{$foreign_type}\\collection";
 
             // Get the ids for those
             $pks_groups = entity::dao($entity)->$by_function($this, $order_by, $offset, $limit);
@@ -339,12 +340,12 @@
          * @param string $entity   Name of the entity
          * @param string $field    Corresponding field for that entity
          *
-         * @return entity_record_collection
+         * @return collection
          */
         protected function _preload_one_to_one($_var_key, $entity, $field) {
 
-            $model_name      = "neoform\\{$entity}_model";
-            $collection_name = "neoform\\{$entity}_collection";
+            $model_name      = "\\neoform\\{$entity}\\model";
+            $collection_name = "\\neoform\\{$entity}\\collection";
 
             $pks = [];
             // we don't want to look up duplicates, just unique values
@@ -374,7 +375,7 @@
          * @param string $entity
          * @param string $foreign_field_name field name used to filter the dao count
          *
-         * @return entity_record_collection
+         * @return collection
          */
         protected function _preload_counts($_var_key, $entity, $foreign_field_name) {
 

@@ -1,8 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity;
 
-    class entity_config extends entity_config_defaults {
+    use neoform;
+
+    class config extends neoform\config\defaults {
 
         protected function defaults() {
             return [
@@ -51,7 +53,7 @@
         /**
          * Validate the config values
          *
-         * @throws config_exception
+         * @throws neoform\config\exception
          */
         public function validate() {
 

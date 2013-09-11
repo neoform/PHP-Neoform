@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\cli;
 
     /**
      * Model intended to be extended when creating a console application
      */
-    abstract class cli_model {
+    abstract class model {
 
         /**
          * Array of opts sent from the console
@@ -18,8 +18,6 @@
         /**
          * Abstract initialization function
          *
-         * @access public
-         * @abstract
          * @return void
          */
         abstract public function init();
@@ -29,15 +27,15 @@
          * @param array  $longopts
          */
         final public function __construct($shortopts='', $longopts=[]) {
-            if (! \defined('STDIN')) {
+            if (! defined('STDIN')) {
                 echo "This script must be run via CLI";
                 exit(2);
             }
 
             // no funny business
-            \umask(0);
+            umask(0);
 
-            $this->opts = \getopt($shortopts, $longopts);
+            $this->opts = getopt($shortopts, $longopts);
 
             $this->init();
         }
@@ -45,9 +43,9 @@
         /**
          * Get the value of an opt send from console
          *
-         * @access public
          * @param string $k
-         * @return void
+         *
+         * @return string|null
          */
         public function opt($k) {
             if (isset($this->opts[$k])) {
@@ -58,25 +56,23 @@
         /**
          * Is an opt set
          *
-         * @access public
          * @param string $k
+         *
          * @return boolean
          */
         public function opt_set($k) {
-            return \array_key_exists($k, $this->opts);
+            return array_key_exists($k, $this->opts);
         }
 
         /**
          * Get the current user running this script
          *
-         * @access public
-         * @static
          * @return string
          */
         public static function get_user() {
             static $user;
             if (! $user) {
-                $info = \posix_getpwuid(posix_geteuid());
+                $info = posix_getpwuid(posix_geteuid());
                 $user = isset($info['name']) ? $info['name'] : 'Unknown';
             }
             return $user;
@@ -85,12 +81,11 @@
         /**
          * Colorizes a string for output to a console
          *
-         * @access public
-         * @static
          * @param string $str
          * @param string $color
          * @param bool $bold (default: false)
          * @param bool $reverse (default: false)
+         *
          * @return string
          */
         public static function color_text($str, $color, $bold=false, $reverse=false) {
@@ -114,17 +109,18 @@
                 default:        $y = 0;
             }
 
-            return "\033[" . $x . ";" . $y . "m" . $str . "\033[0m";
+            return "\033[{$x};{$y}m{$str}\033[0m";
         }
 
         /**
          * Executes command, exits with error code if failed
          *
          * @param $command
+         *
          * @return array output of command
          */
         public static function run($command) {
-            \exec($command, $resp, $exit_code);
+            exec($command, $resp, $exit_code);
 
             if ((int) $exit_code !== 0) {
                 echo self::color_text("FAILED: ", 'red', true);
@@ -138,12 +134,10 @@
         /**
          * Read line from console
          *
-         * @access public
-         * @static
          * @return string
          */
         public static function readline() {
-            return \trim(\fgets(STDIN));
+            return trim(fgets(STDIN));
         }
 
         /**
@@ -154,9 +148,9 @@
          * @return string
          */
         public static function readpassword($prompt = 'Enter Password:') {
-            \system('stty -echo');
-            $password = \trim(\fgets(STDIN));
-            \system('stty echo');
+            system('stty -echo');
+            $password = trim(fgets(STDIN));
+            system('stty echo');
             // add a new line since the users CR didn't echo
             echo "\n";
             return $password;

@@ -1,8 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\auth;
 
-    class auth_config extends entity_config_defaults {
+    use neoform;
+
+    class config extends neoform\config\defaults {
 
         protected function defaults() {
             return [
@@ -40,11 +42,11 @@
         /**
          * Validate the config values
          *
-         * @throws config_exception
+         * @throws neoform\config\exception
          */
         public function validate() {
             if (empty($this->config['login_account_statuses'])) {
-                throw new config_exception('"login_account_statuses" must have at least one status');
+                throw new neoform\config\exception('"login_account_statuses" must have at least one status');
             }
         }
     }

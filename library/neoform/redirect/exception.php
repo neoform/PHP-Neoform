@@ -1,8 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\redirect;
 
-    class redirect_exception extends \exception {
+    class exception extends \exception {
 
         protected $url;
         protected $message;

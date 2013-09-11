@@ -1,21 +1,19 @@
 <?php
 
-    namespace neoform;
-
-    use ArrayObject;
+    namespace neoform\config;
 
     /**
      * Instance of a config
      */
-    class config_instance extends ArrayObject {
+    class instance extends \ArrayObject {
 
-        use core_instance;
+        use \neoform\core\instance;
 
         protected $vars;
 
         public function __construct($file=null) {
             $this->exchangeArray(
-                config_dao::get($file)
+                dao::get($file)
             );
         }
 
@@ -25,7 +23,7 @@
 
         public function overload(array $overload) {
             $this->exchangeArray(
-                \array_replace_recursive((array) $this, $overload)
+                array_replace_recursive((array) $this, $overload)
             );
         }
     }

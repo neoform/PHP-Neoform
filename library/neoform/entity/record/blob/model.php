@@ -1,11 +1,13 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity\record\blob;
+
+    use neoform\entity\record;
 
     /**
      * Record Blob Model
      */
-    class entity_record_blob_model extends entity_record_model {
+    class model extends record\model {
 
         public function __get($k) {
             if (isset($this->vars[$k])) {

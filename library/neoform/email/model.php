@@ -1,8 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\email;
 
-    class email_model {
+    use neoform;
+
+    class model {
 
         protected $_vars;
         protected $_email_path;
@@ -16,37 +18,37 @@
 
         public function __construct($template, $label='default', $default_sender_email=null, $default_sender_name=null) {
 
-            if ($default_sender_email && \trim($default_sender_email)) {
+            if ($default_sender_email && trim($default_sender_email)) {
                 if ($default_sender_name) {
                     $this->_default_sender = $default_sender_email;
                 } else {
-                    $this->_default_sender = '=?UTF-8?B?' . \base64_encode($default_sender_name) . '?= <' . $default_sender_email . '>';
+                    $this->_default_sender = '=?UTF-8?B?' . base64_encode($default_sender_name) . "?= <{$default_sender_email}>";
                 }
             } else {
-                $this->_default_sender = '=?UTF-8?B?' . \base64_encode(core::config()['core']['site_name']) . '?= <noreply@' . core::config()['http']['domain'] . '>';
+                $this->_default_sender = '=?UTF-8?B?' . base64_encode(neoform\core::config()['core']['site_name']) . '?= <noreply@' . neoform\core::config()['http']['domain'] . '>';
             }
 
             $this->_vars = [];
 
-            if (\strpos($template, '..') !== false) {
-                $template = \str_replace('..', '', $template);
+            if (strpos($template, '..') !== false) {
+                $template = str_replace('..', '', $template);
             }
 
-            if (\strpos($label, '..') !== false) {
-                $label = \str_replace('..', '', $label);
+            if (strpos($label, '..') !== false) {
+                $label = str_replace('..', '', $label);
             }
 
-            $this->_email_path = core::path('application') . '/emails/' . $label . '/' . $template . '.phtml';
+            $this->_email_path = neoform\core::path('application') . "/emails/{$label}/{$template}.phtml";
         }
 
         public function send($recipient, $type='plain', $sender=null, array $headers=[]) {
 
-            $this->_type = \strtolower($type);
+            $this->_type = strtolower($type);
 
             $headers['MIME-Version'] = '1.0';
-            $headers['Content-type'] = 'text/' . $this->_type . '; charset=utf-8';
+            $headers['Content-type'] = "text/{$this->_type}; charset=utf-8";
 
-            $headers['From'] = $sender && \trim($sender) ? $sender : $this->_default_sender;
+            $headers['From'] = $sender && trim($sender) ? $sender : $this->_default_sender;
 
             $this->_headers = '';
             foreach ($headers as $k => $v) {
@@ -54,48 +56,48 @@
             }
 
             if (! $this->_email_path) {
-                throw new exception_mail('Email path not set');
+                throw new exception('Email path not set');
             }
 
-            \ob_start();
+            ob_start();
 
             try {
                 require($this->_email_path);
             } catch (\exception $e) {
-                core::log($e->getMessage() . ' -- ' . $e->getFile() .' (' . $e->getLine() . ')');
+                neoform\core::log($e->getMessage() . ' -- ' . $e->getFile() .' (' . $e->getLine() . ')');
             }
 
             try {
-                $body = \ob_get_clean();
+                $body = ob_get_clean();
             } catch (\exception $e) {
-                throw new exception_mail('Email could not be sent');
+                throw new exception('Email could not be sent');
             }
 
             $subject = $html = $plain = '';
 
             // break appart the email template
-            if (\preg_match('`<email_head>(.*?)</email_head>`is', $body, $email_head)) {
-                $subject = \trim($email_head[1]);
+            if (preg_match('`<email_head>(.*?)</email_head>`is', $body, $email_head)) {
+                $subject = trim($email_head[1]);
             }
 
-            if (\preg_match('`<email_plain>(.*?)</email_plain>`is', $body, $email_plain)) {
-                $plain = \trim($email_plain[1]);
+            if (preg_match('`<email_plain>(.*?)</email_plain>`is', $body, $email_plain)) {
+                $plain = trim($email_plain[1]);
             }
 
-            if (\preg_match('`<email_html>(.*?)</email_html>`is', $body, $email_html)) {
-                $html = \trim($email_html[1]);
+            if (preg_match('`<email_html>(.*?)</email_html>`is', $body, $email_html)) {
+                $html = trim($email_html[1]);
             }
 
-            if ($this->_type == 'html' && \trim($html)) {
+            if ($this->_type == 'html' && trim($html)) {
                 $body = $html;
             } else if ($plain) {
                 $body = $plain; //wordwrap($plain, 70);
             }
 
             if ($this->_headers) {
-                return \mail($recipient, '=?UTF-8?B?' . \base64_encode($subject) . '?=', $body, $this->_headers);
+                return mail($recipient, '=?UTF-8?B?' . base64_encode($subject) . '?=', $body, $this->_headers);
             } else {
-                return \mail($recipient, '=?UTF-8?B?' . \base64_encode($subject) . '?=', $body);
+                return mail($recipient, '=?UTF-8?B?' . base64_encode($subject) . '?=', $body);
             }
         }
 

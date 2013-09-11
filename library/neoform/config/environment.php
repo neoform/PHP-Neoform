@@ -1,8 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\config;
 
-    abstract class config_environment {
+    abstract class environment {
 
         protected $config = [];
 
@@ -14,7 +14,7 @@
         public function to_array() {
             $arr = [];
             foreach ($this->config as $k => $config) {
-                if ($config instanceof entity_config_defaults) {
+                if ($config instanceof defaults) {
                     $config->validate();
                     $arr[$k] = $config->get_array();
                 }
@@ -28,7 +28,7 @@
          * @param array $config
          */
         protected function append_value(array $config) {
-            $this->config = \array_merge_recursive($this->config, $config);
+            $this->config = array_merge_recursive($this->config, $config);
         }
 
         /**
@@ -37,7 +37,7 @@
          * @param array $config
          */
         protected function merge(array $config) {
-            $this->config = \array_replace_recursive($this->config, $config);
+            $this->config = array_replace_recursive($this->config, $config);
         }
 
         /**
@@ -46,6 +46,6 @@
          * @param array $config
          */
         protected function crush(array $config) {
-            $this->config = \array_replace($this->config, $config);
+            $this->config = array_replace($this->config, $config);
         }
     }

@@ -1,7 +1,5 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\email;
 
-    use exception;
-
-    class email_exception extends exception {}
+    class exception extends \exception {}

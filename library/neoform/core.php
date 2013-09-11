@@ -2,30 +2,28 @@
 
     namespace neoform;
 
-    \date_default_timezone_set('America/Los_Angeles');
-
     /**
      * Register the start time of the app
      */
-    \define('APP_START_TIME', \microtime(1));
+    define('APP_START_TIME', microtime(1));
 
     /**
      * Turn on all error reporting
      */
-    \error_reporting(E_ALL);
+    error_reporting(E_ALL);
 
     /**
      * Be literal with file permissions
      */
-    \umask(0);
+    umask(0);
 
     /**
     * Register autoloader
     */
-    \spl_autoload_register(
+    spl_autoload_register(
         function($name) {
-            if (! include(\str_replace(['\\', '_'], DIRECTORY_SEPARATOR, $name) . '.' . EXT)) {
-                throw new \exception('Could not load file "' . $name . '"');
+            if (! include(str_replace(['\\', '_'], DIRECTORY_SEPARATOR, $name) . '.' . EXT)) {
+                throw new \exception("Could not load file \"{$name}\"");
             }
         },
         true,
@@ -64,9 +62,9 @@
          * @return object instance
          */
         public static function __callstatic($type, array $args) {
-            $name = \count($args) === 1 ? (string) \current($args) : '';
+            $name = count($args) === 1 ? (string) current($args) : '';
             if (! isset(self::$instances[$type][$name])) {
-                $class = "neoform\\{$type}_factory";
+                $class = "\\neoform\\{$type}\\factory";
                 self::$instances[$type][$name] = $class::init($args);
             }
             return self::$instances[$type][$name];
@@ -102,7 +100,7 @@
          * @return string
          */
         public static function context() {
-            return \php_sapi_name() === 'cli' ? 'cli' : 'web';
+            return php_sapi_name() === 'cli' ? 'cli' : 'web';
         }
 
         /**
@@ -172,42 +170,42 @@
         public static function init(array $params) {
 
             if (isset($params['extension'])) {
-                \define('EXT', $params['extension']);
+                define('EXT', $params['extension']);
             } else {
                 die("Config Error: PHP file extension not set. core::init([\"extension\" => [...] ]).\n");
             }
 
             // This file is always found in the neoform dir
-            self::$paths['library'] = \realpath(__DIR__ . '/..');
+            self::$paths['library'] = realpath(__DIR__ . '/..');
 
             if (! isset($params['environment']) || ! self::$environment = $params['environment']) {
                 die("Config Error: PHP file extension not set. core::init([\"environment\" => [...] [)\n");
             }
 
-            if (! isset($params['application']) || ! self::$paths['application'] = \realpath($params['application'])) {
+            if (! isset($params['application']) || ! self::$paths['application'] = realpath($params['application'])) {
                 die("Config Error: PHP file extension not set or is invalid. core::init([\"application\" => [...] ])\n");
             }
 
-            if (! isset($params['logs']) || ! self::$paths['logs'] = \realpath($params['logs'])) {
+            if (! isset($params['logs']) || ! self::$paths['logs'] = realpath($params['logs'])) {
                 die("Config Error: Log dir path not set or is invalid. core::init([\"logs\" => [...] ])\n");
             }
 
-            if (! isset($params['website']) || ! self::$paths['website'] = \realpath($params['website'])) {
+            if (! isset($params['website']) || ! self::$paths['website'] = realpath($params['website'])) {
                 die("Config Error: Web root path not set or is invalid. core::init([\"website\" => [...] ])\n");
             }
 
              //tell php where to find stuff
-            \set_include_path(
+            set_include_path(
                 self::$paths['application'] . // Application code/logic/views
                 PATH_SEPARATOR .
                 self::$paths['library'] // Library classes
             );
-            \define('WEB_ROOT', \getcwd() . '/'); // Store the current dir as being the web root
+            define('WEB_ROOT', getcwd() . '/'); // Store the current dir as being the web root
 
             // Uncaught exception handler
-            \set_exception_handler(function(\exception $e) {
+            set_exception_handler(function(\exception $e) {
 
-                error_lib::log($e);
+                error\lib::log($e);
 
                 switch ((string) core::context()) {
                     case 'web':
@@ -225,10 +223,10 @@
             });
 
             // PHP Error handler
-            \set_error_handler(function($err_number, $err_string, $err_file, $err_line) {
+            set_error_handler(function($err_number, $err_string, $err_file, $err_line) {
 
                 // Error was suppressed with the @-operator
-                if (! \error_reporting()) {
+                if (! error_reporting()) {
                     return false;
                 }
 
@@ -236,9 +234,9 @@
             });
 
             // Fatal error shutdown handler
-            \register_shutdown_function(function() {
+            register_shutdown_function(function() {
                 // Only grab error if there is one
-                if (($error = \error_get_last()) !== null) {
+                if (($error = error_get_last()) !== null) {
                     $message = isset($error['message']) ? $error['message'] : null;
                     $file    = isset($error['file']) ? $error['file'] : null;
                     $line    = isset($error['line']) ? $error['line'] : null;
@@ -256,7 +254,7 @@
 
                                 echo core::output()->send_headers()->body();
                             } else {
-                                \header('HTTP/1.1 500 Internal Server Error');
+                                header('HTTP/1.1 500 Internal Server Error');
                                 echo "An unexpected error occured\n";
                             }
                             die;
@@ -267,17 +265,17 @@
                 }
             });
 
-            \ini_set('log_errors', 1);
-            \ini_set('error_log', self::$paths['logs'] . '/errors.log');
-            \ini_set('log_errors_max_len', 0);
-            \ini_set('html_errors', 0);
-            \ini_set('display_errors', 'Off'); // do not display error(s) in browser - only affects non-fatal errors
-            \ini_set('display_startup_errors', 'Off');
+            ini_set('log_errors', 1);
+            ini_set('error_log', self::$paths['logs'] . '/errors.log');
+            ini_set('log_errors_max_len', 0);
+            ini_set('html_errors', 0);
+            ini_set('display_errors', 'Off'); // do not display error(s) in browser - only affects non-fatal errors
+            ini_set('display_startup_errors', 'Off');
 
             $config = core::config()['core'];
 
-            \mb_internal_encoding($config['encoding']);
-            \date_default_timezone_set($config['timezone']);
+            mb_internal_encoding($config['encoding']);
+            date_default_timezone_set($config['timezone']);
         }
 
         /**
@@ -288,8 +286,8 @@
          * @return null
          */
         public static function debug() {
-            $args = \func_get_args();
-            core::log(\count($args) === 1 ? \current($args) : $args);
+            $args = func_get_args();
+            core::log(count($args) === 1 ? current($args) : $args);
         }
 
         /**
@@ -306,30 +304,30 @@
             try {
                 $log_path = self::$paths['logs'] . '/';
 
-                if (\file_exists($log_path) && \is_writable($log_path)) {
-                    $file_name = \preg_replace('`[^A-Z0-9_\-\.]`isx', '', $file) . '.log';
+                if (file_exists($log_path) && is_writable($log_path)) {
+                    $file_name = preg_replace('`[^A-Z0-9_\-\.]`isx', '', $file) . '.log';
                     $log_path .= $file_name;
 
-                    if (! \is_string($msg)) {
-                        $msg = \print_r($msg, 1);
+                    if (! is_string($msg)) {
+                        $msg = print_r($msg, 1);
                     }
 
                     $dt = new \datetime;
 
                     if (self::is_loaded('http')) {
-                        $message = "\n" . $dt->format('Y-m-d H:i:s') . ' - ' . \strtoupper($level) . "\n" . core::http()->server('ip') . ' /' . core::http()->server('query') . "\n{$msg}\n";
+                        $message = "\n" . $dt->format('Y-m-d H:i:s') . ' - ' . strtoupper($level) . "\n" . core::http()->server('ip') . ' /' . core::http()->server('query') . "\n{$msg}\n";
                     } else {
-                        $message = "\n" . $dt->format('Y-m-d H:i:s') . ' - ' . \strtoupper($level) . "\n" . "\n{$msg}\n";
+                        $message = "\n" . $dt->format('Y-m-d H:i:s') . ' - ' . strtoupper($level) . "\n\n{$msg}\n";
                     }
 
-                    if (\file_put_contents($log_path, $message, FILE_APPEND) === false) {
-                        throw new \Exception('Failed to write into a file...');
+                    if (file_put_contents($log_path, $message, FILE_APPEND) === false) {
+                        throw new \exception('Failed to write into a file...');
                     }
 
                     return true;
                 }
-            } catch (\Exception $e) {
-                print_r($e);
+            } catch (\exception $e) {
+                // print_r($e);
                 // This only happens when we have an error within this function.
             }
 

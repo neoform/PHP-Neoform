@@ -1,21 +1,26 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity\record\driver;
+
+    use neoform\entity\record;
+    use neoform\entity;
+    use neoform\core;
+    use neoform;
 
     use PDO;
 
     /**
-     * Postgres entity_record_dao driver
+     * Postgres record\dao driver
      */
-    class entity_record_driver_pgsql implements entity_record_driver {
+    class pgsql implements record\driver {
 
         protected static $binding_conversions = [
-            entity_record_dao::TYPE_STRING  => PDO::PARAM_STR,
-            entity_record_dao::TYPE_INTEGER => PDO::PARAM_INT,
-            entity_record_dao::TYPE_BINARY  => PDO::PARAM_LOB,
-            entity_record_dao::TYPE_FLOAT   => PDO::PARAM_STR,
-            entity_record_dao::TYPE_DECIMAL => PDO::PARAM_STR,
-            entity_record_dao::TYPE_BOOL    => PDO::PARAM_BOOL,
+            record\dao::TYPE_STRING  => PDO::PARAM_STR,
+            record\dao::TYPE_INTEGER => PDO::PARAM_INT,
+            record\dao::TYPE_BINARY  => PDO::PARAM_LOB,
+            record\dao::TYPE_FLOAT   => PDO::PARAM_STR,
+            record\dao::TYPE_DECIMAL => PDO::PARAM_STR,
+            record\dao::TYPE_BOOL    => PDO::PARAM_BOOL,
         ];
 
         /**
@@ -26,8 +31,8 @@
          * @return string
          */
         protected static function table($table) {
-            if (\strpos($table, '.') !== false) {
-                $table = \explode('.', $table);
+            if (strpos($table, '.') !== false) {
+                $table = explode('.', $table);
                 return "{$table[0]}\".\"{$table[1]}";
             } else {
                 return $table;
@@ -37,13 +42,13 @@
         /**
          * Get full record by primary key
          *
-         * @param entity_record_dao $dao
+         * @param record\dao $dao
          * @param string            $pool which source engine pool to use
          * @param int|string|null   $pk
          *
          * @return mixed
          */
-        public static function record(entity_record_dao $dao, $pool, $pk) {
+        public static function record(record\dao $dao, $pool, $pk) {
 
             $info = core::sql($pool)->prepare("
                 SELECT *
@@ -55,7 +60,7 @@
             $info->execute();
 
             if ($info = $info->fetch()) {
-                sql_pdo::unbinary($info);
+                neoform\sql\pdo::unbinary($info);
                 return $info;
             }
         }
@@ -63,35 +68,35 @@
         /**
          * Get full records by primary key
          *
-         * @param entity_record_dao $dao
-         * @param string            $pool which source engine pool to use
-         * @param array             $pks
+         * @param record\dao $dao
+         * @param string     $pool which source engine pool to use
+         * @param array      $pks
          *
          * @return array
          */
-        public static function records(entity_record_dao $dao, $pool, array $pks) {
+        public static function records(record\dao $dao, $pool, array $pks) {
 
             $infos_rs = core::sql($pool)->prepare("
                 SELECT *
                 FROM \"" . self::table($dao::TABLE) . "\"
-                WHERE \"" . $dao::PRIMARY_KEY . "\" IN (" . \join(',', \array_fill(0, \count($pks), '?')) . ")
+                WHERE \"" . $dao::PRIMARY_KEY . "\" IN (" . join(',', \array_fill(0, count($pks), '?')) . ")
             ");
 
             $pdo_binding = self::$binding_conversions[$dao->field_binding($dao::PRIMARY_KEY)];
-            foreach (\array_values($pks) as $i => $pk) {
+            foreach (array_values($pks) as $i => $pk) {
                 $infos_rs->bindValue($i + 1, $pk, $pdo_binding);
             }
             $infos_rs->execute();
 
             $infos = [];
             foreach ($infos_rs->fetchAll() as $info) {
-                $k = \array_search($info[$dao::PRIMARY_KEY], $pks);
+                $k = array_search($info[$dao::PRIMARY_KEY], $pks);
                 if ($k !== false) {
                     $infos[$k] = $info;
                 }
             }
 
-            sql_pdo::unbinary($infos);
+            neoform\sql\pdo::unbinary($infos);
 
             return $infos;
         }
@@ -99,13 +104,13 @@
         /**
          * Get a count based on key inputs
          *
-         * @param entity_record_dao $dao
-         * @param string            $pool
-         * @param array             $fieldvals
+         * @param record\dao $dao
+         * @param string     $pool
+         * @param array      $fieldvals
          *
          * @return integer
          */
-        public static function count(entity_record_dao $dao, $pool, array $fieldvals=null) {
+        public static function count(record\dao $dao, $pool, array $fieldvals=null) {
             $where = [];
             $vals  = [];
 
@@ -123,7 +128,7 @@
             $rs = core::sql($pool)->prepare("
                 SELECT COUNT(*) \"num\"
                 FROM \"" . self::table($dao::TABLE) . "\"
-                " . ($where ? " WHERE " . \join(" AND ", $where) : '') . "
+                " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
             ");
             $rs->execute($vals);
             return (int) $rs->fetch()['num'];
@@ -132,13 +137,13 @@
         /**
          * Get multiple counts
          *
-         * @param entity_record_dao $self
-         * @param string            $pool
-         * @param array             $fieldvals_arr
+         * @param record\dao $self
+         * @param string     $pool
+         * @param array      $fieldvals_arr
          *
          * @return array
          */
-        public static function count_multi(entity_record_dao $self, $pool, array $fieldvals_arr) {
+        public static function count_multi(record\dao $self, $pool, array $fieldvals_arr) {
             $queries = [];
             $vals    = [];
             $counts  = [];
@@ -160,11 +165,11 @@
                 $queries[] = "(
                     SELECT COUNT(*) \"num\", ? k
                     FROM \"" . self::table($self::TABLE) . "\"
-                    " . ($where ? " WHERE " . \join(" AND ", $where) : '') . "
+                    " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
                 )";
             }
 
-            $rs = core::sql($pool)->prepare(\join(' UNION ALL ', $queries));
+            $rs = core::sql($pool)->prepare(join(' UNION ALL ', $queries));
             $rs->execute($vals);
 
             foreach ($rs->fetchAll() as $row) {
@@ -177,14 +182,14 @@
         /**
          * Get all records in the table
          *
-         * @param entity_record_dao $dao
-         * @param string            $pool which source engine pool to use
-         * @param int|string        $pk
-         * @param array             $fieldvals
+         * @param record\dao $dao
+         * @param string     $pool which source engine pool to use
+         * @param int|string $pk
+         * @param array      $fieldvals
          *
          * @return array
          */
-        public static function all(entity_record_dao $dao, $pool, $pk, array $fieldvals=null) {
+        public static function all(record\dao $dao, $pool, $pk, array $fieldvals=null) {
             $where = [];
             $vals  = [];
 
@@ -202,7 +207,7 @@
             $info = core::sql($pool)->prepare("
                 SELECT *
                 FROM \"" . self::table($dao::TABLE) . "\"
-                " . ($where ? " WHERE " . \join(" AND ", $where) : "") . "
+                " . ($where ? " WHERE " . join(" AND ", $where) : "") . "
                 ORDER BY \"{$pk}\" ASC
             ");
 
@@ -215,8 +220,8 @@
 
             $info->execute();
 
-            $infos = \array_column($info->fetchAll(), null, $pk);
-            sql_pdo::unbinary($infos);
+            $infos = array_column($info->fetchAll(), null, $pk);
+            neoform\sql\pdo::unbinary($infos);
 
             return $infos;
         }
@@ -224,14 +229,14 @@
         /**
          * Get record primary key by fields
          *
-         * @param entity_record_dao $dao
-         * @param string            $pool which source engine pool to use
-         * @param array             $fieldvals
-         * @param int|string        $pk
+         * @param record\dao $dao
+         * @param string     $pool which source engine pool to use
+         * @param array      $fieldvals
+         * @param int|string $pk
          *
          * @return array
          */
-        public static function by_fields(entity_record_dao $dao, $pool, array $fieldvals, $pk) {
+        public static function by_fields(record\dao $dao, $pool, array $fieldvals, $pk) {
             $where = [];
             $vals  = [];
 
@@ -249,7 +254,7 @@
             $rs = core::sql($pool)->prepare("
                 SELECT \"{$pk}\"
                 FROM \"" . self::table($dao::TABLE) . "\"
-                " . ($where ? " WHERE " . \join(" AND ", $where) : "") . "
+                " . ($where ? " WHERE " . join(" AND ", $where) : "") . "
             ");
 
             $bindings = $dao->field_bindings();
@@ -264,7 +269,7 @@
             $rs = $rs->fetchAll();
 
             $pks = $rs->fetchAll(PDO::FETCH_COLUMN, 0);
-            sql_pdo::unbinary($pks);
+            neoform\sql\pdo::unbinary($pks);
 
             return $pks;
         }
@@ -272,14 +277,14 @@
         /**
          * Get multiple record primary keys by fields
          *
-         * @param entity_record_dao $dao
-         * @param string            $pool which source engine pool to use
-         * @param array             $fieldvals_arr
-         * @param int|string        $pk
+         * @param record\dao $dao
+         * @param string     $pool which source engine pool to use
+         * @param array      $fieldvals_arr
+         * @param int|string $pk
          *
          * @return array
          */
-        public static function by_fields_multi(entity_record_dao $dao, $pool, array $fieldvals_arr, $pk) {
+        public static function by_fields_multi(record\dao $dao, $pool, array $fieldvals_arr, $pk) {
             $return  = [];
             $vals    = [];
             $queries = [];
@@ -303,12 +308,12 @@
                 }
                 $queries[] = "(
                     {$query}
-                    WHERE " . \join(" AND ", $where) . "
+                    WHERE " . join(" AND ", $where) . "
                 )";
             }
 
             $rs = core::sql($pool)->prepare(
-                \join(' UNION ALL ', $queries)
+                join(' UNION ALL ', $queries)
             );
 
             $rs->execute($vals);
@@ -317,7 +322,7 @@
                 $return[$row['__k__']][] = $row[$pk];
             }
 
-            sql_pdo::unbinary($return);
+            neoform\sql\pdo::unbinary($return);
 
             return $return;
         }
@@ -325,17 +330,17 @@
         /**
          * Get a set of PKs based on params, in a given order and offset/limit
          *
-         * @param entity_record_dao $dao
-         * @param string            $pool
-         * @param array             $fieldvals
-         * @param mixed             $pk
-         * @param array             $order_by
-         * @param integer|null      $offset
-         * @param integer           $limit
+         * @param record\dao   $dao
+         * @param string       $pool
+         * @param array        $fieldvals
+         * @param mixed        $pk
+         * @param array        $order_by
+         * @param integer|null $offset
+         * @param integer      $limit
          *
          * @return mixed
          */
-        public static function by_fields_offset(entity_record_dao $dao, $pool, array $fieldvals, $pk, array $order_by, $offset, $limit) {
+        public static function by_fields_offset(record\dao $dao, $pool, array $fieldvals, $pk, array $order_by, $offset, $limit) {
             $where = [];
             $vals  = [];
 
@@ -366,14 +371,14 @@
 
             $order = [];
             foreach ($order_by as $field => $sort_direction) {
-                $order[] = "\"{$field}\" " . (entity_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
+                $order[] = "\"{$field}\" " . (entity\dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
             }
-            $order_by = \join(', ', $order);
+            $order_by = join(', ', $order);
 
             $rs = core::sql($pool)->prepare("
                 SELECT \"{$pk}\"
                 FROM \"" . self::table($dao::TABLE) . "\"
-                " . ($where ? " WHERE " . \join(" AND ", $where) : '') . "
+                " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
                 ORDER BY {$order_by}
                 {$limit} {$offset}
             ");
@@ -385,17 +390,17 @@
         /**
          * Get multiple sets of PKs based on params, in a given order and offset/limit
          *
-         * @param entity_record_dao $dao
-         * @param string            $pool
-         * @param array             $fieldvals_arr
-         * @param mixed             $pk
-         * @param array             $order_by
-         * @param integer|null      $offset
-         * @param integer           $limit
+         * @param record\dao   $dao
+         * @param string       $pool
+         * @param array        $fieldvals_arr
+         * @param mixed        $pk
+         * @param array        $order_by
+         * @param integer|null $offset
+         * @param integer      $limit
          *
          * @return array
          */
-        public static function by_fields_offset_multi(entity_record_dao $dao, $pool, array $fieldvals_arr, $pk, array $order_by, $offset, $limit) {
+        public static function by_fields_offset_multi(record\dao $dao, $pool, array $fieldvals_arr, $pk, array $order_by, $offset, $limit) {
             $return  = [];
             $vals    = [];
             $queries = [];
@@ -408,9 +413,9 @@
 
             $order = [];
             foreach ($order_by as $field => $sort_direction) {
-                $order[] = "\"{$field}\" " . (entity_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
+                $order[] = "\"{$field}\" " . (entity\dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
             }
-            $order_by = \join(', ', $order);
+            $order_by = join(', ', $order);
 
             $query = "
                 SELECT \"{$pk}\", ? \"__k__\"
@@ -433,14 +438,14 @@
 
                 $queries[] = "(
                     {$query}
-                    WHERE " . \join(" AND ", $where) . "
+                    WHERE " . join(" AND ", $where) . "
                     ORDER BY {$order_by}
                     {$limit} {$offset}
                 )";
             }
 
             $rs = core::sql($pool)->prepare(
-                \join(' UNION ALL ', $queries)
+                join(' UNION ALL ', $queries)
             );
 
             $rs->execute($vals);
@@ -455,31 +460,31 @@
         /**
          * Insert record
          *
-         * @param entity_record_dao $dao
-         * @param string            $pool which source engine pool to use
-         * @param array             $info
-         * @param bool              $autoincrement
-         * @param bool              $replace
+         * @param record\dao $dao
+         * @param string     $pool which source engine pool to use
+         * @param array      $info
+         * @param bool       $autoincrement
+         * @param bool       $replace
          *
          * @return array
-         * @throws entity_exception
+         * @throws entity\exception
          */
-        public static function insert(entity_record_dao $dao, $pool, array $info, $autoincrement, $replace) {
+        public static function insert(record\dao $dao, $pool, array $info, $autoincrement, $replace) {
 
             if ($replace) {
-                throw new entity_exception('PostgreSQL does not support REPLACE INTO.');
+                throw new entity\exception('PostgreSQL does not support REPLACE INTO.');
             }
 
             $insert_fields = [];
-            foreach (\array_keys($info) as $key) {
+            foreach (array_keys($info) as $key) {
                 $insert_fields[] = "\"{$key}\"";
             }
 
             $insert = core::sql($pool)->prepare("
                 INSERT INTO \"" . self::table($dao::TABLE) . "\"
-                ( " . \join(', ', $insert_fields) . " )
+                ( " . join(', ', $insert_fields) . " )
                 VALUES
-                ( " . \join(',', \array_fill(0, \count($insert_fields), '?')) . " )
+                ( " . join(',', \array_fill(0, count($insert_fields), '?')) . " )
                 " . ($autoincrement ? "RETURNING \"". $dao::PRIMARY_KEY . "\"" : '') . "
             ");
 
@@ -493,7 +498,7 @@
 
             if (! $insert->execute()) {
                 $error = core::sql($pool)->errorInfo();
-                throw new \entity_exception("Insert failed - {$error[0]}: {$error[2]}");
+                throw new entity\exception("Insert failed - {$error[0]}: {$error[2]}");
             }
 
             if ($autoincrement) {
@@ -506,26 +511,26 @@
         /**
          * Insert multiple records
          *
-         * @param entity_record_dao $dao
-         * @param string            $pool which source engine pool to use
-         * @param array             $infos
-         * @param bool              $keys_match
-         * @param bool              $autoincrement
-         * @param bool              $replace
+         * @param record\dao $dao
+         * @param string     $pool which source engine pool to use
+         * @param array      $infos
+         * @param bool       $keys_match
+         * @param bool       $autoincrement
+         * @param bool       $replace
          *
          * @return array
-         * @throws entity_exception
+         * @throws entity\exception
          */
-        public static function insert_multi(entity_record_dao $dao, $pool, array $infos, $keys_match, $autoincrement, $replace) {
+        public static function insert_multi(record\dao $dao, $pool, array $infos, $keys_match, $autoincrement, $replace) {
 
             if ($replace) {
-                throw new entity_exception('PostgreSQL does not support REPLACE INTO.');
+                throw new entity\exception('PostgreSQL does not support REPLACE INTO.');
             }
 
             if ($keys_match) {
                 $insert_fields = [];
 
-                foreach (\array_keys(\reset($infos)) as $k) {
+                foreach (array_keys(reset($infos)) as $k) {
                     $insert_fields[] = "\"{$k}\"";
                 }
 
@@ -538,9 +543,9 @@
 
                     $insert = $sql->prepare("
                         INSERT INTO \"" . self::table($dao::TABLE) . "\"
-                        ( " . \join(', ', $insert_fields) . " )
+                        ( " . join(', ', $insert_fields) . " )
                         VALUES
-                        ( " . \join(',', \array_fill(0, \count($insert_fields), '?')) . " )
+                        ( " . join(',', \array_fill(0, count($insert_fields), '?')) . " )
                         RETURNING \"{$pk}\"
                     ");
 
@@ -557,7 +562,7 @@
                         if (! $insert->execute()) {
                             $error = $sql->errorInfo();
                             $sql->rollback();
-                            throw new entity_exception("Inserts failed - {$error[0]}: {$error[2]}");
+                            throw new entity\exception("Inserts failed - {$error[0]}: {$error[2]}");
                         }
 
                         if ($autoincrement) {
@@ -567,11 +572,11 @@
 
                     if (! $sql->commit()) {
                         $error = $sql->errorInfo();
-                        throw new entity_exception("Inserts failed - {$error[0]}: {$error[2]}");
+                        throw new entity\exception("Inserts failed - {$error[0]}: {$error[2]}");
                     }
                 } else {
                     // this might explode if $keys_match was a lie
-                    $insert_vals = new \splFixedArray(count($insert_fields) * \count($infos));
+                    $insert_vals = new \splFixedArray(count($insert_fields) * count($infos));
                     foreach ($infos as $info) {
                         foreach ($info as $v) {
                             $insert_vals[] = $v;
@@ -582,7 +587,7 @@
                         INSERT INTO \"" . self::table($dao::TABLE) . "\"
                         ( " . \implode(', ', $insert_fields) . " )
                         VALUES
-                        " . \join(', ', \array_fill(0, \count($infos), '( ' . \join(',', \array_fill(0, \count($insert_fields), '?')) . ')')) . "
+                        " . join(', ', \array_fill(0, count($infos), '( ' . join(',', \array_fill(0, count($insert_fields), '?')) . ')')) . "
                     ");
 
                     $bindings = $dao->field_bindings();
@@ -595,7 +600,7 @@
 
                     if (! $inserts->execute()) {
                         $error = core::sql($pool)->errorInfo();
-                        throw new entity_exception("Inserts failed - {$error[0]}: {$error[2]}");
+                        throw new entity\exception("Inserts failed - {$error[0]}: {$error[2]}");
                     }
                 }
             } else {
@@ -609,15 +614,15 @@
                 foreach ($infos as $info) {
                     $insert_fields = [];
 
-                    foreach (\array_keys($info) as $key) {
+                    foreach (array_keys($info) as $key) {
                         $insert_fields[] = "\"$key\"";
                     }
 
                     $insert = $sql->prepare("
                         INSERT INTO \"{$table}\"
-                        ( " . \join(', ', $insert_fields) . " )
+                        ( " . join(', ', $insert_fields) . " )
                         VALUES
-                        ( " . \join(',', \array_fill(0, \count($info), '?')) . " )
+                        ( " . join(',', \array_fill(0, count($info), '?')) . " )
                         " . ($autoincrement ? "RETURNING \"". $dao::PRIMARY_KEY . "\"" : '') . "
                     ");
 
@@ -630,7 +635,7 @@
                     if (! $insert->execute()) {
                         $error = $sql->errorInfo();
                         $sql->rollback();
-                        throw new entity_exception("Inserts failed - {$error[0]}: {$error[2]}");
+                        throw new entity\exception("Inserts failed - {$error[0]}: {$error[2]}");
                     }
 
                     if ($autoincrement) {
@@ -640,7 +645,7 @@
 
                 if (! $sql->commit()) {
                     $error = $sql->errorInfo();
-                    throw new entity_exception("Inserts failed - {$error[0]}: {$error[2]}");
+                    throw new entity\exception("Inserts failed - {$error[0]}: {$error[2]}");
                 }
             }
 
@@ -650,17 +655,17 @@
         /**
          * Update a record
          *
-         * @param entity_record_dao   $dao
-         * @param string              $pool which source engine pool to use
-         * @param int|string          $pk
-         * @param entity_record_model $model
-         * @param array               $info
+         * @param record\dao   $dao
+         * @param string       $pool which source engine pool to use
+         * @param int|string   $pk
+         * @param record\model $model
+         * @param array        $info
          *
-         * @throws entity_exception
+         * @throws entity\exception
          */
-        public static function update(entity_record_dao $dao, $pool, $pk, entity_record_model $model, array $info) {
+        public static function update(record\dao $dao, $pool, $pk, record\model $model, array $info) {
             $update_fields = [];
-            foreach (\array_keys($info) as $key) {
+            foreach (array_keys($info) as $key) {
                 $update_fields[] = "\"{$key}\" = :{$key}";
             }
             $update = core::sql($pool)->prepare("
@@ -680,21 +685,21 @@
 
             if (! $update->execute()) {
                 $error = core::sql($pool)->errorInfo();
-                throw new entity_exception("Update failed - {$error[0]}: {$error[2]}");
+                throw new entity\exception("Update failed - {$error[0]}: {$error[2]}");
             }
         }
 
         /**
          * Delete a record
          *
-         * @param entity_record_dao   $dao
-         * @param string              $pool which source engine pool to use
-         * @param int|string          $pk
-         * @param entity_record_model $model
+         * @param record\dao   $dao
+         * @param string       $pool which source engine pool to use
+         * @param int|string   $pk
+         * @param record\model $model
          *
-         * @throws entity_exception
+         * @throws entity\exception
          */
-        public static function delete(entity_record_dao $dao, $pool, $pk, entity_record_model $model) {
+        public static function delete(record\dao $dao, $pool, $pk, record\model $model) {
             $delete = core::sql($pool)->prepare("
                 DELETE FROM \"" . self::table($dao::TABLE) . "\"
                 WHERE \"{$pk}\" = ?
@@ -702,25 +707,25 @@
             $delete->bindValue(1, $model->$pk, self::$binding_conversions[$dao->field_binding($dao::PRIMARY_KEY)]);
             if (! $delete->execute()) {
                 $error = core::sql($pool)->errorInfo();
-                throw new entity_exception("Delete failed - {$error[0]}: {$error[2]}");
+                throw new entity\exception("Delete failed - {$error[0]}: {$error[2]}");
             }
         }
 
         /**
          * Delete multiple records
          *
-         * @param entity_record_dao        $dao
-         * @param string                   $pool which source engine pool to use
-         * @param int|string               $pk
-         * @param entity_record_collection $collection
+         * @param record\dao        $dao
+         * @param string            $pool which source engine pool to use
+         * @param int|string        $pk
+         * @param record\collection $collection
          *
-         * @throws entity_exception
+         * @throws entity\exception
          */
-        public static function delete_multi(entity_record_dao $dao, $pool, $pk, entity_record_collection $collection) {
+        public static function delete_multi(record\dao $dao, $pool, $pk, record\collection $collection) {
             $pks = $collection->field($pk);
             $delete = core::sql($pool)->prepare("
                 DELETE FROM \"" . self::table($dao::TABLE) . "\"
-                WHERE \"{$pk}\" IN (" . \join(',', \array_fill(0, \count($collection), '?')) . ")
+                WHERE \"{$pk}\" IN (" . join(',', \array_fill(0, count($collection), '?')) . ")
             ");
 
             $pdo_binding = self::$binding_conversions[$dao->field_binding($dao::PRIMARY_KEY)];
@@ -730,7 +735,7 @@
             }
             if (! $delete->execute()) {
                 $error = core::sql($pool)->errorInfo();
-                throw new entity_exception("Deletes failed - {$error[0]}: {$error[2]}");
+                throw new entity\exception("Deletes failed - {$error[0]}: {$error[2]}");
             }
         }
     }

@@ -1,10 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity\record;
 
-    use arrayaccess;
+    use neoform\entity\exception;
+    use neoform;
 
-    abstract class entity_record_model implements arrayaccess {
+    abstract class model implements \arrayaccess {
 
         /**
          * @var array of values representing the entity
@@ -19,7 +20,7 @@
         /**
          * @param string|integer|null  $pk   Primary key of the entity
          * @param array                $info Manually load model with entity data
-         * @throws entity_exception
+         * @throws exception
          */
         public function __construct($pk=null, array $info=null) {
 
@@ -33,7 +34,7 @@
                 return;
             }
 
-            $exception = 'neoform\\' . static::ENTITY_NAME . '_exception';
+            $exception = '\\neoform\\' . static::ENTITY_NAME . '\\exception';
             throw new $exception('That ' . static::NAME . ' does not exist');
         }
 
@@ -42,10 +43,10 @@
          *
          * @param $k
          * @param $v
-         * @throws entity_exception
+         * @throws exception
          */
         final public function __set($k, $v) {
-            $exception = 'neoform\\' . static::ENTITY_NAME . '_exception';
+            $exception = '\\neoform\\' . static::ENTITY_NAME . '\\exception';
             throw new $exception('This is not an active record. Use the _update() function instead.');
         }
 
@@ -77,7 +78,7 @@
          */
         public function reload() {
             $this->_vars = [];
-            $dao         = 'neoform\\' . static::ENTITY_NAME . '_dao';
+            $dao         = '\\neoform\\' . static::ENTITY_NAME . '\\dao';
             $pk_name     = $dao::PRIMARY_KEY;
             $this->__construct($this->$pk_name);
         }
@@ -90,11 +91,11 @@
          * @param string $name
          * @param array $args
          *
-         * @return entity_record_model
+         * @return model
          */
         public static function __callstatic($name, array $args) {
-            $model = 'neoform\\' . static::ENTITY_NAME . '_model';
-            return new $model(\current(
+            $model = '\\neoform\\' . static::ENTITY_NAME . '\\model';
+            return new $model(current(
                 \call_user_func_array([entity::dao(static::ENTITY_NAME), $name], $args)
             ));
         }
@@ -109,8 +110,8 @@
          */
         final public static function _limit_var_key($name, array $order_by=null, $limit=null, $offset=null) {
             if ($order_by) {
-                \ksort($order_by);
-                return "{$name}:{$offset}:{$limit}:" . \json_encode($order_by); // @todo what if there are binary values...? :(
+                ksort($order_by);
+                return "{$name}:{$offset}:{$limit}:" . json_encode($order_by); // @todo what if there are binary values...? :(
             } else {
                 return $name;
             }
@@ -124,8 +125,8 @@
          */
         final public static function _count_var_key($name, array $fieldvals=null) {
             if ($fieldvals) {
-                \ksort($fieldvals);
-                return "{$name}:" . \json_encode($fieldvals); // @todo what if there are binary values...? :(
+                ksort($fieldvals);
+                return "{$name}:" . json_encode($fieldvals); // @todo what if there are binary values...? :(
             } else {
                 return $name;
             }
@@ -151,7 +152,7 @@
          */
         public function export(array $fields=null) {
             if ($fields) {
-                return \array_intersect_key($this->vars, \array_flip($fields));
+                return array_intersect_key($this->vars, array_flip($fields));
             } else {
                 return $this->vars;
             }
@@ -165,18 +166,18 @@
          * @param string         $model_name Name of model being loaded
          * @param mixed          $default    If model does not exist, store this value instead
          *
-         * @return entity_record_model|mixed
+         * @return model|mixed
          */
         final protected function _model($key, $pk, $model_name, $default=null) {
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 try {
                     if ($pk !== null) {
-                        $model_name = 'neoform\\' . $model_name;
+                        $model_name = "\\neoform\\{$model_name}";
                         $this->_vars[$key] = new $model_name($pk);
                     } else {
                         $this->_vars[$key] = $default;
                     }
-                } catch (entity_exception $e) {
+                } catch (exception $e) {
                     $this->_vars[$key] = $default;
                 }
             }
@@ -201,7 +202,7 @@
          * @throws
          */
         public function offsetSet($k, $v) {
-            $exception = 'neoform\\' . static::ENTITY_NAME . '_exception';
+            $exception = '\\neoform\\' . static::ENTITY_NAME . '\\exception';
             throw new $exception('This is not an active record. Use the _update() function instead.');
         }
 
@@ -221,10 +222,10 @@
          *
          * @param string $k
          *
-         * @throws entity_exception
+         * @throws exception
          */
         public function offsetUnset($k) {
-            $exception = 'neoform\\' . static::ENTITY_NAME . '_exception';
+            $exception = '\\neoform\\' . static::ENTITY_NAME . '\\exception';
             throw new $exception('This is not an active record. You cannot unset values in this way.');
         }
 

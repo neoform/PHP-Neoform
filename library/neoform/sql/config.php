@@ -1,8 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\sql;
 
-    class sql_config extends entity_config_defaults {
+    use neoform;
+
+    class config extends neoform\config\defaults {
 
         protected function defaults() {
             return [
@@ -21,20 +23,20 @@
         /**
          * Validate the config values
          *
-         * @throws config_exception
+         * @throws neoform\config\exception
          */
         public function validate() {
 
             if (empty($this->config['default_pool_read'])) {
-                throw new config_exception('"default_pool_read" must be set');
+                throw new neoform\config\exception('"default_pool_read" must be set');
             }
 
             if (empty($this->config['default_pool_write'])) {
-                throw new config_exception('"default_pool_write" must be set');
+                throw new neoform\config\exception('"default_pool_write" must be set');
             }
 
-            if (empty($this->config['pools']) || ! \is_array($this->config['pools']) || ! \count($this->config['pools'])) {
-                throw new config_exception('"pools" must contain at least one server');
+            if (empty($this->config['pools']) || ! is_array($this->config['pools']) || ! count($this->config['pools'])) {
+                throw new neoform\config\exception('"pools" must contain at least one server');
             }
         }
     }

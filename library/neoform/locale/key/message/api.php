@@ -14,7 +14,7 @@
 
                 try {
                     $message = new locale_key_message_model(
-                        \current(entity::dao('locale_key_message')->by_locale_key(
+                        current(entity::dao('locale_key_message')->by_locale_key(
                             $input->locale->val(),
                             $input->key_id->val()
                         ))

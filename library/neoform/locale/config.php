@@ -1,8 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\locale;
 
-    class locale_config extends entity_config_defaults {
+    use neoform;
+
+    class config extends neoform\config\defaults {
 
         protected function defaults() {
             return [
@@ -27,30 +29,30 @@
         /**
          * Validate the config values
          *
-         * @throws config_exception
+         * @throws neoform\config\exception
          */
         public function validate() {
 
             if ($this->config['active']) {
 
                 if (empty($this->config['default'])) {
-                    throw new config_exception('"default" must be set');
+                    throw new neoform\config\exception('"default" must be set');
                 }
 
                 if (empty($this->config['allowed'])) {
-                    throw new config_exception('"allowed" must contain at least one locale');
+                    throw new neoform\config\exception('"allowed" must contain at least one locale');
                 }
 
                 if (empty($this->config['cache_engine'])) {
-                    throw new config_exception('"cache_engine" must be set');
+                    throw new neoform\config\exception('"cache_engine" must be set');
                 }
 
                 if (empty($this->config['cache_engine_write'])) {
-                    throw new config_exception('"cache_engine_write" must be set');
+                    throw new neoform\config\exception('"cache_engine_write" must be set');
                 }
 
                 if (empty($this->config['cache_engine_read'])) {
-                    throw new config_exception('"cache_engine_read" must be set');
+                    throw new neoform\config\exception('"cache_engine_read" must be set');
                 }
             }
         }

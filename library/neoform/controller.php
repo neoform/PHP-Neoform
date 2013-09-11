@@ -25,7 +25,7 @@
             core::locale()->set_namespace('main');
             core::output()->http_status_code(403);
 
-            $view             = new render_view;
+            $view             = new render\view;
             $view->meta_title = core::locale()->translate('Access Denied');
             $view->pre_header = core::locale()->translate('403: Forbidden');
             $view->header     = core::locale()->translate('Access Denied');
@@ -41,7 +41,7 @@
             core::locale()->set_namespace('main');
             core::output()->http_status_code(404);
 
-            $view             = new render_view;
+            $view             = new render\view;
             $view->meta_title = core::locale()->translate('Page Not Found');
             $view->pre_header = core::locale()->translate('Page Not Found');
             $view->header     = core::locale()->translate('404: Page Not Found');
@@ -58,7 +58,7 @@
             core::locale()->set_namespace('main');
             core::output()->http_status_code(500);
 
-            $view             = new render_view;
+            $view             = new render\view;
             $view->meta_title = core::locale()->translate('Server Error');
             $view->pre_header = core::locale()->translate('Server Error');
             $view->header     = core::locale()->translate('500: Server Error');

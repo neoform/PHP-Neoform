@@ -1,8 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity\meta;
 
-    class entity_meta_lib {
+    class lib {
 
         /**
          * Delete lists
@@ -19,7 +19,7 @@
                 return;
             }
 
-            $engine_driver = "neoform\\entity_meta_driver_{$engine}";
+            $engine_driver = "\\neoform\\entity\\meta\\driver\\{$engine}";
             return $engine_driver::pull($engine_pool, $list_keys);
         }
 
@@ -39,7 +39,7 @@
                 return;
             }
 
-            $engine_driver = "neoform\\entity_meta_driver_{$engine}";
+            $engine_driver = "\\neoform\\entity\\meta\\driver\\{$engine}";
             return $engine_driver::push($engine_pool, $cache_key, $list_keys);
         }
 
@@ -58,7 +58,7 @@
                 return;
             }
 
-            $engine_driver = "neoform\\entity_meta_driver_{$engine}";
+            $engine_driver = "\\neoform\\entity\\meta\\driver\\{$engine}";
             return $engine_driver::push_multi($engine_pool, $cache_keys);
         }
     }

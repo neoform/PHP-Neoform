@@ -1,10 +1,12 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\apc;
 
-    class apc_factory implements core_factory {
+    use neoform;
+
+    class factory implements neoform\core\factory {
 
         public static function init(array $args) {
-            return new apc_instance(core::config()['apc']);
+            return new neoform\apc\instance(neoform\core::config()['apc']);
         }
     }

@@ -1,5 +1,5 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\config;
 
-    class config_exception extends \exception {}
+    class exception extends \exception {}

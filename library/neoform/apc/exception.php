@@ -1,5 +1,5 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\apc;
 
-    class apc_exception extends \exception {}
+    class exception extends \exception {}

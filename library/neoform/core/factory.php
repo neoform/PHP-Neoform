@@ -1,10 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\core;
 
     /**
      * Base interface for a core factory
      */
-    interface core_factory {
+    interface factory {
         public static function init(array $args);
     }

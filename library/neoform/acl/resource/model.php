@@ -41,7 +41,7 @@
          */
         public function child_acl_resource_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('child_acl_resource_collection', $order_by, $offset, $limit);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new acl_resource_collection(
                     entity::dao('acl_resource')->by_parent($this->vars['id'], $order_by, $offset, $limit)
                 );
@@ -60,7 +60,7 @@
             ];
 
             $key = parent::_count_var_key('child_acl_resource_count', $fieldvals);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = entity::dao('acl_resource')->count($fieldvals);
             }
             return $this->_vars[$key];
@@ -77,7 +77,7 @@
          */
         public function acl_role_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('acl_role_collection', $order_by, $offset, $limit);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new acl_role_collection(
                     entity::dao('acl_role_resource')->by_acl_resource($this->vars['id'], $order_by, $offset, $limit)
                 );
@@ -96,7 +96,7 @@
             ];
 
             $key = parent::_count_var_key('acl_role_count', $fieldvals);
-            if (! \array_key_exists($key, $this->_vars)) {
+            if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = entity::dao('acl_role_resource')->count($fieldvals);
             }
             return $this->_vars[$key];

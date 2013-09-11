@@ -1,12 +1,12 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\input;
 
-    class input_model {
+    class model {
 
         protected $val;
-        protected $data     = [];
         protected $error;
+        protected $data     = [];
         protected $optional = false;
         protected $is_empty;
 
@@ -15,7 +15,7 @@
          */
         public function __construct($val=null) {
             $this->val      = $val;
-            $this->is_empty = ! (bool) \strlen(trim((string) $this->val));
+            $this->is_empty = ! (bool) strlen(trim((string) $this->val));
         }
 
         /**
@@ -37,10 +37,10 @@
         /**
          * This is not used, it's a dummy function
          *
-         * @param null $v1
-         * @param null $v2
+         * @param integer|null $v1
+         * @param integer|null $v2
          *
-         * @return input_model|null
+         * @return model|null
          */
         public function count($v1=null, $v2=null) {
             if ($v1 !== null || $v2 !== null) {
@@ -55,7 +55,7 @@
          * @param string   $k
          * @param callable $v
          *
-         * @return input_model
+         * @return model
          */
         public function __set($k, $v) {
             if ($k === 'callback') {
@@ -71,7 +71,7 @@
          *
          * @param $v
          *
-         * @return input_model
+         * @return model
          */
         public function set($v) {
             $this->val = $v;
@@ -81,7 +81,7 @@
         /**
          * Reset local errors
          *
-         * @return input_model
+         * @return model
          */
         public function reset_errors() {
             $this->error = null;
@@ -91,7 +91,7 @@
         /**
          * Get this object
          *
-         * @return input_model
+         * @return model
          */
         public function get() {
             return $this;
@@ -101,9 +101,9 @@
          * Sets temporary local data
          *
          * @param string $k key
-         * @param mixed $v value
+         * @param mixed  $v value
          *
-         * @return input_model|mixed
+         * @return model|mixed
          */
         public function data($k=null, $v=null) {
             if ($v !== null) {
@@ -150,10 +150,10 @@
         /**
          * Returns new exception with errors in it
          *
-         * @return input_exception
+         * @return exception
          */
         public function exception() {
-            return new input_exception(new input_error_collection([
+            return new exception(new error\collection([
                 $this->errors()
             ]));
         }
@@ -161,7 +161,7 @@
         /**
          * Dummy function
          *
-         * @return input_model
+         * @return model
          */
         public function each() {
             if (! $this->error && (! $this->optional || ! $this->is_empty)) {
@@ -173,7 +173,7 @@
         /**
          * Dummy function
          *
-         * @return input_model
+         * @return model
          */
         public function unique() {
             if (! $this->error && (! $this->optional || ! $this->is_empty)) {
@@ -187,7 +187,7 @@
          *
          * @param $func
          *
-         * @return input_model
+         * @return model
          */
         public function callback($func) {
             $func($this);
@@ -199,14 +199,14 @@
         //
 
         public function cast($type, $strict=false) {
-            if (\is_array($type)) {
+            if (is_array($type)) {
                 $this->errors('invalid type');
             } else {
 
                 // Cast a value. When strict mode is off, strings that are equal to "null", "undefined", "true", "false" are converted to their proper type.
                 // This is useful because some browsers are stupid and will pass these values as strings intead of the litterals they are.
                 if (! $strict) {
-                    $v = \strtolower($this->val);
+                    $v = strtolower($this->val);
                     if ($v === 'true') {
                         $this->val = true;
                     } else if ($v === 'false') {
@@ -238,7 +238,7 @@
                         break;
 
                     case 'number':
-                        $this->val = \floatval(\preg_replace('`[^0-9\.\-]`is', '', $this->val));
+                        $this->val = floatval(preg_replace('`[^0-9\.\-]`is', '', $this->val));
                         break;
                 }
             }
@@ -249,7 +249,7 @@
         /**
          * If the value is empty(), nullify it.
          *
-         * @return input_model
+         * @return model
          */
         public function nullify() {
             if (empty($this->val)) {
@@ -262,30 +262,30 @@
         /**
          * Remove any unregular chars (A-Z0-9\._-)
          *
-         * @return input_model
+         * @return model
          */
         public function normalize() {
-            $this->val = \strtolower(\preg_replace('`[^A-Z0-9\._-]`is', '', $this->val));
+            $this->val = strtolower(preg_replace('`[^A-Z0-9\._-]`is', '', $this->val));
             return $this;
         }
 
         /**
          * Remove spaces
          *
-         * @return input_model
+         * @return model
          */
         public function strip_spaces() {
-            $this->val = \str_replace(' ', '', $this->val);
+            $this->val = str_replace(' ', '', $this->val);
             return $this;
         }
 
         /**
          * Remove all double spaces
          *
-         * @return input_model
+         * @return model
          */
         public function strip_double_spaces() {
-            $this->val = \preg_replace(
+            $this->val = preg_replace(
                 [
                     '`[\r]`',
                     '`([ \t]{2,})`',
@@ -304,10 +304,10 @@
         /**
          * Trim the string
          *
-         * @return input_model
+         * @return model
          */
         public function trim() {
-            $this->val = \trim($this->val);
+            $this->val = trim($this->val);
             return $this;
         }
 
@@ -316,30 +316,30 @@
          *
          * @param $length
          *
-         * @return input_model
+         * @return model
          */
         public function clip($length) {
-            $this->val = \substr($this->val, 0, $length);
+            $this->val = substr($this->val, 0, $length);
             return $this;
         }
 
         /**
          * To lower
          *
-         * @return input_model
+         * @return model
          */
         public function tolower() {
-            $this->val = \strtolower($this->val);
+            $this->val = strtolower($this->val);
             return $this;
         }
 
         /**
          * To Upper
          *
-         * @return input_model
+         * @return model
          */
         public function toupper() {
-            $this->val = \strtoupper($this->val);
+            $this->val = strtoupper($this->val);
             return $this;
         }
 
@@ -348,10 +348,10 @@
          *
          * @param $precision
          *
-         * @return input_model
+         * @return model
          */
         public function round($precision) {
-            $this->val = \round(\floatval($this->val), \intval($precision));
+            $this->val = round(floatval($this->val), intval($precision));
             return $this;
         }
 
@@ -361,10 +361,10 @@
          * @param string|array $search
          * @param string|array $replace
          *
-         * @return input_model
+         * @return model
          */
         public function replace($search, $replace='') {
-            $this->val = \str_replace($search, $replace, $this->val);
+            $this->val = str_replace($search, $replace, $this->val);
             return $this;
         }
 
@@ -374,10 +374,10 @@
          * @param string|array $search
          * @param string|array $replace
          *
-         * @return input_model
+         * @return model
          */
         public function ireplace($search, $replace='') {
-            $this->val = \str_ireplace($search, $replace, $this->val);
+            $this->val = str_ireplace($search, $replace, $this->val);
             return $this;
         }
 
@@ -387,10 +387,10 @@
          * @param string $regex
          * @param string $replace
          *
-         * @return input_model
+         * @return model
          */
         public function replace_regex($regex, $replace='') {
-            $this->val = \preg_replace($regex, $replace, $this->val);
+            $this->val = preg_replace($regex, $replace, $this->val);
             return $this;
         }
 
@@ -399,19 +399,19 @@
          *
          * @param $precision
          *
-         * @return input_model
+         * @return model
          */
         public function decimal($precision) {
             //only apply decimals IF they're not ".00"
-            $floatval = \floatval($this->val);
-            $intval   = \intval($this->val);
+            $floatval = (float) $this->val;
+            $intval   = (int) $this->val;
 
             if ($this->val !== null && $intval != $floatval) {
                 //check if the rounded version is the same
-                if (\round($floatval, \intval($precision)) == $intval) {
+                if (round($floatval, intval($precision)) == $intval) {
                     $this->val = $intval;
                 } else {
-                    $this->val = \number_format($floatval, \intval($precision));
+                    $this->val = number_format($floatval, intval($precision));
                 }
             }
             return $this;
@@ -420,16 +420,14 @@
         /**
          * Not sure what this does or if its used anywhere
          *
-         * @param $func
+         * @param callable $func
          *
-         * @return input_model
+         * @return model
          */
-        public function cleanse($func) {
-            $func(\array_shift(\func_get_args()));
+        public function cleanse(callable $func) {
+            $func(array_shift(func_get_args()));
             return $this;
         }
-
-
 
         //
         // Validators
@@ -441,7 +439,7 @@
          *
          * @param bool $nullify
          *
-         * @return input_model
+         * @return model
          */
         public function optional($nullify=true) {
             if ($nullify) {
@@ -475,25 +473,25 @@
          * @param int|null $min
          * @param int|null $max
          *
-         * @return input_model
+         * @return model
          */
         public function length($min=null, $max=null) {
             if (! $this->error && (! $this->optional || ! $this->is_empty)) {
-                $len = \strlen((string) $this->val);
+                $len = strlen((string) $this->val);
                 if ($min && $min === $max && $len !== $min) {
                     if ($len) {
-                        $this->errors($min . " char" . ($min === 1 ? '' : 's') . " required");
+                        $this->errors("{$min} char" . ($min === 1 ? '' : 's') . " required");
                     } else {
                         $this->errors('required');
                     }
                 } else if ($min && $len < $min) {
                     if ($len) {
-                        $this->errors($min . " char" . ($min === 1 ? '' : 's') . " minimum");
+                        $this->errors("{$min} char" . ($min === 1 ? '' : 's') . " minimum");
                     } else {
                         $this->errors('required');
                     }
                 } else if ($max && $len > $max) {
-                    $this->errors($max . " char" . ($max === 1 ? '' : 's') . " maximum");
+                    $this->errors("{$max} char" . ($max === 1 ? '' : 's') . " maximum");
                 }
             }
             return $this;
@@ -505,7 +503,7 @@
          * @param int $min
          * @param int $max
          *
-         * @return input_model
+         * @return model
          */
         public function digit($min, $max) {
             if (! $this->error && (! $this->optional || ! $this->is_empty)) {
@@ -525,11 +523,11 @@
          * @param array $options
          * @param bool  $optional
          *
-         * @return input_model
+         * @return model
          */
         public function in(array $options, $optional=false) {
             if (! $this->error && (! $this->optional || ! $this->is_empty)) {
-                if (! \in_array($this->val, $options, true)) {
+                if (! in_array($this->val, $options, true)) {
                     if (! $this->val) {
                         if (! $optional) {
                             $this->errors('required');
@@ -548,11 +546,11 @@
          * @param string $regex
          * @param string $error
          *
-         * @return input_model
+         * @return model
          */
         public function match_regex($regex, $error) {
             if (! $this->error && (! $this->optional || ! $this->is_empty)) {
-                if (! \preg_match($regex, $this->val)) {
+                if (! preg_match($regex, $this->val)) {
                     $this->errors($error);
                 }
             }
@@ -566,11 +564,11 @@
          * @param      $error
          * @param null $options
          *
-         * @return input_model
+         * @return model
          */
         public function filter($filter, $error, $options=null) {
             if (! $this->error && (! $this->optional || ! $this->is_empty)) {
-                if (! \filter_var($this->val, $filter, $options)) {
+                if (! filter_var($this->val, $filter, $options)) {
                     $this->errors($error);
                 }
             }
@@ -580,7 +578,7 @@
         /**
          * Is it an IP address
          *
-         * @return input_model
+         * @return model
          */
         public function is_ip() {
             return $this->filter(FILTER_VALIDATE_IP, 'invalid IP address');
@@ -589,7 +587,7 @@
         /**
          * Is it a float
          *
-         * @return input_model
+         * @return model
          */
         public function is_float() {
             return $this->filter(FILTER_VALIDATE_FLOAT, 'invalid number (float)');
@@ -598,7 +596,7 @@
         /**
          * Is it an integer
          *
-         * @return input_model
+         * @return model
          */
         public function is_int() {
             return $this->filter(FILTER_VALIDATE_INT, 'invalid integer');
@@ -607,11 +605,11 @@
         /**
          * Is it an email (simple regex)
          *
-         * @return input_model
+         * @return model
          */
         public function is_email() {
             if (! $this->error && (! $this->optional || ! $this->is_empty)) {
-                if (! \preg_match('`^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$`i', $this->val)) {
+                if (! preg_match('`^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$`i', $this->val)) {
                     $this->errors('invalid email');
                 }
             }
@@ -621,7 +619,7 @@
         /**
          * Is it a URL
          *
-         * @return input_model
+         * @return model
          */
         public function is_url() {
             return $this->filter(FILTER_VALIDATE_URL, 'invalid url');
@@ -630,11 +628,11 @@
         /**
          * Is it numeric
          *
-         * @return input_model
+         * @return model
          */
         public function is_numeric() {
             if (! $this->error && (! $this->optional || ! $this->is_empty)) {
-                if (! \is_numeric($this->val)) {
+                if (! is_numeric($this->val)) {
                     $this->errors('invalid number');
                 }
             }
@@ -644,11 +642,11 @@
         /**
          * Is it a valid date string
          *
-         * @return input_model
+         * @return model
          */
         public function is_date() {
             if (! $this->error && (! $this->optional || ! $this->is_empty)) {
-                $date = new \DateTime($this->val);
+                $date = new \datetime($this->val);
 
                 if ($this->val !== $date->format('Y-m-d')) {
                     $this->errors('invalid date');
@@ -660,11 +658,11 @@
         /**
          * Is it a valid datetime string
          *
-         * @return input_model
+         * @return model
          */
         public function is_datetime() {
             if (! $this->error && (! $this->optional || ! $this->is_empty)) {
-                $date = new \DateTime($this->val);
+                $date = new \datetime($this->val);
 
                 if ($this->val !== $date->format('Y-m-d H:i:s')) {
                     $this->errors('invalid datetime');

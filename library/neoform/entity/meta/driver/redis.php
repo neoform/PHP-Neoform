@@ -1,8 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity\meta\driver;
 
-    class entity_meta_driver_redis implements entity_meta_driver {
+    use neoform\core;
+
+    class redis implements \neoform\entity\meta\driver {
 
         /**
          * Get all members of multiple list or get matching members of multiple lists

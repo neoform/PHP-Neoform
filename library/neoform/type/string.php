@@ -1,8 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\type;
 
-    class type_string {
+    class string {
         protected $val;
 
         public function __construct($val) {
@@ -14,10 +14,10 @@
         }
 
         public function escaped() {
-            return \htmlspecialchars($this->val);
+            return htmlspecialchars($this->val);
         }
 
         public function __tostring() {
-            return \htmlspecialchars($this->val);
+            return htmlspecialchars($this->val);
         }
     }

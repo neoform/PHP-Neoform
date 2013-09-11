@@ -1,13 +1,13 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity\link;
 
-    use ArrayObject;
+    use neoform\entity\exception;
 
     /**
      * Link Collection
      */
-    class entity_link_collection extends ArrayObject {
+    class collection extends \arrayobject {
 
         protected $_vars = []; //caching
         protected $type;
@@ -18,10 +18,10 @@
          */
         public function __construct(array $infos=null, $map_field=null) {
 
-            if (\count($infos)) {
-                $model = 'neoform\\' . static::ENTITY_NAME . '_model';
-                $current = \current($infos);
-                if (\is_array($current)) {
+            if (count($infos)) {
+                $model = '\\neoform\\' . static::ENTITY_NAME . '\\model';
+                $current = current($infos);
+                if (is_array($current)) {
                     $this->type = 'model';
                 } else if ($current instanceof $model) {
                     $this->type = 'object';
@@ -33,7 +33,7 @@
                     if ($this->type === 'model') {
                         try {
                             $v = new $model($info);
-                        } catch (entity_exception $e) {
+                        } catch (exception $e) {
                         }
                     } else if ($this->type === 'object') {
                         $v = $info;
@@ -54,11 +54,11 @@
          * @param array       $info
          * @param string|null $map_field
          *
-         * @return entity_link_collection
+         * @return collection
          */
         public function add(array $info, $map_field=null) {
             if ($this->type === 'model') {
-                $model = 'neoform\\' . static::ENTITY_NAME . '_model';
+                $model = '\\neoform\\' . static::ENTITY_NAME . '\\model';
                 $v = new $model($info);
             } else if ($this->type === 'object') {
                 $v = $info;
@@ -83,7 +83,7 @@
          *
          * @param $k Key
          *
-         * @return entity_link_collection
+         * @return collection
          */
         public function del($k) {
             unset($this[$k]);
@@ -99,12 +99,12 @@
          *
          * @param string $field
          *
-         * @return entity_link_collection
-         * @throws \exception
+         * @return collection
+         * @throws exception
          */
         public function remap($field) {
             if ($this->type !== 'model' || $this->type !== 'object') {
-                throw new \exception('You cannot remap a value based collection');
+                throw new exception('You cannot remap a value based collection');
             }
 
             $new = [];
@@ -121,14 +121,14 @@
          * @param string $field
          *
          * @return array
-         * @throws \exception
+         * @throws exception
          */
         public function field($field) {
             if ($this->type !== 'model' || $this->type !== 'object') {
-                throw new \exception('You cannot get a field from a value based collection');
+                throw new exception('You cannot get a field from a value based collection');
             }
 
-            if (! \array_key_exists($field, $this->_vars)) {
+            if (! array_key_exists($field, $this->_vars)) {
                 $this->_vars[$field] = [];
                 foreach ($this as $record) {
                     $this->_vars[$field][] = $record->$field;
@@ -144,7 +144,7 @@
          * @param string $order
          */
         public function sort($f, $order='asc') {
-            if (\is_callable($f)) {
+            if (is_callable($f)) {
                 $this->uasort(function ($a, $b) use ($f, $order) {
                     $a = $f($a);
                     $b = $f($b);

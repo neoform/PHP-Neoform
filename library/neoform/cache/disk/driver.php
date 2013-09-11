@@ -1,8 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\cache\disk;
 
-    class cache_disk_driver implements cache_driver {
+    use neoform;
+
+    class driver implements neoform\cache\driver {
 
         /**
          * Activate a pipelined (batch) query - this doesn't do anything, so ignore
@@ -28,10 +30,10 @@
          * @param string  $pool
          * @param string  $key
          * @param integer $offset
-         * @throws cache_disk_exception
+         * @throws exception
          */
         public static function increment($pool, $key, $offset=1) {
-            throw new cache_disk_exception('Disk cache does not support incrementing');
+            throw new exception('Disk cache does not support incrementing');
         }
 
         /**
@@ -40,10 +42,10 @@
          * @param string  $pool
          * @param string  $key
          * @param integer $offset
-         * @throws cache_disk_exception
+         * @throws exception
          */
         public static function decrement($pool, $key, $offset=1) {
-            throw new cache_disk_exception('Disk cache does not support decrementing');
+            throw new exception('Disk cache does not support decrementing');
         }
 
         /**
@@ -55,7 +57,7 @@
          * @return array|null returns null if record does not exist.
          */
         public static function exists($pool, $key) {
-            return (bool) cache_disk_dao::exists(cache_disk_dao::path($key));
+            return (bool) dao::exists(dao::path($key));
         }
 
         /**
@@ -71,9 +73,9 @@
         public static function get($pool, $key) {
             try {
                 return [
-                    cache_disk_dao::get(cache_disk_dao::path($key)),
+                    dao::get(dao::path($key)),
                 ];
-            } catch (cache_disk_exception $e) {
+            } catch (exception $e) {
 
             }
         }
@@ -85,8 +87,8 @@
          * @param integer|null $ttl
          */
         public static function set($pool, $key, $data, $ttl=null) {
-            cache_disk_dao::set(
-                cache_disk_dao::path($key),
+            dao::set(
+                dao::path($key),
                 $data,
                 $ttl
             );
@@ -104,9 +106,9 @@
             $matched_rows = [];
             foreach ($keys as $index => $key) {
                 try {
-                    $matched_rows[$index] = cache_disk_dao::get(cache_disk_dao::path($key));
+                    $matched_rows[$index] = dao::get(dao::path($key));
                     //unset($keys[$index]);
-                } catch (cache_disk_exception $e) {
+                } catch (exception $e) {
 
                 }
             }
@@ -123,7 +125,7 @@
          */
         public static function set_multi($pool, array $rows, $ttl=null) {
             foreach ($rows as $key => $row) {
-                cache_disk_dao::set(cache_disk_dao::path($key), $row, $ttl);
+                dao::set(dao::path($key), $row, $ttl);
             }
         }
 
@@ -134,7 +136,7 @@
          * @param string $key
          */
         public static function delete($pool, $key) {
-            cache_disk_dao::del(cache_disk_dao::path($key));
+            dao::del(dao::path($key));
         }
 
         /**
@@ -145,10 +147,10 @@
          */
         public static function delete_multi($pool, array $keys) {
 
-            if (\count($keys)) {
+            if ($keys) {
                 foreach ($keys as $key) {
-                    cache_disk_dao::del(
-                        cache_disk_dao::path($key)
+                    dao::del(
+                        dao::path($key)
                     );
                 }
             }
@@ -161,10 +163,10 @@
          * @param string  $key
          * @param integer $ttl how many seconds left for this key to live - if not set, it will expire now
          *
-         * @throws cache_disk_exception
+         * @throws exception
          */
         public static function expire($pool, $key, $ttl=0) {
-            throw new cache_disk_exception('Expire commands are not supported by disk cache');
+            throw new exception('Expire commands are not supported by disk cache');
         }
 
         /**
@@ -174,9 +176,9 @@
          * @param array   $keys
          * @param integer $ttl how many seconds left for this key to live - if not set, it will expire now
          *
-         * @throws cache_disk_exception
+         * @throws exception
          */
         public static function expire_multi($pool, array $keys, $ttl=0) {
-            throw new cache_disk_exception('Expire commands are not supported by disk cache');
+            throw new exception('Expire commands are not supported by disk cache');
         }
     }

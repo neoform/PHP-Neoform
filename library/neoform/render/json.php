@@ -1,18 +1,15 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\render;
 
-    class render_json {
+    use neoform\core;
+
+    class json {
 
         protected $vars;
 
-        public function __construct($preload_vars=false) {
-            if (\is_array($preload_vars)) {
-                $this->vars = $preload_vars;
-            } else {
-                $this->vars = [];
-            }
-
+        public function __construct(array $preload_vars=[]) {
+            $this->vars = $preload_vars;
             $this->vars['_ref'] = core::http()->get_ref();
         }
 
@@ -22,7 +19,7 @@
         }
 
         public function render() {
-            core::output()->output_type('json')->body(\json_encode($this->vars));
+            core::output()->output_type('json')->body(json_encode($this->vars));
         }
 
         public function __get($k) {

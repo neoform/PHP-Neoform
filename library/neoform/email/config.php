@@ -1,8 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\email;
 
-    class email_config extends entity_config_defaults {
+    use neoform;
+
+    class config extends neoform\config\defaults {
 
         protected function defaults() {
             return [
@@ -15,11 +17,11 @@
         /**
          * Validate the config values
          *
-         * @throws config_exception
+         * @throws neoform\config\exception
          */
         public function validate() {
             if (empty($this->config['unsubscribe_secret'])) {
-                throw new config_exception('"unsubscribe_secret" must be set');
+                throw new neoform\config\exception('"unsubscribe_secret" must be set');
             }
         }
     }

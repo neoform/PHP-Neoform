@@ -1,28 +1,30 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\aggregate;
+
+    use neoform;
 
     /**
      * Aggregation library (used for statistic pages)
      */
-    abstract class aggregate_lib {
+    abstract class lib {
 
         /**
          * Average over multiple hourly blocks (spaced out by $interval) $iterations is the number of
          * intervals used (going backwards in time)
          *
-         * @param type_date $start
-         * @param array     $args
-         * @param string    $interval
-         * @param int       $iterations
+         * @param neoform\type\date $start
+         * @param array             $args
+         * @param string            $interval
+         * @param int               $iterations
          *
          * @return array
          */
-        public static function average(type_date $start, array $args=null, $interval='7 day', $iterations=4) {
+        public static function average(neoform\type\date $start, array $args=null, $interval='7 day', $iterations=4) {
 
             $sums = self::sum($start, $args, $interval, $iterations);
 
-            $keys = \array_keys($sums);
+            $keys = array_keys($sums);
             $average = [];
             foreach ($keys as $key) {
                 $average[$key] = $sums[$key] / $iterations;
@@ -35,11 +37,11 @@
          * Creates an start/end date block based on an arbitrary start date
          * (it removes the minutes/seconds from that time)
          *
-         * @param type_date $start
+         * @param neoform\type\date $start
          *
          * @return array
          */
-        public static function get_hour(type_date $start) {
+        public static function get_hour(neoform\type\date $start) {
             $start->setTime((int) $start->format('H'), 0, 0);
             $end = clone $start;
             $end->setTime((int) $end->format('H'), 59, 59);
@@ -47,13 +49,13 @@
         }
 
         /**
-         * Two type_date timestamps 00:00:00 to 23:59:59
+         * Two neoform\type\date timestamps 00:00:00 to 23:59:59
          *
-         * @param type_date $start
+         * @param neoform\type\date $start
          *
          * @return array (0 => start, 1=> end)
          */
-        public static function get_day(type_date $start) {
+        public static function get_day(neoform\type\date $start) {
             $start->setTime(0, 0, 0);
             $end = clone $start;
             $end->setTime(23, 59, 59);
@@ -63,7 +65,7 @@
         /**
          * Adds together multiple blocks of data
          *
-         * @param type_date $start
+         * @param neoform\type\date $start
          * @param array     $args           passed to self::get($args)
          * @param string    $interval       default: '1 hour'
          * @param int       $iterations     default: 6
@@ -71,11 +73,11 @@
          *
          * @return array    The resulting data for this block
          */
-        public static function sum(type_date $start, array $args=null, $interval='1 hour', $iterations=6, $subtract_first=true) {
+        public static function sum(neoform\type\date $start, array $args=null, $interval='1 hour', $iterations=6, $subtract_first=true) {
 
             // This function only supports hourly or daily blocks
-            $by_hour = \substr($interval, -4) === 'hour';
-            $by_day  = \substr($interval, -3) === 'day';
+            $by_hour = substr($interval, -4) === 'hour';
+            $by_day  = substr($interval, -3) === 'day';
 
             $sums = [];
             if ($iterations) {

@@ -57,7 +57,7 @@
             // name
             $input->name->cast('string')->optional()->length(1, 64)->callback(function($name) use ($acl_role) {
                 $id_arr = entity::dao('acl_role')->by_name($name->val());
-                if (\is_array($id_arr) && $id_arr && (int) \current($id_arr) !== $acl_role->id) {
+                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $acl_role->id) {
                     $name->errors('already in use');
                 }
             });

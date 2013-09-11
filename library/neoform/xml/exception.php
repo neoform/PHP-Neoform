@@ -1,5 +1,5 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\xml;
 
-    class xml_exception extends \exception {}
+    class exception extends \exception {}

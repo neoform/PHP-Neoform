@@ -12,7 +12,7 @@
          * @return string
          */
         public static function in_marks($count) {
-            return $count > 0 ? join(',', \array_fill(0, $count, '?')) : '';
+            return $count > 0 ? join(',', array_fill(0, $count, '?')) : '';
         }
 
         /**
@@ -23,7 +23,7 @@
          * @return string
          */
         public static function ip2int($ip) {
-            return \sprintf("%u", \ip2long($ip));
+            return sprintf("%u", ip2long($ip));
         }
 
         /**
@@ -34,6 +34,6 @@
          * @return string
          */
         public static function int2ip($int) {
-            return \long2ip( -(4294967295 - ($int - 1)));
+            return long2ip( -(4294967295 - ($int - 1)));
         }
     }

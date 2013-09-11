@@ -8,8 +8,8 @@
         protected $float;
 
         public function __construct($val) {
-            $this->int         = (int) $val;
-            $this->float    = (float) $val;
+            $this->int   = (int) $val;
+            $this->float = (float) $val;
         }
 
         public function val() {

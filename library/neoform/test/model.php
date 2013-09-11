@@ -1,8 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\test;
 
-    abstract class test_model extends cli_model {
+    use neoform\cli;
+
+    abstract class model extends cli\model {
 
         protected $tests    = 0;
         protected $failures = [];
@@ -11,7 +13,7 @@
 
             echo "Tests:    " . $this->tests . "\n";
 
-            if (count($this->failures)) {
+            if ($this->failures) {
                 echo 'Failures: ' . count($this->failures) . "\n";
                 foreach ($this->failures as $failure) {
                     echo "Failed on line " . $failure . "\n";

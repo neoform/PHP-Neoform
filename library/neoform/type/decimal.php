@@ -10,20 +10,20 @@
 
         public function __construct($decimal, $precision) {
             $this->precision  = (int) $precision;
-            $this->multiplier = \pow(10, (int) $precision);
+            $this->multiplier = pow(10, (int) $precision);
             $this->intval     = (int) round(round((float) $decimal, (int) $precision, PHP_ROUND_HALF_UP) * (int) $this->multiplier, 0, PHP_ROUND_HALF_UP);
         }
 
         public function convert($precision) {
             if ($this->precision !== (int) $precision) {
                 if ($precision > $this->precision) {
-                    $this->intval = (int) round($this->intval * \pow(10, $precision - $this->precision), 0, PHP_ROUND_HALF_UP);
+                    $this->intval = (int) round($this->intval * pow(10, $precision - $this->precision), 0, PHP_ROUND_HALF_UP);
                 } else {
-                    $this->intval = (int) round($this->intval / \pow(10, $this->precision - $precision), 0, PHP_ROUND_HALF_UP);
+                    $this->intval = (int) round($this->intval / pow(10, $this->precision - $precision), 0, PHP_ROUND_HALF_UP);
                 }
 
-                $multiplier         = \pow(10, (int) $precision);
-                $this->precision     = (int) $precision;
+                $multiplier      = pow(10, (int) $precision);
+                $this->precision = (int) $precision;
             }
             return $this;
         }
@@ -54,11 +54,11 @@
                 $this->intval -= $num->_intval();
             } else {
                 if ($num->precision() > $this->precision()) {
-                    $smaller     = $this;
-                    $bigger     = $num;
+                    $smaller = $this;
+                    $bigger  = $num;
                 } else {
-                    $smaller     = $num;
-                    $bigger     = $this;
+                    $smaller = $num;
+                    $bigger  = $this;
                 }
 
                 $p = $smaller->precision();              // Store smaller one's precsion
@@ -71,19 +71,19 @@
 
         public function multiply(decimal $num) {
             if ($num->precision() === $this->precision()) {
-                $this->intval = (int) round(($this->intval * $num->_intval()) / \pow(10, $this->precision()));
+                $this->intval = (int) round(($this->intval * $num->_intval()) / pow(10, $this->precision()));
             } else {
                 if ($num->precision() > $this->precision()) {
-                    $smaller     = $this;
-                    $bigger     = $num;
+                    $smaller = $this;
+                    $bigger  = $num;
                 } else {
-                    $smaller     = $num;
-                    $bigger     = $this;
+                    $smaller = $num;
+                    $bigger  = $this;
                 }
 
                 $p = $smaller->precision();                 // Store smaller one's precsion
                 $smaller->convert($bigger->precision());    // Convert smaller to larger precision
-                $this->intval = (int) round(($this->intval * $num->_intval()) / \pow(10, $this->precision()));
+                $this->intval = (int) round(($this->intval * $num->_intval()) / pow(10, $this->precision()));
                 $smaller->convert($p);                      // Convert smaller one back to previous precision
             }
             return $this;
@@ -91,19 +91,19 @@
 
         public function divide(decimal $num) {
             if ($num->precision() === $this->precision()) {
-                $this->intval = (int) round(($this->intval / $num->_intval()) * \pow(10, $this->precision()));
+                $this->intval = (int) round(($this->intval / $num->_intval()) * pow(10, $this->precision()));
             } else {
                 if ($num->precision() > $this->precision()) {
-                    $smaller     = $this;
-                    $bigger     = $num;
+                    $smaller = $this;
+                    $bigger  = $num;
                 } else {
-                    $smaller     = $num;
-                    $bigger     = $this;
+                    $smaller = $num;
+                    $bigger  = $this;
                 }
 
                 $p = $smaller->precision();                 // Store smaller one's precsion
                 $smaller->convert($bigger->precision());    // Convert smaller to larger precision
-                $this->intval = (int) round(($this->intval / $num->_intval()) * \pow(10, $this->precision()));
+                $this->intval = (int) round(($this->intval / $num->_intval()) * pow(10, $this->precision()));
                 $smaller->convert($p);                      // Convert smaller one back to previous precision
             }
             return $this;

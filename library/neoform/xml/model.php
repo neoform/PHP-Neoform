@@ -1,8 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\xml;
 
-    class xml_model {
+    class model {
 
         protected $xml;
         protected $xPath;
@@ -12,7 +12,7 @@
             $this->xml = new \DOMDocument();
 
             if (! $xml_string || ! $this->xml->loadXML($xml_string)) {
-                throw new xml_exception('Invalid xml');
+                throw new exception('Invalid xml');
             }
             $this->xPath = new \domxpath($this->xml);
         }
@@ -32,7 +32,7 @@
             $p = '';
 
             foreach (preg_split('`/`', $path, 0, PREG_SPLIT_NO_EMPTY) as $nodeName) {
-                $p .= '/' . $nodeName;
+                $p .= "/{$nodeName}";
                 $element = $this->xPath->query($p)->item(0);
                 if ($element === null) {
                     $element = $this->xml->createElement($nodeName);

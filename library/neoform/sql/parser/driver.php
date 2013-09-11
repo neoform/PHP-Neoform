@@ -10,7 +10,7 @@
          */
         protected static $enum_values = [
             "'yes','no'"     => 'yes',
-            "'no','yes'"      => 'yes',
+            "'no','yes'"     => 'yes',
             "'true','false'" => 'true',
             "'false','true'" => 'true',
             "'1','0'"        => '1',

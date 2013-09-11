@@ -1,5 +1,5 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\web;
 
-    class web_exception extends \exception {};
+    class exception extends \exception {};

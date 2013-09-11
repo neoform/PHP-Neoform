@@ -1,8 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\test;
 
-    class test_lib {
+    class lib {
 
         /**
          * Times the execution of a closure

@@ -1,8 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\web\browser;
 
-    class web_browser_model {
+    use neoform\core;
+
+    class model {
 
         protected $info;
 

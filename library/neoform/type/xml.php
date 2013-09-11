@@ -5,14 +5,14 @@
     class xml {
 
         public static function to_array($xml) {
-            self::normalize_simple_xml(\simplexml_load_string($xml), $result);
+            self::normalize_simple_xml(simplexml_load_string($xml), $result);
             return $result;
         }
 
         public static function normalize_simple_xml($obj, &$result) {
             $data = $obj;
 
-            if (\is_object($data)) {
+            if (is_object($data)) {
                 $data = \get_object_vars($data);
             }
 

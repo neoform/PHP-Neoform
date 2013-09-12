@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\status;
 
     /**
      * User Status DAO
      */
-    class user_status_dao extends entity_record_dao implements user_status_definition {
+    class dao extends \neoform\entity\record\dao implements definition {
 
         const BY_NAME = 'by_name';
 
@@ -62,7 +62,7 @@
          *
          * @param array $info associative array, keys matching columns in database for this entity
          *
-         * @return user_status_model
+         * @return model
          */
         public function insert(array $info) {
 
@@ -75,7 +75,7 @@
          *
          * @param array $infos array of associative arrays, keys matching columns in database for this entity
          *
-         * @return user_status_collection
+         * @return collection
          */
         public function insert_multi(array $infos) {
 
@@ -87,12 +87,12 @@
          * Updates a User Status record with new data
          *   only fields that are specified in the $info array will be written
          *
-         * @param user_status_model $user_status record to be updated
+         * @param model $user_status record to be updated
          * @param array $info data to write to the record
          *
-         * @return user_status_model updated model
+         * @return model updated model
          */
-        public function update(user_status_model $user_status, array $info) {
+        public function update(model $user_status, array $info) {
 
             // Update record
             return parent::_update($user_status, $info);
@@ -101,11 +101,11 @@
         /**
          * Delete a User Status record
          *
-         * @param user_status_model $user_status record to be deleted
+         * @param model $user_status record to be deleted
          *
          * @return bool
          */
-        public function delete(user_status_model $user_status) {
+        public function delete(model $user_status) {
 
             // Delete record
             return parent::_delete($user_status);
@@ -114,11 +114,11 @@
         /**
          * Delete multiple User Status records
          *
-         * @param user_status_collection $user_status_collection records to be deleted
+         * @param collection $user_status_collection records to be deleted
          *
          * @return bool
          */
-        public function delete_multi(user_status_collection $user_status_collection) {
+        public function delete_multi(collection $user_status_collection) {
 
             // Delete records
             return parent::_delete_multi($user_status_collection);

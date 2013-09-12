@@ -227,8 +227,8 @@
         protected function _preload_one_to_many($_var_key, $entity, $by_function, array $order_by=null, $offset=null,
                                                 $limit=null) {
 
-            $collection_name  = "\\neoform\\{$entity}\\collection";
-            $model_name       = "\\neoform\\{$entity}\\model";
+            $collection_name  = "{$entity}\\collection";
+            $model_name       = "{$entity}\\model";
             $dao              = entity::dao($entity);
             $by_function     .= '_multi';
 
@@ -293,7 +293,7 @@
                                                  array $order_by=null, $offset=null, $limit=null) {
 
             $by_function             .= '_multi';
-            $foreign_collection_name  = "\\neoform\\{$foreign_type}\\collection";
+            $foreign_collection_name  = "{$foreign_type}\\collection";
 
             // Get the ids for those
             $pks_groups = entity::dao($entity)->$by_function($this, $order_by, $offset, $limit);
@@ -344,8 +344,8 @@
          */
         protected function _preload_one_to_one($_var_key, $entity, $field) {
 
-            $model_name      = "\\neoform\\{$entity}\\model";
-            $collection_name = "\\neoform\\{$entity}\\collection";
+            $model_name      = "{$entity}\\model";
+            $collection_name = "{$entity}\\collection";
 
             $pks = [];
             // we don't want to look up duplicates, just unique values

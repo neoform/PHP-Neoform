@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\acl\resource;
 
     /**
      * Acl Resource DAO
      */
-    class acl_resource_dao extends entity_record_dao implements acl_resource_definition {
+    class dao extends \neoform\entity\record\dao implements definition {
 
         const BY_NAME   = 'by_name';
         const BY_PARENT = 'by_parent';
@@ -64,7 +64,7 @@
         /**
          * Get multiple sets of Acl Resource ids by acl_resource
          *
-         * @param acl_resource_collection|array $acl_resource_list
+         * @param \neoform\acl\resource\collection|array $acl_resource_list
          * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
@@ -73,7 +73,7 @@
          */
         public function by_parent_multi($acl_resource_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
-            if ($acl_resource_list instanceof acl_resource_collection) {
+            if ($acl_resource_list instanceof \neoform\acl\resource\collection) {
                 foreach ($acl_resource_list as $k => $acl_resource) {
                     $keys[$k] = [
                         'parent_id' => $acl_resource->id === null ? null : (int) $acl_resource->id,
@@ -120,7 +120,7 @@
          *
          * @param array $info associative array, keys matching columns in database for this entity
          *
-         * @return acl_resource_model
+         * @return model
          */
         public function insert(array $info) {
 
@@ -133,7 +133,7 @@
          *
          * @param array $infos array of associative arrays, keys matching columns in database for this entity
          *
-         * @return acl_resource_collection
+         * @return collection
          */
         public function insert_multi(array $infos) {
 
@@ -145,12 +145,12 @@
          * Updates a Acl Resource record with new data
          *   only fields that are specified in the $info array will be written
          *
-         * @param acl_resource_model $acl_resource record to be updated
+         * @param model $acl_resource record to be updated
          * @param array $info data to write to the record
          *
-         * @return acl_resource_model updated model
+         * @return model updated model
          */
-        public function update(acl_resource_model $acl_resource, array $info) {
+        public function update(model $acl_resource, array $info) {
 
             // Update record
             return parent::_update($acl_resource, $info);
@@ -159,11 +159,11 @@
         /**
          * Delete a Acl Resource record
          *
-         * @param acl_resource_model $acl_resource record to be deleted
+         * @param model $acl_resource record to be deleted
          *
          * @return bool
          */
-        public function delete(acl_resource_model $acl_resource) {
+        public function delete(model $acl_resource) {
 
             // Delete record
             return parent::_delete($acl_resource);
@@ -172,11 +172,11 @@
         /**
          * Delete multiple Acl Resource records
          *
-         * @param acl_resource_collection $acl_resource_collection records to be deleted
+         * @param collection $acl_resource_collection records to be deleted
          *
          * @return bool
          */
-        public function delete_multi(acl_resource_collection $acl_resource_collection) {
+        public function delete_multi(collection $acl_resource_collection) {
 
             // Delete records
             return parent::_delete_multi($acl_resource_collection);

@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\site;
 
     /**
      * User Site link DAO
      */
-    class user_site_dao extends entity_link_dao implements user_site_definition {
+    class dao extends \neoform\entity\link\dao implements definition {
 
         const BY_SITE      = 'by_site';
         const BY_SITE_USER = 'by_site_user';
@@ -104,7 +104,7 @@
         /**
          * Get multiple sets of site_id by a collection of users
          *
-         * @param user_collection|array $user_list
+         * @param \neoform\user\collection|array $user_list
          * @param array|null $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
          * @param integer|null $offset get rows starting at this offset
          * @param integer|null $limit max number of rows to return
@@ -113,7 +113,7 @@
          */
         public function by_user_multi($user_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
-            if ($user_list instanceof user_collection) {
+            if ($user_list instanceof \neoform\user\collection) {
                 foreach ($user_list as $k => $user) {
                     $keys[$k] = [
                         'user_id' => (int) $user->id,
@@ -144,7 +144,7 @@
         /**
          * Get multiple sets of user_id by a collection of sites
          *
-         * @param site_collection|array $site_list
+         * @param \neoform\site\collection|array $site_list
          * @param array|null $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
          * @param integer|null $offset get rows starting at this offset
          * @param integer|null $limit max number of rows to return
@@ -153,7 +153,7 @@
          */
         public function by_site_multi($site_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
-            if ($site_list instanceof site_collection) {
+            if ($site_list instanceof \neoform\site\collection) {
                 foreach ($site_list as $k => $site) {
                     $keys[$k] = [
                         'site_id' => (int) $site->id,
@@ -219,7 +219,6 @@
 
             // Update link
             return parent::_update($new_info, $where);
-
         }
 
         /**
@@ -233,7 +232,6 @@
 
             // Delete link
             return parent::_delete($keys);
-
         }
 
         /**
@@ -247,6 +245,5 @@
 
             // Delete links
             return parent::_delete_multi($keys_arr);
-
         }
     }

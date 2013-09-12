@@ -45,7 +45,7 @@
                         throw new \exception("Unknown PDO binding for type \"{$field->pdo_casting}\".");
                 }
 
-                $this->code .= "\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => {$binding},\n";
+                $this->code .= "\t\t\t'" . str_pad("{$field->name}'", $longest_part + 1) . " => {$binding},\n";
             }
             $this->code .= "\t\t];\n\n";
         }

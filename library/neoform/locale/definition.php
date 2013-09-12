@@ -1,8 +1,12 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\locale;
 
-    interface locale_definition {
+    /**
+     * Entity definition interface
+     */
+    interface definition {
+
         const NAME          = 'locale';
         const TABLE         = 'locale';
         const AUTOINCREMENT = false;

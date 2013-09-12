@@ -1,6 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\locale\key\message;
+
+    use neoform\entity;
 
     /**
      * Locale Key Message Model
@@ -10,7 +12,7 @@
      * @var string $body
      * @var string $locale
      */
-    class locale_key_message_model extends entity_record_model implements locale_key_message_definition {
+    class model extends entity\record\model implements definition {
 
         public function __get($k) {
 
@@ -35,18 +37,18 @@
         /**
          * Locale Key Model based on 'key_id'
          *
-         * @return locale_key_model
+         * @return \neoform\locale\key\model
          */
         public function locale_key() {
-            return $this->_model('locale_key', $this->vars['key_id'], 'locale_key_model');
+            return $this->_model('locale_key', $this->vars['key_id'], '\neoform\locale\key\model');
         }
 
         /**
          * Locale Model based on 'locale'
          *
-         * @return locale_model
+         * @return \neoform\locale\model
          */
         public function locale() {
-            return $this->_model('locale', $this->vars['locale'], 'locale_model');
+            return $this->_model('locale', $this->vars['locale'], '\neoform\locale\model');
         }
     }

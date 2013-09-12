@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\lostpassword;
 
-    class user_lostpassword_lib {
+    class lib {
 
     }

@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user;
 
     /**
      * Entity definition interface
      */
-    interface user_definition {
+    interface definition {
 
         const NAME          = 'user';
         const TABLE         = 'user';

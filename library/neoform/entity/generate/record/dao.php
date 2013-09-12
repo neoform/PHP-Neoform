@@ -10,12 +10,13 @@
 
             // Code
             $this->code .= '<?php'."\n\n";
+            $this->code .= "\tnamespace neoform\\" . str_replace('_', '\\', $this->table->name) . ";\n\n";
 
             $this->code .= "\t/**\n";
             $this->code .= "\t * " . ucwords(str_replace('_', ' ', $this->table->name)) . " DAO\n";
             $this->code .= "\t */\n";
 
-            $this->code .= "\tclass {$this->table->name}_dao extends entity_record_dao implements {$this->table->name}_definition {\n\n";
+            $this->code .= "\tclass dao extends \\neoform\\entity\\record\\dao implements definition {\n\n";
 
             $this->constants();
             $this->bindings();
@@ -185,7 +186,7 @@
                 $this->code .= "\t\t/**\n";
                 $this->code .= "\t\t * Get multiple sets of " . ucwords(str_replace('_', ' ', $this->table->name)) . " {$this->table->primary_key->name}s by {$field->referenced_field->table->name}\n";
                 $this->code .= "\t\t *\n";
-                $this->code .= "\t\t * @param {$field->referenced_field->table->name}_collection|array \${$field->referenced_field->table->name}_list\n";
+                $this->code .= "\t\t * @param \\neoform\\" . str_replace('_', '\\', $field->referenced_field->table->name) . "\\collection|array \${$field->referenced_field->table->name}_list\n";
                 $this->code .= "\t\t * @param array \$order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)\n";
                 $this->code .= "\t\t * @param integer|null \$offset get PKs starting at this offset\n";
                 $this->code .= "\t\t * @param integer|null \$limit max number of PKs to return\n";
@@ -196,7 +197,7 @@
                 $this->code .= "\t\tpublic function by_{$field->name_idless}_multi(\${$field->referenced_field->table->name}_list, array \$order_by=null, \$offset=null, \$limit=null) {\n";
                 $this->code .= "\t\t\t\$keys = [];\n";
 
-                $this->code .= "\t\t\tif (\${$field->referenced_field->table->name}_list instanceof {$field->referenced_field->table->name}_collection) {\n";
+                $this->code .= "\t\t\tif (\${$field->referenced_field->table->name}_list instanceof \\neoform\\" . str_replace('_', '\\', $field->referenced_field->table->name) . "\\collection) {\n";
 
                 $this->code .= "\t\t\t\tforeach (\${$field->referenced_field->table->name}_list as \$k => \${$field->referenced_field->table->name}) {\n";
                 $this->code .= "\t\t\t\t\t\$keys[\$k] = [\n";
@@ -371,7 +372,7 @@
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @param array \$info associative array, keys matching columns in database for this entity\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @return {$this->table->name}_model\n";
+            $this->code .= "\t\t * @return model\n";
             $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic function insert(array \$info) {\n\n";
@@ -387,7 +388,7 @@
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @param array \$infos array of associative arrays, keys matching columns in database for this entity\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @return {$this->table->name}_collection\n";
+            $this->code .= "\t\t * @return collection\n";
             $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic function insert_multi(array \$infos) {\n\n";
@@ -402,13 +403,13 @@
             $this->code .= "\t\t * Updates a " . ucwords(str_replace('_', ' ', $this->table->name)) . " record with new data\n";
             $this->code .= "\t\t *   only fields that are specified in the \$info array will be written\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @param {$this->table->name}_model \${$this->table->name} record to be updated\n";
+            $this->code .= "\t\t * @param model \${$this->table->name} record to be updated\n";
             $this->code .= "\t\t * @param array \$info data to write to the record\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @return {$this->table->name}_model updated model\n";
+            $this->code .= "\t\t * @return model updated model\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic function update({$this->table->name}_model \${$this->table->name}, array \$info) {\n\n";
+            $this->code .= "\t\tpublic function update(model \${$this->table->name}, array \$info) {\n\n";
             $this->code .= "\t\t\t// Update record\n";
             $this->code .= "\t\t\treturn parent::_update(\${$this->table->name}, \$info);\n";
             $this->code .= "\t\t}\n\n";
@@ -419,12 +420,12 @@
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Delete a " . ucwords(str_replace('_', ' ', $this->table->name)) . " record\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @param {$this->table->name}_model \${$this->table->name} record to be deleted\n";
+            $this->code .= "\t\t * @param model \${$this->table->name} record to be deleted\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic function delete({$this->table->name}_model \${$this->table->name}) {\n\n";
+            $this->code .= "\t\tpublic function delete(model \${$this->table->name}) {\n\n";
             $this->code .= "\t\t\t// Delete record\n";
             $this->code .= "\t\t\treturn parent::_delete(\${$this->table->name});\n";
             $this->code .= "\t\t}\n\n";
@@ -435,12 +436,12 @@
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Delete multiple " . ucwords(str_replace('_', ' ', $this->table->name)) . " records\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @param {$this->table->name}_collection \${$this->table->name}_collection records to be deleted\n";
+            $this->code .= "\t\t * @param collection \${$this->table->name}_collection records to be deleted\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic function delete_multi({$this->table->name}_collection \${$this->table->name}_collection) {\n\n";
+            $this->code .= "\t\tpublic function delete_multi(collection \${$this->table->name}_collection) {\n\n";
             $this->code .= "\t\t\t// Delete records\n";
             $this->code .= "\t\t\treturn parent::_delete_multi(\${$this->table->name}_collection);\n";
             $this->code .= "\t\t}\n";

@@ -1,10 +1,10 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\locale;
 
-    class locale_instance {
+    class instance {
 
-        use core_instance;
+        use \neoform\core\instance;
 
         /**
          * @var bool is the locale translation system active
@@ -56,7 +56,7 @@
          */
         public function __construct(array $config) {
             $this->active       = (bool) $config['active'];
-            $this->all_iso2     = \array_merge([], $config['allowed']);
+            $this->all_iso2     = array_merge([], $config['allowed']);
             $this->default_iso2 = (string) $config['default'];
             $this->set((string) $config['default']);
         }
@@ -115,7 +115,7 @@
             }
 
             if (! isset($this->namespace_ids[$namespace_name])) {
-                $this->namespace_ids[$namespace_name] = (int) current(entity::dao('locale_namespace')->by_name(
+                $this->namespace_ids[$namespace_name] = (int) current(\neoform\entity::dao('locale\npace')->by_name(
                     $namespace_name
                 ));
             }
@@ -163,7 +163,7 @@
                 if (isset($this->namespace_ids[$namespace_name])) {
                     $namespace_id = $this->namespace_ids[$namespace_name];
                 } else {
-                    $namespace_id = $this->namespace_ids[$namespace_name] = (int) current(entity::dao('locale_namespace')->by_name(
+                    $namespace_id = $this->namespace_ids[$namespace_name] = (int) current(\neoform\entity::dao('locale\npace')->by_name(
                         $namespace_name
                     ));
                 }
@@ -200,7 +200,7 @@
          */
         protected function _load_translations($namespace_id) {
             if ($this->current_iso2) {
-                $this->messages[$namespace_id] = locale_lib::by_locale_namespace(
+                $this->messages[$namespace_id] = lib::by_locale_namespace(
                     $this->current_iso2,
                     $namespace_id
                 );

@@ -1,15 +1,17 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\auth;
+
+    use neoform\entity;
 
     /**
      * Auth Model
      *
      * @var binary $hash
      * @var int $user_id
-     * @var \datetime $expires_on
+     * @var datetime $expires_on
      */
-    class auth_model extends entity_record_model implements auth_definition {
+    class model extends entity\record\model implements definition {
 
         public function __get($k) {
 
@@ -21,7 +23,7 @@
 
                     // dates
                     case 'expires_on':
-                        return $this->_model($k, $this->vars[$k], 'type_date');
+                        return $this->_model($k, $this->vars[$k], '\neoform\type\date');
 
                     // strings
                     case 'hash':

@@ -1,6 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\acl\group\user;
+
+    use neoform\entity;
 
     /**
      * Acl Group User Model
@@ -8,7 +10,7 @@
      * @var int $acl_group_id
      * @var int $user_id
      */
-    class acl_group_user_model extends entity_link_model implements acl_group_user_definition {
+    class model extends entity\link\model implements definition {
 
         public function __get($k) {
 
@@ -28,18 +30,18 @@
         /**
          * Acl Group Model based on 'acl_group_id'
          *
-         * @return acl_group_model
+         * @return \neoform\acl\group\model
          */
         public function acl_group() {
-            return $this->_model('acl_group', $this->vars['acl_group_id'], 'acl_group_model');
+            return $this->_model('acl_group', $this->vars['acl_group_id'], '\neoform\acl\group\model');
         }
 
         /**
          * User Model based on 'user_id'
          *
-         * @return user_model
+         * @return \neoform\user\model
          */
         public function user() {
-            return $this->_model('user', $this->vars['user_id'], 'user_model');
+            return $this->_model('user', $this->vars['user_id'], '\neoform\user\model');
         }
     }

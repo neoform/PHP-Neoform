@@ -3,12 +3,13 @@
     namespace neoform\sql;
 
     use PDO;
-    use \exception;
+    use neoform;
+    use exception;
 
     class parser {
 
         protected static function driver() {
-            return core::sql()->getAttribute(PDO::ATTR_DRIVER_NAME);
+            return neoform\core::sql()->getAttribute(PDO::ATTR_DRIVER_NAME);
         }
 
         public static function get_table($name) {

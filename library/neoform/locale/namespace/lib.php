@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\locale\npace;
 
-    class locale_namespace_lib {
+    class lib {
 
     }

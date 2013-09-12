@@ -1,6 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\acl\group\role;
+
+    use neoform\entity;
 
     /**
      * Acl Group Role Model
@@ -8,7 +10,7 @@
      * @var int $acl_group_id
      * @var int $acl_role_id
      */
-    class acl_group_role_model extends entity_link_model implements acl_group_role_definition {
+    class model extends entity\link\model implements definition {
 
         public function __get($k) {
 
@@ -28,18 +30,18 @@
         /**
          * Acl Group Model based on 'acl_group_id'
          *
-         * @return acl_group_model
+         * @return \neoform\acl\group\model
          */
         public function acl_group() {
-            return $this->_model('acl_group', $this->vars['acl_group_id'], 'acl_group_model');
+            return $this->_model('acl_group', $this->vars['acl_group_id'], '\neoform\acl\group\model');
         }
 
         /**
          * Acl Role Model based on 'acl_role_id'
          *
-         * @return acl_role_model
+         * @return \neoform\acl\role\model
          */
         public function acl_role() {
-            return $this->_model('acl_role', $this->vars['acl_role_id'], 'acl_role_model');
+            return $this->_model('acl_role', $this->vars['acl_role_id'], '\neoform\acl\role\model');
         }
     }

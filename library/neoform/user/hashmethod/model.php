@@ -1,6 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\hashmethod;
+
+    use neoform\entity;
 
     /**
      * User Hashmethod Model
@@ -8,7 +10,7 @@
      * @var int $id
      * @var string $name
      */
-    class user_hashmethod_model extends entity_record_model implements user_hashmethod_definition {
+    class model extends entity\record\model implements definition {
 
         public function __get($k) {
 
@@ -35,13 +37,13 @@
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
          *
-         * @return user_collection
+         * @return \neoform\user\collection
          */
         public function user_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('user_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = new user_collection(
-                    entity::dao('user')->by_password_hashmethod($this->vars['id'], $order_by, $offset, $limit)
+                $this->_vars[$key] = new \neoform\user\collection(
+                    entity::dao('neoform\user')->by_password_hashmethod($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -59,7 +61,7 @@
 
             $key = parent::_count_var_key('user_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('user')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('neoform\user')->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -72,11 +74,11 @@
          * @param integer       $cost
          *
          * @return binary|string
-         * @throws user_exception
+         * @throws \neoform\user\exception
          */
         public function hash($password, $salt, $cost) {
             if (($cost = (int) $cost) < 1) {
-                throw new user_exception('Password hash cost must be at least 1');
+                throw new \neoform\user\exception('Password hash cost must be at least 1');
             }
 
             // Seems pointless to make an object here, except PHP doesn't allow abstract static functions, weak

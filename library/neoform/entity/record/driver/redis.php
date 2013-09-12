@@ -246,7 +246,7 @@
         public static function update(record\dao $self, $pool, $pk, record\model $model, array $info) {
             if (! core::redis($pool)->set(
                 '_db_:' . $self::TABLE . ":{$model->$pk}",
-                \array_merge($model->export(), $info)
+                array_merge($model->export(), $info)
             )) {
                 $message = core::redis($pool)->getLastError();
                 core::redis($pool)->clearLastError();

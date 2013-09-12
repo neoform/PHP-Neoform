@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\acl\group;
 
     /**
      * Entity definition interface
      */
-    interface acl_group_definition {
+    interface definition {
 
         const NAME          = 'acl group';
         const TABLE         = 'acl_group';

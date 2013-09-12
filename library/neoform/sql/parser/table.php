@@ -61,7 +61,7 @@
             switch ((string) $k) {
 
                 case 'name':
-                    return $this->name;
+                    return trim($this->name, '_');
 
                 case 'fields':
                     return $this->fields;
@@ -79,14 +79,14 @@
                     return $this->indexes;
 
                 case 'all_indexes':
-                    return \array_merge(
+                    return array_merge(
                         [ $this->primary_keys, ],
                         $this->unique_keys,
                         $this->indexes
                     );
 
                 case 'all_unique_indexes':
-                    return \array_merge(
+                    return array_merge(
                         [ $this->primary_keys, ],
                         $this->unique_keys
                     );
@@ -100,7 +100,7 @@
                         }
                         $indexed_fields[join(':', $key)] = $index;
                     }
-                    foreach (\array_merge($this->unique_keys, $this->primary_keys) as $index) {
+                    foreach (array_merge($this->unique_keys, $this->primary_keys) as $index) {
                         if (count($index) > 1) {
                             $index = array_slice($index, 0, count($index) - 1);
                             $key = [];
@@ -113,14 +113,14 @@
                     return array_values($indexed_fields);
 
                 case 'all_non_pk_indexes':
-                    return \array_merge(
+                    return array_merge(
                         $this->unique_keys,
                         $this->indexes
                     );
 
                 case 'all_index_combinations':
                     $key_combinations = [];
-                    foreach (\array_merge([ $this->primary_keys, ], $this->unique_keys, $this->indexes) as $index) {
+                    foreach (array_merge([ $this->primary_keys, ], $this->unique_keys, $this->indexes) as $index) {
                         $previous        = [];
                         $previous_fields = [];
                         foreach ($index as $field) {
@@ -133,7 +133,7 @@
 
                 case 'all_non_pk_index_combinations':
                     $key_combinations = [];
-                    foreach (\array_merge($this->unique_keys, $this->indexes) as $index) {
+                    foreach (array_merge($this->unique_keys, $this->indexes) as $index) {
 
                         // Skip useless indexes
                         foreach ($index as $field) {

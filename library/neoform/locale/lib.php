@@ -1,8 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\locale;
 
-    class locale_lib {
+    use neoform\core;
+    use neoform\cache;
+
+    class lib {
 
         /**
          * @param string  $locale
@@ -58,7 +61,7 @@
                 return $arr;
             };
 
-            return cache_lib::single(
+            return cache\lib::single(
                 $config['cache_engine'],
                 $config['cache_engine_read'],
                 $config['cache_engine_write'],
@@ -71,13 +74,13 @@
          * Delete cached translation dictionary
          *
          * @param string $locale_iso2
-         * @param locale_namespace_model $namespace
+         * @param \neoform\locale\npace\model $namespace
          */
-        public static function flush_by_locale_namespace($locale_iso2, locale_namespace_model $namespace) {
+        public static function flush_by_locale_namespace($locale_iso2, \neoform\locale\npace\model $namespace) {
 
             $config = core::config()['locale'];
 
-            cache_lib::delete(
+            cache\lib::delete(
                 $config['cache_engine'],
                 $config['cache_engine_read'],
                 $config['cache_engine_write'],

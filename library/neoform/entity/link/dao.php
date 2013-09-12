@@ -146,7 +146,7 @@
                          */
                         foreach ($select_fields as $select_field) {
                             if (array_key_exists($select_field, $fieldvals)) {
-                                $fieldvals[$select_field] = array_unique(\array_merge(
+                                $fieldvals[$select_field] = array_unique(array_merge(
                                     is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
                                     array_column($results, $select_field)
                                 ));
@@ -225,7 +225,7 @@
                             $fieldvals = & $fieldvals_arr[$k];
 
                             if (array_key_exists($select_field, $fieldvals)) {
-                                $fieldvals[$select_field] = array_unique(\array_merge(
+                                $fieldvals[$select_field] = array_unique(array_merge(
                                     is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
                                     array_column($results_arr[$k], $select_field)
                                 ));
@@ -270,7 +270,7 @@
 
                             foreach ($select_fields as $select_field) {
                                 if (array_key_exists($select_field, $fieldvals)) {
-                                    $fieldvals[$select_field] = array_unique(\array_merge(
+                                    $fieldvals[$select_field] = array_unique(array_merge(
                                         is_array($fieldvals[$select_field]) ? $fieldvals[$select_field] : [ $fieldvals[$select_field] ],
                                         array_column($results_arr[$k], $select_field)
                                     ));

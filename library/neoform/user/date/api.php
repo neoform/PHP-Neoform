@@ -1,17 +1,20 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\date;
 
-    class user_date_api {
+    use neoform\input;
+    use neoform\entity;
+
+    class api {
 
         public static function insert(array $info) {
 
-            $input = new input_collection($info);
+            $input = new input\collection($info);
 
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity::dao('user_date')->insert([
+                return entity::dao('neoform\user\date')->insert([
                     'user_id'             => $input->user_id->val(),
                     'created_on'          => $input->created_on->val(),
                     'last_login'          => $input->last_login->val(),
@@ -22,14 +25,14 @@
             throw $input->exception();
         }
 
-        public static function update(user_date_model $user_date, array $info, $crush=false) {
+        public static function update(model $user_date, array $info, $crush=false) {
 
-            $input = new input_collection($info);
+            $input = new input\collection($info);
 
             self::_validate_update($user_date, $input);
 
             if ($input->is_valid()) {
-                return entity::dao('user_date')->update(
+                return entity::dao('neoform\user\date')->update(
                     $user_date,
                     $input->vals(
                         [
@@ -46,17 +49,21 @@
             throw $input->exception();
         }
 
-        public static function delete(user_date_model $user_date) {
-            return entity::dao('user_date')->delete($user_date);
+        public static function delete(model $user_date) {
+            return entity::dao('neoform\user\date')->delete($user_date);
         }
 
-        public static function _validate_insert(input_collection $input) {
+        public static function _validate_insert(input\collection $input) {
 
             // user_id
-            $input->user_id->cast('int')->digit(0, 4294967295)->callback(function($user_id){
+            $input->user_id->cast('int')->digit(0, 4294967295)->callback(function($user_id) {
+                if (entity::dao('neoform\user\date')->record($user_id->val())) {
+                    $user_id->errors('already in use');
+                }
+            })->callback(function($user_id) {
                 try {
-                    $user_id->data('model', new user_model($user_id->val()));
-                } catch (user_exception $e) {
+                    $user_id->data('model', new \neoform\user\model($user_id->val()));
+                } catch (\neoform\user\exception $e) {
                     $user_id->errors($e->getMessage());
                 }
             });
@@ -74,13 +81,18 @@
             $input->password_updated_on->cast('string')->optional()->is_datetime();
         }
 
-        public static function _validate_update(user_date_model $user_date, input_collection $input) {
+        public static function _validate_update(model $user_date, input\collection $input) {
 
             // user_id
-            $input->user_id->cast('int')->optional()->digit(0, 4294967295)->callback(function($user_id){
+            $input->user_id->cast('int')->optional()->digit(0, 4294967295)->callback(function($user_id) use ($user_date) {
+                $user_date_info = entity::dao('neoform\user\date')->record($user_id->val());
+                if ($user_date_info && (int) $user_date_info['user_id'] !== $user_date->user_id) {
+                    $user_id->errors('already in use');
+                }
+            })->callback(function($user_id) {
                 try {
-                    $user_id->data('model', new user_model($user_id->val()));
-                } catch (user_exception $e) {
+                    $user_id->data('model', new \neoform\user\model($user_id->val()));
+                } catch (\neoform\user\exception $e) {
                     $user_id->errors($e->getMessage());
                 }
             });
@@ -97,5 +109,4 @@
             // password_updated_on
             $input->password_updated_on->cast('string')->optional()->is_datetime();
         }
-
     }

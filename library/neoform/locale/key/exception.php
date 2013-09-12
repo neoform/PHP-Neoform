@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\locale\key;
 
-    class locale_key_exception extends locale_exception {
+    class exception extends \neoform\entity\exception {
 
     }

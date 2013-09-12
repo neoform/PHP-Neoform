@@ -9,7 +9,7 @@
         }
 
         public function default_action() {
-            $view = new render_view;
+            $view = new render\view;
             $view->render('index');
         }
     }

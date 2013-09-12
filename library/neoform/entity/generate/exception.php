@@ -9,7 +9,8 @@
         public function code() {
 
             $this->code .= '<?php'."\n\n";
-            $this->code .= "\tclass {$this->table->name}_exception extends entity_exception {\n\n";
+            $this->code .= "\tnamespace neoform\\" . str_replace('_', '\\', $this->table->name) . ";\n\n";
+            $this->code .= "\tclass exception extends \\neoform\\entity\\exception {\n\n";
             $this->code .= "\t}\n";
         }
     }

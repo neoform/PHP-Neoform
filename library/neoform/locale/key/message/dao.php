@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\locale\key\message;
 
     /**
      * Locale Key Message DAO
      */
-    class locale_key_message_dao extends entity_record_dao implements locale_key_message_definition {
+    class dao extends \neoform\entity\record\dao implements definition {
 
         const BY_LOCALE     = 'by_locale';
         const BY_LOCALE_KEY = 'by_locale_key';
@@ -113,7 +113,7 @@
         /**
          * Get multiple sets of Locale Key Message ids by locale_key
          *
-         * @param locale_key_collection|array $locale_key_list
+         * @param \neoform\locale\key\collection|array $locale_key_list
          * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
@@ -122,7 +122,7 @@
          */
         public function by_key_multi($locale_key_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
-            if ($locale_key_list instanceof locale_key_collection) {
+            if ($locale_key_list instanceof \neoform\locale\key\collection) {
                 foreach ($locale_key_list as $k => $locale_key) {
                     $keys[$k] = [
                         'key_id' => (int) $locale_key->id,
@@ -147,7 +147,7 @@
         /**
          * Get multiple sets of Locale Key Message ids by locale
          *
-         * @param locale_collection|array $locale_list
+         * @param \neoform\locale\collection|array $locale_list
          * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
@@ -156,7 +156,7 @@
          */
         public function by_locale_multi($locale_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
-            if ($locale_list instanceof locale_collection) {
+            if ($locale_list instanceof \neoform\locale\collection) {
                 foreach ($locale_list as $k => $locale) {
                     $keys[$k] = [
                         'locale' => (string) $locale->iso2,
@@ -230,7 +230,7 @@
          *
          * @param array $info associative array, keys matching columns in database for this entity
          *
-         * @return locale_key_message_model
+         * @return model
          */
         public function insert(array $info) {
 
@@ -243,7 +243,7 @@
          *
          * @param array $infos array of associative arrays, keys matching columns in database for this entity
          *
-         * @return locale_key_message_collection
+         * @return collection
          */
         public function insert_multi(array $infos) {
 
@@ -255,12 +255,12 @@
          * Updates a Locale Key Message record with new data
          *   only fields that are specified in the $info array will be written
          *
-         * @param locale_key_message_model $locale_key_message record to be updated
+         * @param model $locale_key_message record to be updated
          * @param array $info data to write to the record
          *
-         * @return locale_key_message_model updated model
+         * @return model updated model
          */
-        public function update(locale_key_message_model $locale_key_message, array $info) {
+        public function update(model $locale_key_message, array $info) {
 
             // Update record
             return parent::_update($locale_key_message, $info);
@@ -269,11 +269,11 @@
         /**
          * Delete a Locale Key Message record
          *
-         * @param locale_key_message_model $locale_key_message record to be deleted
+         * @param model $locale_key_message record to be deleted
          *
          * @return bool
          */
-        public function delete(locale_key_message_model $locale_key_message) {
+        public function delete(model $locale_key_message) {
 
             // Delete record
             return parent::_delete($locale_key_message);
@@ -282,11 +282,11 @@
         /**
          * Delete multiple Locale Key Message records
          *
-         * @param locale_key_message_collection $locale_key_message_collection records to be deleted
+         * @param collection $locale_key_message_collection records to be deleted
          *
          * @return bool
          */
-        public function delete_multi(locale_key_message_collection $locale_key_message_collection) {
+        public function delete_multi(collection $locale_key_message_collection) {
 
             // Delete records
             return parent::_delete_multi($locale_key_message_collection);

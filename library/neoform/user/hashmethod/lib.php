@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\hashmethod;
 
-    class user_hashmethod_lib {
+    class lib {
 
     }

@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\site;
 
-    class user_site_exception extends entity_exception {
+    class exception extends \neoform\entity\exception {
 
     }

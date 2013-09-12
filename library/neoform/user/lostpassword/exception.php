@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\lostpassword;
 
-    class user_lostpassword_exception extends entity_exception {
+    class exception extends \neoform\entity\exception {
 
     }

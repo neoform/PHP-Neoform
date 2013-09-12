@@ -301,7 +301,7 @@
                     function($cache_key, $pks) use ($fieldvals, $order_by) {
 
                         if (array_key_exists($this::PRIMARY_KEY, $fieldvals)) {
-                            $fieldvals[$this::PRIMARY_KEY] = array_unique(\array_merge(
+                            $fieldvals[$this::PRIMARY_KEY] = array_unique(array_merge(
                                 is_array($fieldvals[$this::PRIMARY_KEY]) ? $fieldvals[$this::PRIMARY_KEY] : [ $fieldvals[$this::PRIMARY_KEY] ],
                                 $pks
                             ));
@@ -333,7 +333,7 @@
 
                         // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
                         if (array_key_exists($pk, $fieldvals)) {
-                            $fieldvals[$pk] = array_unique(\array_merge(
+                            $fieldvals[$pk] = array_unique(array_merge(
                                 is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
                                 $pks
                             ));
@@ -401,7 +401,7 @@
                             $fieldvals = & $fieldvals_arr[$k];
 
                             if (array_key_exists($pk, $fieldvals)) {
-                                $fieldvals[$pk] = array_unique(\array_merge(
+                                $fieldvals[$pk] = array_unique(array_merge(
                                     is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
                                     $pks_arr[$k]
                                 ));
@@ -443,7 +443,7 @@
                             $fieldvals = & $fieldvals_arr[$k];
 
                             if (array_key_exists($pk, $fieldvals)) {
-                                $fieldvals[$pk] = array_unique(\array_merge(
+                                $fieldvals[$pk] = array_unique(array_merge(
                                     is_array($fieldvals[$pk]) ? $fieldvals[$pk] : [ $fieldvals[$pk] ],
                                     $pks_arr[$k]
                                 ));

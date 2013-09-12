@@ -1,8 +1,12 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\locale\key\message;
 
-    interface locale_key_message_definition {
+    /**
+     * Entity definition interface
+     */
+    interface definition {
+
         const NAME          = 'locale key message';
         const TABLE         = 'locale_key_message';
         const AUTOINCREMENT = true;

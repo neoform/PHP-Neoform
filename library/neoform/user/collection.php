@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user;
 
     /**
      * User collection
      */
-    class user_collection extends entity_record_collection implements user_definition {
+    class collection extends \neoform\entity\record\collection implements definition {
 
         /**
          * Preload the Acl Group models in this collection
@@ -14,14 +14,14 @@
          * @param integer|null $offset   get PKs starting at this offset
          * @param integer|null $limit    max number of PKs to return
          *
-         * @return acl_group_collection
+         * @return \neoform\acl\group\collection
          */
         public function acl_group_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'acl_group_collection',
-                'acl_group_user',
+                '\neoform\acl\group\user',
                 'by_user',
-                'acl_group',
+                '\neoform\acl\group',
                 $order_by,
                 $offset,
                 $limit
@@ -36,7 +36,7 @@
         public function acl_group_count() {
             return $this->_preload_counts(
                 'acl_group_count',
-                'acl_group_user',
+                '\neoform\acl\group\user',
                 'user_id'
             );
         }
@@ -44,16 +44,16 @@
         /**
          * Preload the Auth models in this collection
          *
-         * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param array|null   $order_by array of field names (as the key) and sort direction (entity\record_dao::SORT_ASC, entity\record_dao::SORT_DESC)
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
          *
-         * @return auth_collection
+         * @return \neoform\auth\collection
          */
         public function auth_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_one_to_many(
                 'auth_collection',
-                'auth',
+                '\neoform\auth',
                 'by_user',
                 $order_by,
                 $offset,
@@ -69,7 +69,7 @@
         public function auth_count() {
             return $this->_preload_counts(
                 'auth_count',
-                'auth',
+                '\neoform\auth',
                 'user_id'
             );
         }
@@ -81,14 +81,14 @@
          * @param integer|null $offset   get PKs starting at this offset
          * @param integer|null $limit    max number of PKs to return
          *
-         * @return acl_role_collection
+         * @return \neoform\acl\role\collection
          */
         public function acl_role_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'acl_role_collection',
-                'user_acl_role',
+                '\neoform\user\acl\role',
                 'by_user',
-                'acl_role',
+                '\neoform\acl\role',
                 $order_by,
                 $offset,
                 $limit
@@ -103,7 +103,7 @@
         public function acl_role_count() {
             return $this->_preload_counts(
                 'acl_role_count',
-                'user_acl_role',
+                '\neoform\user\acl\role',
                 'user_id'
             );
         }
@@ -111,12 +111,12 @@
         /**
          * Preload the User Date models in this collection
          *
-         * @return user_date_collection
+         * @return \neoform\user\date\collection
          */
         public function user_date_collection() {
             return $this->_preload_one_to_one(
                 'user_date',
-                'user_date',
+                '\neoform\user\date',
                 'id'
             );
         }
@@ -124,12 +124,12 @@
         /**
          * Preload the User Lostpassword models in this collection
          *
-         * @return user_lostpassword_collection
+         * @return \neoform\user\lostpassword\collection
          */
         public function user_lostpassword_collection() {
             return $this->_preload_one_to_one(
                 'user_lostpassword',
-                'user_lostpassword',
+                '\neoform\user\lostpassword',
                 'id'
             );
         }
@@ -141,14 +141,14 @@
          * @param integer|null $offset   get PKs starting at this offset
          * @param integer|null $limit    max number of PKs to return
          *
-         * @return site_collection
+         * @return \neoform\site\collection
          */
         public function site_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'site_collection',
-                'user_site',
+                '\neoform\user\site',
                 'by_user',
-                'site',
+                '\neoform\site',
                 $order_by,
                 $offset,
                 $limit
@@ -163,7 +163,7 @@
         public function site_count() {
             return $this->_preload_counts(
                 'site_count',
-                'user_site',
+                '\neoform\user\site',
                 'user_id'
             );
         }
@@ -171,12 +171,12 @@
         /**
          * Preload the User Hashmethod models in this collection
          *
-         * @return user_hashmethod_collection
+         * @return \neoform\user\hashmethod\collection
          */
         public function user_hashmethod_collection() {
             return $this->_preload_one_to_one(
                 'user_hashmethod',
-                'user_hashmethod',
+                '\neoform\user\hashmethod',
                 'password_hashmethod'
             );
         }
@@ -184,12 +184,12 @@
         /**
          * Preload the User Status models in this collection
          *
-         * @return user_status_collection
+         * @return \neoform\user\status\collection
          */
         public function user_status_collection() {
             return $this->_preload_one_to_one(
                 'user_status',
-                'user_status',
+                '\neoform\user\status',
                 'status_id'
             );
         }

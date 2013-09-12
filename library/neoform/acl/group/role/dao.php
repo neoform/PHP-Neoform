@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\acl\group\role;
 
     /**
      * Acl Group Role link DAO
      */
-    class acl_group_role_dao extends entity_link_dao implements acl_group_role_definition {
+    class dao extends \neoform\entity\link\dao implements definition {
 
         const BY_ACL_GROUP          = 'by_acl_group';
         const BY_ACL_GROUP_ACL_ROLE = 'by_acl_group_acl_role';
@@ -104,7 +104,7 @@
         /**
          * Get multiple sets of acl_role_id by a collection of acl_groups
          *
-         * @param acl_group_collection|array $acl_group_list
+         * @param \neoform\acl\group\collection|array $acl_group_list
          * @param array|null $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
          * @param integer|null $offset get rows starting at this offset
          * @param integer|null $limit max number of rows to return
@@ -113,7 +113,7 @@
          */
         public function by_acl_group_multi($acl_group_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
-            if ($acl_group_list instanceof acl_group_collection) {
+            if ($acl_group_list instanceof \neoform\acl\group\collection) {
                 foreach ($acl_group_list as $k => $acl_group) {
                     $keys[$k] = [
                         'acl_group_id' => (int) $acl_group->id,
@@ -144,7 +144,7 @@
         /**
          * Get multiple sets of acl_group_id by a collection of acl_roles
          *
-         * @param acl_role_collection|array $acl_role_list
+         * @param \neoform\acl\role\collection|array $acl_role_list
          * @param array|null $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
          * @param integer|null $offset get rows starting at this offset
          * @param integer|null $limit max number of rows to return
@@ -153,7 +153,7 @@
          */
         public function by_acl_role_multi($acl_role_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
-            if ($acl_role_list instanceof acl_role_collection) {
+            if ($acl_role_list instanceof \neoform\acl\role\collection) {
                 foreach ($acl_role_list as $k => $acl_role) {
                     $keys[$k] = [
                         'acl_role_id' => (int) $acl_role->id,
@@ -219,7 +219,6 @@
 
             // Update link
             return parent::_update($new_info, $where);
-
         }
 
         /**
@@ -233,7 +232,6 @@
 
             // Delete link
             return parent::_delete($keys);
-
         }
 
         /**
@@ -247,6 +245,5 @@
 
             // Delete links
             return parent::_delete_multi($keys_arr);
-
         }
     }

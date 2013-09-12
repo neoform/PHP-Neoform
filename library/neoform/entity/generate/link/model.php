@@ -9,8 +9,10 @@
         public function code() {
 
             $this->code .= '<?php'."\n\n";
+            $this->code .= "\tnamespace neoform\\" . str_replace('_', '\\', $this->table->name) . ";\n\n";
+            $this->code .= "\tuse neoform\\entity;\n\n";
             $this->class_comments();
-            $this->code .= "\tclass {$this->table->name}_model extends entity_link_model implements {$this->table->name}_definition {\n\n";
+            $this->code .= "\tclass model extends entity\\link\\model implements definition {\n\n";
 
             $this->get();
             $this->references();

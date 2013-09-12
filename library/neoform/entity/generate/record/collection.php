@@ -25,12 +25,13 @@
         public function code() {
 
             $this->code .= '<?php'."\n\n";
+            $this->code .= "\tnamespace neoform\\" . str_replace('_', '\\', $this->table->name) . ";\n\n";
 
             $this->code .= "\t/**\n";
             $this->code .= "\t * " . ucwords(str_replace('_', ' ', $this->table->name)) . " collection\n";
             $this->code .= "\t */\n";
 
-            $this->code .= "\tclass {$this->table->name}_collection extends entity_record_collection implements {$this->table->name}_definition {\n\n";
+            $this->code .= "\tclass collection extends \\neoform\\entity\\record\\collection implements definition {\n\n";
 
             $this->preloaders();
 
@@ -92,13 +93,13 @@
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Preload the " . ucwords(str_replace('_', ' ', $referenced_field->table->name)) . " models in this collection\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @return {$referenced_field->table->name}_collection\n";
+            $this->code .= "\t\t * @return \\neoform\\" . str_replace('_', '\\', $referenced_field->table->name) . "\\collection\n";
             $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic function {$name}() {\n";
             $this->code .= "\t\t\treturn \$this->_preload_one_to_one(\n";
             $this->code .= "\t\t\t\t'{$_var_key}',\n";
-            $this->code .= "\t\t\t\t'{$referenced_field->table->name}',\n";
+            $this->code .= "\t\t\t\t'\\neoform\\" . str_replace('_', '\\', $referenced_field->table->name) . "',\n";
             $this->code .= "\t\t\t\t'{$field->name}'\n";
             $this->code .= "\t\t\t);\n";
             $this->code .= "\t\t}\n\n";
@@ -115,17 +116,17 @@
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * Preload the " . ($self_reference ? 'child ' : '') . ucwords(str_replace('_', ' ', $field->table->name)) . " models in this collection\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @param array|null   \$order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)\n";
+            $this->code .= "\t\t * @param array|null   \$order_by array of field names (as the key) and sort direction (entity\\record_dao::SORT_ASC, entity\\record_dao::SORT_DESC)\n";
             $this->code .= "\t\t * @param integer|null \$offset get PKs starting at this offset\n";
             $this->code .= "\t\t * @param integer|null \$limit max number of PKs to return\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @return {$field->table->name}_collection\n";
+            $this->code .= "\t\t * @return \\neoform\\" . str_replace('_', '\\', $field->table->name) . "\\collection\n";
             $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic function {$name}(array \$order_by=null, \$offset=null, \$limit=null) {\n";
             $this->code .= "\t\t\treturn \$this->_preload_one_to_many(\n";
             $this->code .= "\t\t\t\t'{$_var_key}',\n";
-            $this->code .= "\t\t\t\t'{$field->table->name}',\n";
+            $this->code .= "\t\t\t\t'\\neoform\\" . str_replace('_', '\\', $field->table->name) . "',\n";
             $this->code .= "\t\t\t\t'by_{$field->name_idless}',\n";
             $this->code .= "\t\t\t\t\$order_by,\n";
             $this->code .= "\t\t\t\t\$offset,\n";
@@ -145,7 +146,7 @@
             $this->code .= "\t\tpublic function {$name}() {\n";
             $this->code .= "\t\t\treturn \$this->_preload_counts(\n";
             $this->code .= "\t\t\t\t'{$_var_key}',\n";
-            $this->code .= "\t\t\t\t'{$field->table->name}',\n";
+            $this->code .= "\t\t\t\t'\\neoform\\" . str_replace('_', '\\', $field->table->name) . "',\n";
             $this->code .= "\t\t\t\t'{$field->name}'\n";
             $this->code .= "\t\t\t);\n";
             $this->code .= "\t\t}\n\n";
@@ -164,15 +165,15 @@
             $this->code .= "\t\t * @param integer|null \$offset   get PKs starting at this offset\n";
             $this->code .= "\t\t * @param integer|null \$limit    max number of PKs to return\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @return {$referenced_field->referenced_field->table->name}_collection\n";
+            $this->code .= "\t\t * @return \\neoform\\" . str_replace('_', '\\', $referenced_field->referenced_field->table->name) . "\\collection\n";
             $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic function {$name}(array \$order_by=null, \$offset=null, \$limit=null) {\n";
             $this->code .= "\t\t\treturn \$this->_preload_many_to_many(\n";
             $this->code .= "\t\t\t\t'{$_var_key}',\n";
-            $this->code .= "\t\t\t\t'{$field->table->name}',\n";
+            $this->code .= "\t\t\t\t'\\neoform\\" . str_replace('_', '\\', $field->table->name) . "',\n";
             $this->code .= "\t\t\t\t'by_{$field->name_idless}',\n";
-            $this->code .= "\t\t\t\t'{$referenced_field->referenced_field->table->name}',\n";
+            $this->code .= "\t\t\t\t'\\neoform\\" . str_replace('_', '\\', $referenced_field->referenced_field->table->name) . "',\n";
             $this->code .= "\t\t\t\t\$order_by,\n";
             $this->code .= "\t\t\t\t\$offset,\n";
             $this->code .= "\t\t\t\t\$limit\n";
@@ -191,7 +192,7 @@
             $this->code .= "\t\tpublic function {$name}() {\n";
             $this->code .= "\t\t\treturn \$this->_preload_counts(\n";
             $this->code .= "\t\t\t\t'{$_var_key}',\n";
-            $this->code .= "\t\t\t\t'{$field->table->name}',\n";
+            $this->code .= "\t\t\t\t'\\neoform\\" . str_replace('_', '\\', $field->table->name) . "',\n";
             $this->code .= "\t\t\t\t'{$field->name}'\n";
             $this->code .= "\t\t\t);\n";
             $this->code .= "\t\t}\n\n";

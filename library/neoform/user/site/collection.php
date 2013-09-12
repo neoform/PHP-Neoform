@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\site;
 
-    class user_site_collection extends entity_link_collection implements user_site_definition {
+    class collection extends \neoform\entity\link\collection implements definition {
 
     }

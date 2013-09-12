@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\acl\group;
 
-    class acl_group_lib {
+    class lib {
 
     }

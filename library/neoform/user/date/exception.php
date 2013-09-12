@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\date;
 
-    class user_date_exception extends entity_exception {
+    class exception extends \neoform\entity\exception {
 
     }

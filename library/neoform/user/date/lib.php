@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\date;
 
-    class user_date_lib {
+    class lib {
 
     }

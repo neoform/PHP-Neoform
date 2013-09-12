@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\acl\resource;
 
     /**
      * Entity definition interface
      */
-    interface acl_resource_definition {
+    interface definition {
 
         const NAME          = 'acl resource';
         const TABLE         = 'acl_resource';

@@ -15,7 +15,7 @@
         public function locale_key_collection() {
             return $this->_preload_one_to_one(
                 'locale_key',
-                '\neoform\locale\key',
+                'neoform\locale\key',
                 'key_id'
             );
         }
@@ -28,7 +28,7 @@
         public function locale_collection() {
             return $this->_preload_one_to_one(
                 'locale',
-                '\neoform\locale',
+                'neoform\locale',
                 'locale'
             );
         }

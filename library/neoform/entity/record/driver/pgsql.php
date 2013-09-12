@@ -5,7 +5,7 @@
     use neoform\entity\record;
     use neoform\entity;
     use neoform\core;
-    use neoform;
+    use neoform\sql;
 
     use PDO;
 
@@ -60,7 +60,7 @@
             $info->execute();
 
             if ($info = $info->fetch()) {
-                neoform\sql\pdo::unbinary($info);
+                sql\pdo::unbinary($info);
                 return $info;
             }
         }
@@ -96,7 +96,7 @@
                 }
             }
 
-            neoform\sql\pdo::unbinary($infos);
+            sql\pdo::unbinary($infos);
 
             return $infos;
         }
@@ -221,7 +221,7 @@
             $info->execute();
 
             $infos = array_column($info->fetchAll(), null, $pk);
-            neoform\sql\pdo::unbinary($infos);
+            sql\pdo::unbinary($infos);
 
             return $infos;
         }
@@ -269,7 +269,7 @@
             $rs = $rs->fetchAll();
 
             $pks = $rs->fetchAll(PDO::FETCH_COLUMN, 0);
-            neoform\sql\pdo::unbinary($pks);
+            sql\pdo::unbinary($pks);
 
             return $pks;
         }
@@ -322,7 +322,7 @@
                 $return[$row['__k__']][] = $row[$pk];
             }
 
-            neoform\sql\pdo::unbinary($return);
+            sql\pdo::unbinary($return);
 
             return $return;
         }

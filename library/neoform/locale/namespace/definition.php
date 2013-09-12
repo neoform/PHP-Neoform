@@ -1,6 +1,6 @@
 <?php
 
-    namespace neoform\locale\namespace;
+    namespace neoform\locale\nspace;
 
     /**
      * Entity definition interface
@@ -11,5 +11,5 @@
         const TABLE         = 'locale_namespace';
         const AUTOINCREMENT = true;
         const PRIMARY_KEY   = 'id';
-        const ENTITY_NAME   = 'locale\namespace';
+        const ENTITY_NAME   = 'locale\nspace';
     }

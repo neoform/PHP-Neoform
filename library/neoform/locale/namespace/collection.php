@@ -1,6 +1,6 @@
 <?php
 
-    namespace neoform\locale\npace;
+    namespace neoform\locale\nspace;
 
     /**
      * Locale Namespace collection
@@ -19,7 +19,7 @@
         public function locale_key_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_one_to_many(
                 'locale_key_collection',
-                '\neoform\locale\key',
+                'neoform\locale\key',
                 'by_namespace',
                 $order_by,
                 $offset,
@@ -35,7 +35,7 @@
         public function locale_key_count() {
             return $this->_preload_counts(
                 'locale_key_count',
-                '\neoform\locale\key',
+                'neoform\locale\key',
                 'namespace_id'
             );
         }

@@ -5,7 +5,6 @@
     use neoform\entity\record;
     use neoform\entity;
     use neoform\core;
-    use neoform;
 
     use PDO;
 

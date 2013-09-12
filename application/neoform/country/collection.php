@@ -19,7 +19,7 @@
         public function region_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_one_to_many(
                 'region_collection',
-                '\neoform\region',
+                'neoform\region',
                 'by_country',
                 $order_by,
                 $offset,
@@ -35,7 +35,7 @@
         public function region_count() {
             return $this->_preload_counts(
                 'region_count',
-                '\neoform\region',
+                'neoform\region',
                 'country_id'
             );
         }

@@ -19,7 +19,7 @@
         public function user_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_one_to_many(
                 'user_collection',
-                '\neoform\user',
+                'neoform\user',
                 'by_password_hashmethod',
                 $order_by,
                 $offset,
@@ -35,7 +35,7 @@
         public function user_count() {
             return $this->_preload_counts(
                 'user_count',
-                '\neoform\user',
+                'neoform\user',
                 'password_hashmethod'
             );
         }

@@ -121,7 +121,7 @@
          * @return \neoform\locale\npace\model
          */
         public function locale_namespace() {
-            return $this->_model('locale_namespace', $this->vars['namespace_id'], '\neoform\locale\namespace\model');
+            return $this->_model('locale_namespace', $this->vars['namespace_id'], '\neoform\locale\nspace\model');
         }
 
         /**

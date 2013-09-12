@@ -1,10 +1,15 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\entity\link\driver;
 
+    use neoform\entity\link;
+    use neoform\entity\record;
+    use neoform\entity\exception;
+    use neoform\entity;
+    use neoform\core;
     use PDO;
 
-    class entity_link_driver_mysql implements entity_link_driver {
+    class mysql implements link\driver {
 
         /**
          * Parse the table name into a properly escaped table string
@@ -25,14 +30,14 @@
         /**
          * Get specific fields from a record, by keys
          *
-         * @param entity_link_dao $self the name of the DAO
-         * @param string          $pool which source engine pool to use
-         * @param array           $select_fields
-         * @param array           $fieldvals
+         * @param link\dao $self the name of the DAO
+         * @param string   $pool which source engine pool to use
+         * @param array    $select_fields
+         * @param array    $fieldvals
          *
          * @return array
          */
-        public static function by_fields(entity_link_dao $self, $pool, array $select_fields, array $fieldvals) {
+        public static function by_fields(link\dao $self, $pool, array $select_fields, array $fieldvals) {
 
             $where = [];
             $vals  = [];
@@ -66,14 +71,14 @@
         /**
          * Get specific fields from multiple records, by keys
          *
-         * @param entity_link_dao $self the name of the DAO
-         * @param string          $pool which source engine pool to use
-         * @param array           $select_fields
-         * @param array           $fieldvals_arr
+         * @param link\dao $self the name of the DAO
+         * @param string   $pool which source engine pool to use
+         * @param array    $select_fields
+         * @param array    $fieldvals_arr
          *
          * @return array
          */
-        public static function by_fields_multi(entity_link_dao $self, $pool, array $select_fields, array $fieldvals_arr) {
+        public static function by_fields_multi(link\dao $self, $pool, array $select_fields, array $fieldvals_arr) {
             $quoted_select_fields = [];
             $return               = [];
             $queries              = [];
@@ -130,19 +135,19 @@
         /**
          * Get specific fields from a record, by keys - joined to its related foreign table - and limited
          *
-         * @param entity_link_dao   $self the name of the DAO
-         * @param string            $pool which source engine pool to use
-         * @param string            $local_field
-         * @param entity_record_dao $foreign_dao
-         * @param array             $fieldvals
-         * @param array             $order_by
-         * @param integer           $limit
-         * @param integer           $offset
+         * @param link\dao   $self the name of the DAO
+         * @param string     $pool which source engine pool to use
+         * @param string     $local_field
+         * @param record\dao $foreign_dao
+         * @param array      $fieldvals
+         * @param array      $order_by
+         * @param integer    $limit
+         * @param integer    $offset
          *
          * @return array
-         * @throws entity_exception
+         * @throws exception
          */
-        public static function by_fields_limit(entity_link_dao $self, $pool, $local_field, entity_record_dao $foreign_dao,
+        public static function by_fields_limit(link\dao $self, $pool, $local_field, record\dao $foreign_dao,
                                                array $fieldvals, array $order_by, $offset, $limit) {
 
             $quoted_table = self::table($self::TABLE);
@@ -181,7 +186,7 @@
             // ORDER BY
             $order = [];
             foreach ($order_by as $field => $sort_direction) {
-                $order[] = "`{$quoted_foreign_table}`.`{$field}` " . (entity_dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
+                $order[] = "`{$quoted_foreign_table}`.`{$field}` " . (entity\dao::SORT_DESC === $sort_direction ? 'DESC' : 'ASC');
             }
             $order_by = join(', ', $order);
 
@@ -203,19 +208,19 @@
         /**
          * Get specific fields from a record, by keys - joined to its related foreign table - and limited
          *
-         * @param entity_link_dao   $self the name of the DAO
-         * @param string            $pool which source engine pool to use
-         * @param string            $local_field
-         * @param entity_record_dao $foreign_dao
-         * @param array             $fieldvals_arr
-         * @param array             $order_by
-         * @param integer           $limit
-         * @param integer           $offset
+         * @param link\dao   $self the name of the DAO
+         * @param string     $pool which source engine pool to use
+         * @param string     $local_field
+         * @param record\dao $foreign_dao
+         * @param array      $fieldvals_arr
+         * @param array      $order_by
+         * @param integer    $limit
+         * @param integer    $offset
          *
          * @return array
-         * @throws entity_exception
+         * @throws exception
          */
-        public static function by_fields_limit_multi(entity_link_dao $self, $pool, $local_field, entity_record_dao $foreign_dao,
+        public static function by_fields_limit_multi(link\dao $self, $pool, $local_field, record\dao $foreign_dao,
                                                array $fieldvals_arr, array $order_by, $offset, $limit) {
             $return  = [];
             $vals    = [];
@@ -290,13 +295,13 @@
         /**
          * Get a count
          *
-         * @param entity_link_dao $self
-         * @param string          $pool
-         * @param array           $fieldvals
+         * @param link\dao $self
+         * @param string   $pool
+         * @param array    $fieldvals
          *
          * @return integer
          */
-        public static function count(entity_link_dao $self, $pool, array $fieldvals=null) {
+        public static function count(link\dao $self, $pool, array $fieldvals=null) {
             $where = [];
             $vals  = [];
 
@@ -323,13 +328,13 @@
         /**
          * Get multiple counts
          *
-         * @param entity_link_dao $self
-         * @param string          $pool
-         * @param array           $fieldvals_arr
+         * @param link\dao $self
+         * @param string   $pool
+         * @param array    $fieldvals_arr
          *
          * @return array
          */
-        public static function count_multi(entity_link_dao $self, $pool, array $fieldvals_arr) {
+        public static function count_multi(link\dao $self, $pool, array $fieldvals_arr) {
             $queries = [];
             $vals    = [];
             $counts  = [];
@@ -368,14 +373,14 @@
         /**
          * Insert a link
          *
-         * @param entity_link_dao $self the name of the DAO
-         * @param string          $pool which source engine pool to use
-         * @param array           $info
-         * @param bool            $replace
+         * @param link\dao $self the name of the DAO
+         * @param string   $pool which source engine pool to use
+         * @param array    $info
+         * @param bool     $replace
          *
-         * @throws entity_exception
+         * @throws exception
          */
-        public static function insert(entity_link_dao $self, $pool, array $info, $replace) {
+        public static function insert(link\dao $self, $pool, array $info, $replace) {
 
             $insert_fields = [];
             foreach ($info as $k => $v) {
@@ -392,21 +397,21 @@
 
             if (! $insert->execute(array_values($info))) {
                 $error = core::sql($pool)->errorInfo();
-                throw new entity_exception("Insert failed - {$error[0]}: {$error[2]}");
+                throw new exception("Insert failed - {$error[0]}: {$error[2]}");
             }
         }
 
         /**
          * Insert multiple links
          *
-         * @param entity_link_dao $self the name of the DAO
-         * @param string          $pool which source engine pool to use
-         * @param array           $infos
-         * @param bool            $replace
+         * @param link\dao $self the name of the DAO
+         * @param string   $pool which source engine pool to use
+         * @param array    $infos
+         * @param bool     $replace
          *
-         * @throws entity_exception
+         * @throws exception
          */
-        public static function insert_multi(entity_link_dao $self, $pool, array $infos, $replace) {
+        public static function insert_multi(link\dao $self, $pool, array $infos, $replace) {
             $insert_fields = [];
             $info          = current($infos);
             $sql           = core::sql($pool);
@@ -432,27 +437,27 @@
                 if (! $insert->execute(array_values($info))) {
                     $error = $sql->errorInfo();
                     $sql->rollback();
-                    throw new entity_exception("Insert multi failed - {$error[0]}: {$error[2]}");
+                    throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                 }
             }
 
             if ($multi && ! $sql->commit()) {
                 $error = $sql->errorInfo();
-                throw new entity_exception("Insert multi failed - {$error[0]}: {$error[2]}");
+                throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
             }
         }
 
         /**
          * Update a set of links
          *
-         * @param entity_link_dao $self the name of the DAO
-         * @param string          $pool which source engine pool to use
-         * @param array           $new_info
-         * @param array           $where
+         * @param link\dao $self the name of the DAO
+         * @param string   $pool which source engine pool to use
+         * @param array    $new_info
+         * @param array    $where
          *
-         * @throws entity_exception
+         * @throws exception
          */
-        public static function update(entity_link_dao $self, $pool, array $new_info, array $where) {
+        public static function update(link\dao $self, $pool, array $new_info, array $where) {
             $vals          = [];
             $update_fields = [];
 
@@ -477,20 +482,20 @@
                 WHERE " . join(" AND \n", $where_fields) . "
             ")->execute($vals)) {
                 $error = core::sql($pool)->errorInfo();
-                throw new entity_exception("Update failed - {$error[0]}: {$error[2]}");
+                throw new exception("Update failed - {$error[0]}: {$error[2]}");
             }
         }
 
         /**
          * Delete one or more links
          *
-         * @param entity_link_dao $self the name of the DAO
-         * @param string          $pool which source engine pool to use
-         * @param array           $fieldvals
+         * @param link\dao $self the name of the DAO
+         * @param string   $pool which source engine pool to use
+         * @param array    $fieldvals
          *
-         * @throws entity_exception
+         * @throws exception
          */
-        public static function delete(entity_link_dao $self, $pool, array $fieldvals) {
+        public static function delete(link\dao $self, $pool, array $fieldvals) {
             $where = [];
             $vals  = [];
 
@@ -508,20 +513,20 @@
                 WHERE " . join(" AND ", $where) . "
             ")->execute($vals)) {
                 $error = core::sql($pool)->errorInfo();
-                throw new entity_exception("Delete failed - {$error[0]}: {$error[2]}");
+                throw new exception("Delete failed - {$error[0]}: {$error[2]}");
             }
         }
 
         /**
          * Delete sets of links
          *
-         * @param entity_link_dao $self the name of the DAO
-         * @param string          $pool which source engine pool to use
-         * @param array           $fieldvals_arr
+         * @param link\dao $self the name of the DAO
+         * @param string   $pool which source engine pool to use
+         * @param array    $fieldvals_arr
          *
-         * @throws entity_exception
+         * @throws exception
          */
-        public static function delete_multi(entity_link_dao $self, $pool, array $fieldvals_arr) {
+        public static function delete_multi(link\dao $self, $pool, array $fieldvals_arr) {
             $vals  = [];
             $where = [];
 
@@ -543,7 +548,7 @@
                 WHERE " . join(" OR ", $where) . "
             ")->execute($vals)) {
                 $error = core::sql($pool)->errorInfo();
-                throw new entity_exception("Delete multi failed - {$error[0]}: {$error[2]}");
+                throw new exception("Delete multi failed - {$error[0]}: {$error[2]}");
             }
         }
     }

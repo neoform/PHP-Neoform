@@ -15,7 +15,7 @@
         public function region_collection() {
             return $this->_preload_one_to_one(
                 'region',
-                '\neoform\region',
+                'neoform\region',
                 'region_id'
             );
         }

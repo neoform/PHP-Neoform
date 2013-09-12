@@ -19,9 +19,9 @@
         public function acl_role_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'acl_role_collection',
-                '\neoform\acl\group\role',
+                'neoform\acl\group\role',
                 'by_acl_group',
-                '\neoform\acl\role',
+                'neoform\acl\role',
                 $order_by,
                 $offset,
                 $limit
@@ -36,7 +36,7 @@
         public function acl_role_count() {
             return $this->_preload_counts(
                 'acl_role_count',
-                '\neoform\acl\group\role',
+                'neoform\acl\group\role',
                 'acl_group_id'
             );
         }
@@ -53,9 +53,9 @@
         public function user_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'user_collection',
-                '\neoform\acl\group\user',
+                'neoform\acl\group\user',
                 'by_acl_group',
-                '\neoform\user',
+                'neoform\user',
                 $order_by,
                 $offset,
                 $limit
@@ -70,7 +70,7 @@
         public function user_count() {
             return $this->_preload_counts(
                 'user_count',
-                '\neoform\acl\group\user',
+                'neoform\acl\group\user',
                 'acl_group_id'
             );
         }

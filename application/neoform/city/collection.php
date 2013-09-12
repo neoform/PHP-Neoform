@@ -1,21 +1,21 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\city;
 
     /**
      * City collection
      */
-    class city_collection extends entity_record_collection implements city_definition {
+    class collection extends \neoform\entity\record\collection implements definition {
 
         /**
          * Preload the Region models in this collection
          *
-         * @return region_collection
+         * @return \neoform\region\collection
          */
         public function region_collection() {
             return $this->_preload_one_to_one(
                 'region',
-                'region',
+                '\neoform\region',
                 'region_id'
             );
         }

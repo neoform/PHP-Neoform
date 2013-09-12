@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\country;
 
-    class country_lib {
+    class lib {
 
     }

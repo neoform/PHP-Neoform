@@ -1,6 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\region;
+
+    use neoform\entity;
 
     /**
      * Region Model
@@ -14,7 +16,7 @@
      * @var float $longitude
      * @var float $latitude
      */
-    class region_model extends entity_record_model implements region_definition {
+    class model extends entity\record\model implements definition {
 
         public function __get($k) {
 
@@ -50,13 +52,13 @@
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
          *
-         * @return city_collection
+         * @return \neoform\city\collection
          */
         public function city_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('city_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = new city_collection(
-                    entity::dao('city')->by_region($this->vars['id'], $order_by, $offset, $limit)
+                $this->_vars[$key] = new \neoform\city\collection(
+                    entity::dao('neoform\city')->by_region($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -74,7 +76,7 @@
 
             $key = parent::_count_var_key('city_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('city')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('neoform\city')->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -82,9 +84,9 @@
         /**
          * Country Model based on 'country_id'
          *
-         * @return country_model
+         * @return \neoform\country\model
          */
         public function country() {
-            return $this->_model('country', $this->vars['country_id'], 'country_model');
+            return $this->_model('country', $this->vars['country_id'], '\neoform\country\model');
         }
     }

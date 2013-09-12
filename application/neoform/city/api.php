@@ -1,17 +1,20 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\city;
 
-    class city_api {
+    use neoform\input;
+    use neoform\entity;
+
+    class api {
 
         public static function insert(array $info) {
 
-            $input = new input_collection($info);
+            $input = new input\collection($info);
 
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity::dao('city')->insert([
+                return entity::dao('neoform\city')->insert([
                     'region_id'       => $input->region_id->val(),
                     'name'            => $input->name->val(),
                     'name_normalized' => $input->name_normalized->val(),
@@ -24,14 +27,14 @@
             throw $input->exception();
         }
 
-        public static function update(city_model $city, array $info, $crush=false) {
+        public static function update(model $city, array $info, $crush=false) {
 
-            $input = new input_collection($info);
+            $input = new input\collection($info);
 
             self::_validate_update($city, $input);
 
             if ($input->is_valid()) {
-                return entity::dao('city')->update(
+                return entity::dao('neoform\city')->update(
                     $city,
                     $input->vals(
                         [
@@ -50,17 +53,17 @@
             throw $input->exception();
         }
 
-        public static function delete(city_model $city) {
-            return entity::dao('city')->delete($city);
+        public static function delete(model $city) {
+            return entity::dao('neoform\city')->delete($city);
         }
 
-        public static function _validate_insert(input_collection $input) {
+        public static function _validate_insert(input\collection $input) {
 
             // region_id
-            $input->region_id->cast('int')->digit(0, 65535)->callback(function($region_id){
+            $input->region_id->cast('int')->digit(0, 65535)->callback(function($region_id) {
                 try {
-                    $region_id->data('model', new region_model($region_id->val()));
-                } catch (region_exception $e) {
+                    $region_id->data('model', new \neoform\region\model($region_id->val()));
+                } catch (\neoform\region\exception $e) {
                     $region_id->errors($e->getMessage());
                 }
             });
@@ -84,13 +87,13 @@
             $input->latitude->cast('float');
         }
 
-        public static function _validate_update(city_model $city, input_collection $input) {
+        public static function _validate_update(model $city, input\collection $input) {
 
             // region_id
-            $input->region_id->cast('int')->optional()->digit(0, 65535)->callback(function($region_id){
+            $input->region_id->cast('int')->optional()->digit(0, 65535)->callback(function($region_id) {
                 try {
-                    $region_id->data('model', new region_model($region_id->val()));
-                } catch (region_exception $e) {
+                    $region_id->data('model', new \neoform\region\model($region_id->val()));
+                } catch (\neoform\region\exception $e) {
                     $region_id->errors($e->getMessage());
                 }
             });

@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\country;
 
     /**
      * Country DAO
      */
-    class country_dao extends entity_record_dao implements country_definition {
+    class dao extends \neoform\entity\record\dao implements definition {
 
         const BY_NAME_NORMALIZED = 'by_name_normalized';
         const BY_ISO2            = 'by_iso2';
@@ -170,7 +170,7 @@
          *
          * @param array $info associative array, keys matching columns in database for this entity
          *
-         * @return country_model
+         * @return model
          */
         public function insert(array $info) {
 
@@ -183,7 +183,7 @@
          *
          * @param array $infos array of associative arrays, keys matching columns in database for this entity
          *
-         * @return country_collection
+         * @return collection
          */
         public function insert_multi(array $infos) {
 
@@ -195,12 +195,12 @@
          * Updates a Country record with new data
          *   only fields that are specified in the $info array will be written
          *
-         * @param country_model $country record to be updated
+         * @param model $country record to be updated
          * @param array $info data to write to the record
          *
-         * @return country_model updated model
+         * @return model updated model
          */
-        public function update(country_model $country, array $info) {
+        public function update(model $country, array $info) {
 
             // Update record
             return parent::_update($country, $info);
@@ -209,11 +209,11 @@
         /**
          * Delete a Country record
          *
-         * @param country_model $country record to be deleted
+         * @param model $country record to be deleted
          *
          * @return bool
          */
-        public function delete(country_model $country) {
+        public function delete(model $country) {
 
             // Delete record
             return parent::_delete($country);
@@ -222,11 +222,11 @@
         /**
          * Delete multiple Country records
          *
-         * @param country_collection $country_collection records to be deleted
+         * @param collection $country_collection records to be deleted
          *
          * @return bool
          */
-        public function delete_multi(country_collection $country_collection) {
+        public function delete_multi(collection $country_collection) {
 
             // Delete records
             return parent::_delete_multi($country_collection);

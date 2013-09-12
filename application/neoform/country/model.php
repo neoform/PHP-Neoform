@@ -1,6 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\country;
+
+    use neoform\entity;
 
     /**
      * Country Model
@@ -11,7 +13,7 @@
      * @var string $iso2
      * @var string $iso3
      */
-    class country_model extends entity_record_model implements country_definition {
+    class model extends entity\record\model implements definition {
 
         public function __get($k) {
 
@@ -41,13 +43,13 @@
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
          *
-         * @return region_collection
+         * @return \neoform\region\collection
          */
         public function region_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('region_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = new region_collection(
-                    entity::dao('region')->by_country($this->vars['id'], $order_by, $offset, $limit)
+                $this->_vars[$key] = new \neoform\region\collection(
+                    entity::dao('neoform\region')->by_country($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -65,7 +67,7 @@
 
             $key = parent::_count_var_key('region_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('region')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('neoform\region')->count($fieldvals);
             }
             return $this->_vars[$key];
         }

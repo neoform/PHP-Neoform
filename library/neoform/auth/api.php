@@ -1,26 +1,20 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\auth;
 
-    /**
-     * Auth API
-     */
-    class auth_api {
+    use neoform\input;
+    use neoform\entity;
 
-        /**
-         * @param array $info
-         *
-         * @return auth_model
-         * @throws input_exception
-         */
+    class api {
+
         public static function insert(array $info) {
 
-            $input = new input_collection($info);
+            $input = new input\collection($info);
 
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity::dao('auth')->insert([
+                return entity::dao('neoform\auth')->insert([
                     'hash'       => $input->hash->val(),
                     'user_id'    => $input->user_id->val(),
                     'expires_on' => $input->expires_on->val(),
@@ -29,22 +23,14 @@
             throw $input->exception();
         }
 
-        /**
-         * @param auth_model $auth
-         * @param array      $info
-         * @param bool       $crush
-         *
-         * @return entity_record_model|bool
-         * @throws input_exception
-         */
-        public static function update(auth_model $auth, array $info, $crush=false) {
+        public static function update(model $auth, array $info, $crush=false) {
 
-            $input = new input_collection($info);
+            $input = new input\collection($info);
 
             self::_validate_update($auth, $input);
 
             if ($input->is_valid()) {
-                return entity::dao('auth')->update(
+                return entity::dao('neoform\auth')->update(
                     $auth,
                     $input->vals(
                         [
@@ -106,16 +92,20 @@
             return true;
         }
 
-        public static function _validate_insert(input_collection $input) {
+        public static function _validate_insert(input\collection $input) {
 
             // hash
-            $input->hash->cast('string')->length(1, 20);
+            $input->hash->cast('binary')->length(1, 40)->callback(function($hash) {
+                if (entity::dao('neoform\auth')->record($hash->val())) {
+                    $hash->errors('already in use');
+                }
+            });
 
             // user_id
-            $input->user_id->cast('int')->digit(0, 4294967295)->callback(function($user_id){
+            $input->user_id->cast('int')->digit(0, 4294967295)->callback(function($user_id) {
                 try {
-                    $user_id->data('model', new user_model($user_id->val()));
-                } catch (user_exception $e) {
+                    $user_id->data('model', new \neoform\user\model($user_id->val()));
+                } catch (\neoform\user\exception $e) {
                     $user_id->errors($e->getMessage());
                 }
             });
@@ -124,16 +114,21 @@
             $input->expires_on->cast('string')->optional()->is_datetime();
         }
 
-        public static function _validate_update(auth_model $auth, input_collection $input) {
+        public static function _validate_update(model $auth, input\collection $input) {
 
             // hash
-            $input->hash->cast('string')->optional()->length(1, 20);
+            $input->hash->cast('binary')->optional()->length(1, 40)->callback(function($hash) use ($auth) {
+                $auth_info = entity::dao('neoform\auth')->record($hash->val());
+                if ($auth_info && (binary) $auth_info['hash'] !== $auth->hash) {
+                    $hash->errors('already in use');
+                }
+            });
 
             // user_id
-            $input->user_id->cast('int')->optional()->digit(0, 4294967295)->callback(function($user_id){
+            $input->user_id->cast('int')->optional()->digit(0, 4294967295)->callback(function($user_id) {
                 try {
-                    $user_id->data('model', new user_model($user_id->val()));
-                } catch (user_exception $e) {
+                    $user_id->data('model', new \neoform\user\model($user_id->val()));
+                } catch (\neoform\user\exception $e) {
                     $user_id->errors($e->getMessage());
                 }
             });

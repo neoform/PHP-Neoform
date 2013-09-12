@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\acl\group\user;
 
     /**
      * Acl Group User link DAO
      */
-    class acl_group_user_dao extends entity_link_dao implements acl_group_user_definition {
+    class dao extends \neoform\entity\link\dao implements definition {
 
         const BY_ACL_GROUP      = 'by_acl_group';
         const BY_ACL_GROUP_USER = 'by_acl_group_user';
@@ -104,7 +104,7 @@
         /**
          * Get multiple sets of user_id by a collection of acl_groups
          *
-         * @param acl_group_collection|array $acl_group_list
+         * @param \neoform\acl\group\collection|array $acl_group_list
          * @param array|null $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
          * @param integer|null $offset get rows starting at this offset
          * @param integer|null $limit max number of rows to return
@@ -113,7 +113,7 @@
          */
         public function by_acl_group_multi($acl_group_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
-            if ($acl_group_list instanceof acl_group_collection) {
+            if ($acl_group_list instanceof \neoform\acl\group\collection) {
                 foreach ($acl_group_list as $k => $acl_group) {
                     $keys[$k] = [
                         'acl_group_id' => (int) $acl_group->id,
@@ -144,7 +144,7 @@
         /**
          * Get multiple sets of acl_group_id by a collection of users
          *
-         * @param user_collection|array $user_list
+         * @param \neoform\user\collection|array $user_list
          * @param array|null $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
          * @param integer|null $offset get rows starting at this offset
          * @param integer|null $limit max number of rows to return
@@ -153,7 +153,7 @@
          */
         public function by_user_multi($user_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
-            if ($user_list instanceof user_collection) {
+            if ($user_list instanceof \neoform\user\collection) {
                 foreach ($user_list as $k => $user) {
                     $keys[$k] = [
                         'user_id' => (int) $user->id,
@@ -219,7 +219,6 @@
 
             // Update link
             return parent::_update($new_info, $where);
-
         }
 
         /**
@@ -233,7 +232,6 @@
 
             // Delete link
             return parent::_delete($keys);
-
         }
 
         /**
@@ -247,6 +245,5 @@
 
             // Delete links
             return parent::_delete_multi($keys_arr);
-
         }
     }

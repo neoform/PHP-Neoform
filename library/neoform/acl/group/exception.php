@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\acl\group;
 
-    class acl_group_exception extends entity_exception {
+    class exception extends \neoform\entity\exception {
 
     }

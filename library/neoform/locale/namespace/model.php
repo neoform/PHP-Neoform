@@ -1,6 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\locale\npace;
+
+    use neoform\entity;
 
     /**
      * Locale Namespace Model
@@ -8,7 +10,7 @@
      * @var int $id
      * @var string $name
      */
-    class locale_namespace_model extends entity_record_model implements locale_namespace_definition {
+    class model extends entity\record\model implements definition {
 
         public function __get($k) {
 
@@ -35,13 +37,13 @@
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
          *
-         * @return locale_key_collection
+         * @return \neoform\locale\key\collection
          */
         public function locale_key_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('locale_key_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = new locale_key_collection(
-                    entity::dao('locale_key')->by_namespace($this->vars['id'], $order_by, $offset, $limit)
+                $this->_vars[$key] = new \neoform\locale\key\collection(
+                    entity::dao('neoform\locale\key')->by_namespace($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -59,7 +61,7 @@
 
             $key = parent::_count_var_key('locale_key_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('locale_key')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('neoform\locale\key')->count($fieldvals);
             }
             return $this->_vars[$key];
         }

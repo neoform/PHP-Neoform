@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user;
 
     /**
      * User DAO
      */
-    class user_dao extends entity_record_dao implements user_definition {
+    class dao extends \neoform\entity\record\dao implements definition {
 
         const BY_EMAIL               = 'by_email';
         const BY_PASSWORD_HASHMETHOD = 'by_password_hashmethod';
@@ -91,7 +91,7 @@
         /**
          * Get multiple sets of User ids by user_hashmethod
          *
-         * @param user_hashmethod_collection|array $user_hashmethod_list
+         * @param \neoform\user\hashmethod\collection|array $user_hashmethod_list
          * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
@@ -100,7 +100,7 @@
          */
         public function by_password_hashmethod_multi($user_hashmethod_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
-            if ($user_hashmethod_list instanceof user_hashmethod_collection) {
+            if ($user_hashmethod_list instanceof \neoform\user\hashmethod\collection) {
                 foreach ($user_hashmethod_list as $k => $user_hashmethod) {
                     $keys[$k] = [
                         'password_hashmethod' => (int) $user_hashmethod->id,
@@ -125,7 +125,7 @@
         /**
          * Get multiple sets of User ids by user_status
          *
-         * @param user_status_collection|array $user_status_list
+         * @param \neoform\user\status\collection|array $user_status_list
          * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
@@ -134,7 +134,7 @@
          */
         public function by_status_multi($user_status_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
-            if ($user_status_list instanceof user_status_collection) {
+            if ($user_status_list instanceof \neoform\user\status\collection) {
                 foreach ($user_status_list as $k => $user_status) {
                     $keys[$k] = [
                         'status_id' => (int) $user_status->id,
@@ -181,7 +181,7 @@
          *
          * @param array $info associative array, keys matching columns in database for this entity
          *
-         * @return user_model
+         * @return model
          */
         public function insert(array $info) {
 
@@ -194,7 +194,7 @@
          *
          * @param array $infos array of associative arrays, keys matching columns in database for this entity
          *
-         * @return user_collection
+         * @return collection
          */
         public function insert_multi(array $infos) {
 
@@ -206,12 +206,12 @@
          * Updates a User record with new data
          *   only fields that are specified in the $info array will be written
          *
-         * @param user_model $user record to be updated
+         * @param model $user record to be updated
          * @param array $info data to write to the record
          *
-         * @return user_model updated model
+         * @return model updated model
          */
-        public function update(user_model $user, array $info) {
+        public function update(model $user, array $info) {
 
             // Update record
             return parent::_update($user, $info);
@@ -220,11 +220,11 @@
         /**
          * Delete a User record
          *
-         * @param user_model $user record to be deleted
+         * @param model $user record to be deleted
          *
          * @return bool
          */
-        public function delete(user_model $user) {
+        public function delete(model $user) {
 
             // Delete record
             return parent::_delete($user);
@@ -233,11 +233,11 @@
         /**
          * Delete multiple User records
          *
-         * @param user_collection $user_collection records to be deleted
+         * @param collection $user_collection records to be deleted
          *
          * @return bool
          */
-        public function delete_multi(user_collection $user_collection) {
+        public function delete_multi(collection $user_collection) {
 
             // Delete records
             return parent::_delete_multi($user_collection);

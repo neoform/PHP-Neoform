@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\acl\group\role;
 
     /**
      * Entity definition interface
      */
-    interface acl_group_role_definition {
+    interface definition {
 
         const NAME        = 'acl group role link';
         const TABLE       = 'acl_group_role';

@@ -9,7 +9,7 @@
 
         public function validate_insert() {
 
-            $this->code .= "\t\tpublic static function _validate_insert(input_collection \$input) {\n\n";
+            $this->code .= "\t\tpublic static function _validate_insert(input\\collection \$input) {\n\n";
             foreach ($this->table->fields as $field) {
                 if ($field->is_auto_increment()) {
                     // if its auto increment, there's no reason to be setting the field.
@@ -30,9 +30,9 @@
                     $this->code .= "->callback(function(\${$field->name}) {\n";
                     // record() is a different function, it returns an array with entity info, not it's id only
                     if ($field->is_primary_key()) {
-                        $this->code .= "\t\t\t\tif (entity::dao('{$this->table->name}')->record(\${$field->name}->val())) {\n";
+                        $this->code .= "\t\t\t\tif (entity::dao('neoform\\" . str_replace('_', '\\', $this->table->name) . "')->record(\${$field->name}->val())) {\n";
                     } else {
-                        $this->code .= "\t\t\t\tif (entity::dao('{$this->table->name}')->by_{$field->name_idless}(\${$field->name}->val())) {\n";
+                        $this->code .= "\t\t\t\tif (entity::dao('neoform\\" . str_replace('_', '\\', $this->table->name) . "')->by_{$field->name_idless}(\${$field->name}->val())) {\n";
                     }
                     $this->code .= "\t\t\t\t\t\${$field->name}->errors('already in use');\n";
                     $this->code .= "\t\t\t\t}\n";
@@ -54,7 +54,7 @@
 
             $pk = $this->table->primary_key;
 
-            $this->code .= "\t\tpublic static function _validate_update({$this->table->name}_model \${$this->table->name}, input_collection \$input) {\n\n";
+            $this->code .= "\t\tpublic static function _validate_update(model \${$this->table->name}, input\\collection \$input) {\n\n";
             foreach ($this->table->fields as $field) {
                 if ($field->is_auto_increment()) {
                     // if its auto increment, there's no reason to be setting the field.
@@ -74,10 +74,10 @@
                     $this->code .= "->callback(function(\${$field->name}) use (\${$this->table->name}) {\n";
                     // record() is a different function, it returns an array with entity info, not it's id only
                     if ($field->is_primary_key()) {
-                        $this->code .= "\t\t\t\t\${$this->table->name}_info = entity::dao('{$this->table->name}')->record(\${$field->name}->val());\n";
+                        $this->code .= "\t\t\t\t\${$this->table->name}_info = entity::dao('neoform\\" . str_replace('_', '\\', $this->table->name) . "')->record(\${$field->name}->val());\n";
                         $this->code .= "\t\t\t\tif (\${$this->table->name}_info && ({$pk->casting}) \${$this->table->name}_info['{$pk->name}'] !== \${$this->table->name}->{$pk->name}) {\n";
                     } else {
-                        $this->code .= "\t\t\t\t\${$pk->name}_arr = entity::dao('{$this->table->name}')->by_{$field->name_idless}(\${$field->name}->val());\n";
+                        $this->code .= "\t\t\t\t\${$pk->name}_arr = entity::dao('neoform\\" . str_replace('_', '\\', $this->table->name) . "')->by_{$field->name_idless}(\${$field->name}->val());\n";
                         $this->code .= "\t\t\t\tif (is_array(\${$pk->name}_arr) && \${$pk->name}_arr && ({$pk->casting}) current(\${$pk->name}_arr) !== \${$this->table->name}->{$pk->name}) {\n";
                     }
                     $this->code .= "\t\t\t\t\t\${$field->name}->errors('already in use');\n";
@@ -102,10 +102,10 @@
             $longest = $this->table->longest_field_length();
 
             $this->code .= "\t\tpublic static function insert(array \$info) {\n\n";
-            $this->code .= "\t\t\t\$input = new input_collection(\$info);\n\n";
+            $this->code .= "\t\t\t\$input = new input\\collection(\$info);\n\n";
             $this->code .= "\t\t\tself::_validate_insert(\$input);\n\n";
             $this->code .= "\t\t\tif (\$input->is_valid()) {\n";
-            $this->code .= "\t\t\t\treturn entity::dao('{$this->table->name}')->insert([\n";
+            $this->code .= "\t\t\t\treturn entity::dao('neoform\\" . str_replace('_', '\\', $this->table->name) . "')->insert([\n";
 
             foreach ($this->table->fields as $field) {
                 if ($field->is_auto_increment()) {
@@ -124,13 +124,13 @@
 
         public function update() {
 
-            $this->code .= "\t\tpublic static function update({$this->table->name}_model \${$this->table->name}, array \$info, \$crush=false) {\n\n";
-            $this->code .= "\t\t\t\$input = new input_collection(\$info);\n\n";
+            $this->code .= "\t\tpublic static function update(model \${$this->table->name}, array \$info, \$crush=false) {\n\n";
+            $this->code .= "\t\t\t\$input = new input\\collection(\$info);\n\n";
 
             $this->code .= "\t\t\tself::_validate_update(\${$this->table->name}, \$input);\n\n";
 
             $this->code .= "\t\t\tif (\$input->is_valid()) {\n";
-            $this->code .= "\t\t\t\treturn entity::dao('{$this->table->name}')->update(\n";
+            $this->code .= "\t\t\t\treturn entity::dao('neoform\\" . str_replace('_', '\\', $this->table->name) . "')->update(\n";
             $this->code .= "\t\t\t\t\t\${$this->table->name},\n";
             $this->code .= "\t\t\t\t\t\$input->vals(\n";
             $this->code .= "\t\t\t\t\t\t[\n";
@@ -159,14 +159,14 @@
             if ($field->allows_null()) {
                 $this->code .= "\t\t\t\tif (\${$field->name}->val()) {\n";
                 $this->code .= "\t\t\t\t\ttry {\n";
-                $this->code .= "\t\t\t\t\t\t\${$field->name}->data('model', new {$field->referenced_field->table->name}_model(\${$field->name}->val()));\n";
-                $this->code .= "\t\t\t\t\t} catch ({$field->referenced_field->table->name}_exception \$e) {\n";
+                $this->code .= "\t\t\t\t\t\t\${$field->name}->data('model', new \\neoform\\" . str_replace('_', '\\', $field->referenced_field->table->name) . "\\model(\${$field->name}->val()));\n";
+                $this->code .= "\t\t\t\t\t} catch (\\neoform\\" . str_replace('_', '\\', $field->referenced_field->table->name) . "\\exception \$e) {\n";
                 $this->code .= "\t\t\t\t\t\t\${$field->name}->errors(\$e->getMessage());\n";
                 $this->code .= "\t\t\t\t\t}\n";
             } else {
                 $this->code .= "\t\t\t\ttry {\n";
-                $this->code .= "\t\t\t\t\t\${$field->name}->data('model', new {$field->referenced_field->table->name}_model(\${$field->name}->val()));\n";
-                $this->code .= "\t\t\t\t} catch ({$field->referenced_field->table->name}_exception \$e) {\n";
+                $this->code .= "\t\t\t\t\t\${$field->name}->data('model', new \\neoform\\" . str_replace('_', '\\', $field->referenced_field->table->name) . "\\model(\${$field->name}->val()));\n";
+                $this->code .= "\t\t\t\t} catch (\\neoform\\" . str_replace('_', '\\', $field->referenced_field->table->name) . "\\exception \$e) {\n";
                 $this->code .= "\t\t\t\t\t\${$field->name}->errors(\$e->getMessage());\n";
             }
             $this->code .= "\t\t\t\t}\n";

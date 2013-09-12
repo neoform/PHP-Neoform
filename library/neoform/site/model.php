@@ -1,6 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\site;
+
+    use neoform\entity;
 
     /**
      * Site Model
@@ -8,7 +10,7 @@
      * @var int $id
      * @var string $name
      */
-    class site_model extends entity_record_model implements site_definition {
+    class model extends entity\record\model implements definition {
 
         public function __get($k) {
 
@@ -35,13 +37,13 @@
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
          *
-         * @return user_collection
+         * @return \neoform\user\collection
          */
         public function user_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('user_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = new user_collection(
-                    entity::dao('user_site')->by_site($this->vars['id'], $order_by, $offset, $limit)
+                $this->_vars[$key] = new \neoform\user\collection(
+                    entity::dao('neoform\user\site')->by_site($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -59,7 +61,7 @@
 
             $key = parent::_count_var_key('user_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('user_site')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('neoform\user\site')->count($fieldvals);
             }
             return $this->_vars[$key];
         }

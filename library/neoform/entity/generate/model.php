@@ -182,11 +182,11 @@
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * " . ($self_reference ? 'Parent ' : '') . ucwords(str_replace('_', ' ', $referenced_field->table->name)) . " Model based on '{$field->name}'\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @return {$referenced_field->table->name}_model\n";
+            $this->code .= "\t\t * @return \\neoform\\" . str_replace('_', '\\', $referenced_field->table->name) . "\\model\n";
             $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic function {$name}() {\n";
-            $this->code .= "\t\t\treturn \$this->_model('{$name}', \$this->vars['{$field->name}'], '{$referenced_field->table->name}_model');\n";
+            $this->code .= "\t\t\treturn \$this->_model('{$name}', \$this->vars['{$field->name}'], '\\neoform\\" . str_replace('_', '\\', $referenced_field->table->name) . "\\model');\n";
             $this->code .= "\t\t}\n\n";
         }
 
@@ -204,14 +204,14 @@
             $this->code .= "\t\t * @param integer|null \$offset get PKs starting at this offset\n";
             $this->code .= "\t\t * @param integer|null \$limit max number of PKs to return\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @return {$field->table->name}_collection\n";
+            $this->code .= "\t\t * @return \\neoform\\" . str_replace('_', '\\', $field->table->name) . "\\collection\n";
             $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic function {$name}(array \$order_by=null, \$offset=null, \$limit=null) {\n";
             $this->code .= "\t\t\t\$key = self::_limit_var_key('{$name}', \$order_by, \$offset, \$limit);\n";
             $this->code .= "\t\t\tif (! array_key_exists(\$key, \$this->_vars)) {\n";
-            $this->code .= "\t\t\t\t\$this->_vars[\$key] = new {$field->table->name}_collection(\n";
-            $this->code .= "\t\t\t\t\tentity::dao('{$field->table->name}')->by_{$field->name_idless}(\$this->vars['{$referenced_field->name}'], \$order_by, \$offset, \$limit)\n";
+            $this->code .= "\t\t\t\t\$this->_vars[\$key] = new \\neoform\\" . str_replace('_', '\\', $field->table->name) . "\\collection(\n";
+            $this->code .= "\t\t\t\t\tentity::dao('neoform\\" . str_replace('_', '\\', $field->table->name) . "')->by_{$field->name_idless}(\$this->vars['{$referenced_field->name}'], \$order_by, \$offset, \$limit)\n";
             $this->code .= "\t\t\t\t);\n";
             $this->code .= "\t\t\t}\n";
             $this->code .= "\t\t\treturn \$this->_vars[\$key];\n";
@@ -231,7 +231,7 @@
             $this->code .= "\t\t\t];\n\n";
             $this->code .= "\t\t\t\$key = parent::_count_var_key('{$name}', \$fieldvals);\n";
             $this->code .= "\t\t\tif (! array_key_exists(\$key, \$this->_vars)) {\n";
-            $this->code .= "\t\t\t\t\$this->_vars[\$key] = entity::dao('{$field->table->name}')->count(\$fieldvals);\n";
+            $this->code .= "\t\t\t\t\$this->_vars[\$key] = entity::dao('neoform\\" . str_replace('_', '\\', $field->table->name) . "')->count(\$fieldvals);\n";
             $this->code .= "\t\t\t}\n";
             $this->code .= "\t\t\treturn \$this->_vars[\$key];\n";
             $this->code .= "\t\t}\n\n";
@@ -253,14 +253,14 @@
             $this->code .= "\t\t * @param integer|null \$offset get PKs starting at this offset\n";
             $this->code .= "\t\t * @param integer|null \$limit max number of PKs to return\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @return {$referenced_field->referenced_field->table->name}_collection\n";
+            $this->code .= "\t\t * @return \\neoform\\" . str_replace('_', '\\', $referenced_field->referenced_field->table->name) . "\\collection\n";
             $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic function {$name}(array \$order_by=null, \$offset=null, \$limit=null) {\n";
             $this->code .= "\t\t\t\$key = self::_limit_var_key('{$name}', \$order_by, \$offset, \$limit);\n";
             $this->code .= "\t\t\tif (! array_key_exists(\$key, \$this->_vars)) {\n";
-            $this->code .= "\t\t\t\t\$this->_vars[\$key] = new {$referenced_field->referenced_field->table->name}_collection(\n";
-            $this->code .= "\t\t\t\t\tentity::dao('{$field->table->name}')->by_{$field->name_idless}(\$this->vars['{$field->referenced_field->name}'], \$order_by, \$offset, \$limit)\n";
+            $this->code .= "\t\t\t\t\$this->_vars[\$key] = new \\neoform\\" . str_replace('_', '\\', $referenced_field->referenced_field->table->name) . "\\collection(\n";
+            $this->code .= "\t\t\t\t\tentity::dao('neoform\\" . str_replace('_', '\\', $field->table->name) . "')->by_{$field->name_idless}(\$this->vars['{$field->referenced_field->name}'], \$order_by, \$offset, \$limit)\n";
             $this->code .= "\t\t\t\t);\n";
             $this->code .= "\t\t\t}\n";
             $this->code .= "\t\t\treturn \$this->_vars[\$key];\n";
@@ -281,7 +281,7 @@
             $this->code .= "\t\t\t];\n\n";
             $this->code .= "\t\t\t\$key = parent::_count_var_key('{$name}', \$fieldvals);\n";
             $this->code .= "\t\t\tif (! array_key_exists(\$key, \$this->_vars)) {\n";
-            $this->code .= "\t\t\t\t\$this->_vars[\$key] = entity::dao('{$field->table->name}')->count(\$fieldvals);\n";
+            $this->code .= "\t\t\t\t\$this->_vars[\$key] = entity::dao('neoform\\" . str_replace('_', '\\', $field->table->name) . "')->count(\$fieldvals);\n";
             $this->code .= "\t\t\t}\n";
             $this->code .= "\t\t\treturn \$this->_vars[\$key];\n";
             $this->code .= "\t\t}\n\n";

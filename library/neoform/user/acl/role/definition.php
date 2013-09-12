@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\acl\role;
 
     /**
      * Entity definition interface
      */
-    interface user_acl_role_definition {
+    interface definition {
 
         const NAME        = 'user acl role link';
         const TABLE       = 'user_acl_role';

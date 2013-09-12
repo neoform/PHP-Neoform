@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\acl\group;
 
     /**
      * Acl Group DAO
      */
-    class acl_group_dao extends entity_record_dao implements acl_group_definition {
+    class dao extends \neoform\entity\record\dao implements definition {
 
         const BY_NAME = 'by_name';
 
@@ -62,7 +62,7 @@
          *
          * @param array $info associative array, keys matching columns in database for this entity
          *
-         * @return acl_group_model
+         * @return model
          */
         public function insert(array $info) {
 
@@ -75,7 +75,7 @@
          *
          * @param array $infos array of associative arrays, keys matching columns in database for this entity
          *
-         * @return acl_group_collection
+         * @return collection
          */
         public function insert_multi(array $infos) {
 
@@ -87,12 +87,12 @@
          * Updates a Acl Group record with new data
          *   only fields that are specified in the $info array will be written
          *
-         * @param acl_group_model $acl_group record to be updated
+         * @param model $acl_group record to be updated
          * @param array $info data to write to the record
          *
-         * @return acl_group_model updated model
+         * @return model updated model
          */
-        public function update(acl_group_model $acl_group, array $info) {
+        public function update(model $acl_group, array $info) {
 
             // Update record
             return parent::_update($acl_group, $info);
@@ -101,11 +101,11 @@
         /**
          * Delete a Acl Group record
          *
-         * @param acl_group_model $acl_group record to be deleted
+         * @param model $acl_group record to be deleted
          *
          * @return bool
          */
-        public function delete(acl_group_model $acl_group) {
+        public function delete(model $acl_group) {
 
             // Delete record
             return parent::_delete($acl_group);
@@ -114,11 +114,11 @@
         /**
          * Delete multiple Acl Group records
          *
-         * @param acl_group_collection $acl_group_collection records to be deleted
+         * @param collection $acl_group_collection records to be deleted
          *
          * @return bool
          */
-        public function delete_multi(acl_group_collection $acl_group_collection) {
+        public function delete_multi(collection $acl_group_collection) {
 
             // Delete records
             return parent::_delete_multi($acl_group_collection);

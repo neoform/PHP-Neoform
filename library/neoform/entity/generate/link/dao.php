@@ -9,11 +9,12 @@
         public function code() {
 
             $this->code .= '<?php'."\n\n";
+            $this->code .= "\tnamespace neoform\\" . str_replace('_', '\\', $this->table->name) . ";\n\n";
 
             $this->code .= "\t/**\n";
             $this->code .= "\t * " . ucwords(str_replace('_', ' ', $this->table->name)) . " link DAO\n";
             $this->code .= "\t */\n";
-            $this->code .= "\tclass {$this->table->name}_dao extends entity_link_dao implements {$this->table->name}_definition {\n\n";
+            $this->code .= "\tclass dao extends \\neoform\\entity\\link\\dao implements definition {\n\n";
 
             $this->constants();
             $this->bindings();
@@ -139,7 +140,7 @@
                 $this->code .= "\t\t/**\n";
                 $this->code .= "\t\t * Get multiple sets of " . self::ander($selected_fields) . " by a collection of {$foreign_key_field->referenced_field->table->name}s\n";
                 $this->code .= "\t\t *\n";
-                $this->code .= "\t\t * @param {$foreign_key_field->referenced_field->table->name}_collection|array \${$foreign_key_field->referenced_field->table->name}_list\n";
+                $this->code .= "\t\t * @param \\neoform\\" . str_replace('_', '\\', $foreign_key_field->referenced_field->table->name) . "\\collection|array \${$foreign_key_field->referenced_field->table->name}_list\n";
                 $this->code .= "\t\t * @param array|null \$order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)\n";
                 $this->code .= "\t\t * @param integer|null \$offset get rows starting at this offset\n";
                 $this->code .= "\t\t * @param integer|null \$limit max number of rows to return\n";
@@ -153,7 +154,7 @@
 
                 $this->code .= "\t\t\t\$keys = [];\n";
 
-                $this->code .= "\t\t\tif (\${$foreign_key_field->referenced_field->table->name}_list instanceof {$foreign_key_field->referenced_field->table->name}_collection) {\n";
+                $this->code .= "\t\t\tif (\${$foreign_key_field->referenced_field->table->name}_list instanceof \\neoform\\" . str_replace('_', '\\', $foreign_key_field->referenced_field->table->name) . "\\collection) {\n";
 
                 $this->code .= "\t\t\t\tforeach (\${$foreign_key_field->referenced_field->table->name}_list as \$k => \${$foreign_key_field->referenced_field->table->name}) {\n";
                 $this->code .= "\t\t\t\t\t\$keys[\$k] = [\n";
@@ -243,7 +244,7 @@
 
             $this->code .= "\t\tpublic function update(array \$new_info, array \$where) {\n\n";
             $this->code .= "\t\t\t// Update link\n";
-            $this->code .= "\t\t\treturn parent::_update(\$new_info, \$where);\n\n";
+            $this->code .= "\t\t\treturn parent::_update(\$new_info, \$where);\n";
             $this->code .= "\t\t}\n\n";
 
         }
@@ -260,7 +261,7 @@
 
             $this->code .= "\t\tpublic function delete(array \$keys) {\n\n";
             $this->code .= "\t\t\t// Delete link\n";
-            $this->code .= "\t\t\treturn parent::_delete(\$keys);\n\n";
+            $this->code .= "\t\t\treturn parent::_delete(\$keys);\n";
             $this->code .= "\t\t}\n\n";
         }
 
@@ -276,7 +277,7 @@
 
             $this->code .= "\t\tpublic function delete_multi(array \$keys_arr) {\n\n";
             $this->code .= "\t\t\t// Delete links\n";
-            $this->code .= "\t\t\treturn parent::_delete_multi(\$keys_arr);\n\n";
+            $this->code .= "\t\t\treturn parent::_delete_multi(\$keys_arr);\n";
             $this->code .= "\t\t}\n";
         }
     }

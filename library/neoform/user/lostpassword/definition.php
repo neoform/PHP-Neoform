@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\lostpassword;
 
     /**
      * Entity definition interface
      */
-    interface user_lostpassword_definition {
+    interface definition {
 
         const NAME          = 'user lostpassword';
         const TABLE         = 'user_lostpassword';

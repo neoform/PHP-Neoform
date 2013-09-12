@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\acl\group\user;
 
-    class acl_group_user_collection extends entity_link_collection implements acl_group_user_defintion {
+    class collection extends \neoform\entity\link\collection implements definition {
 
     }

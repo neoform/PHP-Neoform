@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\hashmethod;
 
     /**
      * Entity definition interface
      */
-    interface user_hashmethod_definition {
+    interface definition {
 
         const NAME          = 'user hashmethod';
         const TABLE         = 'user_hashmethod';

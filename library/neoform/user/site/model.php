@@ -1,6 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\site;
+
+    use neoform\entity;
 
     /**
      * User Site Model
@@ -8,7 +10,7 @@
      * @var int $user_id
      * @var int $site_id
      */
-    class user_site_model extends entity_link_model implements user_site_definition {
+    class model extends entity\link\model implements definition {
 
         public function __get($k) {
 
@@ -28,18 +30,18 @@
         /**
          * User Model based on 'user_id'
          *
-         * @return user_model
+         * @return \neoform\user\model
          */
         public function user() {
-            return $this->_model('user', $this->vars['user_id'], 'user_model');
+            return $this->_model('user', $this->vars['user_id'], '\neoform\user\model');
         }
 
         /**
          * Site Model based on 'site_id'
          *
-         * @return site_model
+         * @return \neoform\site\model
          */
         public function site() {
-            return $this->_model('site', $this->vars['site_id'], 'site_model');
+            return $this->_model('site', $this->vars['site_id'], '\neoform\site\model');
         }
     }

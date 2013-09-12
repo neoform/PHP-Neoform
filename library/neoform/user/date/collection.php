@@ -1,21 +1,21 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\date;
 
     /**
      * User Date collection
      */
-    class user_date_collection extends entity_record_collection implements user_date_definition {
+    class collection extends \neoform\entity\record\collection implements definition {
 
         /**
          * Preload the User models in this collection
          *
-         * @return user_collection
+         * @return \neoform\user\collection
          */
         public function user_collection() {
             return $this->_preload_one_to_one(
                 'user',
-                'user',
+                '\neoform\user',
                 'user_id'
             );
         }

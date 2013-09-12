@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\acl\role;
 
-    class user_acl_role_lib {
+    class lib {
 
     }

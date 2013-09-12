@@ -1,6 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\date;
+
+    use neoform\entity;
 
     /**
      * User Date Model
@@ -11,7 +13,7 @@
      * @var datetime|null $email_verified_on
      * @var datetime|null $password_updated_on
      */
-    class user_date_model extends entity_record_model implements user_date_definition {
+    class model extends entity\record\model implements definition {
 
         public function __get($k) {
 
@@ -26,7 +28,7 @@
                     case 'last_login':
                     case 'email_verified_on':
                     case 'password_updated_on':
-                        return $this->_model($k, $this->vars[$k], 'type_date');
+                        return $this->_model($k, $this->vars[$k], '\neoform\type\date');
 
                     default:
                         return $this->vars[$k];
@@ -37,9 +39,9 @@
         /**
          * User Model based on 'user_id'
          *
-         * @return user_model
+         * @return \neoform\user\model
          */
         public function user() {
-            return $this->_model('user', $this->vars['user_id'], 'user_model');
+            return $this->_model('user', $this->vars['user_id'], '\neoform\user\model');
         }
     }

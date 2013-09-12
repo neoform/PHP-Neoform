@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\acl\group\role;
 
-    class acl_group_role_collection extends entity_link_collection implements acl_group_role_defintion {
+    class collection extends \neoform\entity\link\collection implements definition {
 
     }

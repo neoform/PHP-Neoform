@@ -1,17 +1,20 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\site;
 
-    class site_api {
+    use neoform\input;
+    use neoform\entity;
+
+    class api {
 
         public static function insert(array $info) {
 
-            $input = new input_collection($info);
+            $input = new input\collection($info);
 
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity::dao('site')->insert([
+                return entity::dao('neoform\site')->insert([
                     'id'   => $input->id->val(),
                     'name' => $input->name->val(),
                 ]);
@@ -19,14 +22,14 @@
             throw $input->exception();
         }
 
-        public static function update(site_model $site, array $info, $crush=false) {
+        public static function update(model $site, array $info, $crush=false) {
 
-            $input = new input_collection($info);
+            $input = new input\collection($info);
 
             self::_validate_update($site, $input);
 
             if ($input->is_valid()) {
-                return entity::dao('site')->update(
+                return entity::dao('neoform\site')->update(
                     $site,
                     $input->vals(
                         [
@@ -40,32 +43,43 @@
             throw $input->exception();
         }
 
-        public static function _validate_insert(input_collection $input) {
+        public static function delete(model $site) {
+            return entity::dao('neoform\site')->delete($site);
+        }
+
+        public static function _validate_insert(input\collection $input) {
 
             // id
-            $input->id->cast('int')->digit(0, 65535);
+            $input->id->cast('int')->digit(0, 65535)->callback(function($id) {
+                if (entity::dao('neoform\site')->record($id->val())) {
+                    $id->errors('already in use');
+                }
+            });
 
             // name
             $input->name->cast('string')->length(1, 64)->callback(function($name) {
-                $id_arr = entity::dao('site')->by_name($name->val());
-                if (is_array($id_arr) && $id_arr) {
+                if (entity::dao('neoform\site')->by_name($name->val())) {
                     $name->errors('already in use');
                 }
             });
         }
 
-        public static function _validate_update(site_model $site, input_collection $input) {
+        public static function _validate_update(model $site, input\collection $input) {
 
             // id
-            $input->id->cast('int')->optional()->digit(0, 65535);
+            $input->id->cast('int')->optional()->digit(0, 65535)->callback(function($id) use ($site) {
+                $site_info = entity::dao('neoform\site')->record($id->val());
+                if ($site_info && (int) $site_info['id'] !== $site->id) {
+                    $id->errors('already in use');
+                }
+            });
 
             // name
             $input->name->cast('string')->optional()->length(1, 64)->callback(function($name) use ($site) {
-                $id_arr = entity::dao('site')->by_name($name->val());
+                $id_arr = entity::dao('neoform\site')->by_name($name->val());
                 if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $site->id) {
                     $name->errors('already in use');
                 }
             });
         }
-
     }

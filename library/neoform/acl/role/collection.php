@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\acl\role;
 
     /**
      * Acl Role collection
      */
-    class acl_role_collection extends entity_record_collection implements acl_role_definition {
+    class collection extends \neoform\entity\record\collection implements definition {
 
         /**
          * Preload the Acl Group models in this collection
@@ -14,14 +14,14 @@
          * @param integer|null $offset   get PKs starting at this offset
          * @param integer|null $limit    max number of PKs to return
          *
-         * @return acl_group_collection
+         * @return \neoform\acl\group\collection
          */
         public function acl_group_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'acl_group_collection',
-                'acl_group_role',
+                '\neoform\acl\group\role',
                 'by_acl_role',
-                'acl_group',
+                '\neoform\acl\group',
                 $order_by,
                 $offset,
                 $limit
@@ -36,7 +36,7 @@
         public function acl_group_count() {
             return $this->_preload_counts(
                 'acl_group_count',
-                'acl_group_role',
+                '\neoform\acl\group\role',
                 'acl_role_id'
             );
         }
@@ -48,14 +48,14 @@
          * @param integer|null $offset   get PKs starting at this offset
          * @param integer|null $limit    max number of PKs to return
          *
-         * @return acl_resource_collection
+         * @return \neoform\acl\resource\collection
          */
         public function acl_resource_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'acl_resource_collection',
-                'acl_role_resource',
+                '\neoform\acl\role\resource',
                 'by_acl_role',
-                'acl_resource',
+                '\neoform\acl\resource',
                 $order_by,
                 $offset,
                 $limit
@@ -70,7 +70,7 @@
         public function acl_resource_count() {
             return $this->_preload_counts(
                 'acl_resource_count',
-                'acl_role_resource',
+                '\neoform\acl\role\resource',
                 'acl_role_id'
             );
         }
@@ -82,14 +82,14 @@
          * @param integer|null $offset   get PKs starting at this offset
          * @param integer|null $limit    max number of PKs to return
          *
-         * @return user_collection
+         * @return \neoform\user\collection
          */
         public function user_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'user_collection',
-                'user_acl_role',
+                '\neoform\user\acl\role',
                 'by_acl_role',
-                'user',
+                '\neoform\user',
                 $order_by,
                 $offset,
                 $limit
@@ -104,7 +104,7 @@
         public function user_count() {
             return $this->_preload_counts(
                 'user_count',
-                'user_acl_role',
+                '\neoform\user\acl\role',
                 'acl_role_id'
             );
         }

@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\locale;
 
     /**
      * Locale DAO
      */
-    class locale_dao extends entity_record_dao implements locale_definition {
+    class dao extends \neoform\entity\record\dao implements definition {
 
 
         /**
@@ -25,7 +25,7 @@
          *
          * @param array $info associative array, keys matching columns in database for this entity
          *
-         * @return locale_model
+         * @return model
          */
         public function insert(array $info) {
 
@@ -38,7 +38,7 @@
          *
          * @param array $infos array of associative arrays, keys matching columns in database for this entity
          *
-         * @return locale_collection
+         * @return collection
          */
         public function insert_multi(array $infos) {
 
@@ -50,12 +50,12 @@
          * Updates a Locale record with new data
          *   only fields that are specified in the $info array will be written
          *
-         * @param locale_model $locale record to be updated
+         * @param model $locale record to be updated
          * @param array $info data to write to the record
          *
-         * @return locale_model updated model
+         * @return model updated model
          */
-        public function update(locale_model $locale, array $info) {
+        public function update(model $locale, array $info) {
 
             // Update record
             return parent::_update($locale, $info);
@@ -64,11 +64,11 @@
         /**
          * Delete a Locale record
          *
-         * @param locale_model $locale record to be deleted
+         * @param model $locale record to be deleted
          *
          * @return bool
          */
-        public function delete(locale_model $locale) {
+        public function delete(model $locale) {
 
             // Delete record
             return parent::_delete($locale);
@@ -77,11 +77,11 @@
         /**
          * Delete multiple Locale records
          *
-         * @param locale_collection $locale_collection records to be deleted
+         * @param collection $locale_collection records to be deleted
          *
          * @return bool
          */
-        public function delete_multi(locale_collection $locale_collection) {
+        public function delete_multi(collection $locale_collection) {
 
             // Delete records
             return parent::_delete_multi($locale_collection);

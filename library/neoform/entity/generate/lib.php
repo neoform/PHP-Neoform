@@ -9,8 +9,8 @@
         public function code() {
 
             $this->code .= '<?php'."\n\n";
-            $this->code .= "\tclass {$this->table->name}_lib {\n\n";
-
+            $this->code .= "\tnamespace neoform\\" . str_replace('_', '\\', $this->table->name) . ";\n\n";
+            $this->code .= "\tclass lib {\n\n";
             $this->code .= "\t}\n";
         }
     }

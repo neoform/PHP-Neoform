@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\hashmethod;
 
     /**
      * User Hashmethod DAO
      */
-    class user_hashmethod_dao extends entity_record_dao implements user_hashmethod_definition {
+    class dao extends \neoform\entity\record\dao implements definition {
 
         const BY_NAME = 'by_name';
 
@@ -62,7 +62,7 @@
          *
          * @param array $info associative array, keys matching columns in database for this entity
          *
-         * @return user_hashmethod_model
+         * @return model
          */
         public function insert(array $info) {
 
@@ -75,7 +75,7 @@
          *
          * @param array $infos array of associative arrays, keys matching columns in database for this entity
          *
-         * @return user_hashmethod_collection
+         * @return collection
          */
         public function insert_multi(array $infos) {
 
@@ -87,12 +87,12 @@
          * Updates a User Hashmethod record with new data
          *   only fields that are specified in the $info array will be written
          *
-         * @param user_hashmethod_model $user_hashmethod record to be updated
+         * @param model $user_hashmethod record to be updated
          * @param array $info data to write to the record
          *
-         * @return user_hashmethod_model updated model
+         * @return model updated model
          */
-        public function update(user_hashmethod_model $user_hashmethod, array $info) {
+        public function update(model $user_hashmethod, array $info) {
 
             // Update record
             return parent::_update($user_hashmethod, $info);
@@ -101,11 +101,11 @@
         /**
          * Delete a User Hashmethod record
          *
-         * @param user_hashmethod_model $user_hashmethod record to be deleted
+         * @param model $user_hashmethod record to be deleted
          *
          * @return bool
          */
-        public function delete(user_hashmethod_model $user_hashmethod) {
+        public function delete(model $user_hashmethod) {
 
             // Delete record
             return parent::_delete($user_hashmethod);
@@ -114,11 +114,11 @@
         /**
          * Delete multiple User Hashmethod records
          *
-         * @param user_hashmethod_collection $user_hashmethod_collection records to be deleted
+         * @param collection $user_hashmethod_collection records to be deleted
          *
          * @return bool
          */
-        public function delete_multi(user_hashmethod_collection $user_hashmethod_collection) {
+        public function delete_multi(collection $user_hashmethod_collection) {
 
             // Delete records
             return parent::_delete_multi($user_hashmethod_collection);

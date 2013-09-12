@@ -1,6 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\locale\key;
+
+    use neoform\entity;
 
     /**
      * Locale Key Model
@@ -10,7 +12,7 @@
      * @var string $locale
      * @var int $namespace_id
      */
-    class locale_key_model extends entity_record_model implements locale_key_definition {
+    class model extends entity\record\model implements definition {
 
         public function __get($k) {
 
@@ -39,13 +41,13 @@
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
          *
-         * @return locale_key_message_collection
+         * @return \neoform\locale\key\message\collection
          */
         public function locale_key_message_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('locale_key_message_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = new locale_key_message_collection(
-                    entity::dao('locale_key_message')->by_key($this->vars['id'], $order_by, $offset, $limit)
+                $this->_vars[$key] = new \neoform\locale\key\message\collection(
+                    entity::dao('neoform\locale\key\message')->by_key($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -63,7 +65,7 @@
 
             $key = parent::_count_var_key('locale_key_message_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('locale_key_message')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('neoform\locale\key\message')->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -75,13 +77,13 @@
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
          *
-         * @return locale_collection
+         * @return \neoform\locale\collection
          */
         public function locale_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limit_var_key('locale_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = new locale_collection(
-                    entity::dao('locale_key_message')->by_key($this->vars['id'], $order_by, $offset, $limit)
+                $this->_vars[$key] = new \neoform\locale\collection(
+                    entity::dao('neoform\locale\key\message')->by_key($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -99,7 +101,7 @@
 
             $key = parent::_count_var_key('locale_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('locale_key_message')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('neoform\locale\key\message')->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -107,19 +109,19 @@
         /**
          * Locale Model based on 'locale'
          *
-         * @return locale_model
+         * @return \neoform\locale\model
          */
         public function locale() {
-            return $this->_model('locale', $this->vars['locale'], 'locale_model');
+            return $this->_model('locale', $this->vars['locale'], '\neoform\locale\model');
         }
 
         /**
          * Locale Namespace Model based on 'namespace_id'
          *
-         * @return locale_namespace_model
+         * @return \neoform\locale\npace\model
          */
         public function locale_namespace() {
-            return $this->_model('locale_namespace', $this->vars['namespace_id'], 'locale_namespace_model');
+            return $this->_model('locale_namespace', $this->vars['namespace_id'], '\neoform\locale\namespace\model');
         }
 
         /**
@@ -132,7 +134,7 @@
         public function message($locale) {
             $k = "message:{$locale}";
             if (! array_key_exists($k, $this->_vars)) {
-                $this->_vars[$k] = new locale_key_message_model(
+                $this->_vars[$k] = new message\model(
                     current(entity::dao('locale_key_message')->by_locale_key($locale, $this->id))
                 );
             }

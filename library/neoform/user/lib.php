@@ -1,13 +1,15 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user;
 
-    class user_lib {
+    use neoform\core;
+
+    class lib {
 
         public static function default_status() {
             static $status;
             if ($status === null) {
-                $status = new user_status_model(core::config()['auth']['default_user_account_status_id']);
+                $status = new status\model(core::config()['auth']['default_user_account_status_id']);
             }
             return $status;
         }
@@ -15,7 +17,7 @@
         public static function default_hashmethod() {
             static $hashmethod;
             if ($hashmethod === null) {
-                $hashmethod = new user_hashmethod_model(core::config()['auth']['default_hash_method_id']);
+                $hashmethod = new hashmethod\model(core::config()['auth']['default_hash_method_id']);
             }
             return $hashmethod;
         }
@@ -40,7 +42,7 @@
             return $salt;
         }
 
-        public static function password_matches(user_model $user, $password) {
+        public static function password_matches(model $user, $password) {
             $hash = $user->user_hashmethod()->hash(
                 $password,
                 $user->password_salt,

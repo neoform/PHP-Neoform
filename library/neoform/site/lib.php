@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\site;
 
-    class site_lib {
+    class lib {
 
     }

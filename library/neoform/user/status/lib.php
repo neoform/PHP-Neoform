@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\status;
 
-    class user_status_lib {
+    class lib {
 
     }

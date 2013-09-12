@@ -1,6 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\acl\role\resource;
+
+    use neoform\entity;
 
     /**
      * Acl Role Resource Model
@@ -8,7 +10,7 @@
      * @var int $acl_role_id
      * @var int $acl_resource_id
      */
-    class acl_role_resource_model extends entity_link_model implements acl_role_resource_definition {
+    class model extends entity\link\model implements definition {
 
         public function __get($k) {
 
@@ -28,18 +30,18 @@
         /**
          * Acl Role Model based on 'acl_role_id'
          *
-         * @return acl_role_model
+         * @return \neoform\acl\role\model
          */
         public function acl_role() {
-            return $this->_model('acl_role', $this->vars['acl_role_id'], 'acl_role_model');
+            return $this->_model('acl_role', $this->vars['acl_role_id'], '\neoform\acl\role\model');
         }
 
         /**
          * Acl Resource Model based on 'acl_resource_id'
          *
-         * @return acl_resource_model
+         * @return \neoform\acl\resource\model
          */
         public function acl_resource() {
-            return $this->_model('acl_resource', $this->vars['acl_resource_id'], 'acl_resource_model');
+            return $this->_model('acl_resource', $this->vars['acl_resource_id'], '\neoform\acl\resource\model');
         }
     }

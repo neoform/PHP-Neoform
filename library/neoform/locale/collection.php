@@ -1,25 +1,25 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\locale;
 
     /**
      * Locale collection
      */
-    class locale_collection extends entity_record_collection implements locale_definition {
+    class collection extends \neoform\entity\record\collection implements definition {
 
         /**
          * Preload the Locale Key models in this collection
          *
-         * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param array|null   $order_by array of field names (as the key) and sort direction (entity\record_dao::SORT_ASC, entity\record_dao::SORT_DESC)
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
          *
-         * @return locale_key_collection
+         * @return \neoform\locale\key\collection
          */
         public function locale_key_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_one_to_many(
                 'locale_key_collection',
-                'locale_key',
+                '\neoform\locale\key',
                 'by_locale',
                 $order_by,
                 $offset,
@@ -35,7 +35,7 @@
         public function locale_key_count() {
             return $this->_preload_counts(
                 'locale_key_count',
-                'locale_key',
+                '\neoform\locale\key',
                 'locale'
             );
         }
@@ -43,16 +43,16 @@
         /**
          * Preload the Locale Key Message models in this collection
          *
-         * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param array|null   $order_by array of field names (as the key) and sort direction (entity\record_dao::SORT_ASC, entity\record_dao::SORT_DESC)
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
          *
-         * @return locale_key_message_collection
+         * @return \neoform\locale\key\message\collection
          */
         public function locale_key_message_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_one_to_many(
                 'locale_key_message_collection',
-                'locale_key_message',
+                '\neoform\locale\key\message',
                 'by_locale',
                 $order_by,
                 $offset,
@@ -68,7 +68,7 @@
         public function locale_key_message_count() {
             return $this->_preload_counts(
                 'locale_key_message_count',
-                'locale_key_message',
+                '\neoform\locale\key\message',
                 'locale'
             );
         }
@@ -80,14 +80,14 @@
          * @param integer|null $offset   get PKs starting at this offset
          * @param integer|null $limit    max number of PKs to return
          *
-         * @return locale_key_collection
+         * @return \neoform\locale\key\collection
          */
         public function locale_key_collection1(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'locale_key_collection1',
-                'locale_key_message',
+                '\neoform\locale\key\message',
                 'by_locale',
-                'locale_key',
+                '\neoform\locale\key',
                 $order_by,
                 $offset,
                 $limit
@@ -102,7 +102,7 @@
         public function locale_key_count1() {
             return $this->_preload_counts(
                 'locale_key_count1',
-                'locale_key_message',
+                '\neoform\locale\key\message',
                 'locale'
             );
         }

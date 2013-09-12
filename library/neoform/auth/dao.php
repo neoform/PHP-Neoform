@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\auth;
 
     /**
      * Auth DAO
      */
-    class auth_dao extends entity_record_dao implements auth_definition {
+    class dao extends \neoform\entity\record\dao implements definition {
 
         const BY_USER = 'by_user';
 
@@ -47,7 +47,7 @@
         /**
          * Get multiple sets of Auth hashs by user
          *
-         * @param user_collection|array $user_list
+         * @param \neoform\user\collection|array $user_list
          * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
@@ -56,7 +56,7 @@
          */
         public function by_user_multi($user_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
-            if ($user_list instanceof user_collection) {
+            if ($user_list instanceof \neoform\user\collection) {
                 foreach ($user_list as $k => $user) {
                     $keys[$k] = [
                         'user_id' => (int) $user->id,
@@ -85,7 +85,7 @@
          *
          * @param array $info associative array, keys matching columns in database for this entity
          *
-         * @return auth_model
+         * @return model
          */
         public function insert(array $info) {
 
@@ -98,7 +98,7 @@
          *
          * @param array $infos array of associative arrays, keys matching columns in database for this entity
          *
-         * @return auth_collection
+         * @return collection
          */
         public function insert_multi(array $infos) {
 
@@ -110,12 +110,12 @@
          * Updates a Auth record with new data
          *   only fields that are specified in the $info array will be written
          *
-         * @param auth_model $auth record to be updated
+         * @param model $auth record to be updated
          * @param array $info data to write to the record
          *
-         * @return auth_model updated model
+         * @return model updated model
          */
-        public function update(auth_model $auth, array $info) {
+        public function update(model $auth, array $info) {
 
             // Update record
             return parent::_update($auth, $info);
@@ -124,11 +124,11 @@
         /**
          * Delete a Auth record
          *
-         * @param auth_model $auth record to be deleted
+         * @param model $auth record to be deleted
          *
          * @return bool
          */
-        public function delete(auth_model $auth) {
+        public function delete(model $auth) {
 
             // Delete record
             return parent::_delete($auth);
@@ -137,11 +137,11 @@
         /**
          * Delete multiple Auth records
          *
-         * @param auth_collection $auth_collection records to be deleted
+         * @param collection $auth_collection records to be deleted
          *
          * @return bool
          */
-        public function delete_multi(auth_collection $auth_collection) {
+        public function delete_multi(collection $auth_collection) {
 
             // Delete records
             return parent::_delete_multi($auth_collection);

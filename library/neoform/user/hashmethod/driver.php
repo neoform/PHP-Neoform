@@ -1,8 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\hashmethod;
 
-    abstract class user_hashmethod_driver {
+    abstract class driver {
 
         /**
          * Hashes a password, with salt given a certain cost value

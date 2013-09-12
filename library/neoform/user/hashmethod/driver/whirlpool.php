@@ -1,8 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\hashmethod\driver;
 
-    class user_hashmethod_driver_whirlpool extends user_hashmethod_driver {
+    class whirlpool extends \neoform\user\hashmethod\driver {
 
         public function hash($password, $salt, $cost) {
             $hash = $password . $salt;

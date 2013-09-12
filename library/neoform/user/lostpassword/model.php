@@ -1,6 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\user\lostpassword;
+
+    use neoform\entity;
 
     /**
      * User Lostpassword Model
@@ -9,7 +11,7 @@
      * @var int $user_id
      * @var datetime $posted_on
      */
-    class user_lostpassword_model extends entity_record_model implements user_lostpassword_definition {
+    class model extends entity\record\model implements definition {
 
         public function __get($k) {
 
@@ -21,7 +23,7 @@
 
                     // dates
                     case 'posted_on':
-                        return $this->_model($k, $this->vars[$k], 'type_date');
+                        return $this->_model($k, $this->vars[$k], '\neoform\type\date');
 
                     // strings
                     case 'hash':
@@ -36,9 +38,9 @@
         /**
          * User Model based on 'user_id'
          *
-         * @return user_model
+         * @return \neoform\user\model
          */
         public function user() {
-            return $this->_model('user', $this->vars['user_id'], 'user_model');
+            return $this->_model('user', $this->vars['user_id'], '\neoform\user\model');
         }
     }

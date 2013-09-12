@@ -41,7 +41,7 @@
              * ...However PHPRedis seems to have poor support for this... bah. lame.
              * return \call_user_func_array(
              *     [ core::redis($pool), 'sAdd' ],
-             *     \array_merge([ $key ], $value)
+             *     array_merge([ $key ], $value)
              * );
              */
 
@@ -70,7 +70,7 @@
              * ...However PHPRedis seems to have poor support for this... bah. lame.
              * return \call_user_func_array(
              *     [ core::redis($pool), 'sAdd' ],
-             *     \array_merge([ $key ], $value)
+             *     array_merge([ $key ], $value)
              * );
              */
 

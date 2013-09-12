@@ -11,5 +11,5 @@
         const TABLE         = 'acl_role';
         const AUTOINCREMENT = true;
         const PRIMARY_KEY   = 'id';
-        const ENTITY_NAME   = 'acl_role';
+        const ENTITY_NAME   = 'acl\role';
     }

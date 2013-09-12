@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\city;
 
     /**
      * City DAO
      */
-    class city_dao extends entity_record_dao implements city_definition {
+    class dao extends \neoform\entity\record\dao implements definition {
 
         const BY_REGION                 = 'by_region';
         const BY_REGION_NAME_NORMALIZED = 'by_region_name_normalized';
@@ -117,7 +117,7 @@
         /**
          * Get multiple sets of City ids by region
          *
-         * @param region_collection|array $region_list
+         * @param \neoform\region\collection|array $region_list
          * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
@@ -126,7 +126,7 @@
          */
         public function by_region_multi($region_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
-            if ($region_list instanceof region_collection) {
+            if ($region_list instanceof \neoform\region\collection) {
                 foreach ($region_list as $k => $region) {
                     $keys[$k] = [
                         'region_id' => (int) $region->id,
@@ -224,7 +224,7 @@
          *
          * @param array $info associative array, keys matching columns in database for this entity
          *
-         * @return city_model
+         * @return model
          */
         public function insert(array $info) {
 
@@ -237,7 +237,7 @@
          *
          * @param array $infos array of associative arrays, keys matching columns in database for this entity
          *
-         * @return city_collection
+         * @return collection
          */
         public function insert_multi(array $infos) {
 
@@ -249,12 +249,12 @@
          * Updates a City record with new data
          *   only fields that are specified in the $info array will be written
          *
-         * @param city_model $city record to be updated
+         * @param model $city record to be updated
          * @param array $info data to write to the record
          *
-         * @return city_model updated model
+         * @return model updated model
          */
-        public function update(city_model $city, array $info) {
+        public function update(model $city, array $info) {
 
             // Update record
             return parent::_update($city, $info);
@@ -263,11 +263,11 @@
         /**
          * Delete a City record
          *
-         * @param city_model $city record to be deleted
+         * @param model $city record to be deleted
          *
          * @return bool
          */
-        public function delete(city_model $city) {
+        public function delete(model $city) {
 
             // Delete record
             return parent::_delete($city);
@@ -276,11 +276,11 @@
         /**
          * Delete multiple City records
          *
-         * @param city_collection $city_collection records to be deleted
+         * @param collection $city_collection records to be deleted
          *
          * @return bool
          */
-        public function delete_multi(city_collection $city_collection) {
+        public function delete_multi(collection $city_collection) {
 
             // Delete records
             return parent::_delete_multi($city_collection);

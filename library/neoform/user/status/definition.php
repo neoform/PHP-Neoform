@@ -11,5 +11,5 @@
         const TABLE         = 'user_status';
         const AUTOINCREMENT = false;
         const PRIMARY_KEY   = 'id';
-        const ENTITY_NAME   = 'user_status';
+        const ENTITY_NAME   = 'user\status';
     }

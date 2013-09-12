@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\region;
 
     /**
      * Region DAO
      */
-    class region_dao extends entity_record_dao implements region_definition {
+    class dao extends \neoform\entity\record\dao implements definition {
 
         const BY_COUNTRY                 = 'by_country';
         const BY_COUNTRY_NAME_NORMALIZED = 'by_country_name_normalized';
@@ -130,7 +130,7 @@
         /**
          * Get multiple sets of Region ids by country
          *
-         * @param country_collection|array $country_list
+         * @param \neoform\country\collection|array $country_list
          * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
@@ -139,7 +139,7 @@
          */
         public function by_country_multi($country_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
-            if ($country_list instanceof country_collection) {
+            if ($country_list instanceof \neoform\country\collection) {
                 foreach ($country_list as $k => $country) {
                     $keys[$k] = [
                         'country_id' => (int) $country->id,
@@ -252,7 +252,7 @@
          *
          * @param array $info associative array, keys matching columns in database for this entity
          *
-         * @return region_model
+         * @return model
          */
         public function insert(array $info) {
 
@@ -265,7 +265,7 @@
          *
          * @param array $infos array of associative arrays, keys matching columns in database for this entity
          *
-         * @return region_collection
+         * @return collection
          */
         public function insert_multi(array $infos) {
 
@@ -277,12 +277,12 @@
          * Updates a Region record with new data
          *   only fields that are specified in the $info array will be written
          *
-         * @param region_model $region record to be updated
+         * @param model $region record to be updated
          * @param array $info data to write to the record
          *
-         * @return region_model updated model
+         * @return model updated model
          */
-        public function update(region_model $region, array $info) {
+        public function update(model $region, array $info) {
 
             // Update record
             return parent::_update($region, $info);
@@ -291,11 +291,11 @@
         /**
          * Delete a Region record
          *
-         * @param region_model $region record to be deleted
+         * @param model $region record to be deleted
          *
          * @return bool
          */
-        public function delete(region_model $region) {
+        public function delete(model $region) {
 
             // Delete record
             return parent::_delete($region);
@@ -304,11 +304,11 @@
         /**
          * Delete multiple Region records
          *
-         * @param region_collection $region_collection records to be deleted
+         * @param collection $region_collection records to be deleted
          *
          * @return bool
          */
-        public function delete_multi(region_collection $region_collection) {
+        public function delete_multi(collection $region_collection) {
 
             // Delete records
             return parent::_delete_multi($region_collection);

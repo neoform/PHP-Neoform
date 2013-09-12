@@ -1,6 +1,8 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\city;
+
+    use neoform\entity;
 
     /**
      * City Model
@@ -14,7 +16,7 @@
      * @var float $longitude
      * @var float $latitude
      */
-    class city_model extends entity_record_model implements city_definition {
+    class model extends entity\record\model implements definition {
 
         public function __get($k) {
 
@@ -50,9 +52,9 @@
         /**
          * Region Model based on 'region_id'
          *
-         * @return region_model
+         * @return \neoform\region\model
          */
         public function region() {
-            return $this->_model('region', $this->vars['region_id'], 'region_model');
+            return $this->_model('region', $this->vars['region_id'], '\neoform\region\model');
         }
     }

@@ -1,15 +1,15 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\city;
 
     /**
      * Entity definition interface
      */
-    interface city_definition {
+    interface definition {
 
-        const NAME            = 'city';
-        const TABLE           = 'city';
-        const AUTOINCREMENT   = true;
-        const PRIMARY_KEY     = 'id';
-        const ENTITY_NAME     = 'city';
+        const NAME          = 'city';
+        const TABLE         = 'city';
+        const AUTOINCREMENT = true;
+        const PRIMARY_KEY   = 'id';
+        const ENTITY_NAME   = 'city';
     }

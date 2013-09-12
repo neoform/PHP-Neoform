@@ -1,7 +1,7 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\city;
 
-    class city_exception extends entity_exception {
+    class exception extends \neoform\entity\exception {
 
     }

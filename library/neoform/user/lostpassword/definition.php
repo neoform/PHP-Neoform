@@ -11,5 +11,5 @@
         const TABLE         = 'user_lostpassword';
         const AUTOINCREMENT = false;
         const PRIMARY_KEY   = 'hash';
-        const ENTITY_NAME   = 'user_lostpassword';
+        const ENTITY_NAME   = 'user\lostpassword';
     }

@@ -1,11 +1,11 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\country;
 
     /**
      * Entity definition interface
      */
-    interface country_definition {
+    interface definition {
 
         const NAME          = 'country';
         const TABLE         = 'country';

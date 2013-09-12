@@ -1,25 +1,25 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\region;
 
     /**
      * Region collection
      */
-    class region_collection extends entity_record_collection implements region_definition {
+    class collection extends \neoform\entity\record\collection implements definition {
 
         /**
          * Preload the City models in this collection
          *
-         * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)
+         * @param array|null   $order_by array of field names (as the key) and sort direction (entity\record_dao::SORT_ASC, entity\record_dao::SORT_DESC)
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
          *
-         * @return city_collection
+         * @return \neoform\city\collection
          */
         public function city_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_one_to_many(
                 'city_collection',
-                'city',
+                '\neoform\city',
                 'by_region',
                 $order_by,
                 $offset,
@@ -35,7 +35,7 @@
         public function city_count() {
             return $this->_preload_counts(
                 'city_count',
-                'city',
+                '\neoform\city',
                 'region_id'
             );
         }
@@ -43,12 +43,12 @@
         /**
          * Preload the Country models in this collection
          *
-         * @return country_collection
+         * @return \neoform\country\collection
          */
         public function country_collection() {
             return $this->_preload_one_to_one(
                 'country',
-                'country',
+                '\neoform\country',
                 'country_id'
             );
         }

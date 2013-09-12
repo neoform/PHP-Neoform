@@ -1,17 +1,20 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\country;
 
-    class country_api {
+    use neoform\input;
+    use neoform\entity;
+
+    class api {
 
         public static function insert(array $info) {
 
-            $input = new input_collection($info);
+            $input = new input\collection($info);
 
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity::dao('country')->insert([
+                return entity::dao('neoform\country')->insert([
                     'name'            => $input->name->val(),
                     'name_normalized' => $input->name_normalized->val(),
                     'iso2'            => $input->iso2->val(),
@@ -21,14 +24,14 @@
             throw $input->exception();
         }
 
-        public static function update(country_model $country, array $info, $crush=false) {
+        public static function update(model $country, array $info, $crush=false) {
 
-            $input = new input_collection($info);
+            $input = new input\collection($info);
 
             self::_validate_update($country, $input);
 
             if ($input->is_valid()) {
-                return entity::dao('country')->update(
+                return entity::dao('neoform\country')->update(
                     $country,
                     $input->vals(
                         [
@@ -44,46 +47,46 @@
             throw $input->exception();
         }
 
-        public static function delete(country_model $country) {
-            return entity::dao('country')->delete($country);
+        public static function delete(model $country) {
+            return entity::dao('neoform\country')->delete($country);
         }
 
-        public static function _validate_insert(input_collection $input) {
+        public static function _validate_insert(input\collection $input) {
 
             // name
             $input->name->cast('string')->length(1, 255)->callback(function($name) {
-                if (entity::dao('country')->by_name($name->val())) {
+                if (entity::dao('neoform\country')->by_name($name->val())) {
                     $name->errors('already in use');
                 }
             });
 
             // name_normalized
             $input->name_normalized->cast('string')->length(1, 255)->callback(function($name_normalized) {
-                if (entity::dao('country')->by_name_normalized($name_normalized->val())) {
+                if (entity::dao('neoform\country')->by_name_normalized($name_normalized->val())) {
                     $name_normalized->errors('already in use');
                 }
             });
 
             // iso2
             $input->iso2->cast('string')->length(1, 2)->callback(function($iso2) {
-                if (entity::dao('country')->by_iso2($iso2->val())) {
+                if (entity::dao('neoform\country')->by_iso2($iso2->val())) {
                     $iso2->errors('already in use');
                 }
             });
 
             // iso3
             $input->iso3->cast('string')->length(1, 3)->callback(function($iso3) {
-                if (entity::dao('country')->by_iso3($iso3->val())) {
+                if (entity::dao('neoform\country')->by_iso3($iso3->val())) {
                     $iso3->errors('already in use');
                 }
             });
         }
 
-        public static function _validate_update(country_model $country, input_collection $input) {
+        public static function _validate_update(model $country, input\collection $input) {
 
             // name
             $input->name->cast('string')->optional()->length(1, 255)->callback(function($name) use ($country) {
-                $id_arr = entity::dao('country')->by_name($name->val());
+                $id_arr = entity::dao('neoform\country')->by_name($name->val());
                 if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $country->id) {
                     $name->errors('already in use');
                 }
@@ -91,7 +94,7 @@
 
             // name_normalized
             $input->name_normalized->cast('string')->optional()->length(1, 255)->callback(function($name_normalized) use ($country) {
-                $id_arr = entity::dao('country')->by_name_normalized($name_normalized->val());
+                $id_arr = entity::dao('neoform\country')->by_name_normalized($name_normalized->val());
                 if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $country->id) {
                     $name_normalized->errors('already in use');
                 }
@@ -99,7 +102,7 @@
 
             // iso2
             $input->iso2->cast('string')->optional()->length(1, 2)->callback(function($iso2) use ($country) {
-                $id_arr = entity::dao('country')->by_iso2($iso2->val());
+                $id_arr = entity::dao('neoform\country')->by_iso2($iso2->val());
                 if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $country->id) {
                     $iso2->errors('already in use');
                 }
@@ -107,7 +110,7 @@
 
             // iso3
             $input->iso3->cast('string')->optional()->length(1, 3)->callback(function($iso3) use ($country) {
-                $id_arr = entity::dao('country')->by_iso3($iso3->val());
+                $id_arr = entity::dao('neoform\country')->by_iso3($iso3->val());
                 if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $country->id) {
                     $iso3->errors('already in use');
                 }

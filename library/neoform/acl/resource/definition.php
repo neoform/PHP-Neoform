@@ -11,5 +11,5 @@
         const TABLE         = 'acl_resource';
         const AUTOINCREMENT = true;
         const PRIMARY_KEY   = 'id';
-        const ENTITY_NAME   = 'acl_resource';
+        const ENTITY_NAME   = 'acl\resource';
     }

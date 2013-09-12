@@ -1,17 +1,20 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\region;
 
-    class region_api {
+    use neoform\input;
+    use neoform\entity;
+
+    class api {
 
         public static function insert(array $info) {
 
-            $input = new input_collection($info);
+            $input = new input\collection($info);
 
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity::dao('region')->insert([
+                return entity::dao('neoform\region')->insert([
                     'country_id'      => $input->country_id->val(),
                     'name'            => $input->name->val(),
                     'name_normalized' => $input->name_normalized->val(),
@@ -24,14 +27,14 @@
             throw $input->exception();
         }
 
-        public static function update(region_model $region, array $info, $crush=false) {
+        public static function update(model $region, array $info, $crush=false) {
 
-            $input = new input_collection($info);
+            $input = new input\collection($info);
 
             self::_validate_update($region, $input);
 
             if ($input->is_valid()) {
-                return entity::dao('region')->update(
+                return entity::dao('neoform\region')->update(
                     $region,
                     $input->vals(
                         [
@@ -50,17 +53,17 @@
             throw $input->exception();
         }
 
-        public static function delete(region_model $region) {
-            return entity::dao('region')->delete($region);
+        public static function delete(model $region) {
+            return entity::dao('neoform\region')->delete($region);
         }
 
-        public static function _validate_insert(input_collection $input) {
+        public static function _validate_insert(input\collection $input) {
 
             // country_id
-            $input->country_id->cast('int')->digit(0, 255)->callback(function($country_id){
+            $input->country_id->cast('int')->digit(0, 255)->callback(function($country_id) {
                 try {
-                    $country_id->data('model', new country_model($country_id->val()));
-                } catch (country_exception $e) {
+                    $country_id->data('model', new \neoform\country\model($country_id->val()));
+                } catch (\neoform\country\exception $e) {
                     $country_id->errors($e->getMessage());
                 }
             });
@@ -76,7 +79,7 @@
 
             // iso2
             $input->iso2->cast('string')->length(1, 2)->callback(function($iso2) {
-                if (entity::dao('region')->by_iso2($iso2->val())) {
+                if (entity::dao('neoform\region')->by_iso2($iso2->val())) {
                     $iso2->errors('already in use');
                 }
             });
@@ -88,13 +91,13 @@
             $input->latitude->cast('float');
         }
 
-        public static function _validate_update(region_model $region, input_collection $input) {
+        public static function _validate_update(model $region, input\collection $input) {
 
             // country_id
-            $input->country_id->cast('int')->optional()->digit(0, 255)->callback(function($country_id){
+            $input->country_id->cast('int')->optional()->digit(0, 255)->callback(function($country_id) {
                 try {
-                    $country_id->data('model', new country_model($country_id->val()));
-                } catch (country_exception $e) {
+                    $country_id->data('model', new \neoform\country\model($country_id->val()));
+                } catch (\neoform\country\exception $e) {
                     $country_id->errors($e->getMessage());
                 }
             });
@@ -110,7 +113,7 @@
 
             // iso2
             $input->iso2->cast('string')->optional()->length(1, 2)->callback(function($iso2) use ($region) {
-                $id_arr = entity::dao('region')->by_iso2($iso2->val());
+                $id_arr = entity::dao('neoform\region')->by_iso2($iso2->val());
                 if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $region->id) {
                     $iso2->errors('already in use');
                 }

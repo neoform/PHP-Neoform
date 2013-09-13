@@ -11,8 +11,8 @@
             //verify
             if (core::auth()->logged_in()) {
                 try {
-                    auth_api::logout(core::auth());
-                } catch (input_exception $e) {
+                    auth\api::logout(core::auth());
+                } catch (input\exception $e) {
 
                 }
             }

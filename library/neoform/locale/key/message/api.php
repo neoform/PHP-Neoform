@@ -14,7 +14,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity::dao('neoform\locale\key\message')->insert([
+                return entity::dao('locale\key\message')->insert([
                     'key_id' => $input->key_id->val(),
                     'body'   => $input->body->val(),
                     'locale' => $input->locale->val(),
@@ -30,7 +30,7 @@
             self::_validate_update($locale_key_message, $input);
 
             if ($input->is_valid()) {
-                return entity::dao('neoform\locale\key\message')->update(
+                return entity::dao('locale\key\message')->update(
                     $locale_key_message,
                     $input->vals(
                         [
@@ -46,7 +46,7 @@
         }
 
         public static function delete(model $locale_key_message) {
-            return entity::dao('neoform\locale\key\message')->delete($locale_key_message);
+            return entity::dao('locale\key\message')->delete($locale_key_message);
         }
 
         public static function _validate_insert(input\collection $input) {

@@ -33,7 +33,7 @@
          * @return \neoform\acl\group\model
          */
         public function acl_group() {
-            return $this->_model('acl_group', $this->vars['acl_group_id'], '\neoform\acl\group\model');
+            return $this->_model('acl_group', $this->vars['acl_group_id'], 'acl\group\model');
         }
 
         /**
@@ -42,6 +42,6 @@
          * @return \neoform\user\model
          */
         public function user() {
-            return $this->_model('user', $this->vars['user_id'], '\neoform\user\model');
+            return $this->_model('user', $this->vars['user_id'], 'user\model');
         }
     }

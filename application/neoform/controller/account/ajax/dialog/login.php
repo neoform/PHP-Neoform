@@ -7,12 +7,12 @@
         public function default_action() {
 
             if (core::auth()->logged_in()) {
-                $json = new render_json;
+                $json = new render\json;
                 $json->status = 'close';
                 $json->render();
             } else {
 
-                $dialog = new render_dialog('account/login');
+                $dialog = new render\dialog('account/login');
 
                 if ($message = core::http_flash()->get('login_message')) {
                     $dialog->message = current($message);

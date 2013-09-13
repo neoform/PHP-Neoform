@@ -14,7 +14,7 @@
          * @param neoform\user\model $user
          * @param bool               $remember
          *
-         * @return neoform\auth\model the newly created session
+         * @return model the newly created session
          */
         public static function activate_session(neoform\user\model $user, $remember=false) {
 
@@ -34,8 +34,8 @@
             ]);
 
             // Update last login
-            $now = new neoform\type\date();
-            neoform\entity::dao('user_date')->update(
+            $now = new neoform\type\date;
+            neoform\entity::dao('user\date')->update(
                 $user->user_date(),
                 [
                     'last_login' => $now->datetime(),

@@ -86,7 +86,7 @@
 
             $message = $message ? $message : (! $title ? 'There was a problem generating this page' : null);
 
-            $view             = new render_view;
+            $view             = new render\view;
             $view->meta_title = $hard_error ? 'Error' : core::locale()->translate('Error');
             $view->pre_header = $hard_error ? 'Error' : core::locale()->translate('Error');
             $view->header     = $hard_error ? ($title ? $title : 'Server Error') : core::locale()->translate($title ? $title : 'Server Error');

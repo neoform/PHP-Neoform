@@ -20,10 +20,10 @@
 
             core::http()->ref();
 
-            $json = new render_json;
+            $json = new render\json;
 
             try {
-                user_api::update_password(
+                user\api::update_password(
                     core::auth()->user(),
                     [
                         'current_password' => core::http()->post('current_password'),
@@ -32,8 +32,8 @@
                     ]
                 );
                 $json->status = 'good';
-            } catch (input_exception $e) {
-                $json->errors = $e->errors();
+            } catch (input\exception $e) {
+                $json->errors  = $e->errors();
                 $json->message = $e->message();
             }
 
@@ -43,10 +43,10 @@
         protected function display() {
 
             //display time
-            $view = new render_view;
+            $view = new render\view;
 
             if (core::http()->parameter('p')) {
-                $view->reset = true;
+                $view->reset     = true;
                 $view->forgotten = core::http()->parameter('p');
             }
 

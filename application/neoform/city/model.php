@@ -55,6 +55,6 @@
          * @return \neoform\region\model
          */
         public function region() {
-            return $this->_model('region', $this->vars['region_id'], '\neoform\region\model');
+            return $this->_model('region', $this->vars['region_id'], 'region\model');
         }
     }

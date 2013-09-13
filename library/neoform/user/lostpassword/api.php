@@ -103,7 +103,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity::dao('neoform\user\lostpassword')->insert([
+                return entity::dao('user\lostpassword')->insert([
                     'hash'      => $input->hash->val(),
                     'user_id'   => $input->user_id->val(),
                     'posted_on' => $input->posted_on->val(),
@@ -119,7 +119,7 @@
             self::_validate_update($user_lostpassword, $input);
 
             if ($input->is_valid()) {
-                return entity::dao('neoform\user\lostpassword')->update(
+                return entity::dao('user\lostpassword')->update(
                     $user_lostpassword,
                     $input->vals(
                         [
@@ -135,21 +135,21 @@
         }
 
         public static function delete(model $user_lostpassword) {
-            return entity::dao('neoform\user\lostpassword')->delete($user_lostpassword);
+            return entity::dao('user\lostpassword')->delete($user_lostpassword);
         }
 
         public static function _validate_insert(input\collection $input) {
 
             // hash
             $input->hash->cast('string')->length(1, 40)->callback(function($hash) {
-                if (entity::dao('neoform\user\lostpassword')->record($hash->val())) {
+                if (entity::dao('user\lostpassword')->record($hash->val())) {
                     $hash->errors('already in use');
                 }
             });
 
             // user_id
             $input->user_id->cast('int')->digit(0, 4294967295)->callback(function($user_id) {
-                if (entity::dao('neoform\user\lostpassword')->by_user($user_id->val())) {
+                if (entity::dao('user\lostpassword')->by_user($user_id->val())) {
                     $user_id->errors('already in use');
                 }
             })->callback(function($user_id) {
@@ -168,7 +168,7 @@
 
             // hash
             $input->hash->cast('string')->optional()->length(1, 40)->callback(function($hash) use ($user_lostpassword) {
-                $user_lostpassword_info = entity::dao('neoform\user\lostpassword')->record($hash->val());
+                $user_lostpassword_info = entity::dao('user\lostpassword')->record($hash->val());
                 if ($user_lostpassword_info && (string) $user_lostpassword_info['hash'] !== $user_lostpassword->hash) {
                     $hash->errors('already in use');
                 }
@@ -176,7 +176,7 @@
 
             // user_id
             $input->user_id->cast('int')->optional()->digit(0, 4294967295)->callback(function($user_id) use ($user_lostpassword) {
-                $hash_arr = entity::dao('neoform\user\lostpassword')->by_user($user_id->val());
+                $hash_arr = entity::dao('user\lostpassword')->by_user($user_id->val());
                 if (is_array($hash_arr) && $hash_arr && (string) current($hash_arr) !== $user_lostpassword->hash) {
                     $user_id->errors('already in use');
                 }

@@ -19,7 +19,7 @@
         public function child_acl_resource_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_one_to_many(
                 'child_acl_resource_collection',
-                'neoform\acl\resource',
+                'acl\resource',
                 'by_parent',
                 $order_by,
                 $offset,
@@ -35,7 +35,7 @@
         public function child_acl_resource_count() {
             return $this->_preload_counts(
                 'child_acl_resource_count',
-                'neoform\acl\resource',
+                'acl\resource',
                 'parent_id'
             );
         }
@@ -52,9 +52,9 @@
         public function acl_role_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'acl_role_collection',
-                'neoform\acl\role\resource',
+                'acl\role\resource',
                 'by_acl_resource',
-                'neoform\acl\role',
+                'acl\role',
                 $order_by,
                 $offset,
                 $limit
@@ -69,7 +69,7 @@
         public function acl_role_count() {
             return $this->_preload_counts(
                 'acl_role_count',
-                'neoform\acl\role\resource',
+                'acl\role\resource',
                 'acl_resource_id'
             );
         }
@@ -82,7 +82,7 @@
         public function parent_acl_resource_collection() {
             return $this->_preload_one_to_one(
                 'parent_acl_resource',
-                'neoform\acl\resource',
+                'acl\resource',
                 'parent_id'
             );
         }

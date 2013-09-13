@@ -14,7 +14,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity::dao('neoform\region')->insert([
+                return entity::dao('region')->insert([
                     'country_id'      => $input->country_id->val(),
                     'name'            => $input->name->val(),
                     'name_normalized' => $input->name_normalized->val(),
@@ -34,7 +34,7 @@
             self::_validate_update($region, $input);
 
             if ($input->is_valid()) {
-                return entity::dao('neoform\region')->update(
+                return entity::dao('region')->update(
                     $region,
                     $input->vals(
                         [
@@ -54,7 +54,7 @@
         }
 
         public static function delete(model $region) {
-            return entity::dao('neoform\region')->delete($region);
+            return entity::dao('region')->delete($region);
         }
 
         public static function _validate_insert(input\collection $input) {
@@ -79,7 +79,7 @@
 
             // iso2
             $input->iso2->cast('string')->length(1, 2)->callback(function($iso2) {
-                if (entity::dao('neoform\region')->by_iso2($iso2->val())) {
+                if (entity::dao('region')->by_iso2($iso2->val())) {
                     $iso2->errors('already in use');
                 }
             });
@@ -113,7 +113,7 @@
 
             // iso2
             $input->iso2->cast('string')->optional()->length(1, 2)->callback(function($iso2) use ($region) {
-                $id_arr = entity::dao('neoform\region')->by_iso2($iso2->val());
+                $id_arr = entity::dao('region')->by_iso2($iso2->val());
                 if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $region->id) {
                     $iso2->errors('already in use');
                 }

@@ -9,17 +9,17 @@
             core::output()->output_type('json');
             core::http()->ref();
 
-            $json = new render_json;
+            $json = new render\json;
 
             switch (core::http()->segment('action')) {
 
                 case 'insert':
                     try {
-                        locale_namespace_api::insert(
+                        locale\nspace\api::insert(
                             core::http()->posts()
                         );
                         $json->status = 'good';
-                    } catch (input_exception $e) {
+                    } catch (input\exception $e) {
                         $json->status = 'error';
                         $json->message = $e->message() ?: 'Namespace could not be created';
                         $json->errors = $e->errors();
@@ -28,12 +28,12 @@
 
                 case 'update':
                     try {
-                        locale_namespace_api::update(
-                            new locale_namespace_model(core::http()->parameter('id')),
+                        locale\nspace\api::update(
+                            new locale\nspace\model(core::http()->parameter('id')),
                             core::http()->posts()
                         );
                         $json->status = 'good';
-                    } catch (input_exception $e) {
+                    } catch (input\exception $e) {
                         $json->status = 'error';
                         $json->message = $e->message() ?: 'Namespace could not be updated';
                         $json->errors = $e->errors();
@@ -42,9 +42,9 @@
 
                 case 'delete':
                     try {
-                        locale_namespace_api::delete(new locale_namespace_model(core::http()->parameter('id')));
+                        locale\nspace\api::delete(new locale\nspace\model(core::http()->parameter('id')));
                         $json->status = 'good';
-                    } catch (input_exception $e) {
+                    } catch (input\exception $e) {
                         $json->status = 'error';
                         $json->message = $e->message() ?: 'Namespace could not be deleted';
                         $json->errors = $e->errors();

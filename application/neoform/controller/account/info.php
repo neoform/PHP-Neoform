@@ -6,7 +6,7 @@
 
         public function default_action() {
             //display time
-            $view = new render_view;
+            $view = new render\view;
 
             $view->meta_title = 'Account Info / Account';
             $view->subheader  = 'Account Information';

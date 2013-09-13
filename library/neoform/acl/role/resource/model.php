@@ -33,7 +33,7 @@
          * @return \neoform\acl\role\model
          */
         public function acl_role() {
-            return $this->_model('acl_role', $this->vars['acl_role_id'], '\neoform\acl\role\model');
+            return $this->_model('acl_role', $this->vars['acl_role_id'], 'acl\role\model');
         }
 
         /**
@@ -42,6 +42,6 @@
          * @return \neoform\acl\resource\model
          */
         public function acl_resource() {
-            return $this->_model('acl_resource', $this->vars['acl_resource_id'], '\neoform\acl\resource\model');
+            return $this->_model('acl_resource', $this->vars['acl_resource_id'], 'acl\resource\model');
         }
     }

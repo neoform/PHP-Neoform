@@ -14,7 +14,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity::dao('neoform\locale')->insert([
+                return entity::dao('locale')->insert([
                     'iso2' => $input->iso2->val(),
                     'name' => $input->name->val(),
                 ]);
@@ -29,7 +29,7 @@
             self::_validate_update($locale, $input);
 
             if ($input->is_valid()) {
-                return entity::dao('neoform\locale')->update(
+                return entity::dao('locale')->update(
                     $locale,
                     $input->vals(
                         [
@@ -44,14 +44,14 @@
         }
 
         public static function delete(model $locale) {
-            return entity::dao('neoform\locale')->delete($locale);
+            return entity::dao('locale')->delete($locale);
         }
 
         public static function _validate_insert(input\collection $input) {
 
             // iso2
             $input->iso2->cast('string')->length(1, 2)->callback(function($iso2) {
-                if (entity::dao('neoform\locale')->record($iso2->val())) {
+                if (entity::dao('locale')->record($iso2->val())) {
                     $iso2->errors('already in use');
                 }
             });
@@ -64,7 +64,7 @@
 
             // iso2
             $input->iso2->cast('string')->optional()->length(1, 2)->callback(function($iso2) use ($locale) {
-                $locale_info = entity::dao('neoform\locale')->record($iso2->val());
+                $locale_info = entity::dao('locale')->record($iso2->val());
                 if ($locale_info && (string) $locale_info['iso2'] !== $locale->iso2) {
                     $iso2->errors('already in use');
                 }

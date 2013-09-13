@@ -115,7 +115,7 @@
             }
 
             if (! isset($this->namespace_ids[$namespace_name])) {
-                $this->namespace_ids[$namespace_name] = (int) current(\neoform\entity::dao('locale\npace')->by_name(
+                $this->namespace_ids[$namespace_name] = (int) current(\neoform\entity::dao('locale\nspace')->by_name(
                     $namespace_name
                 ));
             }
@@ -163,7 +163,7 @@
                 if (isset($this->namespace_ids[$namespace_name])) {
                     $namespace_id = $this->namespace_ids[$namespace_name];
                 } else {
-                    $namespace_id = $this->namespace_ids[$namespace_name] = (int) current(\neoform\entity::dao('locale\npace')->by_name(
+                    $namespace_id = $this->namespace_ids[$namespace_name] = (int) current(\neoform\entity::dao('locale\nspace')->by_name(
                         $namespace_name
                     ));
                 }

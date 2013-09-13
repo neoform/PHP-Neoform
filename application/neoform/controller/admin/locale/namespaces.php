@@ -6,10 +6,10 @@
 
         public function default_action() {
 
-            $view = new render_view;
+            $view = new render\view;
 
             $view->meta_title = 'Locale Namespaces';
-            $view->namespaces = new locale_namespace_collection(null, entity::dao('locale_namespace')->all());
+            $view->namespaces = new locale\nspace\collection(null, entity::dao('locale\nspace')->all());
 
             $view->render('admin/locale/namespaces');
         }

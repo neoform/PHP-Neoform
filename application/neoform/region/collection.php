@@ -19,7 +19,7 @@
         public function city_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_one_to_many(
                 'city_collection',
-                'neoform\city',
+                'city',
                 'by_region',
                 $order_by,
                 $offset,
@@ -35,7 +35,7 @@
         public function city_count() {
             return $this->_preload_counts(
                 'city_count',
-                'neoform\city',
+                'city',
                 'region_id'
             );
         }
@@ -48,7 +48,7 @@
         public function country_collection() {
             return $this->_preload_one_to_one(
                 'country',
-                'neoform\country',
+                'country',
                 'country_id'
             );
         }

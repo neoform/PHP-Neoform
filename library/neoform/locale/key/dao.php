@@ -128,7 +128,7 @@
         /**
          * Get multiple sets of Locale Key ids by locale_namespace
          *
-         * @param \neoform\locale\npace\collection|array $locale_namespace_list
+         * @param \neoform\locale\nspace\collection|array $locale_namespace_list
          * @param array $order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)
          * @param integer|null $offset get PKs starting at this offset
          * @param integer|null $limit max number of PKs to return
@@ -137,7 +137,7 @@
          */
         public function by_namespace_multi($locale_namespace_list, array $order_by=null, $offset=null, $limit=null) {
             $keys = [];
-            if ($locale_namespace_list instanceof \neoform\locale\npace\collection) {
+            if ($locale_namespace_list instanceof \neoform\locale\nspace\collection) {
                 foreach ($locale_namespace_list as $k => $locale_namespace) {
                     $keys[$k] = [
                         'namespace_id' => (int) $locale_namespace->id,

@@ -60,7 +60,7 @@
 
             } while (1);
 
-            $roles = new neoform\acl\role\collection(null, neoform\entity::dao('acl_role')->all());
+            $roles = new neoform\acl\role\collection(null, neoform\entity::dao('acl\role')->all());
 
             $user_acl_roles = [];
             foreach ($roles as $role) {
@@ -70,7 +70,7 @@
                 ];
             }
 
-            neoform\entity::dao('user_acl_role')->insert_multi($user_acl_roles);
+            neoform\entity::dao('user\acl\role')->insert_multi($user_acl_roles);
 
             echo self::color_text('Done', 'green', true) . "\n";
         }

@@ -33,7 +33,7 @@
          * @return \neoform\user\model
          */
         public function user() {
-            return $this->_model('user', $this->vars['user_id'], '\neoform\user\model');
+            return $this->_model('user', $this->vars['user_id'], 'user\model');
         }
 
         /**
@@ -42,6 +42,6 @@
          * @return \neoform\site\model
          */
         public function site() {
-            return $this->_model('site', $this->vars['site_id'], '\neoform\site\model');
+            return $this->_model('site', $this->vars['site_id'], 'site\model');
         }
     }

@@ -1,10 +1,12 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\locale;
 
-    class locale_factory implements core_factory {
+    use neoform\core;
+
+    class factory implements core\factory {
 
         public static function init(array $args) {
-            return new locale_instance(core::config()['locale']);
+            return new instance(core::config()['locale']);
         }
     }

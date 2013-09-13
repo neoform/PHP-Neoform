@@ -7,7 +7,7 @@
         public function default_action() {
 
             if (core::auth()->logged_in()) {
-                $json = new render_json();
+                $json = new render\json;
                 $json->status = 'close';
 
                 if ($bounce = core::http_flash()->get('login_bounce')) {
@@ -17,7 +17,7 @@
 
                 $json->render();
             } else {
-                (new render_dialog('account/create'))
+                (new render\dialog('account/create'))
                     ->title('Create Account')
                     ->css([
                         'width' => '600px',

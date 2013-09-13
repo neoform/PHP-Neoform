@@ -15,7 +15,7 @@
         public function user_collection() {
             return $this->_preload_one_to_one(
                 'user',
-                'neoform\user',
+                'user',
                 'user_id'
             );
         }

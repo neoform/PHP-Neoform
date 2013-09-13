@@ -19,9 +19,9 @@
         public function acl_group_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'acl_group_collection',
-                'neoform\acl\group\user',
+                'acl\group\user',
                 'by_user',
-                'neoform\acl\group',
+                'acl\group',
                 $order_by,
                 $offset,
                 $limit
@@ -36,7 +36,7 @@
         public function acl_group_count() {
             return $this->_preload_counts(
                 'acl_group_count',
-                'neoform\acl\group\user',
+                'acl\group\user',
                 'user_id'
             );
         }
@@ -53,7 +53,7 @@
         public function auth_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_one_to_many(
                 'auth_collection',
-                'neoform\auth',
+                'auth',
                 'by_user',
                 $order_by,
                 $offset,
@@ -69,7 +69,7 @@
         public function auth_count() {
             return $this->_preload_counts(
                 'auth_count',
-                'neoform\auth',
+                'auth',
                 'user_id'
             );
         }
@@ -86,9 +86,9 @@
         public function acl_role_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'acl_role_collection',
-                'neoform\user\acl\role',
+                'user\acl\role',
                 'by_user',
-                'neoform\acl\role',
+                'acl\role',
                 $order_by,
                 $offset,
                 $limit
@@ -103,7 +103,7 @@
         public function acl_role_count() {
             return $this->_preload_counts(
                 'acl_role_count',
-                'neoform\user\acl\role',
+                'user\acl\role',
                 'user_id'
             );
         }
@@ -116,7 +116,7 @@
         public function user_date_collection() {
             return $this->_preload_one_to_one(
                 'user_date',
-                'neoform\user\date',
+                'user\date',
                 'id'
             );
         }
@@ -129,7 +129,7 @@
         public function user_lostpassword_collection() {
             return $this->_preload_one_to_one(
                 'user_lostpassword',
-                'neoform\user\lostpassword',
+                'user\lostpassword',
                 'id'
             );
         }
@@ -146,9 +146,9 @@
         public function site_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'site_collection',
-                'neoform\user\site',
+                'user\site',
                 'by_user',
-                'neoform\site',
+                'site',
                 $order_by,
                 $offset,
                 $limit
@@ -163,7 +163,7 @@
         public function site_count() {
             return $this->_preload_counts(
                 'site_count',
-                'neoform\user\site',
+                'user\site',
                 'user_id'
             );
         }
@@ -176,7 +176,7 @@
         public function user_hashmethod_collection() {
             return $this->_preload_one_to_one(
                 'user_hashmethod',
-                'neoform\user\hashmethod',
+                'user\hashmethod',
                 'password_hashmethod'
             );
         }
@@ -189,7 +189,7 @@
         public function user_status_collection() {
             return $this->_preload_one_to_one(
                 'user_status',
-                'neoform\user\status',
+                'user\status',
                 'status_id'
             );
         }

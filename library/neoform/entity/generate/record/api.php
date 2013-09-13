@@ -27,7 +27,7 @@
 
         public function delete() {
             $this->code .= "\t\tpublic static function delete(model \${$this->table->name}) {\n";
-            $this->code .= "\t\t\treturn entity::dao('neoform\\" . str_replace('_', '\\', $this->table->name) . "')->delete(\${$this->table->name});\n";
+            $this->code .= "\t\t\treturn entity::dao('" . str_replace('_', '\\', $this->table->name) . "')->delete(\${$this->table->name});\n";
             $this->code .= "\t\t}\n\n";
         }
     }

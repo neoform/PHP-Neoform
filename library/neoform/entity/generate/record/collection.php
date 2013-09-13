@@ -99,7 +99,7 @@
             $this->code .= "\t\tpublic function {$name}() {\n";
             $this->code .= "\t\t\treturn \$this->_preload_one_to_one(\n";
             $this->code .= "\t\t\t\t'{$_var_key}',\n";
-            $this->code .= "\t\t\t\t'neoform\\" . str_replace('_', '\\', $referenced_field->table->name) . "',\n";
+            $this->code .= "\t\t\t\t'" . str_replace('_', '\\', $referenced_field->table->name) . "',\n";
             $this->code .= "\t\t\t\t'{$field->name}'\n";
             $this->code .= "\t\t\t);\n";
             $this->code .= "\t\t}\n\n";
@@ -126,7 +126,7 @@
             $this->code .= "\t\tpublic function {$name}(array \$order_by=null, \$offset=null, \$limit=null) {\n";
             $this->code .= "\t\t\treturn \$this->_preload_one_to_many(\n";
             $this->code .= "\t\t\t\t'{$_var_key}',\n";
-            $this->code .= "\t\t\t\t'neoform\\" . str_replace('_', '\\', $field->table->name) . "',\n";
+            $this->code .= "\t\t\t\t'" . str_replace('_', '\\', $field->table->name) . "',\n";
             $this->code .= "\t\t\t\t'by_{$field->name_idless}',\n";
             $this->code .= "\t\t\t\t\$order_by,\n";
             $this->code .= "\t\t\t\t\$offset,\n";
@@ -146,7 +146,7 @@
             $this->code .= "\t\tpublic function {$name}() {\n";
             $this->code .= "\t\t\treturn \$this->_preload_counts(\n";
             $this->code .= "\t\t\t\t'{$_var_key}',\n";
-            $this->code .= "\t\t\t\t'neoform\\" . str_replace('_', '\\', $field->table->name) . "',\n";
+            $this->code .= "\t\t\t\t'" . str_replace('_', '\\', $field->table->name) . "',\n";
             $this->code .= "\t\t\t\t'{$field->name}'\n";
             $this->code .= "\t\t\t);\n";
             $this->code .= "\t\t}\n\n";
@@ -171,9 +171,9 @@
             $this->code .= "\t\tpublic function {$name}(array \$order_by=null, \$offset=null, \$limit=null) {\n";
             $this->code .= "\t\t\treturn \$this->_preload_many_to_many(\n";
             $this->code .= "\t\t\t\t'{$_var_key}',\n";
-            $this->code .= "\t\t\t\t'neoform\\" . str_replace('_', '\\', $field->table->name) . "',\n";
+            $this->code .= "\t\t\t\t'" . str_replace('_', '\\', $field->table->name) . "',\n";
             $this->code .= "\t\t\t\t'by_{$field->name_idless}',\n";
-            $this->code .= "\t\t\t\t'neoform\\" . str_replace('_', '\\', $referenced_field->referenced_field->table->name) . "',\n";
+            $this->code .= "\t\t\t\t'" . str_replace('_', '\\', $referenced_field->referenced_field->table->name) . "',\n";
             $this->code .= "\t\t\t\t\$order_by,\n";
             $this->code .= "\t\t\t\t\$offset,\n";
             $this->code .= "\t\t\t\t\$limit\n";
@@ -192,7 +192,7 @@
             $this->code .= "\t\tpublic function {$name}() {\n";
             $this->code .= "\t\t\treturn \$this->_preload_counts(\n";
             $this->code .= "\t\t\t\t'{$_var_key}',\n";
-            $this->code .= "\t\t\t\t'neoform\\" . str_replace('_', '\\', $field->table->name) . "',\n";
+            $this->code .= "\t\t\t\t'" . str_replace('_', '\\', $field->table->name) . "',\n";
             $this->code .= "\t\t\t\t'{$field->name}'\n";
             $this->code .= "\t\t\t);\n";
             $this->code .= "\t\t}\n\n";

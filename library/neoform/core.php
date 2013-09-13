@@ -64,7 +64,7 @@
         public static function __callstatic($type, array $args) {
             $name = count($args) === 1 ? (string) current($args) : '';
             if (! isset(self::$instances[$type][$name])) {
-                $class = "\\neoform\\{$type}\\factory";
+                $class = '\neoform\\' . str_replace('_', '\\', $type) . '\factory';
                 self::$instances[$type][$name] = $class::init($args);
             }
             return self::$instances[$type][$name];

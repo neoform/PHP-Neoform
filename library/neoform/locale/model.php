@@ -40,7 +40,7 @@
             $key = self::_limit_var_key('locale_key_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new \neoform\locale\key\collection(
-                    entity::dao('neoform\locale\key')->by_locale($this->vars['iso2'], $order_by, $offset, $limit)
+                    entity::dao('locale\key')->by_locale($this->vars['iso2'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -58,7 +58,7 @@
 
             $key = parent::_count_var_key('locale_key_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('neoform\locale\key')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('locale\key')->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -76,7 +76,7 @@
             $key = self::_limit_var_key('locale_key_message_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new \neoform\locale\key\message\collection(
-                    entity::dao('neoform\locale\key\message')->by_locale($this->vars['iso2'], $order_by, $offset, $limit)
+                    entity::dao('locale\key\message')->by_locale($this->vars['iso2'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -94,7 +94,7 @@
 
             $key = parent::_count_var_key('locale_key_message_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('neoform\locale\key\message')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('locale\key\message')->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -112,7 +112,7 @@
             $key = self::_limit_var_key('locale_key_collection1', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new \neoform\locale\key\collection(
-                    entity::dao('neoform\locale\key\message')->by_locale($this->vars['iso2'], $order_by, $offset, $limit)
+                    entity::dao('locale\key\message')->by_locale($this->vars['iso2'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -130,7 +130,7 @@
 
             $key = parent::_count_var_key('locale_key_count1', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('neoform\locale\key\message')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('locale\key\message')->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -146,7 +146,7 @@
             $k = "message:{$locale}";
             if (! array_key_exists($k, $this->_vars)) {
                 $this->_vars[$k] = new \neoform\locale\key\message\model(
-                    current(entity::dao('neoform\locale\key\message')->by_locale_key($locale, $this->id))
+                    current(entity::dao('locale\key\message')->by_locale_key($locale, $this->id))
                 );
             }
             return $this->_vars[$k];

@@ -19,7 +19,7 @@
         public function locale_key_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_one_to_many(
                 'locale_key_collection',
-                'neoform\locale\key',
+                'locale\key',
                 'by_locale',
                 $order_by,
                 $offset,
@@ -35,7 +35,7 @@
         public function locale_key_count() {
             return $this->_preload_counts(
                 'locale_key_count',
-                'neoform\locale\key',
+                'locale\key',
                 'locale'
             );
         }
@@ -52,7 +52,7 @@
         public function locale_key_message_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_one_to_many(
                 'locale_key_message_collection',
-                'neoform\locale\key\message',
+                'locale\key\message',
                 'by_locale',
                 $order_by,
                 $offset,
@@ -68,7 +68,7 @@
         public function locale_key_message_count() {
             return $this->_preload_counts(
                 'locale_key_message_count',
-                'neoform\locale\key\message',
+                'locale\key\message',
                 'locale'
             );
         }
@@ -85,9 +85,9 @@
         public function locale_key_collection1(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'locale_key_collection1',
-                'neoform\locale\key\message',
+                'locale\key\message',
                 'by_locale',
-                'neoform\locale\key',
+                'locale\key',
                 $order_by,
                 $offset,
                 $limit
@@ -102,7 +102,7 @@
         public function locale_key_count1() {
             return $this->_preload_counts(
                 'locale_key_count1',
-                'neoform\locale\key\message',
+                'locale\key\message',
                 'locale'
             );
         }

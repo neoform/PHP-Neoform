@@ -1,12 +1,13 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\redis;
 
     use redis;
     use redisexception;
     use neoform\redis\exception;
+    use neoform\core;
 
-    class redis_factory implements core\factory {
+    class factory implements core\factory {
 
         public static function init(array $args) {
 
@@ -50,7 +51,7 @@
                     }
                 }
 
-                $redis->setOption(redis::OPT_SERIALIZER, \redis::SERIALIZER_PHP);
+                $redis->setOption(redis::OPT_SERIALIZER, redis::SERIALIZER_PHP);
                 $redis->setOption(redis::OPT_PREFIX, isset($server['key_prefix']) ? "{$server['key_prefix']}:" : "{$config['key_prefix']}:");
 
             } catch (redisexception $e) {

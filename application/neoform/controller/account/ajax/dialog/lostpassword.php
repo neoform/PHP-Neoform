@@ -6,11 +6,11 @@
 
         public function default_action() {
             if (core::auth()->logged_in()) {
-                $json = new render_json();
+                $json = new render\json;
                 $json->status = 'close';
                 $json->render();
             } else {
-                (new render_dialog('account/lostpassword'))
+                (new render\dialog('account/lostpassword'))
                     ->title('Lost Password')
                     ->css([
                         'width' => '600px',

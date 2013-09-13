@@ -106,12 +106,12 @@
             if (! isset($this->_vars['role_ids'])) {
 
                 // Get user's roles
-                $role_ids = entity::dao('user_acl_role')->by_user($this->vars['id']);
+                $role_ids = entity::dao('user\acl\role')->by_user($this->vars['id']);
 
                 // Get user's groups
-                if ($group_ids = entity::dao('acl_group_user')->by_user($this->vars['id'])) {
+                if ($group_ids = entity::dao('acl\group\user')->by_user($this->vars['id'])) {
                     // Get those group's roles
-                    foreach (entity::dao('acl_group_role')->by_acl_group_multi($group_ids) as $group_role_ids) {
+                    foreach (entity::dao('acl\group\role')->by_acl_group_multi($group_ids) as $group_role_ids) {
                         foreach ($group_role_ids as $group_role_id) {
                             $role_ids[] = $group_role_id;
                         }
@@ -140,7 +140,7 @@
                 }
 
                 $role_resource_ids = [];
-                foreach (entity::dao('acl_role_resource')->by_acl_role_multi($role_ids) as $ids) {
+                foreach (entity::dao('acl\role\resource')->by_acl_role_multi($role_ids) as $ids) {
                     if ($ids) {
                         foreach ($ids as $role_resource_id) {
                             $role_resource_ids[] = (int) $role_resource_id;
@@ -167,7 +167,7 @@
             $key = self::_limit_var_key('acl_group_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new \neoform\acl\group\collection(
-                    entity::dao('neoform\acl\group\user')->by_user($this->vars['id'], $order_by, $offset, $limit)
+                    entity::dao('acl\group\user')->by_user($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -185,7 +185,7 @@
 
             $key = parent::_count_var_key('acl_group_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('neoform\acl\group\user')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('acl\group\user')->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -203,7 +203,7 @@
             $key = self::_limit_var_key('auth_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new \neoform\auth\collection(
-                    entity::dao('neoform\auth')->by_user($this->vars['id'], $order_by, $offset, $limit)
+                    entity::dao('auth')->by_user($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -221,7 +221,7 @@
 
             $key = parent::_count_var_key('auth_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('neoform\auth')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('auth')->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -239,7 +239,7 @@
             $key = self::_limit_var_key('acl_role_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new \neoform\acl\role\collection(
-                    entity::dao('neoform\user\acl\role')->by_user($this->vars['id'], $order_by, $offset, $limit)
+                    entity::dao('user\acl\role')->by_user($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -257,7 +257,7 @@
 
             $key = parent::_count_var_key('acl_role_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('neoform\user\acl\role')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('user\acl\role')->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -268,7 +268,7 @@
          * @return \neoform\user\date\model
          */
         public function user_date() {
-            return $this->_model('user_date', $this->vars['id'], '\neoform\user\date\model');
+            return $this->_model('user_date', $this->vars['id'], 'user\date\model');
         }
 
         /**
@@ -277,7 +277,7 @@
          * @return \neoform\user\lostpassword\model
          */
         public function user_lostpassword() {
-            return $this->_model('user_lostpassword', $this->vars['id'], '\neoform\user\lostpassword\model');
+            return $this->_model('user_lostpassword', $this->vars['id'], 'user\lostpassword\model');
         }
 
         /**
@@ -293,7 +293,7 @@
             $key = self::_limit_var_key('site_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new \neoform\site\collection(
-                    entity::dao('neoform\user\site')->by_user($this->vars['id'], $order_by, $offset, $limit)
+                    entity::dao('user\site')->by_user($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -311,7 +311,7 @@
 
             $key = parent::_count_var_key('site_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('neoform\user\site')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('user\site')->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -322,7 +322,7 @@
          * @return \neoform\user\hashmethod\model
          */
         public function user_hashmethod() {
-            return $this->_model('user_hashmethod', $this->vars['password_hashmethod'], '\neoform\user\hashmethod\model');
+            return $this->_model('user_hashmethod', $this->vars['password_hashmethod'], 'user\hashmethod\model');
         }
 
         /**
@@ -331,6 +331,6 @@
          * @return \neoform\user\status\model
          */
         public function user_status() {
-            return $this->_model('user_status', $this->vars['status_id'], '\neoform\user\status\model');
+            return $this->_model('user_status', $this->vars['status_id'], 'user\status\model');
         }
     }

@@ -14,7 +14,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity::dao('neoform\acl\resource')->insert([
+                return entity::dao('acl\resource')->insert([
                     'parent_id' => $input->parent_id->val(),
                     'name'      => $input->name->val(),
                 ]);
@@ -29,7 +29,7 @@
             self::_validate_update($acl_resource, $input);
 
             if ($input->is_valid()) {
-                return entity::dao('neoform\acl\resource')->update(
+                return entity::dao('acl\resource')->update(
                     $acl_resource,
                     $input->vals(
                         [
@@ -44,7 +44,7 @@
         }
 
         public static function delete(model $acl_resource) {
-            return entity::dao('neoform\acl\resource')->delete($acl_resource);
+            return entity::dao('acl\resource')->delete($acl_resource);
         }
 
         public static function _validate_insert(input\collection $input) {
@@ -62,7 +62,7 @@
 
             // name
             $input->name->cast('string')->length(1, 32)->callback(function($name) {
-                if (entity::dao('neoform\acl\resource')->by_name($name->val())) {
+                if (entity::dao('acl\resource')->by_name($name->val())) {
                     $name->errors('already in use');
                 }
             });
@@ -83,7 +83,7 @@
 
             // name
             $input->name->cast('string')->optional()->length(1, 32)->callback(function($name) use ($acl_resource) {
-                $id_arr = entity::dao('neoform\acl\resource')->by_name($name->val());
+                $id_arr = entity::dao('acl\resource')->by_name($name->val());
                 if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $acl_resource->id) {
                     $name->errors('already in use');
                 }

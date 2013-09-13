@@ -9,12 +9,12 @@
             if (core::auth()->logged_in()) {
                 core::output()->redirect(core::http_flash()->get('login_bounce'));
             } else {
-                list($user, $new_password) = user_lostpassword_api::find(
-                    new site_model(core::config()['core']['site_id']),
+                list($user, $new_password) = user\lostpassword\api::find(
+                    new site\model(core::config()['core']['site_id']),
                     core::http()->segment('code')
                 );
 
-                auth_lib::activate_session($user);
+                auth\lib::activate_session($user);
 
                 core::output()->redirect("account/password/p:{$new_password}");
             }

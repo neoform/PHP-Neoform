@@ -19,9 +19,9 @@
         public function user_collection(array $order_by=null, $offset=null, $limit=null) {
             return $this->_preload_many_to_many(
                 'user_collection',
-                'neoform\user\site',
+                'user\site',
                 'by_site',
-                'neoform\user',
+                'user',
                 $order_by,
                 $offset,
                 $limit
@@ -36,7 +36,7 @@
         public function user_count() {
             return $this->_preload_counts(
                 'user_count',
-                'neoform\user\site',
+                'user\site',
                 'site_id'
             );
         }

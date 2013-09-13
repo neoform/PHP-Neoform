@@ -15,7 +15,7 @@
 
         protected function verify() {
 
-            $json = new render_json;
+            $json = new render\json;
 
             if (core::auth()->logged_in()) {
                 $json->status = 'good';
@@ -25,8 +25,8 @@
                 }
             } else {
                 try {
-                    auth_api::login(
-                        new site_model(core::config()['core']['site_id']),
+                    auth\api::login(
+                        new site\model(core::config()['core']['site_id']),
                         core::http()->posts()
                     );
                     $json->status = 'good';
@@ -35,8 +35,8 @@
                         $json->bounce = current($bounce);
                         core::http_flash()->del('login_bounce');
                     }
-                } catch (input_exception $e) {
-                    \sleep(1);
+                } catch (input\exception $e) {
+                    sleep(1);
                     $json->message = 'Your email address or password are incorrect. Please try again.';
                 }
             }

@@ -14,7 +14,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity::dao('neoform\user\date')->insert([
+                return entity::dao('user\date')->insert([
                     'user_id'             => $input->user_id->val(),
                     'created_on'          => $input->created_on->val(),
                     'last_login'          => $input->last_login->val(),
@@ -32,7 +32,7 @@
             self::_validate_update($user_date, $input);
 
             if ($input->is_valid()) {
-                return entity::dao('neoform\user\date')->update(
+                return entity::dao('user\date')->update(
                     $user_date,
                     $input->vals(
                         [
@@ -50,14 +50,14 @@
         }
 
         public static function delete(model $user_date) {
-            return entity::dao('neoform\user\date')->delete($user_date);
+            return entity::dao('user\date')->delete($user_date);
         }
 
         public static function _validate_insert(input\collection $input) {
 
             // user_id
             $input->user_id->cast('int')->digit(0, 4294967295)->callback(function($user_id) {
-                if (entity::dao('neoform\user\date')->record($user_id->val())) {
+                if (entity::dao('user\date')->record($user_id->val())) {
                     $user_id->errors('already in use');
                 }
             })->callback(function($user_id) {
@@ -85,7 +85,7 @@
 
             // user_id
             $input->user_id->cast('int')->optional()->digit(0, 4294967295)->callback(function($user_id) use ($user_date) {
-                $user_date_info = entity::dao('neoform\user\date')->record($user_id->val());
+                $user_date_info = entity::dao('user\date')->record($user_id->val());
                 if ($user_date_info && (int) $user_date_info['user_id'] !== $user_date->user_id) {
                     $user_id->errors('already in use');
                 }

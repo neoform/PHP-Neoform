@@ -28,7 +28,7 @@
                     case 'last_login':
                     case 'email_verified_on':
                     case 'password_updated_on':
-                        return $this->_model($k, $this->vars[$k], '\neoform\type\date');
+                        return $this->_model($k, $this->vars[$k], 'type\date');
 
                     default:
                         return $this->vars[$k];
@@ -42,6 +42,6 @@
          * @return \neoform\user\model
          */
         public function user() {
-            return $this->_model('user', $this->vars['user_id'], '\neoform\user\model');
+            return $this->_model('user', $this->vars['user_id'], 'user\model');
         }
     }

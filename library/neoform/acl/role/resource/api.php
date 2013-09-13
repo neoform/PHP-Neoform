@@ -14,7 +14,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity::dao('neoform\acl\role\resource')->insert([
+                return entity::dao('acl\role\resource')->insert([
                     'acl_role_id'     => $input->acl_role_id->val(),
                     'acl_resource_id' => $input->acl_resource_id->val(),
                 ]);
@@ -30,7 +30,7 @@
                     'acl_resource_id' => (int) $acl_resource->id,
                 ];
             }
-            return entity::dao('neoform\acl\role\resource')->delete_multi($keys);
+            return entity::dao('acl\role\resource')->delete_multi($keys);
         }
 
         public static function delete_by_acl_resource(\neoform\acl\resource\model $acl_resource, \neoform\acl\role\collection $acl_role_collection) {
@@ -41,7 +41,7 @@
                     'acl_role_id'     => (int) $acl_role->id,
                 ];
             }
-            return entity::dao('neoform\acl\role\resource')->delete_multi($keys);
+            return entity::dao('acl\role\resource')->delete_multi($keys);
         }
 
         public static function _validate_insert(input\collection $input) {

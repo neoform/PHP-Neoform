@@ -74,9 +74,9 @@
          * Delete cached translation dictionary
          *
          * @param string $locale_iso2
-         * @param \neoform\locale\npace\model $namespace
+         * @param \neoform\locale\nspace\model $namespace
          */
-        public static function flush_by_locale_namespace($locale_iso2, \neoform\locale\npace\model $namespace) {
+        public static function flush_by_locale_namespace($locale_iso2, \neoform\locale\nspace\model $namespace) {
 
             $config = core::config()['locale'];
 

@@ -13,18 +13,18 @@
                 $page = 1;
             }
 
-            $view = new render_view;
+            $view = new render\view;
 
             $view->meta_title = 'ACL Roles';
 
-            $resources = new acl_resource_collection(entity::dao('acl_resource')->limit([ 'id' => entity_record_dao::SORT_ASC ], ($page - 1) * $per_page, $per_page));
+            $resources = new acl\resource\collection(entity::dao('acl\resource')->limit([ 'id' => entity\record\dao::SORT_ASC ], ($page - 1) * $per_page, $per_page));
             $resources->acl_role_collection();
             $resources->child_acl_resource_collection();
 
             $view->resources = $resources;
 
             $view->page     = $page;
-            $view->total    = entity::dao('acl_resource')->count();
+            $view->total    = entity::dao('acl\resource')->count();
             $view->per_page = $per_page;
 
             $view->render('admin/acl/resource');

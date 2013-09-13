@@ -23,7 +23,7 @@
 
                     // dates
                     case 'expires_on':
-                        return $this->_model($k, $this->vars[$k], '\neoform\type\date');
+                        return $this->_model($k, $this->vars[$k], 'type\date');
 
                     // strings
                     case 'hash':
@@ -41,11 +41,11 @@
          * @param string $name
          * @param mixed $args
          *
-         * @return mixed|entity_record_model
+         * @return mixed|entity\record\model
          */
         public function __call($name, $args) {
             if (isset($this->vars['user_id'])) {
-                return $this->_model($name, $this->vars['user_id'], "{$name}_model");
+                return $this->_model($name, $this->vars['user_id'], str_replace('_', '\\', $name) . '\model');
             }
         }
 

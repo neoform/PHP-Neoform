@@ -9,7 +9,7 @@
                 $bounce = core::http_flash()->get('login_bounce');
                 core::output()->redirect($bounce ? '/' . current($bounce) : null);
             } else {
-                $view = new render_view;
+                $view = new render\view;
 
                 $view->meta_title      = 'Login / Account';
                 $view->subheader       = 'Login';

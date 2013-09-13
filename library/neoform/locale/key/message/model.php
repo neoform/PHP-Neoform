@@ -40,7 +40,7 @@
          * @return \neoform\locale\key\model
          */
         public function locale_key() {
-            return $this->_model('locale_key', $this->vars['key_id'], '\neoform\locale\key\model');
+            return $this->_model('locale_key', $this->vars['key_id'], 'locale\key\model');
         }
 
         /**
@@ -49,6 +49,6 @@
          * @return \neoform\locale\model
          */
         public function locale() {
-            return $this->_model('locale', $this->vars['locale'], '\neoform\locale\model');
+            return $this->_model('locale', $this->vars['locale'], 'locale\model');
         }
     }

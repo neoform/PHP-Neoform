@@ -45,7 +45,7 @@
             $key = self::_limit_var_key('child_acl_resource_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new \neoform\acl\resource\collection(
-                    entity::dao('neoform\acl\resource')->by_parent($this->vars['id'], $order_by, $offset, $limit)
+                    entity::dao('acl\resource')->by_parent($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -63,7 +63,7 @@
 
             $key = parent::_count_var_key('child_acl_resource_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('neoform\acl\resource')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('acl\resource')->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -81,7 +81,7 @@
             $key = self::_limit_var_key('acl_role_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new \neoform\acl\role\collection(
-                    entity::dao('neoform\acl\role\resource')->by_acl_resource($this->vars['id'], $order_by, $offset, $limit)
+                    entity::dao('acl\role\resource')->by_acl_resource($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -99,7 +99,7 @@
 
             $key = parent::_count_var_key('acl_role_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('neoform\acl\role\resource')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('acl\role\resource')->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -110,6 +110,6 @@
          * @return \neoform\acl\resource\model
          */
         public function parent_acl_resource() {
-            return $this->_model('parent_acl_resource', $this->vars['parent_id'], '\neoform\acl\resource\model');
+            return $this->_model('parent_acl_resource', $this->vars['parent_id'], 'acl\resource\model');
         }
     }

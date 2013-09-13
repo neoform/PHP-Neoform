@@ -6,17 +6,17 @@
 
         public function default_action() {
             if (core::auth()->logged_in()) {
-                throw new error_exception('You are already logged in');
+                throw new error\exception('You are already logged in');
             } else {
-                $json = new render_json;
+                $json = new render\json;
 
                 try {
-                    user_lostpassword_api::lost(
-                        new site_model(core::config()['core']['site_id']),
+                    user\lostpassword\api::lost(
+                        new site\model(core::config()['core']['site_id']),
                         core::http()->posts()
                     );
                     $json->status = 'good';
-                } catch (input_exception $e) {
+                } catch (input\exception $e) {
                     $json->message = $e->message();
                     $json->errors  = $e->errors();
                 }

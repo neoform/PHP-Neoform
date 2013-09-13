@@ -6,22 +6,22 @@
 
         public function default_action() {
 
-            $page = (int) core::http()->parameter('page');
+            $page     = (int) core::http()->parameter('page');
             $per_page = 10;
 
             if ($page < 1) {
                 $page = 1;
             }
 
-            $view = new render_view;
+            $view = new render\view;
 
             $view->meta_title = 'Users';
 
             //$users = new user_collection(entity::dao('user')->limit(20, 'id', 'asc', null));
-            $users = new user_collection(
+            $users = new user\collection(
                 entity::dao('user')->limit(
                     [
-                        'id' => entity_record_dao::SORT_ASC
+                        'id' => entity\record\dao::SORT_ASC
                     ],
                     ($page - 1) * $per_page,
                     $per_page

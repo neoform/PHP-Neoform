@@ -18,17 +18,17 @@
         protected function update() {
             core::http()->ref();
 
-            $json = new render_json;
+            $json = new render\json;
 
             try {
-                user_api::update_email(
+                user\api::update_email(
                     core::auth()->user(),
                     [
                         'email' => core::http()->post('email'),
                     ]
                 );
                 $json->status = 'good';
-            } catch (input_exception $e) {
+            } catch (input\exception $e) {
                 $json->errors = $e->errors();
                 $json->message = $e->message();
             }
@@ -37,7 +37,7 @@
         }
 
         protected function display() {
-            $view = new render_view;
+            $view = new render\view;
             $view->meta_title = 'Change Email / Account';
             $view->subheader  = 'Change Email';
             $view->render('account/email');

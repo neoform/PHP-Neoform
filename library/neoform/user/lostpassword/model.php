@@ -23,7 +23,7 @@
 
                     // dates
                     case 'posted_on':
-                        return $this->_model($k, $this->vars[$k], '\neoform\type\date');
+                        return $this->_model($k, $this->vars[$k], 'type\date');
 
                     // strings
                     case 'hash':
@@ -41,6 +41,6 @@
          * @return \neoform\user\model
          */
         public function user() {
-            return $this->_model('user', $this->vars['user_id'], '\neoform\user\model');
+            return $this->_model('user', $this->vars['user_id'], 'user\model');
         }
     }

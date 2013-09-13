@@ -6,13 +6,13 @@
 
         public function default_action() {
 
-            $view = new render_view;
+            $view = new render\view;
 
             $view->meta_title = 'Locale Translations';
 
-            $namespace = new locale_namespace_model(core::http()->parameter('id'));
+            $namespace = new locale\nspace\model(core::http()->parameter('id'));
 
-            $keys = new locale_key_collection(entity::dao('locale_key')->by_namespace($namespace->id));
+            $keys = new locale\key\collection(entity::dao('locale\key')->by_namespace($namespace->id));
 
             $translations = [];
             foreach ($keys as $key) {
@@ -35,7 +35,7 @@
             $view->namespace    = $namespace;
             $view->locales      = array_column(entity::dao('locale')->all(), 'name', 'iso2');
             $view->translations = $translations;
-            $view->namespaces   = array_column(entity::dao('locale_namespace')->all(), 'name', 'id');
+            $view->namespaces   = array_column(entity::dao('locale\nspace')->all(), 'name', 'id');
 
             $view->render('admin/locale/messages');
         }

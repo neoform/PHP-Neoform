@@ -8,7 +8,7 @@
             if (core::auth()->logged_in()) {
                 core::output()->redirect();
             } else {
-                $view = new render_view();
+                $view = new render\view;
                 $view->render('account/password_lost');
             }
         }

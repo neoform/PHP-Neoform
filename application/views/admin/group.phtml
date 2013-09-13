@@ -84,7 +84,7 @@
                                                 <a href="/admin/groups/view/id:<?php echo $group->id; ?>"><?php echo htmlspecialchars($group->name); ?></a>
                                             </td>
                                             <td width="100">
-                                                <?php echo count(neoform\entity::dao('acl_group_user')->by_acl_group($group->id)); ?>
+                                                <?php echo count(neoform\entity::dao('acl\group\user')->by_acl_group($group->id)); ?>
                                             </td>
                                             <td width="200">
                                                 <?php echo join(', ', $group->acl_role_collection()->acl_resource_collection()->field('name')); ?>

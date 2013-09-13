@@ -12,7 +12,7 @@
                 core::output()->redirect($bounce ? '/' . current($bounce) : null);
             } else {
                 // view variables
-                $view = new render_view;
+                $view = new render\view;
 
                 if ($message = core::http_flash()->get('login_message')) {
                     $view->message = current($message);

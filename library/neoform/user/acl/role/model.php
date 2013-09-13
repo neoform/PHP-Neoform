@@ -33,7 +33,7 @@
          * @return \neoform\user\model
          */
         public function user() {
-            return $this->_model('user', $this->vars['user_id'], '\neoform\user\model');
+            return $this->_model('user', $this->vars['user_id'], 'user\model');
         }
 
         /**
@@ -42,6 +42,6 @@
          * @return \neoform\acl\role\model
          */
         public function acl_role() {
-            return $this->_model('acl_role', $this->vars['acl_role_id'], '\neoform\acl\role\model');
+            return $this->_model('acl_role', $this->vars['acl_role_id'], 'acl\role\model');
         }
     }

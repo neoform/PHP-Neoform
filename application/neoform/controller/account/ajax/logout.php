@@ -6,13 +6,13 @@
 
         public function default_action() {
 
-            $json = new render_json;
+            $json = new render\json;
 
             if (core::auth()->logged_in()) {
                 try {
-                    auth_api::logout(core::auth());
+                    auth\api::logout(core::auth());
                     $json->redirect = true;
-                } catch (input_exception $e) {
+                } catch (input\exception $e) {
 
                 }
             } else {

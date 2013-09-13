@@ -14,7 +14,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity::dao('neoform\user\site')->insert([
+                return entity::dao('user\site')->insert([
                     'user_id' => $input->user_id->val(),
                     'site_id' => $input->site_id->val(),
                 ]);
@@ -30,7 +30,7 @@
                     'site_id' => (int) $site->id,
                 ];
             }
-            return entity::dao('neoform\user\site')->delete_multi($keys);
+            return entity::dao('user\site')->delete_multi($keys);
         }
 
         public static function delete_by_site(\neoform\site\model $site, \neoform\user\collection $user_collection) {
@@ -41,7 +41,7 @@
                     'user_id' => (int) $user->id,
                 ];
             }
-            return entity::dao('neoform\user\site')->delete_multi($keys);
+            return entity::dao('user\site')->delete_multi($keys);
         }
 
         public static function _validate_insert(input\collection $input) {

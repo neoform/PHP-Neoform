@@ -25,7 +25,7 @@
         public function __construct($pk=null, array $info=null) {
 
             if ($pk !== null) {
-                $dao = entity::dao(static::ENTITY_NAME);
+                $dao = neoform\entity::dao(static::ENTITY_NAME);
                 if ($this->vars = $dao->record($pk)) {
                     return;
                 }

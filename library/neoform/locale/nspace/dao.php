@@ -1,6 +1,6 @@
 <?php
 
-    namespace neoform\locale\npace;
+    namespace neoform\locale\nspace;
 
     /**
      * Locale Namespace DAO

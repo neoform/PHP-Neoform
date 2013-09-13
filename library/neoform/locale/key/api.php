@@ -14,7 +14,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                $locale_key = entity::dao('neoform\locale\key')->insert([
+                $locale_key = entity::dao('locale\key')->insert([
                     'body'         => $input->body->val(),
                     'locale'       => $input->locale->val(),
                     'namespace_id' => $input->namespace_id->val(),
@@ -32,7 +32,7 @@
             self::_validate_update($locale_key, $input);
 
             if ($input->is_valid()) {
-                $updated_locale_key = entity::dao('neoform\locale\key')->update(
+                $updated_locale_key = entity::dao('locale\key')->update(
                     $locale_key,
                     $input->vals(
                         [
@@ -53,7 +53,7 @@
         }
 
         public static function delete(model $locale_key) {
-            return entity::dao('neoform\locale\key')->delete($locale_key);
+            return entity::dao('locale\key')->delete($locale_key);
         }
 
         public static function _validate_insert(input\collection $input) {
@@ -73,8 +73,8 @@
             // namespace_id
             $input->namespace_id->cast('int')->digit(0, 4294967295)->callback(function($namespace_id) {
                 try {
-                    $namespace_id->data('model', new \neoform\locale\npace\model($namespace_id->val()));
-                } catch (\neoform\locale\npace\exception $e) {
+                    $namespace_id->data('model', new \neoform\locale\nspace\model($namespace_id->val()));
+                } catch (\neoform\locale\nspace\exception $e) {
                     $namespace_id->errors($e->getMessage());
                 }
             });
@@ -97,8 +97,8 @@
             // namespace_id
             $input->namespace_id->cast('int')->optional()->digit(0, 4294967295)->callback(function($namespace_id) {
                 try {
-                    $namespace_id->data('model', new \neoform\locale\npace\model($namespace_id->val()));
-                } catch (\neoform\locale\npace\exception $e) {
+                    $namespace_id->data('model', new \neoform\locale\nspace\model($namespace_id->val()));
+                } catch (\neoform\locale\nspace\exception $e) {
                     $namespace_id->errors($e->getMessage());
                 }
             });

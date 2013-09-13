@@ -14,7 +14,7 @@
             self::_validate_insert($input);
 
             if ($input->is_valid()) {
-                return entity::dao('neoform\acl\group\user')->insert([
+                return entity::dao('acl\group\user')->insert([
                     'acl_group_id' => $input->acl_group_id->val(),
                     'user_id'      => $input->user_id->val(),
                 ]);
@@ -30,7 +30,7 @@
                     'user_id'      => (int) $user->id,
                 ];
             }
-            return entity::dao('neoform\acl\group\user')->delete_multi($keys);
+            return entity::dao('acl\group\user')->delete_multi($keys);
         }
 
         public static function delete_by_user(\neoform\user\model $user, \neoform\acl\group\collection $acl_group_collection) {
@@ -41,7 +41,7 @@
                     'acl_group_id' => (int) $acl_group->id,
                 ];
             }
-            return entity::dao('neoform\acl\group\user')->delete_multi($keys);
+            return entity::dao('acl\group\user')->delete_multi($keys);
         }
 
         public static function _validate_insert(input\collection $input) {

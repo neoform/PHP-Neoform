@@ -1,6 +1,6 @@
 <?php
 
-    namespace neoform\locale\npace;
+    namespace neoform\locale\nspace;
 
     use neoform\entity;
 
@@ -43,7 +43,7 @@
             $key = self::_limit_var_key('locale_key_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new \neoform\locale\key\collection(
-                    entity::dao('neoform\locale\key')->by_namespace($this->vars['id'], $order_by, $offset, $limit)
+                    entity::dao('locale\key')->by_namespace($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -61,7 +61,7 @@
 
             $key = parent::_count_var_key('locale_key_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('neoform\locale\key')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('locale\key')->count($fieldvals);
             }
             return $this->_vars[$key];
         }

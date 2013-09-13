@@ -8,17 +8,17 @@
             core::output()->output_type('json');
             core::http()->ref();
 
-            $json = new render_json;
+            $json = new render\json;
 
             switch (core::http()->segment('action')) {
 
                 case 'insert':
                     try {
-                        acl_role_api::insert(
+                        acl\role\api::insert(
                             core::http()->posts()
                         );
                         $json->status = 'good';
-                    } catch (input_exception $e) {
+                    } catch (input\exception $e) {
                         $json->status  = 'error';
                         $json->message = $e->message() ? $e->message() : 'ACL role could not be created';
                         $json->errors  = $e->errors();
@@ -27,12 +27,12 @@
 
                 case 'update':
                     try {
-                        acl_role_api::update(
-                            new acl_role_model(core::http()->parameter('id')),
+                        acl\role\api::update(
+                            new acl\role\model(core::http()->parameter('id')),
                             core::http()->posts()
                         );
                         $json->status = 'good';
-                    } catch (input_exception $e) {
+                    } catch (input\exception $e) {
                         $json->status  = 'error';
                         $json->message = $e->message() ? $e->message() : 'ACL role could not be updated';
                         $json->errors  = $e->errors();
@@ -41,11 +41,11 @@
 
                 case 'delete':
                     try {
-                        acl_role_api::delete(
-                            new acl_role_model(core::http()->parameter('id'))
+                        acl\role\api::delete(
+                            new acl\role\model(core::http()->parameter('id'))
                         );
                         $json->status = 'good';
-                    } catch (input_exception $e) {
+                    } catch (input\exception $e) {
                         $json->status  = 'error';
                         $json->message = $e->message() ? $e->message() : 'ACL role could not be deleted';
                         $json->errors  = $e->errors();

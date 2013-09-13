@@ -47,7 +47,7 @@
             $key = self::_limit_var_key('locale_key_message_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new \neoform\locale\key\message\collection(
-                    entity::dao('neoform\locale\key\message')->by_key($this->vars['id'], $order_by, $offset, $limit)
+                    entity::dao('locale\key\message')->by_key($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -65,7 +65,7 @@
 
             $key = parent::_count_var_key('locale_key_message_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('neoform\locale\key\message')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('locale\key\message')->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -83,7 +83,7 @@
             $key = self::_limit_var_key('locale_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
                 $this->_vars[$key] = new \neoform\locale\collection(
-                    entity::dao('neoform\locale\key\message')->by_key($this->vars['id'], $order_by, $offset, $limit)
+                    entity::dao('locale\key\message')->by_key($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -101,7 +101,7 @@
 
             $key = parent::_count_var_key('locale_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = entity::dao('neoform\locale\key\message')->count($fieldvals);
+                $this->_vars[$key] = entity::dao('locale\key\message')->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -112,16 +112,16 @@
          * @return \neoform\locale\model
          */
         public function locale() {
-            return $this->_model('locale', $this->vars['locale'], '\neoform\locale\model');
+            return $this->_model('locale', $this->vars['locale'], 'locale\model');
         }
 
         /**
          * Locale Namespace Model based on 'namespace_id'
          *
-         * @return \neoform\locale\npace\model
+         * @return \neoform\locale\nspace\model
          */
         public function locale_namespace() {
-            return $this->_model('locale_namespace', $this->vars['namespace_id'], '\neoform\locale\nspace\model');
+            return $this->_model('locale_namespace', $this->vars['namespace_id'], 'locale\nspace\model');
         }
 
         /**

@@ -5,8 +5,7 @@
     use datetime;
     use datetimezone;
 
-    class date extends datetime
-    {
+    class date extends datetime {
         public function __construct($time = 'now', datetimezone $timezone = null) {
             if ($timezone !== null) {
                 parent::__construct($time, $timezone);

@@ -6,11 +6,11 @@
 
         public function default_action() {
 
-            $json = new render_json;
+            $json = new render\json;
 
             if (core::auth()->logged_in()) {
                 try {
-                    address_lib::make(
+                    address\lib::make(
                         core::auth()->user_id,
                         [
                             'label'       => core::http()->post('label'),
@@ -23,7 +23,7 @@
                         ]
                     );
                     $json->status = 'good';
-                } catch (input_exception $e) {
+                } catch (input\exception $e) {
                     $json->message = $e->message();
                     $json->errors  = $e->errors();
                 }

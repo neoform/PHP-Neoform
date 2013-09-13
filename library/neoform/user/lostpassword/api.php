@@ -20,8 +20,8 @@
             $input->email->cast('string')->trim()->length(1,255)->is_email()->callback(function($email) use ($site) {
                 if (! $email->errors()) {
                     if ($user_id = current(entity::dao('user')->by_email($email->val()))) {
-                        $user = new user_model($user_id);
-                        if (count(entity::dao('user_site')->by_site_user($site->id, $user->id))) {
+                        $user = new user\model($user_id);
+                        if (count(entity::dao('user\site')->by_site_user($site->id, $user->id))) {
                             return $email->data('model', $user);
                         }
                     }
@@ -34,22 +34,22 @@
                 $user = $input->email->data('model');
 
                 //delete all previous reset keys
-                entity::dao('user_lostpassword')->delete_multi(
+                entity::dao('user\lostpassword')->delete_multi(
                     new user\lostpassword\collection(
-                        entity::dao('user_lostpassword')->by_user($user->id)
+                        entity::dao('user\lostpassword')->by_user($user->id)
                     )
                 );
 
                 // Generate random hash
                 $hash = \neoform\type\string\lib::random_chars(40);
 
-                entity::dao('user_lostpassword')->insert([
+                entity::dao('user\lostpassword')->insert([
                     'user_id' => $user->id,
                     'hash'    => $hash,
                 ]);
 
                 //email the request to the friend to tell them the good news
-                $email            = new email_model('password/lost');
+                $email            = new \neoform\email\model('password/lost');
                 $email->url       = core::http()->server('surl') . "account/passwordreset/{$hash}";
                 $email->site_name = core::config()['core']['site_name'];
 
@@ -84,14 +84,14 @@
             entity::dao('user')->update(
                 $user,
                 [
-                'password_salt'       => $salt,
-                'password_cost'       => $password_cost,
-                'password_hashmethod' => $hash_method->id,
-                'password_hash'       => $hash_method->hash($password, $salt, $password_cost),
+                    'password_salt'       => $salt,
+                    'password_cost'       => $password_cost,
+                    'password_hashmethod' => $hash_method->id,
+                    'password_hash'       => $hash_method->hash($password, $salt, $password_cost),
                 ]
             );
 
-            entity::dao('user_lostpassword')->delete($lost_password);
+            entity::dao('user\lostpassword')->delete($lost_password);
 
             return [$user, $password];
         }

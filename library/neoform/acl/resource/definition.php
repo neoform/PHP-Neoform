@@ -12,4 +12,5 @@
         const AUTOINCREMENT = true;
         const PRIMARY_KEY   = 'id';
         const ENTITY_NAME   = 'acl\resource';
+        const CACHE_KEY     = 'acl_resource';
     }

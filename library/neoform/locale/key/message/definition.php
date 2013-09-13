@@ -12,4 +12,5 @@
         const AUTOINCREMENT = true;
         const PRIMARY_KEY   = 'id';
         const ENTITY_NAME   = 'locale\key\message';
+        const CACHE_KEY     = 'locale_key_message';
     }

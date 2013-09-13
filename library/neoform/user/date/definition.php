@@ -12,4 +12,5 @@
         const AUTOINCREMENT = false;
         const PRIMARY_KEY   = 'user_id';
         const ENTITY_NAME   = 'user\date';
+        const CACHE_KEY     = 'user_date';
     }

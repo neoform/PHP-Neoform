@@ -12,4 +12,5 @@
         const AUTOINCREMENT = false;
         const PRIMARY_KEY   = 'iso2';
         const ENTITY_NAME   = 'locale';
+        const CACHE_KEY     = 'locale';
     }

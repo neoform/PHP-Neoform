@@ -96,7 +96,7 @@
         public static function __callstatic($name, array $args) {
             $model = '\\neoform\\' . static::ENTITY_NAME . '\\model';
             return new $model(current(
-                \call_user_func_array([entity::dao(static::ENTITY_NAME), $name], $args)
+                call_user_func_array([neoform\entity::dao(static::ENTITY_NAME), $name], $args)
             ));
         }
 

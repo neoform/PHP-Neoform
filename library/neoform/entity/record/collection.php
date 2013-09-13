@@ -57,9 +57,9 @@
         public static function __callstatic($name, array $args) {
             $collection = '\\neoform\\' . static::ENTITY_NAME . '\\collection';
             if ($name === 'all' || $name === 'records') {
-                return new $collection(null, \call_user_func_array([entity::dao(static::ENTITY_NAME), $name], $args));
+                return new $collection(null, call_user_func_array([entity::dao(static::ENTITY_NAME), $name], $args));
             } else {
-                return new $collection(\call_user_func_array([entity::dao(static::ENTITY_NAME), $name], $args));
+                return new $collection(call_user_func_array([entity::dao(static::ENTITY_NAME), $name], $args));
             }
         }
 

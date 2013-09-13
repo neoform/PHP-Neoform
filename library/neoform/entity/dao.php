@@ -154,16 +154,16 @@
             // each key is namespaced with the name of the class, then the name of the function ($cache_key_name)
             $param_count = count($fieldvals);
             if ($param_count === 1) {
-                return static::ENTITY_NAME . ":{$cache_key_name}:" . md5(reset($fieldvals));
+                return static::CACHE_KEY . ":{$cache_key_name}:" . md5(reset($fieldvals));
             } else if ($param_count === 0) {
-                return static::ENTITY_NAME . ":{$cache_key_name}:";
+                return static::CACHE_KEY . ":{$cache_key_name}:";
             } else {
                 ksort($fieldvals);
                 foreach ($fieldvals as & $val) {
                     $val = base64_encode($val);
                 }
                 // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
-                return static::ENTITY_NAME . ":{$cache_key_name}:" . md5(json_encode(array_values($fieldvals)));
+                return static::CACHE_KEY . ":{$cache_key_name}:" . md5(json_encode(array_values($fieldvals)));
             }
         }
 
@@ -177,9 +177,9 @@
          */
         final protected static function _build_key_list($field_name, $fieldval) {
             if ($fieldval === null) {
-                return static::ENTITY_NAME . ':' . self::META . "[{$field_name}]";
+                return static::CACHE_KEY . ':' . self::META . "[{$field_name}]";
             } else {
-                return static::ENTITY_NAME . ':' . self::META . "[{$field_name}]:" . md5($fieldval);
+                return static::CACHE_KEY . ':' . self::META . "[{$field_name}]:" . md5($fieldval);
             }
         }
 
@@ -191,7 +191,7 @@
          * @return string
          */
         final protected static function _build_key_list_field($field_name) {
-            return static::ENTITY_NAME . ':' . self::META . ":{$field_name}";
+            return static::CACHE_KEY . ':' . self::META . ":{$field_name}";
         }
 
         /**
@@ -258,7 +258,7 @@
                     }
                 }
             } else {
-                $list_keys[] = static::ENTITY_NAME . ':' . self::ALWAYS;
+                $list_keys[] = static::CACHE_KEY . ':' . self::ALWAYS;
             }
 
             // Create meta data lists
@@ -303,7 +303,7 @@
                         }
                     }
                 } else {
-                    $list_keys[$cache_key][] = static::ENTITY_NAME . ':' . self::ALWAYS;
+                    $list_keys[$cache_key][] = static::CACHE_KEY . ':' . self::ALWAYS;
                 }
             }
 
@@ -325,7 +325,7 @@
         final protected function _delete_meta_cache(array $fieldvals) {
 
             // Always delete the stuff in the always list
-            $list_keys = [ static::ENTITY_NAME . ':' . self::ALWAYS ];
+            $list_keys = [ static::CACHE_KEY . ':' . self::ALWAYS ];
 
             foreach ($fieldvals as $field => $value) {
 
@@ -373,7 +373,7 @@
          * @param array $fieldvals_arr array containing lists of fields/values
          */
         final protected function _delete_meta_cache_multi(array $fieldvals_arr) {
-            $list_keys = [ static::ENTITY_NAME . ':' . self::ALWAYS ];
+            $list_keys = [ static::CACHE_KEY . ':' . self::ALWAYS ];
 
             foreach ($fieldvals_arr as $fieldvals) {
 

@@ -33,10 +33,10 @@
             // each key is namespaced with the name of the class, then the name of the function ($cache_key_name)
             $param_count = count($fieldvals);
             if ($param_count === 1) {
-                return static::ENTITY_NAME . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
+                return static::CACHE_KEY . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
                        md5(json_encode($order_by)) . ':' . md5(reset($fieldvals));
             } else if ($param_count === 0) {
-                return static::ENTITY_NAME . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
+                return static::CACHE_KEY . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
                        md5(json_encode($order_by)) . ':';
             } else {
                 ksort($fieldvals);
@@ -44,7 +44,7 @@
                     $val = base64_encode($val);
                 }
                 // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
-                return static::ENTITY_NAME . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
+                return static::CACHE_KEY . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
                        md5(json_encode($order_by)) . ':' . md5(json_encode(array_values($fieldvals)));
             }
         }
@@ -70,11 +70,11 @@
                 $limit        = $limit === null ? null : (int) $limit;
                 $offset       = $offset === null ? null : (int) $offset;
 
-                if (! isset($this->foreign_keys[$select_field])) {
+                if (! isset($this->referenced_entities[$select_field])) {
                     throw new entity\exception("Unknown foreign key field \"{$select_field}\" in " . $this::ENTITY_NAME . '.');
                 }
 
-                $foreign_dao = entity::dao($this->foreign_keys[$select_field]);
+                $foreign_dao = entity::dao($this->referenced_entities[$select_field]);
 
                 $cache_key = self::_build_key_limit(
                     $cache_key_name,
@@ -182,11 +182,11 @@
                 $limit        = $limit === null ? null : (int) $limit;
                 $offset       = $offset === null ? null : (int) $offset;
 
-                if (! isset($this->foreign_keys[$select_field])) {
+                if (! isset($this->referenced_entities[$select_field])) {
                     throw new entity\exception("Unknown foreign key field \"{$select_field}\" in " . $this::ENTITY_NAME . '.');
                 }
 
-                $foreign_dao = entity::dao($this->foreign_keys[$select_field]);
+                $foreign_dao = entity::dao($this->referenced_entities[$select_field]);
 
                 return cache\lib::multi(
                     $this->cache_engine,

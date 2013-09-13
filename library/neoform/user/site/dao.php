@@ -21,6 +21,16 @@
             'site_id' => self::TYPE_INTEGER,
         ];
 
+        /**
+         * $var array $referenced_entities list of fields (in this entity) and their related foreign entity
+         *
+         * @return array
+         */
+        protected $referenced_entities = [
+            'user_id' => 'user',
+            'site_id' => 'site',
+        ];
+
         // READS
 
         /**

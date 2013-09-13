@@ -26,6 +26,16 @@
             'status_id'           => self::TYPE_INTEGER,
         ];
 
+        /**
+         * $var array $referenced_entities list of fields (in this entity) and their related foreign entity
+         *
+         * @return array
+         */
+        protected $referenced_entities = [
+            'password_hashmethod' => 'user\hashmethod',
+            'status_id'           => 'user\status',
+        ];
+
         // READS
 
         /**

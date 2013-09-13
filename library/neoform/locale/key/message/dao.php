@@ -24,6 +24,16 @@
             'locale' => self::TYPE_STRING,
         ];
 
+        /**
+         * $var array $referenced_entities list of fields (in this entity) and their related foreign entity
+         *
+         * @return array
+         */
+        protected $referenced_entities = [
+            'key_id' => 'locale\key',
+            'locale' => 'locale',
+        ];
+
         // READS
 
         /**

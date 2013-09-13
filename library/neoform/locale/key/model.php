@@ -135,7 +135,7 @@
             $k = "message:{$locale}";
             if (! array_key_exists($k, $this->_vars)) {
                 $this->_vars[$k] = new message\model(
-                    current(entity::dao('locale_key_message')->by_locale_key($locale, $this->id))
+                    current(entity::dao('locale\key\message')->by_locale_key($locale, $this->id))
                 );
             }
             return $this->_vars[$k];

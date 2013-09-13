@@ -28,6 +28,15 @@
             'latitude'        => self::TYPE_DECIMAL,
         ];
 
+        /**
+         * $var array $referenced_entities list of fields (in this entity) and their related foreign entity
+         *
+         * @return array
+         */
+        protected $referenced_entities = [
+            'region_id' => 'region',
+        ];
+
         // READS
 
         /**

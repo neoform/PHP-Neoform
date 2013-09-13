@@ -12,4 +12,5 @@
         const AUTOINCREMENT = false;
         const PRIMARY_KEY   = 'id';
         const ENTITY_NAME   = 'user\status';
+        const CACHE_KEY     = 'user_status';
     }

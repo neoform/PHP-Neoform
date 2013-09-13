@@ -12,4 +12,5 @@
         const AUTOINCREMENT = false;
         const PRIMARY_KEY   = 'hash';
         const ENTITY_NAME   = 'user\lostpassword';
+        const CACHE_KEY     = 'user_lostpassword';
     }

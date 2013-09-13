@@ -12,4 +12,5 @@
         const AUTOINCREMENT = true;
         const PRIMARY_KEY   = 'id';
         const ENTITY_NAME   = 'city';
+        const CACHE_KEY     = 'city';
     }

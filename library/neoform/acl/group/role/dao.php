@@ -21,6 +21,16 @@
             'acl_role_id'  => self::TYPE_INTEGER,
         ];
 
+        /**
+         * $var array $referenced_entities list of fields (in this entity) and their related foreign entity
+         *
+         * @return array
+         */
+        protected $referenced_entities = [
+            'acl_group_id' => 'acl\group',
+            'acl_role_id'  => 'acl\role',
+        ];
+
         // READS
 
         /**

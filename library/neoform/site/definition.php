@@ -12,4 +12,5 @@
         const AUTOINCREMENT = false;
         const PRIMARY_KEY   = 'id';
         const ENTITY_NAME   = 'site';
+        const CACHE_KEY     = 'site';
     }

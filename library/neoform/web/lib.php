@@ -4,6 +4,14 @@
 
     class lib {
 
+        /**
+         * @param string      $url
+         * @param array       $post
+         * @param string|null $bind_to_ip
+         *
+         * @return mixed
+         * @throws exception
+         */
         public static function wget($url, array $post=null, $bind_to_ip=null) {
 
             $curl = curl_init($url);

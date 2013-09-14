@@ -1,6 +1,6 @@
 <?php
 
-    namespace neoform\cache\disk;
+    namespace neoform\cache\driver\disk;
 
     use neoform;
 

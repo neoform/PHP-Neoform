@@ -66,10 +66,10 @@
          * Adds together multiple blocks of data
          *
          * @param neoform\type\date $start
-         * @param array     $args           passed to self::get($args)
-         * @param string    $interval       default: '1 hour'
-         * @param int       $iterations     default: 6
-         * @param bool      $subtract_first subtract the interval before getting the data
+         * @param array             $args           passed to self::get($args)
+         * @param string            $interval       default: '1 hour'
+         * @param int               $iterations     default: 6
+         * @param bool              $subtract_first subtract the interval before getting the data
          *
          * @return array    The resulting data for this block
          */

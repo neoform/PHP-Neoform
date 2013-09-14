@@ -149,6 +149,8 @@
                         ],
                     ],
                 ]),
+
+                'encrypt' => new encrypt\config,
             ]);
         }
     }

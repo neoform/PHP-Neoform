@@ -35,8 +35,10 @@
 
             $file_contents = file_get_contents($filepath);
 
+            $encrypt = neoform\core::encrypt();
+
             if (substr($filepath, -6) === '.crypt') {
-                $decrypted_string = neoform\encrypt\lib::decrypt($password, $file_contents);
+                $decrypted_string = $encrypt->decrypt($password, $file_contents);
 
                 if ($decrypted_string !== null) {
                     file_put_contents($filepath, $decrypted_string);
@@ -46,7 +48,7 @@
                     echo self::color_text('File failed to be decrypted', 'red', true) . "\n";
                 }
             } else {
-                $encrypted_string = neoform\encrypt\lib::encrypt($password, $file_contents);
+                $encrypted_string = $encrypt->encrypt($password, $file_contents);
                 if ($encrypted_string) {
                     file_put_contents($filepath, $encrypted_string);
                     rename($filepath, "{$filepath}.crypt");

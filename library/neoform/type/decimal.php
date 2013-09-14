@@ -8,12 +8,21 @@
         protected $precision;
         protected $multiplier;
 
+        /**
+         * @param integer|float $decimal
+         * @param integer       $precision
+         */
         public function __construct($decimal, $precision) {
             $this->precision  = (int) $precision;
             $this->multiplier = pow(10, (int) $precision);
             $this->intval     = (int) round(round((float) $decimal, (int) $precision, PHP_ROUND_HALF_UP) * (int) $this->multiplier, 0, PHP_ROUND_HALF_UP);
         }
 
+        /**
+         * @param $precision
+         *
+         * @return $this
+         */
         public function convert($precision) {
             if ($this->precision !== (int) $precision) {
                 if ($precision > $this->precision) {
@@ -28,7 +37,13 @@
             return $this;
         }
 
-        // Arithmatic Operations
+        /**
+         * Arithmatic Operations
+         *
+         * @param decimal $num
+         *
+         * @return $this
+         */
         public function add(decimal $num) {
             if ($num->precision() === $this->precision()) {
                 $this->intval += $num->_intval();
@@ -49,6 +64,11 @@
             return $this;
         }
 
+        /**
+         * @param decimal $num
+         *
+         * @return $this
+         */
         public function subtract(decimal $num) {
             if ($num->precision() === $this->precision()) {
                 $this->intval -= $num->_intval();
@@ -69,6 +89,11 @@
             return $this;
         }
 
+        /**
+         * @param decimal $num
+         *
+         * @return $this
+         */
         public function multiply(decimal $num) {
             if ($num->precision() === $this->precision()) {
                 $this->intval = (int) round(($this->intval * $num->_intval()) / pow(10, $this->precision()));
@@ -89,6 +114,11 @@
             return $this;
         }
 
+        /**
+         * @param decimal $num
+         *
+         * @return $this
+         */
         public function divide(decimal $num) {
             if ($num->precision() === $this->precision()) {
                 $this->intval = (int) round(($this->intval / $num->_intval()) * pow(10, $this->precision()));
@@ -109,57 +139,105 @@
             return $this;
         }
 
-        // Comparisons
+        /*
+         * Comparisons
+         */
+
+        /**
+         * @param decimal $num
+         *
+         * @return bool
+         */
         public function greater_than(decimal $num) {
             $num = clone $num;
             return (bool) ($this->intval > $num->convert($this->precision())->_intval());
         }
 
+        /**
+         * @param decimal $num
+         *
+         * @return bool
+         */
         public function greater_than_equals(decimal $num) {
             $num = clone $num;
             return (bool) ($this->intval >= $num->convert($this->precision())->_intval());
         }
 
+        /**
+         * @param decimal $num
+         *
+         * @return bool
+         */
         public function less_than(decimal $num) {
             $num = clone $num;
             return (bool) ($this->intval < $num->convert($this->precision())->_intval());
         }
 
+        /**
+         * @param decimal $num
+         *
+         * @return bool
+         */
         public function less_than_equals(decimal $num) {
             $num = clone $num;
             return (bool) ($this->intval <= $num->convert($this->precision())->_intval());
         }
 
+        /**
+         * @param decimal $num
+         *
+         * @return bool
+         */
         public function equals(decimal $num) {
             $num = clone $num;
             return (bool) ($this->intval === $num->convert($this->precision())->_intval());
         }
 
-        // Getters
+        /**
+         * @return int
+         */
         public function _intval() {
             return $this->intval;
         }
 
+        /**
+         * @return int
+         */
         public function precision() {
             return $this->precision;
         }
 
+        /**
+         * @return number
+         */
         public function multiplier() {
             return $this->multiplier;
         }
 
+        /**
+         * @return float
+         */
         public function value() {
             return (float) round($this->intval / $this->multiplier, $this->precision, PHP_ROUND_HALF_UP);
         }
 
+        /**
+         * @return float
+         */
         public function val() {
             return (float) round($this->intval / $this->multiplier, $this->precision, PHP_ROUND_HALF_UP);
         }
 
+        /**
+         * @return float
+         */
         public function floatval() {
             return (float) round($this->intval / $this->multiplier, $this->precision, PHP_ROUND_HALF_UP);
         }
 
+        /**
+         * @return string
+         */
         public function __tostring() {
             return (string) number_format(round($this->intval / $this->multiplier, $this->precision, PHP_ROUND_HALF_UP), $this->precision);
         }

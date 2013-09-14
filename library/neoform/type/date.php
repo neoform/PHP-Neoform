@@ -6,26 +6,51 @@
     use datetimezone;
 
     class date extends datetime {
-        public function __construct($time = 'now', datetimezone $timezone = null) {
+
+        /**
+         * @param string       $datetime
+         * @param datetimezone $timezone
+         */
+        public function __construct($datetime = 'now', datetimezone $timezone = null) {
             if ($timezone !== null) {
-                parent::__construct($time, $timezone);
+                parent::__construct($datetime, $timezone);
             } else {
-                parent::__construct($time);
+                parent::__construct($datetime);
             }
         }
 
+        /**
+         * @return string
+         */
         public function __tostring() {
             return $this->human();
         }
 
-        public function timestmap() {
+        /**
+         * Unix Timestamp
+         *
+         * @return integer
+         */
+        public function unix_timestmap() {
             return (int) $this->format('U');
         }
 
-        public function datetime() {
+        /**
+         * Timestamp string
+         *
+         * @return string
+         */
+        public function timestmap() {
             return $this->format('Y-m-d H:i:s');
         }
 
+        /**
+         * Date to human readable
+         *
+         * @param bool $show_time
+         *
+         * @return string
+         */
         public function human($show_time=true) {
             $time_code = $show_time ? 'g:ia' : '';
 
@@ -103,10 +128,16 @@
             }
         }
 
+        /**
+         * Do nothing
+         */
         public function __invoke() {
             //$args = func_get_args();
         }
 
+        /**
+         * @return string
+         */
         public function ago() {
 
             $now = new datetime;
@@ -221,7 +252,9 @@
             }
         }
 
-
+        /**
+         * @return int
+         */
         public function age() {
             $now = new datetime();
             $age = $now->diff($this, true);
@@ -229,22 +262,43 @@
             return (int) $age->y;
         }
 
+        /**
+         * @param date $date
+         *
+         * @return bool
+         */
         public function older_than(date $date) {
             return $this->timestmap() < $date->timestmap();
         }
 
+        /**
+         * @param date $date
+         *
+         * @return bool
+         */
         public function newer_than(date $date) {
             return $this->timestmap() > $date->timestmap();
         }
 
+        /**
+         * @param date $date
+         *
+         * @return bool
+         */
         public function equals(date $date) {
             return $this->timestmap() === $date->timestmap();
         }
 
+        /**
+         * @return bool
+         */
         public function is_past() {
             return $this->older_than(new date);
         }
 
+        /**
+         * @return bool
+         */
         public function is_future() {
             return $this->newer_than(new date);
         }

@@ -1,10 +1,10 @@
 <?php
 
-    namespace neoform\cache\memcache;
+    namespace neoform\cache\driver;
 
     use neoform;
 
-    class driver implements neoform\cache\driver {
+    class memcache implements neoform\cache\driver {
 
         /**
          * Activate a pipelined (batch) query - this doesn't exist in memcache, so ignore

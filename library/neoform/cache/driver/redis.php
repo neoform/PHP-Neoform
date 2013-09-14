@@ -1,10 +1,10 @@
 <?php
 
-    namespace neoform\cache\redis;
+    namespace neoform\cache\driver;
 
     use neoform;
 
-    class driver implements neoform\cache\driver {
+    class redis implements neoform\cache\driver {
 
         /**
          * Activate a pipelined (batch) query

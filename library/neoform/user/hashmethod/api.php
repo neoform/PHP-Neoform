@@ -7,6 +7,14 @@
 
     class api {
 
+        /**
+         * Creates a User Hashmethod model with $info
+         *
+         * @param array $info
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function insert(array $info) {
 
             $input = new input\collection($info);
@@ -22,6 +30,16 @@
             throw $input->exception();
         }
 
+        /**
+         * Update a User Hashmethod model with $info
+         *
+         * @param model $user_hashmethod
+         * @param array $info
+         * @param bool  $crush
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function update(model $user_hashmethod, array $info, $crush=false) {
 
             $input = new input\collection($info);
@@ -43,10 +61,22 @@
             throw $input->exception();
         }
 
+        /**
+         * Delete a User Hashmethod
+         *
+         * @param model $user_hashmethod
+         *
+         * @return bool
+         */
         public static function delete(model $user_hashmethod) {
             return entity::dao('user\hashmethod')->delete($user_hashmethod);
         }
 
+        /**
+         * Validates info to for insert
+         *
+         * @param input\collection $input
+         */
         public static function _validate_insert(input\collection $input) {
 
             // id
@@ -64,6 +94,12 @@
             });
         }
 
+        /**
+         * Validates info to update a User Hashmethod model
+         *
+         * @param model $user_hashmethod
+         * @param input\collection $input
+         */
         public static function _validate_update(model $user_hashmethod, input\collection $input) {
 
             // id

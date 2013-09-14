@@ -9,6 +9,12 @@
 
         public function validate_insert() {
 
+            $this->code .= "\t\t/**\n";
+            $this->code .= "\t\t * Validates info to for insert\n";
+            $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @param input\\collection \$input\n";
+            $this->code .= "\t\t */\n";
+
             $this->code .= "\t\tpublic static function _validate_insert(input\\collection \$input) {\n\n";
             foreach ($this->table->fields as $field) {
                 if ($field->is_auto_increment()) {
@@ -53,6 +59,13 @@
         public function validate_update() {
 
             $pk = $this->table->primary_key;
+
+            $this->code .= "\t\t/**\n";
+            $this->code .= "\t\t * Validates info to update a " . ucwords(str_replace('_', ' ', $this->table->name)) . " model\n";
+            $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @param model \${$this->table->name}\n";
+            $this->code .= "\t\t * @param input\\collection \$input\n";
+            $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic static function _validate_update(model \${$this->table->name}, input\\collection \$input) {\n\n";
             foreach ($this->table->fields as $field) {
@@ -101,6 +114,15 @@
 
             $longest = $this->table->longest_field_length();
 
+            $this->code .= "\t\t/**\n";
+            $this->code .= "\t\t * Creates a " . ucwords(str_replace('_', ' ', $this->table->name)) . " model with \$info\n";
+            $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @param array \$info\n";
+            $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @return model\n";
+            $this->code .= "\t\t * @throws input\\exception\n";
+            $this->code .= "\t\t */\n";
+
             $this->code .= "\t\tpublic static function insert(array \$info) {\n\n";
             $this->code .= "\t\t\t\$input = new input\\collection(\$info);\n\n";
             $this->code .= "\t\t\tself::_validate_insert(\$input);\n\n";
@@ -123,6 +145,17 @@
         }
 
         public function update() {
+
+            $this->code .= "\t\t/**\n";
+            $this->code .= "\t\t * Update a " . ucwords(str_replace('_', ' ', $this->table->name)) . " model with \$info\n";
+            $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @param model \${$this->table->name}\n";
+            $this->code .= "\t\t * @param array \$info\n";
+            $this->code .= "\t\t * @param bool  \$crush\n";
+            $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @return model\n";
+            $this->code .= "\t\t * @throws input\\exception\n";
+            $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic static function update(model \${$this->table->name}, array \$info, \$crush=false) {\n\n";
             $this->code .= "\t\t\t\$input = new input\\collection(\$info);\n\n";

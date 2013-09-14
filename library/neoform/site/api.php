@@ -7,6 +7,14 @@
 
     class api {
 
+        /**
+         * Creates a Site model with $info
+         *
+         * @param array $info
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function insert(array $info) {
 
             $input = new input\collection($info);
@@ -22,6 +30,16 @@
             throw $input->exception();
         }
 
+        /**
+         * Update a Site model with $info
+         *
+         * @param model $site
+         * @param array $info
+         * @param bool  $crush
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function update(model $site, array $info, $crush=false) {
 
             $input = new input\collection($info);
@@ -43,10 +61,22 @@
             throw $input->exception();
         }
 
+        /**
+         * Delete a Site
+         *
+         * @param model $site
+         *
+         * @return bool
+         */
         public static function delete(model $site) {
             return entity::dao('site')->delete($site);
         }
 
+        /**
+         * Validates info to for insert
+         *
+         * @param input\collection $input
+         */
         public static function _validate_insert(input\collection $input) {
 
             // id
@@ -64,6 +94,12 @@
             });
         }
 
+        /**
+         * Validates info to update a Site model
+         *
+         * @param model $site
+         * @param input\collection $input
+         */
         public static function _validate_update(model $site, input\collection $input) {
 
             // id

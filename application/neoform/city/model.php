@@ -40,7 +40,6 @@
                     case 'name':
                     case 'name_normalized':
                     case 'name_soundex':
-                    case 'top':
                         return (string) $this->vars[$k];
 
                     default:

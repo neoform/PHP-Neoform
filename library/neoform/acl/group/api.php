@@ -7,6 +7,14 @@
 
     class api {
 
+        /**
+         * Creates a Acl Group model with $info
+         *
+         * @param array $info
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function insert(array $info) {
 
             $input = new input\collection($info);
@@ -22,6 +30,16 @@
             throw $input->exception();
         }
 
+        /**
+         * Update a Acl Group model with $info
+         *
+         * @param model $acl_group
+         * @param array $info
+         * @param bool  $crush
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function update(model $acl_group, array $info, $crush=false) {
 
             $input = new input\collection($info);
@@ -43,10 +61,22 @@
             throw $input->exception();
         }
 
+        /**
+         * Delete a Acl Group
+         *
+         * @param model $acl_group
+         *
+         * @return bool
+         */
         public static function delete(model $acl_group) {
             return entity::dao('acl\group')->delete($acl_group);
         }
 
+        /**
+         * Validates info to for insert
+         *
+         * @param input\collection $input
+         */
         public static function _validate_insert(input\collection $input) {
 
             // id
@@ -64,6 +94,12 @@
             });
         }
 
+        /**
+         * Validates info to update a Acl Group model
+         *
+         * @param model $acl_group
+         * @param input\collection $input
+         */
         public static function _validate_update(model $acl_group, input\collection $input) {
 
             // id

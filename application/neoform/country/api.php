@@ -7,6 +7,14 @@
 
     class api {
 
+        /**
+         * Creates a Country model with $info
+         *
+         * @param array $info
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function insert(array $info) {
 
             $input = new input\collection($info);
@@ -24,6 +32,16 @@
             throw $input->exception();
         }
 
+        /**
+         * Update a Country model with $info
+         *
+         * @param model $country
+         * @param array $info
+         * @param bool  $crush
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function update(model $country, array $info, $crush=false) {
 
             $input = new input\collection($info);
@@ -47,10 +65,22 @@
             throw $input->exception();
         }
 
+        /**
+         * Delete a Country
+         *
+         * @param model $country
+         *
+         * @return bool
+         */
         public static function delete(model $country) {
             return entity::dao('country')->delete($country);
         }
 
+        /**
+         * Validates info to for insert
+         *
+         * @param input\collection $input
+         */
         public static function _validate_insert(input\collection $input) {
 
             // name
@@ -82,6 +112,12 @@
             });
         }
 
+        /**
+         * Validates info to update a Country model
+         *
+         * @param model $country
+         * @param input\collection $input
+         */
         public static function _validate_update(model $country, input\collection $input) {
 
             // name

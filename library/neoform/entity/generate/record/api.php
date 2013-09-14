@@ -26,6 +26,15 @@
         }
 
         public function delete() {
+
+            $this->code .= "\t\t/**\n";
+            $this->code .= "\t\t * Delete a " . ucwords(str_replace('_', ' ', $this->table->name)) . "\n";
+            $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @param model \${$this->table->name}\n";
+            $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @return bool\n";
+            $this->code .= "\t\t */\n";
+
             $this->code .= "\t\tpublic static function delete(model \${$this->table->name}) {\n";
             $this->code .= "\t\t\treturn entity::dao('" . str_replace('_', '\\', $this->table->name) . "')->delete(\${$this->table->name});\n";
             $this->code .= "\t\t}\n\n";

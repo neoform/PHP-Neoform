@@ -7,6 +7,14 @@
 
     class api {
 
+        /**
+         * Creates a Acl Role model with $info
+         *
+         * @param array $info
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function insert(array $info) {
 
             $input = new input\collection($info);
@@ -21,6 +29,16 @@
             throw $input->exception();
         }
 
+        /**
+         * Update a Acl Role model with $info
+         *
+         * @param model $acl_role
+         * @param array $info
+         * @param bool  $crush
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function update(model $acl_role, array $info, $crush=false) {
 
             $input = new input\collection($info);
@@ -41,10 +59,22 @@
             throw $input->exception();
         }
 
+        /**
+         * Delete a Acl Role
+         *
+         * @param model $acl_role
+         *
+         * @return bool
+         */
         public static function delete(model $acl_role) {
             return entity::dao('acl\role')->delete($acl_role);
         }
 
+        /**
+         * Validates info to for insert
+         *
+         * @param input\collection $input
+         */
         public static function _validate_insert(input\collection $input) {
 
             // name
@@ -55,6 +85,12 @@
             });
         }
 
+        /**
+         * Validates info to update a Acl Role model
+         *
+         * @param model $acl_role
+         * @param input\collection $input
+         */
         public static function _validate_update(model $acl_role, input\collection $input) {
 
             // name

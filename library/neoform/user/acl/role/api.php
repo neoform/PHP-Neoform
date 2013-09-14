@@ -7,6 +7,14 @@
 
     class api {
 
+        /**
+         * Creates a User Acl Role model with $info
+         *
+         * @param array $info
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function insert(array $info) {
 
             $input = new input\collection($info);
@@ -22,6 +30,14 @@
             throw $input->exception();
         }
 
+        /**
+         * Deletes links
+         *
+         * @param \neoform\user\model $user
+         * @param \neoform\acl\role\collection $acl_role_collection
+         *
+         * @return bool
+         */
         public static function delete_by_user(\neoform\user\model $user, \neoform\acl\role\collection $acl_role_collection) {
             $keys = [];
             foreach ($acl_role_collection as $acl_role) {
@@ -33,6 +49,14 @@
             return entity::dao('user\acl\role')->delete_multi($keys);
         }
 
+        /**
+         * Deletes links
+         *
+         * @param \neoform\acl\role\model $acl_role
+         * @param \neoform\user\collection $user_collection
+         *
+         * @return bool
+         */
         public static function delete_by_acl_role(\neoform\acl\role\model $acl_role, \neoform\user\collection $user_collection) {
             $keys = [];
             foreach ($user_collection as $user) {
@@ -44,6 +68,11 @@
             return entity::dao('user\acl\role')->delete_multi($keys);
         }
 
+        /**
+         * Validates info to for insert
+         *
+         * @param input\collection $input
+         */
         public static function _validate_insert(input\collection $input) {
 
             // user_id

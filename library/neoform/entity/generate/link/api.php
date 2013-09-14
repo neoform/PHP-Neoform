@@ -35,6 +35,15 @@
 
             $length = max(strlen($field1->name), strlen($field2->name));
 
+            $this->code .= "\t\t/**\n";
+            $this->code .= "\t\t * Deletes links\n";
+            $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @param \\neoform\\" . str_replace('_', '\\', $field1->referenced_field->table->name) . "\\model \${$field1->referenced_field->table->name}\n";
+            $this->code .= "\t\t * @param \\neoform\\" . str_replace('_', '\\', $field2->referenced_field->table->name) . "\\collection \${$field2->referenced_field->table->name}_collection\n";
+            $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @return bool\n";
+            $this->code .= "\t\t */\n";
+
             $this->code .= "\t\tpublic static function delete_by_{$field1->referenced_field->table->name}(\\neoform\\" . str_replace('_', '\\', $field1->referenced_field->table->name) . "\\model \${$field1->referenced_field->table->name}, \\neoform\\" . str_replace('_', '\\', $field2->referenced_field->table->name) . "\\collection \${$field2->referenced_field->table->name}_collection) {\n";
             $this->code .= "\t\t\t\$keys = [];\n";
             $this->code .= "\t\t\tforeach (\${$field2->referenced_field->table->name}_collection as \${$field2->referenced_field->table->name}) {\n";
@@ -45,6 +54,15 @@
             $this->code .= "\t\t\t}\n";
             $this->code .= "\t\t\treturn entity::dao('" . str_replace('_', '\\', $this->table->name) . "')->delete_multi(\$keys);\n";
             $this->code .= "\t\t}\n\n";
+
+            $this->code .= "\t\t/**\n";
+            $this->code .= "\t\t * Deletes links\n";
+            $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @param \\neoform\\" . str_replace('_', '\\', $field2->referenced_field->table->name) . "\\model \${$field2->referenced_field->table->name}\n";
+            $this->code .= "\t\t * @param \\neoform\\" . str_replace('_', '\\', $field1->referenced_field->table->name) . "\\collection \${$field1->referenced_field->table->name}_collection\n";
+            $this->code .= "\t\t *\n";
+            $this->code .= "\t\t * @return bool\n";
+            $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic static function delete_by_{$field2->referenced_field->table->name}(\\neoform\\" . str_replace('_', '\\', $field2->referenced_field->table->name) . "\\model \${$field2->referenced_field->table->name}, \\neoform\\" . str_replace('_', '\\', $field1->referenced_field->table->name) . "\\collection \${$field1->referenced_field->table->name}_collection) {\n";
             $this->code .= "\t\t\t\$keys = [];\n";

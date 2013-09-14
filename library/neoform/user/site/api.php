@@ -7,6 +7,14 @@
 
     class api {
 
+        /**
+         * Creates a User Site model with $info
+         *
+         * @param array $info
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function insert(array $info) {
 
             $input = new input\collection($info);
@@ -22,6 +30,14 @@
             throw $input->exception();
         }
 
+        /**
+         * Deletes links
+         *
+         * @param \neoform\user\model $user
+         * @param \neoform\site\collection $site_collection
+         *
+         * @return bool
+         */
         public static function delete_by_user(\neoform\user\model $user, \neoform\site\collection $site_collection) {
             $keys = [];
             foreach ($site_collection as $site) {
@@ -33,6 +49,14 @@
             return entity::dao('user\site')->delete_multi($keys);
         }
 
+        /**
+         * Deletes links
+         *
+         * @param \neoform\site\model $site
+         * @param \neoform\user\collection $user_collection
+         *
+         * @return bool
+         */
         public static function delete_by_site(\neoform\site\model $site, \neoform\user\collection $user_collection) {
             $keys = [];
             foreach ($user_collection as $user) {
@@ -44,6 +68,11 @@
             return entity::dao('user\site')->delete_multi($keys);
         }
 
+        /**
+         * Validates info to for insert
+         *
+         * @param input\collection $input
+         */
         public static function _validate_insert(input\collection $input) {
 
             // user_id

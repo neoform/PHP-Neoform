@@ -8,9 +8,11 @@
     class api {
 
         /**
+         * Creates a Auth model with $info
+         *
          * @param array $info
          *
-         * @return mixed
+         * @return model
          * @throws input\exception
          */
         public static function insert(array $info) {
@@ -30,11 +32,13 @@
         }
 
         /**
+         * Update a Auth model with $info
+         *
          * @param model $auth
          * @param array $info
          * @param bool  $crush
          *
-         * @return mixed
+         * @return model
          * @throws input\exception
          */
         public static function update(model $auth, array $info, $crush=false) {
@@ -119,6 +123,8 @@
         }
 
         /**
+         * Validates info to for insert
+         *
          * @param input\collection $input
          */
         public static function _validate_insert(input\collection $input) {
@@ -144,7 +150,9 @@
         }
 
         /**
-         * @param model            $auth
+         * Validates info to update a Auth model
+         *
+         * @param model $auth
          * @param input\collection $input
          */
         public static function _validate_update(model $auth, input\collection $input) {

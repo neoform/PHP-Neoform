@@ -7,6 +7,14 @@
 
     class api {
 
+        /**
+         * Creates a Acl Role Resource model with $info
+         *
+         * @param array $info
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function insert(array $info) {
 
             $input = new input\collection($info);
@@ -22,6 +30,14 @@
             throw $input->exception();
         }
 
+        /**
+         * Deletes links
+         *
+         * @param \neoform\acl\role\model $acl_role
+         * @param \neoform\acl\resource\collection $acl_resource_collection
+         *
+         * @return bool
+         */
         public static function delete_by_acl_role(\neoform\acl\role\model $acl_role, \neoform\acl\resource\collection $acl_resource_collection) {
             $keys = [];
             foreach ($acl_resource_collection as $acl_resource) {
@@ -33,6 +49,14 @@
             return entity::dao('acl\role\resource')->delete_multi($keys);
         }
 
+        /**
+         * Deletes links
+         *
+         * @param \neoform\acl\resource\model $acl_resource
+         * @param \neoform\acl\role\collection $acl_role_collection
+         *
+         * @return bool
+         */
         public static function delete_by_acl_resource(\neoform\acl\resource\model $acl_resource, \neoform\acl\role\collection $acl_role_collection) {
             $keys = [];
             foreach ($acl_role_collection as $acl_role) {
@@ -44,6 +68,11 @@
             return entity::dao('acl\role\resource')->delete_multi($keys);
         }
 
+        /**
+         * Validates info to for insert
+         *
+         * @param input\collection $input
+         */
         public static function _validate_insert(input\collection $input) {
 
             // acl_role_id

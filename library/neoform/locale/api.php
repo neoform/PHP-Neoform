@@ -7,6 +7,14 @@
 
     class api {
 
+        /**
+         * Creates a Locale model with $info
+         *
+         * @param array $info
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function insert(array $info) {
 
             $input = new input\collection($info);
@@ -22,6 +30,16 @@
             throw $input->exception();
         }
 
+        /**
+         * Update a Locale model with $info
+         *
+         * @param model $locale
+         * @param array $info
+         * @param bool  $crush
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function update(model $locale, array $info, $crush=false) {
 
             $input = new input\collection($info);
@@ -43,10 +61,22 @@
             throw $input->exception();
         }
 
+        /**
+         * Delete a Locale
+         *
+         * @param model $locale
+         *
+         * @return bool
+         */
         public static function delete(model $locale) {
             return entity::dao('locale')->delete($locale);
         }
 
+        /**
+         * Validates info to for insert
+         *
+         * @param input\collection $input
+         */
         public static function _validate_insert(input\collection $input) {
 
             // iso2
@@ -60,6 +90,12 @@
             $input->name->cast('string')->length(1, 255);
         }
 
+        /**
+         * Validates info to update a Locale model
+         *
+         * @param model $locale
+         * @param input\collection $input
+         */
         public static function _validate_update(model $locale, input\collection $input) {
 
             // iso2

@@ -7,6 +7,14 @@
 
     class api {
 
+        /**
+         * Creates a User Status model with $info
+         *
+         * @param array $info
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function insert(array $info) {
 
             $input = new input\collection($info);
@@ -22,6 +30,16 @@
             throw $input->exception();
         }
 
+        /**
+         * Update a User Status model with $info
+         *
+         * @param model $user_status
+         * @param array $info
+         * @param bool  $crush
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function update(model $user_status, array $info, $crush=false) {
 
             $input = new input\collection($info);
@@ -43,10 +61,22 @@
             throw $input->exception();
         }
 
+        /**
+         * Delete a User Status
+         *
+         * @param model $user_status
+         *
+         * @return bool
+         */
         public static function delete(model $user_status) {
             return entity::dao('user\status')->delete($user_status);
         }
 
+        /**
+         * Validates info to for insert
+         *
+         * @param input\collection $input
+         */
         public static function _validate_insert(input\collection $input) {
 
             // id
@@ -64,6 +94,12 @@
             });
         }
 
+        /**
+         * Validates info to update a User Status model
+         *
+         * @param model $user_status
+         * @param input\collection $input
+         */
         public static function _validate_update(model $user_status, input\collection $input) {
 
             // id

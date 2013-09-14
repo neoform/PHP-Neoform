@@ -7,6 +7,14 @@
 
     class api {
 
+        /**
+         * Creates a Acl Resource model with $info
+         *
+         * @param array $info
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function insert(array $info) {
 
             $input = new input\collection($info);
@@ -22,6 +30,16 @@
             throw $input->exception();
         }
 
+        /**
+         * Update a Acl Resource model with $info
+         *
+         * @param model $acl_resource
+         * @param array $info
+         * @param bool  $crush
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function update(model $acl_resource, array $info, $crush=false) {
 
             $input = new input\collection($info);
@@ -43,10 +61,22 @@
             throw $input->exception();
         }
 
+        /**
+         * Delete a Acl Resource
+         *
+         * @param model $acl_resource
+         *
+         * @return bool
+         */
         public static function delete(model $acl_resource) {
             return entity::dao('acl\resource')->delete($acl_resource);
         }
 
+        /**
+         * Validates info to for insert
+         *
+         * @param input\collection $input
+         */
         public static function _validate_insert(input\collection $input) {
 
             // parent_id
@@ -68,6 +98,12 @@
             });
         }
 
+        /**
+         * Validates info to update a Acl Resource model
+         *
+         * @param model $acl_resource
+         * @param input\collection $input
+         */
         public static function _validate_update(model $acl_resource, input\collection $input) {
 
             // parent_id

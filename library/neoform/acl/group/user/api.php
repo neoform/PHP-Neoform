@@ -7,6 +7,14 @@
 
     class api {
 
+        /**
+         * Creates a Acl Group User model with $info
+         *
+         * @param array $info
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function insert(array $info) {
 
             $input = new input\collection($info);
@@ -22,6 +30,14 @@
             throw $input->exception();
         }
 
+        /**
+         * Deletes links
+         *
+         * @param \neoform\acl\group\model $acl_group
+         * @param \neoform\user\collection $user_collection
+         *
+         * @return bool
+         */
         public static function delete_by_acl_group(\neoform\acl\group\model $acl_group, \neoform\user\collection $user_collection) {
             $keys = [];
             foreach ($user_collection as $user) {
@@ -33,6 +49,14 @@
             return entity::dao('acl\group\user')->delete_multi($keys);
         }
 
+        /**
+         * Deletes links
+         *
+         * @param \neoform\user\model $user
+         * @param \neoform\acl\group\collection $acl_group_collection
+         *
+         * @return bool
+         */
         public static function delete_by_user(\neoform\user\model $user, \neoform\acl\group\collection $acl_group_collection) {
             $keys = [];
             foreach ($acl_group_collection as $acl_group) {
@@ -44,6 +68,11 @@
             return entity::dao('acl\group\user')->delete_multi($keys);
         }
 
+        /**
+         * Validates info to for insert
+         *
+         * @param input\collection $input
+         */
         public static function _validate_insert(input\collection $input) {
 
             // acl_group_id

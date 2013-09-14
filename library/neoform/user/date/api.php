@@ -7,6 +7,14 @@
 
     class api {
 
+        /**
+         * Creates a User Date model with $info
+         *
+         * @param array $info
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function insert(array $info) {
 
             $input = new input\collection($info);
@@ -25,6 +33,16 @@
             throw $input->exception();
         }
 
+        /**
+         * Update a User Date model with $info
+         *
+         * @param model $user_date
+         * @param array $info
+         * @param bool  $crush
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function update(model $user_date, array $info, $crush=false) {
 
             $input = new input\collection($info);
@@ -49,10 +67,22 @@
             throw $input->exception();
         }
 
+        /**
+         * Delete a User Date
+         *
+         * @param model $user_date
+         *
+         * @return bool
+         */
         public static function delete(model $user_date) {
             return entity::dao('user\date')->delete($user_date);
         }
 
+        /**
+         * Validates info to for insert
+         *
+         * @param input\collection $input
+         */
         public static function _validate_insert(input\collection $input) {
 
             // user_id
@@ -81,6 +111,12 @@
             $input->password_updated_on->cast('string')->optional()->is_datetime();
         }
 
+        /**
+         * Validates info to update a User Date model
+         *
+         * @param model $user_date
+         * @param input\collection $input
+         */
         public static function _validate_update(model $user_date, input\collection $input) {
 
             // user_id

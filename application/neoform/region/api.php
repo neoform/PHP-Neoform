@@ -7,6 +7,14 @@
 
     class api {
 
+        /**
+         * Creates a Region model with $info
+         *
+         * @param array $info
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function insert(array $info) {
 
             $input = new input\collection($info);
@@ -27,6 +35,16 @@
             throw $input->exception();
         }
 
+        /**
+         * Update a Region model with $info
+         *
+         * @param model $region
+         * @param array $info
+         * @param bool  $crush
+         *
+         * @return model
+         * @throws input\exception
+         */
         public static function update(model $region, array $info, $crush=false) {
 
             $input = new input\collection($info);
@@ -53,10 +71,22 @@
             throw $input->exception();
         }
 
+        /**
+         * Delete a Region
+         *
+         * @param model $region
+         *
+         * @return bool
+         */
         public static function delete(model $region) {
             return entity::dao('region')->delete($region);
         }
 
+        /**
+         * Validates info to for insert
+         *
+         * @param input\collection $input
+         */
         public static function _validate_insert(input\collection $input) {
 
             // country_id
@@ -91,6 +121,12 @@
             $input->latitude->cast('float');
         }
 
+        /**
+         * Validates info to update a Region model
+         *
+         * @param model $region
+         * @param input\collection $input
+         */
         public static function _validate_update(model $region, input\collection $input) {
 
             // country_id

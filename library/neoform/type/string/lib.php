@@ -4,38 +4,32 @@
 
     class lib {
 
-        public static function bin2hex($str) {
-            return bin2hex((string) $str);
-        }
-
-        public static function hex2bin($str) {
-            return pack('H*', (string) $str);
-        }
-
-        public static function formatted($str) {
-            return self::nl2p(self::urled($str));
-        }
-
+        /**
+         * Same as nl2br, but with <p> instead of <br>
+         *
+         * @param string $str
+         *
+         * @return string
+         */
         public static function nl2p($str) {
             return preg_replace('`(.[^\n]*)`', '<p>\1</p>', $str);
         }
 
-        public static function phone($str) {
-            if (strlen($str) === 10) {
-                return '(' . substr($str, 0, 3) . ') ' . substr($str, 3, 3) . '-' . substr($str, 6, 4);
-            } else {
-                return substr($str, 0, 1) . '-' . substr($str, 1, 3) . '-' . substr($str, 4, 3) . '-' . substr($str, 7, 4);
+        /**
+         * Find any URLs in a body of text and convert them into anchor tagged links
+         *
+         * @param string     $str
+         * @param array|null $attrs
+         *
+         * @return string
+         */
+        public static function urled($str, array $attrs=null) {
+
+            $attrs = [];
+            foreach ($attrs as $name => $val) {
+                $attrs[] = "{$name}=\"{$val}\"";
             }
-        }
-
-        public static function postal_code($str) {
-            return substr($str, 0, 3) . ' ' . substr($str, 3, 3);
-        }
-
-        public static function urled($str) {
-
-            //people should not be using this keyword... everrr
-            //$str = str_ireplace('javascript:', 'javascrap:', $str);
+            $attrs = $attrs ? ' ' . join(' ', $attrs) : '';
 
             //Remove UTF-8 BOM and marker character in input (BOM is a blank char that is not actually blank, it's just a non-existent spacer...)
             $str = preg_replace('{^\xEF\xBB\xBF|\x1A}', '', $str);
@@ -60,7 +54,7 @@
 
                     $hash = sha1($url);
                     $http = strtolower(substr($url, 0, 4)) !== 'http' ? 'http://' : '';
-                    $pickles[$hash] = '<a href="' . htmlspecialchars($http . $url) . '" rel="nofollow">' . htmlspecialchars($url) . '</a>';
+                    $pickles[$hash] = '<a href="' . htmlspecialchars($http . $url) . '"{$attrs}>' . htmlspecialchars($url) . '</a>';
 
                     self::replace_once(
                         $str,
@@ -69,50 +63,74 @@
                     );
                 }
 
-                $str = str_replace(array_keys($pickles), array_values($pickles), htmlspecialchars($str));
+                return str_replace(array_keys($pickles), array_values($pickles), htmlspecialchars($str));
             }
 
             return $str;
         }
 
+        /**
+         * @param string $str
+         * @param string $search
+         * @param string $replace
+         */
         protected static function replace_once(& $str, $search, $replace) {
             $pos = strpos($str, $search);
 
             if ($pos !== false) {
                 $search_len = strlen($search);
-                $str = substr($str, 0, $pos) . $replace . substr($str, $pos + $search_len);
+                $str        = substr($str, 0, $pos) . $replace . substr($str, $pos + $search_len);
             }
         }
 
+        /**
+         * Return the English suffix of a number
+         *
+         * @param integer $num
+         *
+         * @return string
+         */
         public static function nth($num) {
-            $last = substr($num, strlen($num) - 1, 1);
-
-            switch ($last) {
+            switch (substr($num, strlen($num) - 1, 1)) {
                 case '1':
                     return 'st';
                 case '2':
                     return 'nd';
                 case '3':
                     return 'rd';
-                default:
-                    return 'th';
             }
+
+            return 'th';
         }
 
-        //if max length not set, it will be fixed to the min length
+        /**
+         * If max length not set, it will be fixed to the min length
+         *
+         * @param integer      $min_length
+         * @param integer|null $max_length
+         *
+         * @return string
+         */
         public static function random_chars($min_length, $max_length=null) {
             static $letters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-            $len = $max_length === null ? $min_length : mt_rand($min_length, $max_length);
+            $len   = $max_length === null ? $min_length : mt_rand($min_length, $max_length);
+            $chars = [];
 
-            $path = '';
             for ($i=0; $i < $len; $i++) {
-                $path .= $letters[mt_rand(0, 61)];
+                $chars[] = $letters[mt_rand(0, 61)];
             }
 
-            return $path;
+            return implode($chars);
         }
 
+        /**
+         * Replace strings with funky chars into non-accent versions
+         *
+         * @param string $str
+         *
+         * @return string
+         */
         public static function remove_accents($str) {
             $chars = [
                 'Š'=>'S', 'š'=>'s', 'Ð'=>'Dj','Ž'=>'Z', 'ž'=>'z', 'À'=>'A', 'Á'=>'A', 'Â'=>'A', 'Ã'=>'A', 'Ä'=>'A',
@@ -126,6 +144,13 @@
             return str_replace(array_keys($chars), array_values($chars), $str);
         }
 
+        /**
+         * Convert an integer into a shorter string (useful for case sensitive URLs)
+         *
+         * @param integer $n
+         *
+         * @return string
+         */
         public static function shorten($n)
         {
             static $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-';
@@ -133,13 +158,20 @@
             $str = '';
             while ($n > 0) {
                 $remainder = $n % 64;
-                $n = ($n - $remainder) / 64;
-                $str = $alphabet{$remainder} . $str;
+                $n         = ($n - $remainder) / 64;
+                $str       = $alphabet{$remainder} . $str;
             }
 
             return $str;
         }
 
+        /**
+         * Convert a type_string_lib::shortened() string into its integer counterpart
+         *
+         * @param string $str
+         *
+         * @return integer
+         */
         public static function expand($str)
         {
             static $alphabet = [

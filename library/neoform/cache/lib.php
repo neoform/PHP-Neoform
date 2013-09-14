@@ -21,7 +21,7 @@
          */
         public static function pipeline_start($engine, $engine_pool) {
             if ($engine) {
-                $engine_driver = "\\neoform\\cache\\{$engine}\\driver";
+                $engine_driver = "\\neoform\\cache\\driver\\{$engine}";
                 $engine_driver::pipeline_start($engine_pool);
             }
         }
@@ -36,7 +36,7 @@
          */
         public static function pipeline_execute($engine, $engine_pool) {
             if ($engine) {
-                $engine_driver = "\\neoform\\cache\\{$engine}\\driver";
+                $engine_driver = "\\neoform\\cache\\driver\\{$engine}";
                 return $engine_driver::pipeline_execute($engine_pool);
             }
         }
@@ -55,10 +55,10 @@
         public static function set($engine, $engine_pool, $key, $data, $ttl=null) {
 
             // Memory
-            memory\dao::set($key, $data);
+            driver\memory::set(null, $key, $data);
 
             if ($engine) {
-                $engine_driver = "\\neoform\\cache\\{$engine}\\driver";
+                $engine_driver = "\\neoform\\cache\\driver\\{$engine}";
                 $engine_driver::set($engine_pool, $key, $data, $ttl);
             }
         }
@@ -78,10 +78,10 @@
             }
 
             // Memory
-            memory\dao::set_multi($rows);
+            driver\memory::set_multi(null, $rows);
 
             if ($engine) {
-                $engine_driver = "\\neoform\\cache\\{$engine}\\driver";
+                $engine_driver = "\\neoform\\cache\\driver\\{$engine}";
                 $engine_driver::set_multi($engine_pool, $rows, $ttl);
             }
         }
@@ -98,12 +98,12 @@
         public static function get($engine, $engine_pool, $key) {
 
             // Memory
-            if (memory\dao::exists($key)) {
-                return memory\dao::get($key);
+            if (driver\memory::exists(null, $key)) {
+                return driver\memory::get(null, $key);
             }
 
             if ($engine) {
-                $engine_driver = "\\neoform\\cache\\{$engine}\\driver";
+                $engine_driver = "\\neoform\\cache\\driver\\{$engine}";
                 if ($data = $engine_driver::get($engine_pool, $key)) {
                     return reset($data);
                 }
@@ -121,10 +121,10 @@
         public static function increment($engine, $engine_pool, $key, $offset=1) {
 
             // Memory
-            memory\dao::increment($key, $offset);
+            driver\memory::increment(null, $key, $offset);
 
             if ($engine) {
-                $engine = "\\neoform\\cache\\{$engine}\\driver";
+                $engine = "\\neoform\\cache\\driver\\{$engine}";
                 $engine::increment($engine_pool, $key, $offset);
             }
         }
@@ -140,10 +140,10 @@
         public static function decrement($engine, $engine_pool, $key, $offset=1) {
 
             // Memory
-            memory\dao::decrement($key, $offset);
+            driver\memory::decrement(null, $key, $offset);
 
             if ($engine) {
-                $engine = "\\neoform\\cache\\{$engine}\\driver";
+                $engine = "\\neoform\\cache\\driver\\{$engine}";
                 $engine::decrement($engine_pool, $key, $offset);
             }
         }
@@ -170,13 +170,13 @@
                                       callable $after_cache_func=null, $args=null, $ttl=null, $cache_empty_results=true) {
 
             // Memory
-            if (memory\dao::exists($key)) {
-                return memory\dao::get($key);
+            if (driver\memory::exists(null, $key)) {
+                return driver\memory::get(null, $key);
             }
 
             if ($engine) {
 
-                $engine_driver = "\\neoform\\cache\\{$engine}\\driver";
+                $engine_driver = "\\neoform\\cache\\driver\\{$engine}";
 
                 if ($data = $engine_driver::get($engine_pool_read, $key)) {
 
@@ -184,7 +184,7 @@
                     $data = reset($data);
 
                     // Save to memory - for faster lookup if this record gets requested again
-                    memory\dao::set($key, $data);
+                    driver\memory::set(null, $key, $data);
 
                     return $data;
                 }
@@ -196,7 +196,7 @@
             if ($data !== null || $cache_empty_results) {
 
                 //save to memory (always)
-                memory\dao::set($key, $data);
+                driver\memory::set(null, $key, $data);
 
                 // cache data to engine
                 if ($engine) {
@@ -256,7 +256,7 @@
             /*
              * PHP Memory
              */
-            if ($found_in_memory = memory\dao::get_multi($missing_rows)) {
+            if ($found_in_memory = driver\memory::get_multi(null, $missing_rows)) {
                 foreach ($found_in_memory as $index => $key) {
                     $matched_rows[$index] = $key;
                     unset($missing_rows[$index]);
@@ -273,7 +273,7 @@
              * Source Engine
              */
             if ($engine && $missing_rows) {
-                $engine = "\\neoform\\cache\\{$engine}\\driver";
+                $engine = "\\neoform\\cache\\driver\\{$engine}";
                 foreach ($engine::get_multi($engine_pool_read, $missing_rows) as $key => $row) {
                     $matched_rows[$key] = $row;
                     unset($missing_rows[$key]);
@@ -314,7 +314,7 @@
                     }
                 }
 
-                memory\dao::set_multi($save_to_memory);
+                driver\memory::set_multi(null, $save_to_memory);
             }
 
             // Save to cache
@@ -351,10 +351,10 @@
         public static function delete($engine, $engine_pool, $key) {
 
             // Memory
-            memory\dao::delete($key);
+            driver\memory::delete(null, $key);
 
             if ($engine) {
-                $engine = "\\neoform\\cache\\{$engine}\\driver";
+                $engine = "\\neoform\\cache\\driver\\{$engine}";
                 $engine::delete($engine_pool, $key);
             }
         }
@@ -371,12 +371,10 @@
             if ($keys) {
 
                 // Memory
-                foreach ($keys as $key) {
-                    memory\dao::delete($key);
-                }
+                driver\memory::delete_multi(null, $keys);
 
                 if ($engine) {
-                    $engine = "\\neoform\\cache\\{$engine}\\driver";
+                    $engine = "\\neoform\\cache\\driver\\{$engine}";
                     $engine::delete_multi($engine_pool, $keys);
                 }
             }
@@ -393,10 +391,10 @@
         public static function expire($engine, $engine_pool, $key, $ttl) {
 
             // Memory
-            memory\dao::delete($key);
+            driver\memory::delete(null, $key);
 
             if ($engine) {
-                $engine = "\\neoform\\cache\\{$engine}\\driver";
+                $engine = "\\neoform\\cache\\driver\\{$engine}";
                 $engine::expire($engine_pool, $key, $ttl);
             }
         }
@@ -414,12 +412,10 @@
             if ($keys) {
 
                 // Memory
-                foreach ($keys as $key) {
-                    memory\dao::delete($key);
-                }
+                driver\memory::delete_multi(null, $keys);
 
                 if ($engine) {
-                    $engine = "\\neoform\\cache\\{$engine}\\driver";
+                    $engine = "\\neoform\\cache\\driver\\{$engine}";
                     $engine::expire_multi($engine_pool, $keys, $ttl);
                 }
             }

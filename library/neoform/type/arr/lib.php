@@ -4,7 +4,13 @@
 
     class lib {
 
-        // Returns a pretty string seperating the array values. [1, 2, 3, 4] becomes "1, 2, 3 and 4"
+        /**
+         * Returns a pretty string seperating the array values. [1, 2, 3, 4] becomes "1, 2, 3 and 4"
+         *
+         * @param array $arr
+         *
+         * @return mixed|string
+         */
         public static function imploder(array $arr) {
             $count = count($arr);
             if ($count === 0) {
@@ -18,7 +24,14 @@
             }
         }
 
-        // Crunch an array down - removing all fields that are equal to null
+        /**
+         * Crunch an array down - removing all fields that are equal to null
+         *
+         * @param array $arr
+         * @param bool  $strict
+         *
+         * @return array
+         */
         public static function collapse(array $arr, $strict=true) {
             $return = [];
             foreach ($arr as $k => $v) {

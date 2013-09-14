@@ -1,6 +1,6 @@
 <?php
 
-    namespace neoform\holder;
+    namespace neoform\entity\holder;
 
     use neoform\entity\exception;
 
@@ -8,10 +8,14 @@
 
         protected $_vars = []; //caching
 
+        /**
+         * @param array  $infos
+         * @param string $map_field
+         */
         public function __construct(array $infos=null, $map_field=null) {
 
             if ($infos) {
-                $model = '\\neoform\\' . static::MODEL;
+                $model = '\\neoform\\' . static::ENTITY_NAME . '\\model';
                 foreach ($infos as $key => $info) {
                     try {
                         if (is_array($info)) {
@@ -28,8 +32,14 @@
             }
         }
 
+        /**
+         * Add a model to this collection
+         *
+         * @param array $info
+         * @param null  $map_field
+         */
         public function add(array $info, $map_field=null) {
-            $model = '\\neoform\\' . static::MODEL;
+            $model = '\\neoform\\' . static::ENTITY_NAME . '\\model';
             $v = new $model($info);
 
             if ($map_field !== null) {
@@ -42,6 +52,9 @@
             $this->_vars = [];
         }
 
+        /**
+         * @param string $k
+         */
         public function del($k) {
             unset($this[$k]);
 
@@ -49,7 +62,14 @@
             $this->_vars = [];
         }
 
-        //remap the collection according to a certain field - this makes the key of the collection be that field
+        /**
+         * Remap the collection according to a certain field - this makes the key of the collection be that field
+         *
+         * @param string $field
+         * @param bool   $ignore_null
+         *
+         * @return $this
+         */
         public function remap($field, $ignore_null=false) {
             $new = [];
             foreach ($this as $record) {
@@ -61,25 +81,44 @@
             return $this;
         }
 
-        public function field($field) {
+        /**
+         * Get an array with the values of the models in the collection
+         *
+         * @param string      $field
+         * @param string|null $key
+         *
+         * @return array
+         */
+        public function field($field, $key=null) {
             if (! array_key_exists($field, $this->_vars)) {
-                $this->_vars[$field] = [];
-                foreach ($this as $record) {
-                    $this->_vars[$field][] = $record->$field;
+                $arr = [];
+                foreach ($this as $k => $record) {
+                    $arr[$key ? $record->$key : $k] = $record->$field;
                 }
+                $this->_vars[$field] = $arr;
             }
             return $this->_vars[$field];
         }
 
-        //exports an array with all the data, or select fields
-        public function export($fields=null) {
+        /**
+         * Exports an array with all the data, or select fields
+         *
+         * @param array|null $fields
+         *
+         * @return array
+         */
+        public function export(array $fields=null) {
             $return = [];
-            foreach ($this as $k => $v) {
-                $return[$k] = $v->export($fields);
+            foreach ($this as $k => $model) {
+                $return[$k] = $model->export($fields);
             }
             return $return;
         }
 
+        /**
+         * @param string|callable $f
+         * @param string          $order
+         */
         public function sort($f, $order='asc') {
             if (is_callable($f)) {
                 $this->uasort(function ($a, $b) use ($f, $order) {

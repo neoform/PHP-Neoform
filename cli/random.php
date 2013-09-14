@@ -2,8 +2,8 @@
 <?php
 
     $root = realpath(__DIR__ . '/..');
-    require_once("{$root}/library/core.php");
-    core::init([
+    require_once("{$root}/library/neoform/core.php");
+    neoform\core::init([
         'extension'   => 'php',
         'environment' => 'sample',
 
@@ -13,11 +13,11 @@
         'website'     => "{$root}/www/",
     ]);
 
-    class generate_rand extends cli_model {
+    class generate_rand extends neoform\cli\model {
 
         public function init() {
             echo "Very random string:\n\n";
-            echo wordwrap(base64_encode(encrypt_lib::rand($this->opt('length') ?: 100)), 75, "\n", true) . "\n\n";
+            echo wordwrap(base64_encode(neoform\encrypt\lib::rand($this->opt('length') ?: 100)), 75, "\n", true) . "\n\n";
         }
     }
 

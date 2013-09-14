@@ -2,8 +2,8 @@
 <?php
 
     $root = realpath(__DIR__ . '/..');
-    require_once($root . '/library/core.php');
-    core::init([
+    require_once($root . '/library/neoform/core.php');
+    neoform\core::init([
         'extension'   => 'php',
         'environment' => 'sling',
 
@@ -13,7 +13,7 @@
         'website'     => "{$root}/www/",
     ]);
 
-    class encrypt_file extends cli_model {
+    class encrypt_file extends neoform\cli\model {
 
         public function init() {
             global $argv;
@@ -35,8 +35,10 @@
 
             $file_contents = file_get_contents($filepath);
 
+            $encrypt = neoform\core::encrypt();
+
             if (substr($filepath, -6) === '.crypt') {
-                $decrypted_string = encrypt_lib::decrypt($password, $file_contents);
+                $decrypted_string = $encrypt->decrypt($password, $file_contents);
 
                 if ($decrypted_string !== null) {
                     file_put_contents($filepath, $decrypted_string);
@@ -46,7 +48,7 @@
                     echo self::color_text('File failed to be decrypted', 'red', true) . "\n";
                 }
             } else {
-                $encrypted_string = encrypt_lib::encrypt($password, $file_contents);
+                $encrypted_string = $encrypt->encrypt($password, $file_contents);
                 if ($encrypted_string) {
                     file_put_contents($filepath, $encrypted_string);
                     rename($filepath, "{$filepath}.crypt");

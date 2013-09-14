@@ -2,9 +2,9 @@
 <?php
 
     $root = realpath(__DIR__ . '/..');
-    require_once($root . '/library/core.php');
+    require_once($root . '/library/neoform/core.php');
 
-    core::init([
+    neoform\core::init([
         'extension'   => 'php',
         'environment' => 'sling',
 
@@ -14,7 +14,7 @@
         'website'     => "{$root}/www/",
     ]);
 
-    class create_admin extends cli_model {
+    class create_admin extends neoform\cli\model {
 
         public function init() {
 
@@ -24,10 +24,10 @@
                     $email = self::readline();
 
                     try {
-                        if (user_api::email_available([ 'email' => $email, ])) {
+                        if (neoform\user\api::email_available([ 'email' => $email, ])) {
                             break;
                         }
-                    } catch (input_exception $e) {
+                    } catch (neoform\input\exception $e) {
                         echo self::color_text($e->email, 'red', true) . "\n";
                         continue;
                     }
@@ -42,7 +42,7 @@
                 $password2 = self::readline();
 
                 try {
-                    $user = user_api::insert([
+                    $user = neoform\user\api::insert([
                         'email'     => $email,
                         'password1' => $password1,
                         'password2' => $password2,
@@ -50,7 +50,7 @@
 
                     break;
 
-                } catch (input_exception $e) {
+                } catch (neoform\input\exception $e) {
                     if ($e->errors()) {
                         foreach ($e->errors() as $k => $v) {
                             echo self::color_text("{$k}: {$v}", 'red', true) . "\n";
@@ -60,7 +60,7 @@
 
             } while (1);
 
-            $roles = new acl_role_collection(null, entity::dao('acl_role')->all());
+            $roles = new neoform\acl\role\collection(null, neoform\entity::dao('acl\role')->all());
 
             $user_acl_roles = [];
             foreach ($roles as $role) {
@@ -70,7 +70,7 @@
                 ];
             }
 
-            entity::dao('user_acl_role')->insert_multi($user_acl_roles);
+            neoform\entity::dao('user\acl\role')->insert_multi($user_acl_roles);
 
             echo self::color_text('Done', 'green', true) . "\n";
         }

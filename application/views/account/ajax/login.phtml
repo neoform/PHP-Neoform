@@ -10,7 +10,7 @@
             e.preventDefault();
 
             $.ajax({
-                "url": "<?php echo core::http()->server('surl'); ?>account/ajax/login/verify?rc=<?php echo core::http()->get_ref(); ?>",
+                "url": "<?php echo neoform\core::http()->server('surl'); ?>account/ajax/login/verify?rc=<?php echo neoform\core::http()->get_ref(); ?>",
                 "data": {
                     "email":    $("input[name='email']", page.form).val(),
                     "password": $("input[name='password']", page.form).val(),

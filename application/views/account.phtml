@@ -25,7 +25,7 @@
                     </td>
                     <td width="10">&nbsp;</td>
                     <td>
-                        <a href="/account/email"><?php echo htmlspecialchars(core::auth()->user()->email); ?></a>
+                        <a href="/account/email"><?php echo htmlspecialchars(neoform\core::auth()->user()->email); ?></a>
                     </td>
                 </tr>
             </table>
@@ -47,7 +47,7 @@
                     </td>
                     <td width="10">&nbsp;</td>
                     <td>
-                        <?php echo htmlspecialchars(core::auth()->user_date()->created_on->format('D M j, Y')); ?>
+                        <?php echo htmlspecialchars(neoform\core::auth()->user_date()->created_on->format('D M j, Y')); ?>
                     </td>
                 </tr>
             </table>

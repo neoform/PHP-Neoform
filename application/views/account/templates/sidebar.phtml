@@ -2,8 +2,8 @@
     <div class="box">
         <div class="regular-body">
             <?php
-                $segment1 = core::http()->segment(1);
-                $segment2 = core::http()->segment(2);
+                $segment1 = neoform\core::http()->segment(1);
+                $segment2 = neoform\core::http()->segment(2);
             ?>
             <ul class="top">
                 <li class="<?php echo $segment2 === 'dashboard' ? ' active' : ''; ?>">

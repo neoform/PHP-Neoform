@@ -55,6 +55,7 @@
                     case 'bool':
                     case 'boolean':
                         $bools[] = $field;
+                        break;
 
                     default:
                         $strings[] = $field;

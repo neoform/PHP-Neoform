@@ -474,7 +474,7 @@
                         // And does not have permission - access denied
                         if (! $user->has_access($controller['resource_ids'])) {
                             if (! $this->config['silent_acccess_denied']) {
-                                neoform\controller::show403();
+                                neoform\http\controller::show403();
                                 return;
                             } else {
                                 // Skip any remaining controllers, and execute the last valid controller
@@ -560,10 +560,10 @@
 
                 // if no class set, 404
                 if (! $controller_class) {
-                    neoform\controller::show404();
+                    neoform\http\controller::show404();
                 } else {
                     if (! $action_name) {
-                        $action_name = neoform\controller::DEFAULT_ACTION;
+                        $action_name = neoform\http\controller::DEFAULT_ACTION;
                     }
 
                     $this->server_vars['controller'] = $controller_class;

@@ -1,6 +1,9 @@
 <?php
 
-    namespace neoform;
+    namespace neoform\http;
+
+    use neoform\core;
+    use neoform;
 
     /**
      * Controller base class
@@ -25,7 +28,7 @@
             core::locale()->set_namespace('main');
             core::output()->http_status_code(403);
 
-            $view             = new render\view;
+            $view             = new neoform\render\view;
             $view->meta_title = core::locale()->translate('Access Denied');
             $view->pre_header = core::locale()->translate('403: Forbidden');
             $view->header     = core::locale()->translate('Access Denied');
@@ -41,7 +44,7 @@
             core::locale()->set_namespace('main');
             core::output()->http_status_code(404);
 
-            $view             = new render\view;
+            $view             = new neoform\render\view;
             $view->meta_title = core::locale()->translate('Page Not Found');
             $view->pre_header = core::locale()->translate('Page Not Found');
             $view->header     = core::locale()->translate('404: Page Not Found');
@@ -58,7 +61,7 @@
             core::locale()->set_namespace('main');
             core::output()->http_status_code(500);
 
-            $view             = new render\view;
+            $view             = new neoform\render\view;
             $view->meta_title = core::locale()->translate('Server Error');
             $view->pre_header = core::locale()->translate('Server Error');
             $view->header     = core::locale()->translate('500: Server Error');
@@ -86,7 +89,7 @@
 
             $message = $message ? $message : (! $title ? 'There was a problem generating this page' : null);
 
-            $view             = new render\view;
+            $view             = new neoform\render\view;
             $view->meta_title = $hard_error ? 'Error' : core::locale()->translate('Error');
             $view->pre_header = $hard_error ? 'Error' : core::locale()->translate('Error');
             $view->header     = $hard_error ? ($title ? $title : 'Server Error') : core::locale()->translate($title ? $title : 'Server Error');

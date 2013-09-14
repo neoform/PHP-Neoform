@@ -4,44 +4,52 @@
 
     use neoform\input;
     use neoform\entity;
+    use neoform\locale;
 
     class api {
 
-        public static function insert(array $info) {
+        public static function update(array $info) {
 
             $input = new input\collection($info);
 
-            self::_validate_insert($input);
+            self::_validate($input);
 
             if ($input->is_valid()) {
-                return entity::dao('locale\key\message')->insert([
-                    'key_id' => $input->key_id->val(),
-                    'body'   => $input->body->val(),
-                    'locale' => $input->locale->val(),
-                ]);
-            }
-            throw $input->exception();
-        }
 
-        public static function update(model $locale_key_message, array $info, $crush=false) {
+                try {
+                    $message = new model(
+                        current(entity::dao('locale\key\message')->by_locale_key(
+                            $input->locale->val(),
+                            $input->key_id->val()
+                        ))
+                    );
+                    $locale_key_message = entity::dao('locale\key\message')->update(
+                        $message,
+                        array(
+                             'key_id' => $input->key_id->val(),
+                             'body'   => $input->body->val(),
+                             'locale' => $input->locale->val(),
+                        )
+                    );
+                } catch (exception $e) {
 
-            $input = new input\collection($info);
+                    $locale_key_message = entity::dao('locale\key\message')->insert(array(
+                        'key_id' => $input->key_id->val(),
+                        'body'   => $input->body->val(),
+                        'locale' => $input->locale->val(),
+                    ));
 
-            self::_validate_update($locale_key_message, $input);
+                    $message = null;
+                }
 
-            if ($input->is_valid()) {
-                return entity::dao('locale\key\message')->update(
-                    $locale_key_message,
-                    $input->vals(
-                        [
-                            'key_id',
-                            'body',
-                            'locale',
-                        ],
-                        $crush
-                    )
+                locale\lib::flush_by_locale_namespace(
+                    $locale_key_message->locale,
+                    $locale_key_message->locale_key()->locale_namespace()
                 );
+
+                return $message;
             }
+
             throw $input->exception();
         }
 
@@ -49,50 +57,19 @@
             return entity::dao('locale\key\message')->delete($locale_key_message);
         }
 
-        public static function _validate_insert(input\collection $input) {
+        public static function _validate(input\collection $input) {
+            $locales = [];
+            foreach (entity::dao('locale')->all() as $locale) {
+                $locales[] = $locale['iso2'];
+            }
 
-            // key_id
-            $input->key_id->cast('int')->digit(0, 4294967295)->callback(function($key_id) {
-                try {
-                    $key_id->data('model', new \neoform\locale\key\model($key_id->val()));
-                } catch (\neoform\locale\key\exception $e) {
-                    $key_id->errors($e->getMessage());
-                }
-            });
-
-            // body
             $input->body->cast('string')->length(1, 255);
-
-            // locale
-            $input->locale->cast('string')->length(1, 2)->callback(function($locale) {
+            $input->locale->cast('string')->tolower()->trim()->length(2)->in($locales);
+            $input->key_id->cast('integer')->digit(0, 4294967295)->callback(function($key_id) {
                 try {
-                    $locale->data('model', new \neoform\locale\model($locale->val()));
-                } catch (\neoform\locale\exception $e) {
-                    $locale->errors($e->getMessage());
-                }
-            });
-        }
-
-        public static function _validate_update(model $locale_key_message, input\collection $input) {
-
-            // key_id
-            $input->key_id->cast('int')->optional()->digit(0, 4294967295)->callback(function($key_id) {
-                try {
-                    $key_id->data('model', new \neoform\locale\key\model($key_id->val()));
-                } catch (\neoform\locale\key\exception $e) {
-                    $key_id->errors($e->getMessage());
-                }
-            });
-
-            // body
-            $input->body->cast('string')->optional()->length(1, 255);
-
-            // locale
-            $input->locale->cast('string')->optional()->length(1, 2)->callback(function($locale) {
-                try {
-                    $locale->data('model', new \neoform\locale\model($locale->val()));
-                } catch (\neoform\locale\exception $e) {
-                    $locale->errors($e->getMessage());
+                    $key_id->data('model', new locale\key\model($key_id->val()));
+                } catch (locale\key\exception $e) {
+                    $key_id->errors('invalid');
                 }
             });
         }

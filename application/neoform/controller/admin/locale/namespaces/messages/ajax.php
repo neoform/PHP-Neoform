@@ -29,7 +29,6 @@
                 case 'update':
                     try {
                         locale\key\message\api::update(
-                            new locale\key\message\model(core::http()->parameter('id')),
                             core::http()->posts()
                         );
                         $json->status = 'good';

@@ -209,7 +209,7 @@
 
                 switch ((string) core::context()) {
                     case 'web':
-                        controller::error(500, null, null, true);
+                        http\controller::error(500, null, null, true);
                         echo core::output()->send_headers()->body();
                         die;
 
@@ -247,7 +247,7 @@
                         case 'web':
                             if (core::is_loaded('http')) {
                                 try {
-                                    controller::error(500, null, null, true);
+                                    http\controller::error(500, null, null, true);
                                 } catch (\exception $e) {
                                     core::output()->body('Unexpected Error - There was a problem loading that page');
                                 }

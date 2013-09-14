@@ -2,7 +2,7 @@
 
     namespace neoform;
 
-    class controller_index extends controller {
+    class controller_index extends http\controller {
 
         public function __construct() {
             core::locale()->set_namespace('main');

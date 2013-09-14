@@ -222,7 +222,7 @@
             } else {
 
                 try {;
-                    neoform\controller::error($status_code, $title, $message);
+                    neoform\http\controller::error($status_code, $title, $message);
                 } catch (\exception $e) {
                     $this->body = $message;
                 }

@@ -4,8 +4,6 @@
 
     class instance {
 
-        use \neoform\core\instance;
-
         /**
          * @var bool is the locale translation system active
          */

@@ -16,7 +16,7 @@
         public static function dao($name) {
             if (! isset(self::$daos[$name])) {
                 $class_name = "\\neoform\\{$name}\\dao";
-                $config     = core::config()['entity'];
+                $config     = config::instance()['entity'];
 
                 if (isset($config['overrides'][$name])) {
                     self::$daos[$name] = new $class_name($config['overrides'][$name] + $config['defaults']);

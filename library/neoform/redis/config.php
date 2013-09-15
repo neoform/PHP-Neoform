@@ -2,9 +2,10 @@
 
     namespace neoform\redis;
 
-    use neoform;
+    use neoform\config\defaults;
+    use neoform\config\exception;
 
-    class config extends neoform\config\defaults {
+    class config extends defaults {
 
         protected function defaults() {
             return [
@@ -26,20 +27,20 @@
         /**
          * Validate the config values
          *
-         * @throws neoform\config\exception
+         * @throws exception
          */
         public function validate() {
 
             if (empty($this->config['default_pool_read'])) {
-                throw new neoform\config\exception('"default_pool_read" must be set');
+                throw new exception('"default_pool_read" must be set');
             }
 
             if (empty($this->config['default_pool_write'])) {
-                throw new neoform\config\exception('"default_pool_write" must be set');
+                throw new exception('"default_pool_write" must be set');
             }
 
             if (empty($this->config['pools']) || ! is_array($this->config['pools']) || ! $this->config['pools']) {
-                throw new neoform\config\exception('"pools" must contain at least one server');
+                throw new exception('"pools" must contain at least one server');
             }
         }
     }

@@ -2,7 +2,8 @@
 
     namespace neoform\render;
 
-    use neoform\core;
+    use neoform\http;
+    use neoform\output;
 
     class json {
 
@@ -10,16 +11,16 @@
 
         public function __construct(array $preload_vars=[]) {
             $this->vars = $preload_vars;
-            $this->vars['_ref'] = core::http()->get_ref();
+            $this->vars['_ref'] = http::instance()->get_ref();
         }
 
         public function execute() {
-            core::output()->output_type('json')->send_headers();
+            output::instance()->output_type('json')->send_headers();
             echo json_encode($this->vars);
         }
 
         public function render() {
-            core::output()->output_type('json')->body(json_encode($this->vars));
+            output::instance()->output_type('json')->body(json_encode($this->vars));
         }
 
         public function __get($k) {

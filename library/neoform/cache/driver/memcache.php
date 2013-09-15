@@ -32,7 +32,7 @@
          * @param integer $offset
          */
         public static function increment($pool, $key, $offset=1) {
-            neoform\core::memcache($pool)->increment($key, $offset);
+            neoform\memcache::instance($pool)->increment($key, $offset);
         }
 
         /**
@@ -43,7 +43,7 @@
          * @param integer $offset
          */
         public static function decrement($pool, $key, $offset=1) {
-            neoform\core::memcache($pool)->decrement($key, $offset);
+            neoform\memcache::instance($pool)->decrement($key, $offset);
         }
 
         /**
@@ -55,7 +55,7 @@
          * @return boolean
          */
         public static function exists($pool, $key) {
-            $memcache = neoform\core::memcache($pool);
+            $memcache = neoform\memcache::instance($pool);
             $memcache->get($key);
             return (bool) $memcache->row_found();
         }
@@ -71,7 +71,7 @@
          * @return array|null returns null if record does not exist.
          */
         public static function get($pool, $key) {
-            $memcache = neoform\core::memcache($pool);
+            $memcache = neoform\memcache::instance($pool);
             $data = $memcache->get($key);
             if ($memcache->row_found()) {
                 return [
@@ -89,7 +89,7 @@
          * @return mixed
          */
         public static function set($pool, $key, $data, $ttl=null) {
-            return neoform\core::memcache($pool)->set(
+            return neoform\memcache::instance($pool)->set(
                 $key,
                 $data,
                 $ttl
@@ -105,7 +105,7 @@
          * @return array
          */
         public static function get_multi($pool, array $keys) {
-            $mc_results = neoform\core::memcache($pool)->getMulti($keys);
+            $mc_results = neoform\memcache::instance($pool)->getMulti($keys);
             $results = [];
             foreach ($keys as $k => $key) {
                 if (array_key_exists($key, $mc_results)) {
@@ -125,7 +125,7 @@
          * @return mixed
          */
         public static function set_multi($pool, array $rows, $ttl=null) {
-            return neoform\core::memcache($pool)->setMulti($rows, $ttl);
+            return neoform\memcache::instance($pool)->setMulti($rows, $ttl);
         }
 
         /**
@@ -135,7 +135,7 @@
          * @param string $key
          */
         public static function delete($pool, $key) {
-            neoform\core::memcache($pool)->delete($key);
+            neoform\memcache::instance($pool)->delete($key);
         }
 
         /**
@@ -146,7 +146,7 @@
          */
         public static function delete_multi($pool, array $keys) {
             if ($keys) {
-                $mc = neoform\core::memcache($pool);
+                $mc = neoform\memcache::instance($pool);
                 foreach ($keys as $key) {
                     $mc->delete($key);
                 }
@@ -162,9 +162,9 @@
          */
         public static function expire($pool, $key, $ttl=0) {
             if ($ttl === 0) {
-                neoform\core::memcache($pool)->delete($key);
+                neoform\memcache::instance($pool)->delete($key);
             } else {
-                neoform\core::memcache($pool)->touch($key, $ttl);
+                neoform\memcache::instance($pool)->touch($key, $ttl);
             }
         }
 
@@ -177,7 +177,7 @@
          */
         public static function expire_multi($pool, array $keys, $ttl=0) {
             if ($keys) {
-                $mc = neoform\core::memcache($pool);
+                $mc = neoform\memcache::instance($pool);
                 if ($ttl === 0) {
                     foreach ($keys as $key) {
                         $mc->delete($key);

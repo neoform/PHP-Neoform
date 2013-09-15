@@ -6,17 +6,17 @@
 
         public function default_action() {
 
-            core::output()->output_type('json');
-            core::http()->ref();
+            output::instance()->output_type('json');
+            http::instance()->ref();
 
             $json = new render\json;
 
-            switch (core::http()->segment('action')) {
+            switch (http::instance()->segment('action')) {
 
                 case 'insert':
                     try {
                         user\api::insert(
-                            core::http()->posts()
+                            http::instance()->posts()
                         );
                         $json->status = 'good';
                     } catch (input\exception $e) {
@@ -29,8 +29,8 @@
                 case 'update':
                     try {
                         user\api::admin_update(
-                            new user\model(core::http()->parameter('id')),
-                            core::http()->posts()
+                            new user\model(http::instance()->parameter('id')),
+                            http::instance()->posts()
                         );
                         $json->status = 'good';
                     } catch (input\exception $e) {
@@ -43,7 +43,7 @@
                 case 'delete':
                     try {
                         user\api::delete(
-                            new user\model(core::http()->parameter('id'))
+                            new user\model(http::instance()->parameter('id'))
                         );
                         $json->status = 'good';
                     } catch (input\exception $e) {
@@ -56,8 +56,8 @@
                 case 'update_password':
                     try {
                         user\api::admin_password_update(
-                            new user\model(core::http()->parameter('id')),
-                            core::http()->posts()
+                            new user\model(http::instance()->parameter('id')),
+                            http::instance()->posts()
                         );
                         $json->status = 'good';
                     } catch (input\exception $e) {
@@ -70,7 +70,7 @@
                 case 'update_groups':
                     try {
                         acl\group\user\api::insert(
-                            core::http()->posts()
+                            http::instance()->posts()
                         );
                         $json->status = 'good';
                     } catch (input\exception $e) {
@@ -83,7 +83,7 @@
                 case 'update_roles':
                     try {
                         user\acl\role\api::insert(
-                            core::http()->posts()
+                            http::instance()->posts()
                         );
                         $json->status = 'good';
                     } catch (input\exception $e) {

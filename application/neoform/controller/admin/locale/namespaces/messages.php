@@ -10,7 +10,7 @@
 
             $view->meta_title = 'Locale Translations';
 
-            $namespace = new locale\nspace\model(core::http()->parameter('id'));
+            $namespace = new locale\nspace\model(http::instance()->parameter('id'));
 
             $keys = new locale\key\collection(entity::dao('locale\key')->by_namespace($namespace->id));
 

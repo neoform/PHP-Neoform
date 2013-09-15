@@ -43,41 +43,41 @@
          */
         public function execute() {
             try {
-                core::http(
+                http::load([
                     $this->router_path,
                     $this->get,
                     $this->post,
                     $this->files,
                     $this->server,
                     $this->cookies
-                )->execute();
+                ])->execute();
 
             // Error Exception
             } catch (error\exception $e) {
-                core::output()->error($e->message(), $e->description());
+                output::instance()->error($e->message(), $e->description());
 
             } catch (user\status\exception $e) {
-                auth\api::logout(core::auth());
-                core::output()->redirect();
+                auth\api::logout(auth::instance());
+                output::instance()->redirect();
 
             // Model Exception
             } catch (entity\exception $e) {
-                core::output()->error($e->message(), $e->description());
+                output::instance()->error($e->message(), $e->description());
 
             // Force user to login exception
             } catch (redirect\login\exception $e) {
                 if ($e->url() !== null) {
-                    core::http_flash()->set('login_bounce', $e->url());
+                    http\flash::instance()->set('login_bounce', $e->url());
                 }
                 if ($e->message() !== null) {
-                    core::http_flash()->set('login_message', $e->message());
+                    http\flash::instance()->set('login_message', $e->message());
                 }
-                if (core::output()->output_type() === output\instance::JSON) {
+                if (output::instance()->output_type() === output\instance::JSON) {
                     $json = new render\json;
                     $json->status = 'login';
                     $json->render();
                 } else {
-                    core::output()->redirect('account/login');
+                    output::instance()->redirect('account/login');
                 }
 
             // Force user to enter a captcha exception
@@ -96,7 +96,7 @@
          * @return array of headers
          */
         public function get_headers() {
-            return core::output()->get_headers();
+            return output::instance()->get_headers();
         }
 
         /**
@@ -105,7 +105,7 @@
          * @return bootstrap
          */
         public function send_headers() {
-            core::output()->send_headers();
+            output::instance()->send_headers();
             return $this;
         }
 
@@ -115,7 +115,7 @@
          * @return string
          */
         public function body() {
-            return (string) core::output()->body();
+            return (string) output::instance()->body();
         }
 
         /**
@@ -124,6 +124,6 @@
          * @return string
          */
         public function __tostring() {
-            return (string) core::output()->body();
+            return (string) output::instance()->body();
         }
     }

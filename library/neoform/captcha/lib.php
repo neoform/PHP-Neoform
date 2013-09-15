@@ -11,19 +11,19 @@
         const RECAPTCHA_VERIFY_SERVER         = "www.google.com";
 
         public static function public_key() {
-            return neoform\core::config('recaptcha')->api['public'];
+            return neoform\config::instance('recaptcha')->api['public'];
         }
 
         //only run this once the user has entered a valid captcha - validity of session is 60 seconds
         public static function session_make() {
-            neoform\core::http_flash()->set('captcha', 1, 60);
+            neoform\http\flash::instance()->set('captcha', 1, 60);
         }
 
         public static function session_validate() {
 
-            $return = (bool) neoform\core::http_flash()->get('captcha');
+            $return = (bool) neoform\http\flash::instance()->get('captcha');
             if ($return) {
-                neoform\core::http_flash()->del('captcha');
+                neoform\http\flash::instance()->del('captcha');
             }
 
             return $return;
@@ -109,10 +109,10 @@
                $errorpart = "&amp;error={$error}";
             }
 
-            return '<script type="text/javascript" src="'. $server . '/challenge?k=' . neoform\core::config('recaptcha')->api['public'] . $errorpart . '"></script>
+            return '<script type="text/javascript" src="'. $server . '/challenge?k=' . neoform\config::instance('recaptcha')->api['public'] . $errorpart . '"></script>
 
             <noscript>
-                  <iframe src="'. $server . '/noscript?k=' . neoform\core::config('recaptcha')->api['public'] . $errorpart . '" height="300" width="500" frameborder="0"></iframe><br/>
+                  <iframe src="'. $server . '/noscript?k=' . neoform\config::instance('recaptcha')->api['public'] . $errorpart . '" height="300" width="500" frameborder="0"></iframe><br/>
                   <textarea name="recaptcha_challenge_field" rows="3" cols="40"></textarea>
                   <input type="hidden" name="recaptcha_response_field" value="manual_challenge"/>
             </noscript>';
@@ -146,7 +146,7 @@
                 self::RECAPTCHA_VERIFY_SERVER,
                 "/recaptcha/api/verify",
                 [
-                    'privatekey' => neoform\core::config('recaptcha')->api['private'],
+                    'privatekey' => neoform\config::instance('recaptcha')->api['private'],
                     'remoteip'   => $remoteip,
                     'challenge'  => $challenge,
                     'response'   => $response,
@@ -239,7 +239,7 @@
             $ky = @pack('H*', self::EMAIL_PRIVATE_KEY);
             $cryptmail = self::_recaptcha_aes_encrypt($email, self::EMAIL_PRIVATE_KEY);
 
-            return "http://www.google.com/recaptcha/mailhide/d?k=" . core::config('recaptcha')->api['public'] . "&c=" . self::_recaptcha_mailhide_urlbase64($cryptmail);
+            return "http://www.google.com/recaptcha/mailhide/d?k=" . config::instance('recaptcha')->api['public'] . "&c=" . self::_recaptcha_mailhide_urlbase64($cryptmail);
         }
 
         /**

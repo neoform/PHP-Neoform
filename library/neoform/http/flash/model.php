@@ -8,9 +8,7 @@
      * Short term data storage - useful for very short lived sessions, data is highly volatile and not guarantied to
      * exist on read. Best uses are for redirect session data.
      */
-    class instance {
-
-        use neoform\core\instance;
+    class model {
 
         protected $session_engine;
         protected $hash;

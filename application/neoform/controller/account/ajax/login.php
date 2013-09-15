@@ -6,7 +6,7 @@
 
         public function default_action() {
 
-            switch (core::http()->segment('action')) {
+            switch (http::instance()->segment('action')) {
                 case 'verify':
                     $this->verify();
                     break;
@@ -17,23 +17,23 @@
 
             $json = new render\json;
 
-            if (core::auth()->logged_in()) {
+            if (auth::instance()->logged_in()) {
                 $json->status = 'good';
-                if ($bounce = core::http_flash()->get('login_bounce')) {
+                if ($bounce = http\flash::instance()->get('login_bounce')) {
                     $json->bounce = current($bounce);
-                    core::http_flash()->del('login_bounce');
+                    http\flash::instance()->del('login_bounce');
                 }
             } else {
                 try {
                     auth\api::login(
-                        new site\model(core::config()['core']['site_id']),
-                        core::http()->posts()
+                        new site\model(config::instance()['core']['site_id']),
+                        http::instance()->posts()
                     );
                     $json->status = 'good';
 
-                    if ($bounce = core::http_flash()->get('login_bounce')) {
+                    if ($bounce = http\flash::instance()->get('login_bounce')) {
                         $json->bounce = current($bounce);
-                        core::http_flash()->del('login_bounce');
+                        http\flash::instance()->del('login_bounce');
                     }
                 } catch (input\exception $e) {
                     sleep(1);

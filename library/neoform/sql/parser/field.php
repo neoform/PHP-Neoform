@@ -2,7 +2,7 @@
 
     namespace neoform\sql\parser;
 
-    use neoform;
+    use neoform\sql;
 
     /**
      * An object representation of a field in an SQL table
@@ -269,7 +269,7 @@
          * @return bool
          */
         public function is_field_lookupable() {
-            return neoform\sql\parser::is_field_lookupable($this);
+            return sql\parser::is_field_lookupable($this);
         }
 
         /**

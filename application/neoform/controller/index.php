@@ -5,7 +5,7 @@
     class controller_index extends http\controller {
 
         public function __construct() {
-            core::locale()->set_namespace('main');
+            locale::instance()->set_namespace('main');
         }
 
         public function default_action() {

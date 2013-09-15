@@ -83,7 +83,7 @@
          * @return bool
          */
         public function is_active() {
-            return isset(\neoform\core::config()['auth']['login_account_statuses'][$this->status_id]);
+            return isset(\neoform\config::instance()['auth']['login_account_statuses'][$this->status_id]);
         }
 
         /**

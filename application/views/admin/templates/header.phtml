@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
     <head>
-        <title><?php echo htmlspecialchars($this->meta_title ? $this->meta_title : neoform\core::config()['core']['site_name']); ?></title>
+        <title><?php echo htmlspecialchars($this->meta_title ? $this->meta_title : neoform\config::instance()['core']['site_name']); ?></title>
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
         <?php if ($this->meta_description): ?>
             <meta name="description" content="<?php echo htmlspecialchars($this->meta_description); ?>" />
@@ -10,7 +10,7 @@
             <meta name="keywords" content="<?php echo htmlspecialchars($this->meta_keywords); ?>" />
         <?php endif; ?>
         <?php if ($this->canonical_url): ?>
-            <link rel="canonical" href="<?php echo neoform\core::http()->server('url') . $this->canonical_url; ?>">
+            <link rel="canonical" href="<?php echo neoform\http::instance()->server('url') . $this->canonical_url; ?>">
         <?php endif; ?>
 
         <link rel="shortcut icon" href="#" />
@@ -29,7 +29,7 @@
         <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
 
         <script>
-            Core.ref("<?php echo neoform\core::http()->get_ref(); ?>");
+            Core.ref("<?php echo neoform\http::instance()->get_ref(); ?>");
             <?php if ($this->locale->get_default() !== $this->locale->get()): ?>
                 Core.locale("<?php echo $this->locale->get(); ?>");
             <?php endif; ?>
@@ -38,11 +38,11 @@
     <body>
         <div class="default">
             <div class="head">
-                <div class="logo"><label><?php echo htmlspecialchars(neoform\core::config()['core']['site_name']); ?></label></div>
+                <div class="logo"><label><?php echo htmlspecialchars(neoform\config::instance()['core']['site_name']); ?></label></div>
                 <nav>
                     <ul>
-                        <?php if (neoform\core::auth()->logged_in()): ?>
-                            <li><a href="<?php echo $this->locale->route('/account'); ?>"><?php echo htmlspecialchars(neoform\core::auth()->user()->email); ?></a></li>
+                        <?php if (neoform\auth::instance()->logged_in()): ?>
+                            <li><a href="<?php echo $this->locale->route('/account'); ?>"><?php echo htmlspecialchars(neoform\auth::instance()->user()->email); ?></a></li>
                             <li><a href="<?php echo $this->locale->route('/account/logout'); ?>" name="logout"><?php echo htmlspecialchars($this->locale->translate('Logout', 'admin')); ?></a></li>
                         <?php else: ?>
                             <li><a href="<?php echo $this->locale->route('/account/login'); ?>" name="login"><?php echo htmlspecialchars($this->locale->translate('Login', 'admin')); ?></a></li>

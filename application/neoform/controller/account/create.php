@@ -7,19 +7,19 @@
         public function default_action() {
 
             //if already logged in
-            if (core::auth()->logged_in()) {
-                $bounce = core::http_flash()->get('login_bounce');
-                core::output()->redirect($bounce ? '/' . current($bounce) : null);
+            if (auth::instance()->logged_in()) {
+                $bounce = http\flash::instance()->get('login_bounce');
+                output::instance()->redirect($bounce ? '/' . current($bounce) : null);
             } else {
                 // view variables
                 $view = new render\view;
 
-                if ($message = core::http_flash()->get('login_message')) {
+                if ($message = http\flash::instance()->get('login_message')) {
                     $view->message = current($message);
-                    core::http_flash()->del('login_message');
+                    http\flash::instance()->del('login_message');
                 }
 
-                if ($bounce = core::http_flash()->get('login_bounce')) {
+                if ($bounce = http\flash::instance()->get('login_bounce')) {
                     $view->bounce = current($bounce);
                 }
 

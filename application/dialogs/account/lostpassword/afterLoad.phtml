@@ -8,7 +8,7 @@
         var emailEl = $("input[name='email']", elements.dialog);
 
         Core.ajax({
-            "url": "<?php echo neoform\core::http()->server('surl'); ?>account/ajax/password_lost",
+            "url": "<?php echo neoform\http::instance()->server('surl'); ?>account/ajax/password_lost",
             "data": {
                 "email": emailEl.val()
             },

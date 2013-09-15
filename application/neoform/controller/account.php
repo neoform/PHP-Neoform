@@ -5,10 +5,10 @@
     class controller_account extends http\controller {
 
         public function __construct() {
-            core::locale()->set_namespace('main');
+            locale::instance()->set_namespace('main');
 
-            if (! core::auth()->logged_in()) {
-                throw new redirect\login\exception(core::http()->server('query'));
+            if (! auth::instance()->logged_in()) {
+                throw new redirect\login\exception(http::instance()->server('query'));
             }
         }
 

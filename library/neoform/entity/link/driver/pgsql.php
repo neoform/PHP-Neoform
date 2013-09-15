@@ -6,7 +6,7 @@
     use neoform\entity\record;
     use neoform\entity\exception;
     use neoform\entity;
-    use neoform\core;
+    use neoform\sql;
     use PDO;
 
     class pgsql implements link\driver {
@@ -52,7 +52,7 @@
                 }
             }
 
-            $rs = core::sql($pool)->prepare("
+            $rs = sql::instance($pool)->prepare("
                 SELECT " . join(',', $select_fields) . "
                 FROM \"" . self::table($self::TABLE) . "\"
                 " . (count($where) ? "WHERE " . join(" AND ", $where) : "") . "
@@ -111,7 +111,7 @@
                 )";
             }
 
-            $rs = core::sql($pool)->prepare(
+            $rs = sql::instance($pool)->prepare(
                 join(' UNION ALL ', $queries)
             );
             $rs->execute($vals);
@@ -182,7 +182,7 @@
             }
             $order_by = join(', ', $order);
 
-            $rs = core::sql($pool)->prepare("
+            $rs = sql::instance($pool)->prepare("
                 SELECT \"{$quoted_foreign_table}\".\"{$foreign_pk}\"
                 FROM \"{$quoted_table}\"
                 INNER JOIN \"{$quoted_foreign_table}\"
@@ -267,7 +267,7 @@
                 )";
             }
 
-            $rs = core::sql($pool)->prepare(
+            $rs = sql::instance($pool)->prepare(
                 join(' UNION ALL ', $queries)
             );
             $rs->execute($vals);
@@ -303,7 +303,7 @@
                 }
             }
 
-            $rs = core::sql($pool)->prepare("
+            $rs = sql::instance($pool)->prepare("
                 SELECT COUNT(*) \"num\"
                 FROM \"" . self::table($dao::TABLE) . "\"
                 " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
@@ -347,7 +347,7 @@
                 )";
             }
 
-            $rs = core::sql($pool)->prepare(join(' UNION ALL ', $queries));
+            $rs = sql::instance($pool)->prepare(join(' UNION ALL ', $queries));
             $rs->execute($vals);
 
             foreach ($rs->fetchAll() as $row) {
@@ -378,7 +378,7 @@
                 $insert_fields[] = "\"{$k}\"";
             }
 
-            $insert = core::sql($pool)->prepare("
+            $insert = sql::instance($pool)->prepare("
                 INSERT INTO
                 \"" . self::table($self::TABLE) . "\"
                 ( " . join(', ', $insert_fields) . " )
@@ -387,7 +387,7 @@
             ");
 
             if (! $insert->execute(array_values($info))) {
-                $error = core::sql($pool)->errorInfo();
+                $error = sql::instance($pool)->errorInfo();
                 throw new exception("Insert failed - {$error[0]}: {$error[2]}");
             }
         }
@@ -410,7 +410,7 @@
 
             $insert_fields = [];
             $info          = current($infos);
-            $sql           = core::sql($pool);
+            $sql           = sql::instance($pool);
             $multi         = count($infos) > 1;
 
             if ($multi) {
@@ -471,12 +471,12 @@
                 }
             }
 
-            if (! core::sql($pool)->prepare("
+            if (! sql::instance($pool)->prepare("
                 UPDATE \"" . self::table($self::TABLE) . "\"
                 SET " . join(", \n", $update_fields) . "
                 WHERE " . join(" AND \n", $where_fields) . "
             ")->execute($vals)) {
-                $error = core::sql($pool)->errorInfo();
+                $error = sql::instance($pool)->errorInfo();
                 throw new exception("Update failed - {$error[0]}: {$error[2]}");
             }
         }
@@ -503,11 +503,11 @@
                 }
             }
 
-            if (! core::sql($pool)->prepare("
+            if (! sql::instance($pool)->prepare("
                 DELETE FROM \"" . self::table($self::TABLE) . "\"
                 WHERE " . join(" AND ", $where) . "
             ")->execute($vals)) {
-                $error = core::sql($pool)->errorInfo();
+                $error = sql::instance($pool)->errorInfo();
                 throw new exception("Delete failed - {$error[0]}: {$error[2]}");
             }
         }
@@ -538,11 +538,11 @@
                 $where[] = "(" . join(" AND ", $w) . ")";
             }
 
-            if (! core::sql($pool)->prepare("
+            if (! sql::instance($pool)->prepare("
                 DELETE FROM \"" . self::table($self::TABLE) . "\"
                 WHERE " . join(" OR ", $where) . "
             ")->execute($vals)) {
-                $error = core::sql($pool)->errorInfo();
+                $error = sql::instance($pool)->errorInfo();
                 throw new exception("Delete multi failed - {$error[0]}: {$error[2]}");
             }
         }

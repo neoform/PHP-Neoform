@@ -2,6 +2,8 @@
 
     namespace neoform\render;
 
+    use neoform\output;
+    use neoform\http;
     use neoform\core;
 
     class dialog {
@@ -15,11 +17,11 @@
             $this->path = $path;
             $this->vars = $preload_vars;
 
-            $this->vars['_ref'] = core::http()->get_ref();
+            $this->vars['_ref'] = http::instance()->get_ref();
         }
 
         public function render() {
-            core::output()->output_type('json')->body(json_encode($this->vars));
+            output::instance()->output_type('json')->body(json_encode($this->vars));
         }
 
         public function __tostring() {

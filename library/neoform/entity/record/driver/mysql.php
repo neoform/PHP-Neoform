@@ -4,7 +4,7 @@
 
     use neoform\entity\record;
     use neoform\entity;
-    use neoform\core;
+    use neoform\sql;
 
     use PDO;
 
@@ -36,7 +36,7 @@
          * @return mixed
          */
         public static function record(record\dao $self, $pool, $pk) {
-            $info = core::sql($pool)->prepare("
+            $info = sql::instance($pool)->prepare("
                 SELECT *
                 FROM `" . self::table($self::TABLE) . "`
                 WHERE `" . $self::PRIMARY_KEY . "` = ?
@@ -61,7 +61,7 @@
          * @return array
          */
         public static function records(record\dao $self, $pool, array $pks) {
-            $infos_rs = core::sql($pool)->prepare("
+            $infos_rs = sql::instance($pool)->prepare("
                 SELECT *
                 FROM `" . self::table($self::TABLE) . "`
                 WHERE `" . $self::PRIMARY_KEY . "` IN (" . join(',', \array_fill(0, count($pks), '?')) . ")
@@ -103,7 +103,7 @@
                 }
             }
 
-            $rs = core::sql($pool)->prepare("
+            $rs = sql::instance($pool)->prepare("
                 SELECT COUNT(0) `num`
                 FROM `" . self::table($self::TABLE) . "`
                 " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
@@ -147,7 +147,7 @@
                 )";
             }
 
-            $rs = core::sql($pool)->prepare(join(' UNION ALL ', $queries));
+            $rs = sql::instance($pool)->prepare(join(' UNION ALL ', $queries));
             $rs->execute($vals);
 
             foreach ($rs->fetchAll() as $row) {
@@ -182,7 +182,7 @@
                 }
             }
 
-            $info = core::sql($pool)->prepare("
+            $info = sql::instance($pool)->prepare("
                 SELECT *
                 FROM `" . self::table($self::TABLE) . "`
                 " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
@@ -219,7 +219,7 @@
                 }
             }
 
-            $rs = core::sql($pool)->prepare("
+            $rs = sql::instance($pool)->prepare("
                 SELECT `{$pk}`
                 FROM `" . self::table($self::TABLE) . "`
                 " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
@@ -268,7 +268,7 @@
                 )";
             }
 
-            $rs = core::sql($pool)->prepare(
+            $rs = sql::instance($pool)->prepare(
                 join(' UNION ALL ', $queries)
             );
 
@@ -327,7 +327,7 @@
             }
             $order_by = join(', ', $order);
 
-            $rs = core::sql($pool)->prepare("
+            $rs = sql::instance($pool)->prepare("
                 SELECT `{$pk}`
                 FROM `" . self::table($self::TABLE) . "`
                 " . ($where ? " WHERE " . join(" AND ", $where) : '') . "
@@ -404,7 +404,7 @@
                 )";
             }
 
-            $rs = core::sql($pool)->prepare(
+            $rs = sql::instance($pool)->prepare(
                 join(' UNION ALL ', $queries)
             );
 
@@ -435,7 +435,7 @@
                 $insert_fields[] = "`{$key}`";
             }
 
-            $sql = core::sql($pool);
+            $sql = sql::instance($pool);
             $insert = $sql->prepare("
                 " . ($replace ? 'REPLACE' : 'INSERT') . " INTO `" . self::table($self::TABLE) . "`
                 ( " . join(', ', $insert_fields) . " )
@@ -469,7 +469,7 @@
          * @throws entity\exception
          */
         public static function insert_multi(record\dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace) {
-            $sql = core::sql($pool);
+            $sql = sql::instance($pool);
 
             if ($keys_match) {
                 $insert_fields = [];
@@ -580,12 +580,12 @@
 
             $info[$pk] = $model->$pk;
 
-            if (! core::sql($pool)->prepare("
+            if (! sql::instance($pool)->prepare("
                 UPDATE `" . self::table($self::TABLE) . "`
                 SET " . join(", \n", $update_fields) . "
                 WHERE `{$pk}` = :{$pk}
             ")->execute($info)) {
-                $error = core::sql($pool)->errorInfo();
+                $error = sql::instance($pool)->errorInfo();
                 throw new entity\exception("Update failed - {$error[0]}: {$error[2]}");
             }
         }
@@ -601,14 +601,14 @@
          * @throws entity\exception
          */
         public static function delete(record\dao $self, $pool, $pk, record\model $model) {
-            $delete = core::sql($pool)->prepare("
+            $delete = sql::instance($pool)->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE `{$pk}` = ?
             ");
             if (! $delete->execute([
                 $model->$pk,
             ])) {
-                $error = core::sql($pool)->errorInfo();
+                $error = sql::instance($pool)->errorInfo();
                 throw new entity\exception("Delete failed - {$error[0]}: {$error[2]}");
             }
         }
@@ -624,14 +624,14 @@
          * @throws entity\exception
          */
         public static function delete_multi(record\dao $self, $pool, $pk, record\collection $collection) {
-            $delete = core::sql($pool)->prepare("
+            $delete = sql::instance($pool)->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE `{$pk}` IN (" . join(',', \array_fill(0, count($collection), '?')) . ")
             ");
             if (! $delete->execute(
                 array_values($collection->field($pk))
             )) {
-                $error = core::sql($pool)->errorInfo();
+                $error = sql::instance($pool)->errorInfo();
                 throw new entity\exception("Delete multi failed - {$error[0]}: {$error[2]}");
             }
         }

@@ -5,17 +5,17 @@
     class controller_admin_group_ajax extends controller_admin {
 
         public function default_action() {
-            core::output()->output_type('json');
-            core::http()->ref();
+            output::instance()->output_type('json');
+            http::instance()->ref();
 
             $json = new render\json;
 
-            switch (core::http()->segment('action')) {
+            switch (http::instance()->segment('action')) {
 
                 case 'insert':
                     try {
                         acl\group\api::insert(
-                            core::http()->posts()
+                            http::instance()->posts()
                         );
                         $json->status = 'good';
                     } catch (input\exception $e) {
@@ -28,8 +28,8 @@
                 case 'update':
                     try {
                         acl\group\api::update(
-                            new acl\group\model(core::http()->parameter('id')),
-                            core::http()->posts()
+                            new acl\group\model(http::instance()->parameter('id')),
+                            http::instance()->posts()
                         );
                         $json->status = 'good';
                     } catch (input\exception $e) {
@@ -44,7 +44,7 @@
                 case 'delete':
                     try {
                         acl\group\api::delete(
-                            new acl\group\model(core::http()->parameter('id'))
+                            new acl\group\model(http::instance()->parameter('id'))
                         );
                         $json->status = 'good';
                     } catch (input\exception $e) {
@@ -57,7 +57,7 @@
                 case 'update_roles':
                     try {
                         user\acl\role\api::insert(
-                            core::http()->posts()
+                            http::instance()->posts()
                         );
                         $json->status = 'good';
                     } catch (input\exception $e) {

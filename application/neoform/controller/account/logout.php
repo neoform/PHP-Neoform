@@ -6,17 +6,17 @@
 
         public function default_action() {
 
-            core::http()->ref();
+            http::instance()->ref();
 
             //verify
-            if (core::auth()->logged_in()) {
+            if (auth::instance()->logged_in()) {
                 try {
-                    auth\api::logout(core::auth());
+                    auth\api::logout(auth::instance());
                 } catch (input\exception $e) {
 
                 }
             }
 
-            core::output()->redirect();
+            output::instance()->redirect();
         }
     }

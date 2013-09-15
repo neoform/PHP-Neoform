@@ -8,18 +8,18 @@
 
             $json = new render\json;
 
-            if (core::auth()->logged_in()) {
+            if (auth::instance()->logged_in()) {
                 try {
                     address\lib::make(
-                        core::auth()->user_id,
+                        auth::instance()->user_id,
                         [
-                            'label'       => core::http()->post('label'),
-                            'address1'    => core::http()->post('address1'),
-                            'address2'    => core::http()->post('address2'),
-                            'country_id'  => core::http()->post('country'),
-                            'province_id' => core::http()->post('province'),
-                            'city_id'     => core::http()->post('city'),
-                            'postal'      => core::http()->post('postal'),
+                            'label'       => http::instance()->post('label'),
+                            'address1'    => http::instance()->post('address1'),
+                            'address2'    => http::instance()->post('address2'),
+                            'country_id'  => http::instance()->post('country'),
+                            'province_id' => http::instance()->post('province'),
+                            'city_id'     => http::instance()->post('city'),
+                            'postal'      => http::instance()->post('postal'),
                         ]
                     );
                     $json->status = 'good';

@@ -95,7 +95,7 @@
 
                 if (email && email.length) {
                     $.ajax({
-                        "url": "/account/ajax/check/email?rc=<?php echo neoform\core::http()->get_ref(); ?>",
+                        "url": "/account/ajax/check/email?rc=<?php echo neoform\http::instance()->get_ref(); ?>",
                         "data": {
                             "email": email
                         },

@@ -6,7 +6,7 @@
 
         public function default_action() {
 
-            if (core::auth()->logged_in()) {
+            if (auth::instance()->logged_in()) {
                 $json = new render\json;
                 $json->status = 'close';
                 $json->render();
@@ -14,9 +14,9 @@
 
                 $dialog = new render\dialog('account/login');
 
-                if ($message = core::http_flash()->get('login_message')) {
+                if ($message = http\flash::instance()->get('login_message')) {
                     $dialog->message = current($message);
-                    core::http_flash()->del('login_message');
+                    http\flash::instance()->del('login_message');
                 }
 
                 $dialog

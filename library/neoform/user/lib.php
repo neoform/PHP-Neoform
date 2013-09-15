@@ -2,14 +2,14 @@
 
     namespace neoform\user;
 
-    use neoform\core;
+    use neoform\config;
 
     class lib {
 
         public static function default_status() {
             static $status;
             if ($status === null) {
-                $status = new status\model(core::config()['auth']['default_user_account_status_id']);
+                $status = new status\model(config::instance()['auth']['default_user_account_status_id']);
             }
             return $status;
         }
@@ -17,17 +17,17 @@
         public static function default_hashmethod() {
             static $hashmethod;
             if ($hashmethod === null) {
-                $hashmethod = new hashmethod\model(core::config()['auth']['default_hash_method_id']);
+                $hashmethod = new hashmethod\model(config::instance()['auth']['default_hash_method_id']);
             }
             return $hashmethod;
         }
 
         public static function default_hashmethod_cost() {
-            return (int) core::config()['auth']['default_hash_method_cost'];
+            return (int) config::instance()['auth']['default_hash_method_cost'];
         }
 
         public static function max_salt_length() {
-            return (int) core::config()['auth']['max_salt_length'];
+            return (int) config::instance()['auth']['max_salt_length'];
         }
 
         public static function generate_salt() {
@@ -37,7 +37,7 @@
                 do {
                     $ord = mt_rand(32, 126);
                 } while ($ord === 92); //backslashes are evil
-                $salt .= \chr($ord);
+                $salt .= chr($ord);
             }
             return $salt;
         }
@@ -49,6 +49,6 @@
                 $user->password_cost
             );
 
-            return \strcmp($user->password_hash, $hash) === 0;
+            return strcmp($user->password_hash, $hash) === 0;
         }
     }

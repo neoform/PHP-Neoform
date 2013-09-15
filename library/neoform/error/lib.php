@@ -6,7 +6,10 @@
 
     class lib {
 
-        public static function log(\exception $e) {
+        public static function log(\exception $e, $level='fatal') {
+
+            // This prevents obnoxious timezone warnings if the timezone has not been set
+            date_default_timezone_set(@date_default_timezone_get());
 
             try {
                 //trash anything that was going to be outputted

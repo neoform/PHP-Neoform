@@ -4,15 +4,18 @@
 
     use neoform\input;
     use neoform\entity;
-    use neoform\core;
+    use neoform\auth;
     use neoform\user;
+    use neoform\redirect;
+    use neoform\config;
+    use neoform\http;
 
     class api {
 
         public static function lost(\neoform\site\model $site, array $info) {
 
-            if (core::auth()->logged_in()) {
-                throw new \neoform\redirect\exception;
+            if (auth::instance()->logged_in()) {
+                throw new redirect\exception;
             }
 
             $input = new input\collection($info);
@@ -50,8 +53,8 @@
 
                 //email the request to the friend to tell them the good news
                 $email            = new \neoform\email\model('password/lost');
-                $email->url       = core::http()->server('surl') . "account/passwordreset/{$hash}";
-                $email->site_name = core::config()['core']['site_name'];
+                $email->url       = http::instance()->server('surl') . "account/passwordreset/{$hash}";
+                $email->site_name = config::instance()['core']['site_name'];
 
                 try {
                     $email->send($user->email, 'html');
@@ -65,7 +68,7 @@
         }
 
         public static function find(\neoform\site\model $site, $hash) {
-            if (core::auth()->logged_in()) {
+            if (auth::instance()->logged_in()) {
                 throw new \neoform\redirect\exception;
             }
 

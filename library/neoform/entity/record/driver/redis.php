@@ -4,7 +4,7 @@
 
     use neoform\entity\record;
     use neoform\entity;
-    use neoform\core;
+    use neoform;
 
     class redis implements record\driver {
 
@@ -22,7 +22,7 @@
 
             $key = '_db_:' . $self::TABLE . ":{$pk}";
 
-            $redis = core::redis($pool);
+            $redis = neoform\redis::instance($pool);
             $data  = $redis->get($key);
 
             // since false is potentially a valid result being stored in redis, we must check if the key exists
@@ -49,7 +49,7 @@
                 $keys[$k] = '_db_:' . $self::TABLE . ":{$pk}";
             }
 
-            $redis = core::redis($pool);
+            $redis = neoform\redis::instance($pool);
 
             // Redis returns the results in order - if the key doesn't exist, false is returned - this problematic
             // since false might be an actual value being stored... therefore we check if the key exists if false is
@@ -190,12 +190,12 @@
          * @throws entity\exception
          */
         public static function insert(record\dao $self, $pool, array $info, $autoincrement, $replace) {
-            if (! core::redis($pool)->set(
+            if (! neoform\redis::instance($pool)->set(
                 '_db_:' . $self::TABLE . ':' . $info[$self::PRIMARY_KEY],
                 $info
             )) {
-                $message = core::redis($pool)->getLastError();
-                core::redis($pool)->clearLastError();
+                $message = neoform\redis::instance($pool)->getLastError();
+                neoform\redis::instance($pool)->clearLastError();
                 throw new entity\exception("Insert failed - {$message}");
             }
 
@@ -222,9 +222,9 @@
                 $inserts['_db_:' . $self::TABLE . ':' . $info[$self::PRIMARY_KEY]] = $info;
             }
 
-            if (! core::redis($pool)->mset($inserts)) {
-                $message = core::redis($pool)->getLastError();
-                core::redis($pool)->clearLastError();
+            if (! neoform\redis::instance($pool)->mset($inserts)) {
+                $message = neoform\redis::instance($pool)->getLastError();
+                neoform\redis::instance($pool)->clearLastError();
                 throw new entity\exception("Insert multi failed - {$message}");
             }
 
@@ -244,12 +244,12 @@
          * @throws entity\exception
          */
         public static function update(record\dao $self, $pool, $pk, record\model $model, array $info) {
-            if (! core::redis($pool)->set(
+            if (! neoform\redis::instance($pool)->set(
                 '_db_:' . $self::TABLE . ":{$model->$pk}",
                 array_merge($model->export(), $info)
             )) {
-                $message = core::redis($pool)->getLastError();
-                core::redis($pool)->clearLastError();
+                $message = neoform\redis::instance($pool)->getLastError();
+                neoform\redis::instance($pool)->clearLastError();
                 throw new entity\exception("Update failed - {$message}");
             }
 
@@ -268,9 +268,9 @@
          * @throws entity\exception
          */
         public static function delete(record\dao $self, $pool, $pk, record\model $model) {
-            if (! core::redis($pool)->delete('_db_:' . $self::TABLE . ":{$model->$pk}")) {
-                $message = core::redis($pool)->getLastError();
-                core::redis($pool)->clearLastError();
+            if (! neoform\redis::instance($pool)->delete('_db_:' . $self::TABLE . ":{$model->$pk}")) {
+                $message = neoform\redis::instance($pool)->getLastError();
+                neoform\redis::instance($pool)->clearLastError();
                 throw new entity\exception("Delete failed - {$message}");
             }
 
@@ -294,9 +294,9 @@
                 $keys[] = '_db_:' . $self::TABLE . ":{$model->$pk}";
             }
 
-            if (! core::redis($pool)->delete($keys)) {
-                $message = core::redis($pool)->getLastError();
-                core::redis($pool)->clearLastError();
+            if (! neoform\redis::instance($pool)->delete($keys)) {
+                $message = neoform\redis::instance($pool)->getLastError();
+                neoform\redis::instance($pool)->clearLastError();
                 throw new entity\exception("Delete failed - {$message}");
             }
 

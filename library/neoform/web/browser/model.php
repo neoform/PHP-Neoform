@@ -2,7 +2,7 @@
 
     namespace neoform\web\browser;
 
-    use neoform\core;
+    use neoform\http;
 
     class model {
 
@@ -13,7 +13,7 @@
          */
         public function __construct($agent_string=null) {
             if ($agent_string === null) {
-                $agent_string = core::http()->server('agent');
+                $agent_string = http::instance()->server('agent');
             }
 
             try {

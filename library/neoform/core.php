@@ -53,24 +53,6 @@
         final private function __construct(array $args=null) {}
 
         /**
-         * Singleton access
-         *   eg: core::config('app'); core::sql('slave');
-         *
-         * @param string|null $type
-         * @param array $args
-         *
-         * @return object instance
-         */
-        public static function __callstatic($type, array $args) {
-            $name = count($args) === 1 ? (string) current($args) : '';
-            if (! isset(self::$instances[$type][$name])) {
-                $class = '\neoform\\' . str_replace('_', '\\', $type) . '\factory';
-                self::$instances[$type][$name] = $class::init($args);
-            }
-            return self::$instances[$type][$name];
-        }
-
-        /**
          * Applications path
          *
          * @param $type
@@ -207,10 +189,10 @@
 
                 error\lib::log($e);
 
-                switch ((string) core::context()) {
+                switch ((string) self::context()) {
                     case 'web':
                         http\controller::error(500, null, null, true);
-                        echo core::output()->send_headers()->body();
+                        echo output::instance()->send_headers()->body();
                         die;
 
                     default:
@@ -235,13 +217,17 @@
 
             // Fatal error shutdown handler
             register_shutdown_function(function() {
+
                 // Only grab error if there is one
                 if (($error = error_get_last()) !== null) {
+                    // This prevents obnoxious timezone warnings if the timezone has not been set
+                    date_default_timezone_set(@date_default_timezone_get());
+
                     $message = isset($error['message']) ? $error['message'] : null;
                     $file    = isset($error['file']) ? $error['file'] : null;
                     $line    = isset($error['line']) ? $error['line'] : null;
 
-                    core::log("{$message} - {$file}:{$line}", 'fatal shutdown error');
+                    error\lib::log(new \exception("{$message} - {$file}:{$line}"), 'fatal shutdown error');
 
                     switch ((string) core::context()) {
                         case 'web':
@@ -249,10 +235,10 @@
                                 try {
                                     http\controller::error(500, null, null, true);
                                 } catch (\exception $e) {
-                                    core::output()->body('Unexpected Error - There was a problem loading that page');
+                                    output::instance()->body('Unexpected Error - There was a problem loading that page');
                                 }
 
-                                echo core::output()->send_headers()->body();
+                                echo output::instance()->send_headers()->body();
                             } else {
                                 header('HTTP/1.1 500 Internal Server Error');
                                 echo "An unexpected error occured\n";
@@ -272,7 +258,7 @@
             ini_set('display_errors', 'Off'); // do not display error(s) in browser - only affects non-fatal errors
             ini_set('display_startup_errors', 'Off');
 
-            $config = core::config()['core'];
+            $config = config::instance()['core'];
 
             mb_internal_encoding($config['encoding']);
             date_default_timezone_set($config['timezone']);
@@ -287,7 +273,7 @@
          */
         public static function debug() {
             $args = func_get_args();
-            core::log(count($args) === 1 ? current($args) : $args);
+            self::log(count($args) === 1 ? current($args) : $args);
         }
 
         /**
@@ -315,7 +301,7 @@
                     $dt = new \datetime;
 
                     if (self::is_loaded('http')) {
-                        $message = "\n" . $dt->format('Y-m-d H:i:s') . ' - ' . strtoupper($level) . "\n" . core::http()->server('ip') . ' /' . core::http()->server('query') . "\n{$msg}\n";
+                        $message = "\n" . $dt->format('Y-m-d H:i:s') . ' - ' . strtoupper($level) . "\n" . http::instance()->server('ip') . ' /' . http::instance()->server('query') . "\n{$msg}\n";
                     } else {
                         $message = "\n" . $dt->format('Y-m-d H:i:s') . ' - ' . strtoupper($level) . "\n\n{$msg}\n";
                     }
@@ -327,7 +313,6 @@
                     return true;
                 }
             } catch (\exception $e) {
-                // print_r($e);
                 // This only happens when we have an error within this function.
             }
 

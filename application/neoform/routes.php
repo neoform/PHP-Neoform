@@ -2,11 +2,11 @@
 
     namespace neoform;
 
-    use neoform\http\route;
+    use neoform\http\route\model as route;
 
-    class routes implements http\routes {
+    class routes extends http\routes {
 
-        public static function get() {
+        public function get() {
 
             return new route([
                 'controller' => 'controller_index',

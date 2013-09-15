@@ -6,17 +6,17 @@
 
         public function default_action() {
 
-            if (core::auth()->logged_in()) {
-                core::output()->redirect(core::http_flash()->get('login_bounce'));
+            if (auth::instance()->logged_in()) {
+                output::instance()->redirect(http\flash::instance()->get('login_bounce'));
             } else {
                 list($user, $new_password) = user\lostpassword\api::find(
-                    new site\model(core::config()['core']['site_id']),
-                    core::http()->segment('code')
+                    new site\model(config::instance()['core']['site_id']),
+                    http::instance()->segment('code')
                 );
 
                 auth\lib::activate_session($user);
 
-                core::output()->redirect("account/password/p:{$new_password}");
+                output::instance()->redirect("account/password/p:{$new_password}");
             }
         }
     }

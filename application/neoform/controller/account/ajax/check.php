@@ -7,11 +7,11 @@
         public function default_action() {
             $json = new render\json;
 
-            switch (core::http()->segment('action')) {
+            switch (http::instance()->segment('action')) {
                 //check if an email address is valid and available
                 case 'email':
                     try {
-                        if (user\api::email_available(core::http()->posts())) {
+                        if (user\api::email_available(http::instance()->posts())) {
                             $json->status  = 'good';
                             $json->message = "Good";
                         } else {

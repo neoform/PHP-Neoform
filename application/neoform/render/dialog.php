@@ -19,14 +19,14 @@
                 $this->parameters = [];
             }
 
-            $this->json_data['_ref'] = neoform\core::http()->get_ref();
+            $this->json_data['_ref'] = neoform\http::instance()->get_ref();
         }
 
         /**
          * Render dialog and send output to buffer
          */
         public function render() {
-            neoform\core::output()->output_type('json')->body(json_encode($this->json_data));
+            neoform\output::instance()->output_type('json')->body(json_encode($this->json_data));
         }
 
         /**

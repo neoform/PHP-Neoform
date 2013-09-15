@@ -1,7 +1,7 @@
                 </div>
             </div>
         <footer>
-            &copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars(neoform\core::config()['core']['site_name']); ?>
+            &copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars(neoform\config::instance()['core']['site_name']); ?>
         </footer>
         <!-- Page generated in <?php echo number_format((microtime(1) - APP_START_TIME) * 1000, 1); ?>ms using <?php echo number_format(memory_get_usage() / 1000, 2); ?> KB of ram -->
     </body>

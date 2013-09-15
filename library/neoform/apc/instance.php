@@ -6,7 +6,7 @@
 
     /**
      * APC cache instance
-     * to use: core::cache_apc()
+     * to use: cache_apc::instance()
      */
     class instance extends \ArrayObject {
 

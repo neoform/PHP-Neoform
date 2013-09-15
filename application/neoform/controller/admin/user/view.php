@@ -5,7 +5,7 @@
     class controller_admin_user_view extends controller_admin {
 
         public function default_action() {
-            $user = new user\model((int) core::http()->parameter('id'));
+            $user = new user\model((int) http::instance()->parameter('id'));
 
             $view = new render\view;
             $view->meta_title = 'User Info';

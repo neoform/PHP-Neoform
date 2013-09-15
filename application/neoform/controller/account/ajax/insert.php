@@ -9,17 +9,17 @@
             $json = new render\json;
 
             //if already logged in
-            if (core::auth()->logged_in()) {
+            if (auth::instance()->logged_in()) {
                 $json->status = 'good';
-                if ($bounce = core::http_flash()->get('login_bounce')) {
+                if ($bounce = http\flash::instance()->get('login_bounce')) {
                     $json->bounce = current($bounce);
-                    core::http_flash()->del('login_bounce');
+                    http\flash::instance()->del('login_bounce');
                 }
             } else {
                 try {
                     // Create user
-                    $user = user\api::insert(core::http()->posts());
-                    $site = new site\model(core::config()['core']['site_id']);
+                    $user = user\api::insert(http::instance()->posts());
+                    $site = new site\model(config::instance()['core']['site_id']);
 
                     // Create user-site link
                     entity::dao('user\site')->insert([
@@ -28,11 +28,11 @@
                     ]);
 
                     // Activate session
-                    auth\lib::activate_session($user, (bool) core::http()->post('remember'));
+                    auth\lib::activate_session($user, (bool) http::instance()->post('remember'));
 
-                    if ($bounce = core::http_flash()->get('login_bounce')) {
+                    if ($bounce = http\flash::instance()->get('login_bounce')) {
                         $json->bounce = current($bounce);
-                        core::http_flash()->del('login_bounce');
+                        http\flash::instance()->del('login_bounce');
                     }
 
                     $json->status = 'good';

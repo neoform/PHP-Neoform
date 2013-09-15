@@ -1,30 +1,27 @@
 <?php
 
-    namespace neoform\memcache;
+    namespace neoform;
 
-    use neoform\core;
+    class memcache extends core\singleton {
 
-    class factory implements core\factory {
+        public static function init($name) {
 
-        public static function init(array $args) {
-
-            $name   = $args ? current($args) : null;
-            $config = core::config()['memcache'];
+            $config = config::instance()['memcache'];
 
             if (empty($config['pools'][$name])) {
-                throw new exception("Memcached instance configuration \"{$name}\" does not exist");
+                throw new memcache\exception("Memcached instance configuration \"{$name}\" does not exist");
             }
 
             try {
-                $connection = new instance($name);
+                $connection = new memcache\connection($name);
 
                 // big bug in this that causes keys not to match - nate thinks its because there's a null char in the key or something.
-                $connection->setOption(instance::OPT_BINARY_PROTOCOL, false);
-                $connection->setOption(instance::OPT_LIBKETAMA_COMPATIBLE, true);
-                $connection->setOption(instance::OPT_PREFIX_KEY, "{$config['key_prefix']}:");
+                $connection->setOption(memcache\connection::OPT_BINARY_PROTOCOL, false);
+                $connection->setOption(memcache\connection::OPT_LIBKETAMA_COMPATIBLE, true);
+                $connection->setOption(memcache\connection::OPT_PREFIX_KEY, "{$config['key_prefix']}:");
 
             } catch (\exception $e) {
-                throw new exception("Could not create memcached instance \"{$name}\" -- " . $e->getMessage());
+                throw new memcache\exception("Could not create memcached instance \"{$name}\" -- " . $e->getMessage());
             }
 
             $existing_memcache_servers = $connection->getServerList();
@@ -52,7 +49,7 @@
                     try {
                         $connection->addServers($memcache_servers);
                     } catch (\exception $e) {
-                        throw new exception("Could not create memcached instance \"{$name}\" -- " . $e->getMessage());
+                        throw new memcache\exception("Could not create memcached instance \"{$name}\" -- " . $e->getMessage());
                     }
                 }
 

@@ -2,7 +2,8 @@
 
     namespace neoform\http;
 
-    use neoform\core;
+    use neoform\output;
+    use neoform\http;
 
     class lib {
 
@@ -12,8 +13,8 @@
          * @param string $segment_regex
          */
         public static function limit_url($segment_regex) {
-            if (! preg_match($segment_regex, join('/', core::http()->segments()))) {
-                core::output()->redirect('error/not_found', 301);
+            if (! preg_match($segment_regex, join('/', http::instance()->segments()))) {
+                output::instance()->redirect('error/not_found', 301);
             }
         }
     }

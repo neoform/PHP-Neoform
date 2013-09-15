@@ -6,17 +6,17 @@
 
         public function default_action() {
 
-            core::output()->output_type('json');
-            core::http()->ref();
+            output::instance()->output_type('json');
+            http::instance()->ref();
 
             $json = new render\json;
 
-            switch (core::http()->segment('action')) {
+            switch (http::instance()->segment('action')) {
 
                 case 'insert':
                     try {
                         locale\nspace\api::insert(
-                            core::http()->posts()
+                            http::instance()->posts()
                         );
                         $json->status = 'good';
                     } catch (input\exception $e) {
@@ -29,8 +29,8 @@
                 case 'update':
                     try {
                         locale\nspace\api::update(
-                            new locale\nspace\model(core::http()->parameter('id')),
-                            core::http()->posts()
+                            new locale\nspace\model(http::instance()->parameter('id')),
+                            http::instance()->posts()
                         );
                         $json->status = 'good';
                     } catch (input\exception $e) {
@@ -42,7 +42,7 @@
 
                 case 'delete':
                     try {
-                        locale\nspace\api::delete(new locale\nspace\model(core::http()->parameter('id')));
+                        locale\nspace\api::delete(new locale\nspace\model(http::instance()->parameter('id')));
                         $json->status = 'good';
                     } catch (input\exception $e) {
                         $json->status = 'error';

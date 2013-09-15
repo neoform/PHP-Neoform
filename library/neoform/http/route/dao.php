@@ -1,8 +1,12 @@
 <?php
 
-    namespace neoform\http;
+    namespace neoform\http\route;
 
-    use neoform;
+    use neoform\core;
+    use neoform\http;
+    use neoform\routes;
+    use neoform\config;
+    use neoform\disk;
 
     class dao {
 
@@ -22,7 +26,7 @@
         public static function get($locale) {
 
             try {
-                $info = include(neoform\core::path('application') . self::ROUTES_CACHE_DIR_PATH . "{$locale}." . EXT);
+                $info = include(core::path('application') . self::ROUTES_CACHE_DIR_PATH . "{$locale}." . EXT);
             } catch (\exception $e) {
                 $info = null;
             }
@@ -40,19 +44,19 @@
          * @param string $locale
          *
          * @return array|null
-         * @throws exception
+         * @throws http\exception
          */
         public static function create($locale) {
 
-            $routes = routes::get();
+            $routes = (new routes)->get();
 
-            if (! $routes instanceof route) {
-                throw new exception("Routes file must contain at least one route");
+            if (! $routes instanceof http\route\model) {
+                throw new http\exception("Routes file must contain at least one route");
             }
 
             $return = null;
 
-            foreach (neoform\core::config()['locale']['allowed'] as $file_locale) {
+            foreach (config::instance()['locale']['allowed'] as $file_locale) {
                 $info = [
                     'controllers'   => [],
                     'routes'        => [],
@@ -73,8 +77,8 @@
                         "\n\n// DO NOT MODIFY THIS FILE DIRECTLY, IT IS A CACHE FILE AND GETS OVERWRITTEN AUTOMATICALLY.\n\n".
                         'return ' . var_export($info, true) . ";";
 
-                if (! neoform\disk\lib::file_put_contents(neoform\core::path('application') . self::ROUTES_CACHE_DIR_PATH . "{$file_locale}." . EXT, $code)) {
-                    throw new exception('Could not save the parsed controller map to the cache directory: ' . neoform\core::path('application') . self::ROUTES_CACHE_DIR_PATH . "{$file_locale}." . EXT);
+                if (! disk\lib::file_put_contents(core::path('application') . self::ROUTES_CACHE_DIR_PATH . "{$file_locale}." . EXT, $code)) {
+                    throw new http\exception('Could not save the parsed controller map to the cache directory: ' . core::path('application') . self::ROUTES_CACHE_DIR_PATH . "{$file_locale}." . EXT);
                 }
 
                 if ($locale === $file_locale) {
@@ -91,6 +95,6 @@
          * @param $locale
          */
         public static function del($locale) {
-            unlink(neoform\core::path('application') . self::ROUTES_CACHE_DIR_PATH . "{$locale}." . EXT);
+            unlink(core::path('application') . self::ROUTES_CACHE_DIR_PATH . "{$locale}." . EXT);
         }
     }

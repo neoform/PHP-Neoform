@@ -8,9 +8,9 @@
 
             $json = new render\json;
 
-            if (core::auth()->logged_in()) {
+            if (auth::instance()->logged_in()) {
                 try {
-                    auth\api::logout(core::auth());
+                    auth\api::logout(auth::instance());
                     $json->redirect = true;
                 } catch (input\exception $e) {
 

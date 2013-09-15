@@ -2,9 +2,7 @@
 
     namespace neoform\core;
 
-    use neoform;
-
-    class config extends neoform\config\defaults {
+    class config extends \neoform\config\defaults {
 
         protected function defaults() {
             return [
@@ -23,10 +21,10 @@
 
         /**
          * Validate the config values
-         *
-         * @throws neoform\config\exception
          */
         public function validate() {
-
+            if ((int) $this->config['site_id'] != $this->config['site_id'] || $this->config['site_id'] < 1) {
+                throw new \exception('["site_id"] must be an unsigned integer');
+            }
         }
     }

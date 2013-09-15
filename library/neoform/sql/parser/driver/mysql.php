@@ -5,7 +5,7 @@
     use neoform\sql\parser\field;
     use neoform\sql\parser\table;
     use neoform\sql\parser\driver;
-    use neoform\core;
+    use neoform\sql;
 
     class mysql extends driver {
 
@@ -78,7 +78,7 @@
         }
 
         protected function get_all_tables() {
-            $sql = core::sql()->prepare("
+            $sql = sql::instance()->prepare("
                 SHOW TABLES
             ");
             $sql->execute();
@@ -90,7 +90,7 @@
         }
 
         protected function get_table_definition($table_name) {
-            $sql = core::sql()->prepare("
+            $sql = sql::instance()->prepare("
                 SHOW CREATE TABLE `{$table_name}`
             ");
             $sql->execute();

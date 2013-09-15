@@ -34,7 +34,7 @@
          */
         public static function exists($pool, $key) {
             try {
-                neoform\core::apc()->get($key);
+                neoform\apc::instance()->get($key);
                 return true;
             } catch (neoform\apc\exception $e) {
                 return false;
@@ -49,7 +49,7 @@
          * @param integer $offset
          */
         public static function increment($pool, $key, $offset=1){
-            neoform\core::apc()->increment($key, $offset);
+            neoform\apc::instance()->increment($key, $offset);
         }
 
         /**
@@ -60,7 +60,7 @@
          * @param integer $offset
          */
         public static function decrement($pool, $key, $offset=1){
-            neoform\core::apc()->decrement($key, $offset);
+            neoform\apc::instance()->decrement($key, $offset);
         }
 
         /**
@@ -76,7 +76,7 @@
         public static function get($pool, $key) {
             try {
                 return [
-                    neoform\core::apc()->get($key),
+                    neoform\apc::instance()->get($key),
                 ];
             } catch (neoform\apc\exception $e) {
 
@@ -92,7 +92,7 @@
          * @return mixed
          */
         public static function set($pool, $key, $data, $ttl=null) {
-            return neoform\core::apc()->set($key, $data, $ttl);
+            return neoform\apc::instance()->set($key, $data, $ttl);
         }
 
         /**
@@ -105,7 +105,7 @@
          */
         public static function get_multi($pool, array $keys) {
 
-            $apc = neoform\core::apc();
+            $apc = neoform\apc::instance();
 
             $matched_rows = [];
             foreach ($keys as $index => $key) {
@@ -128,7 +128,7 @@
          * @param integer|null $ttl
          */
         public static function set_multi($pool, array $rows, $ttl=null) {
-            $apc = neoform\core::apc();
+            $apc = neoform\apc::instance();
             foreach ($rows as $key => $row) {
                 $apc->set($key, $row, $ttl);
             }
@@ -141,7 +141,7 @@
          * @param string $key
          */
         public static function delete($pool, $key) {
-            neoform\core::apc()->del($key);
+            neoform\apc::instance()->del($key);
         }
 
         /**
@@ -152,7 +152,7 @@
          */
         public static function delete_multi($pool, array $keys) {
             if ($keys) {
-                $apc = neoform\core::apc();
+                $apc = neoform\apc::instance();
                 foreach ($keys as $key) {
                     $apc->del($key);
                 }

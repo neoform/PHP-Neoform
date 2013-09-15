@@ -2,6 +2,8 @@
 
     namespace neoform\render;
 
+    use neoform\locale;
+    use neoform\output;
     use neoform\core;
 
     class view {
@@ -14,7 +16,7 @@
 
         public function __construct(array $preload_vars=[]) {
             $this->__vars = $preload_vars;
-            $this->__vars['locale'] = core::locale();
+            $this->__vars['locale'] = locale::instance();
         }
 
         // Render view and return contents - no header modification
@@ -57,7 +59,7 @@
 
             $body = $this->html($view);
 
-            $output = core::output();
+            $output = output::instance();
 
             if ($encoding !== null) {
                 if ($encoding === 'deflate') {
@@ -76,12 +78,12 @@
             echo $body;
         }
 
-        // Render a view, send contents to core::output()
+        // Render a view, send contents to output::instance()
         public function render($view, $encoding=null) {
 
             $body = $this->html($view);
 
-            $output = core::output();
+            $output = output::instance();
 
             if ($encoding !== null) {
                 if ($encoding === 'deflate') {

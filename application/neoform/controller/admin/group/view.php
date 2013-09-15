@@ -6,7 +6,7 @@
 
         public function default_action() {
 
-            $group = new acl\group\model((int) core::http()->parameter('id'));
+            $group = new acl\group\model((int) http::instance()->parameter('id'));
 
             $view = new render\view;
             $view->meta_title = 'Group';

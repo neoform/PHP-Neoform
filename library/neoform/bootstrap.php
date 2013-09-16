@@ -72,7 +72,7 @@
                 if ($e->message() !== null) {
                     http\flash::instance()->set('login_message', $e->message());
                 }
-                if (output::instance()->output_type() === output\instance::JSON) {
+                if (output::instance()->output_type() === output\model::JSON) {
                     $json = new render\json;
                     $json->status = 'login';
                     $json->render();

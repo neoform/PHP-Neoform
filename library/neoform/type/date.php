@@ -31,7 +31,7 @@
          *
          * @return integer
          */
-        public function unix_timestmap() {
+        public function unix_timestamp() {
             return (int) $this->format('U');
         }
 
@@ -40,7 +40,7 @@
          *
          * @return string
          */
-        public function timestmap() {
+        public function timestamp() {
             return $this->format('Y-m-d H:i:s');
         }
 
@@ -268,7 +268,7 @@
          * @return bool
          */
         public function older_than(date $date) {
-            return $this->timestmap() < $date->timestmap();
+            return $this->timestamp() < $date->timestamp();
         }
 
         /**
@@ -277,7 +277,7 @@
          * @return bool
          */
         public function newer_than(date $date) {
-            return $this->timestmap() > $date->timestmap();
+            return $this->timestamp() > $date->timestamp();
         }
 
         /**
@@ -286,7 +286,7 @@
          * @return bool
          */
         public function equals(date $date) {
-            return $this->timestmap() === $date->timestmap();
+            return $this->timestamp() === $date->timestamp();
         }
 
         /**

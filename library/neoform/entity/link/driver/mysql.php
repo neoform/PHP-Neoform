@@ -378,6 +378,7 @@
          * @param array    $info
          * @param bool     $replace
          *
+         * @return array
          * @throws exception
          */
         public static function insert(link\dao $self, $pool, array $info, $replace) {
@@ -399,6 +400,8 @@
                 $error = sql::instance($pool)->errorInfo();
                 throw new exception("Insert failed - {$error[0]}: {$error[2]}");
             }
+
+            return $info;
         }
 
         /**
@@ -409,6 +412,7 @@
          * @param array    $infos
          * @param bool     $replace
          *
+         * @return array
          * @throws exception
          */
         public static function insert_multi(link\dao $self, $pool, array $infos, $replace) {
@@ -445,6 +449,8 @@
                 $error = $sql->errorInfo();
                 throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
             }
+
+            return $infos;
         }
 
         /**

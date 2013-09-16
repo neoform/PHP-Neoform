@@ -2,6 +2,7 @@
 
     namespace neoform\render\dialog;
 
+    use neoform\locale;
     use neoform\core;
 
     class view {
@@ -13,9 +14,9 @@
 
         public function __construct($__path, array $__vars) {
             $this->__vars           = $__vars;
-            $this->__vars['locale'] = core::locale();
+            $this->__vars['locale'] = locale::instance();
 
-            $__path = core::path('application') . '/dialogs/' . $__path . '.' . self::VIEW_EXT;
+            $__path = core::path('application') . "/dialogs/{$__path}." . self::VIEW_EXT;
 
             ob_start();
 
@@ -35,7 +36,7 @@
                 }
 
             } else {
-                throw new \exception('Could not load view template file "' . $__path . '"');
+                throw new \exception("Could not load view template file \"{$__path}\"");
             }
         }
 

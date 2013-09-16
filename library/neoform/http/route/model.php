@@ -1,6 +1,6 @@
 <?php
 
-    namespace neoform\http;
+    namespace neoform\http\route;
 
     use neoform;
 
@@ -8,7 +8,7 @@
      * This class is used in the route.php config file, which contains all the site's routing information.
      * Each instance of a route is points to a single controller based on a url segment or pattern.
      */
-    class route {
+    class model {
 
         /**
          * Class name of the controller
@@ -79,13 +79,13 @@
          * Get all routes as a compressed array
          *
          * @param string $locale
-         * @param route  $route
+         * @param model  $route
          * @param string $route_url
          * @param string $locale_url
          *
          * @return array
          */
-        public function _routes($locale, route $route, $route_url='', $locale_url='') {
+        public function _routes($locale, model $route, $route_url='', $locale_url='') {
 
             $routes = [];
 

@@ -1,12 +1,10 @@
 <?php
 
-    namespace neoform\http\controller;
+    namespace neoform;
 
-    use neoform;
-
-    class index extends neoform\http\controller {
+    class controller_index extends http\controller {
 
         public function default_action() {
-            neoform\core::output()->body('You do not have an index controller in your application');
+            output::instance()->body('You do not have an index controller in your application');
         }
     }

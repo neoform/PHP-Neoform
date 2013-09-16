@@ -13,7 +13,7 @@
 
         public function __construct($__path, array $__vars) {
             $this->__vars           = $__vars;
-            $this->__vars['locale'] = neoform\core::locale();
+            $this->__vars['locale'] = neoform\locale::instance();
 
             $__path = neoform\core::path('application') . "/dialogs/{$__path}." . self::VIEW_EXT;
 

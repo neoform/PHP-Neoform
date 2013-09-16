@@ -2,7 +2,7 @@
 
     namespace neoform\entity\meta\driver;
 
-    use neoform\core;
+    use neoform;
 
     class redis implements \neoform\entity\meta\driver {
 
@@ -15,7 +15,7 @@
          * @return array|null
          */
         public static function pull($pool, array $list_keys) {
-            return core::redis($pool)
+            return neoform\redis::instance($pool)
                 ->multi()            // Batch execute
                 ->sUnion($list_keys) // Get all cache keys from the meta lists
                 ->delete($list_keys) // Delete those meta lists
@@ -40,12 +40,12 @@
              *
              * ...However PHPRedis seems to have poor support for this... bah. lame.
              * return \call_user_func_array(
-             *     [ core::redis($pool), 'sAdd' ],
+             *     [ neoform\redis::instance($pool), 'sAdd' ],
              *     array_merge([ $key ], $value)
              * );
              */
 
-            $redis = core::redis($pool)->multi();
+            $redis = neoform\redis::instance($pool)->multi();
             foreach ($list_keys as $list_key) {
                 $redis->sAdd($list_key, $cache_key);
             }
@@ -69,12 +69,12 @@
              *
              * ...However PHPRedis seems to have poor support for this... bah. lame.
              * return \call_user_func_array(
-             *     [ core::redis($pool), 'sAdd' ],
+             *     [ neoform\redis::instance($pool), 'sAdd' ],
              *     array_merge([ $key ], $value)
              * );
              */
 
-            $redis = core::redis($pool)->multi();
+            $redis = neoform\redis::instance($pool)->multi();
             foreach ($cache_keys as $cache_key => $list_keys) {
                 foreach ($list_keys as $list_key) {
                     $redis->sAdd($list_key, $cache_key);

@@ -5,7 +5,7 @@
     use neoform\sql\parser\field;
     use neoform\sql\parser\table;
     use neoform\sql\parser\driver;
-    use neoform\core;
+    use neoform\sql;
 
     class pgsql extends driver {
 
@@ -38,7 +38,7 @@
         }
 
         protected function get_all_tables() {
-            $sql = core::sql()->prepare("
+            $sql = sql::instance()->prepare("
                 SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name ASC
             ");
             $sql->execute();
@@ -59,7 +59,7 @@
                 'foreign_keys' => [],
             ];
 
-            $sql = core::sql()->prepare("
+            $sql = sql::instance()->prepare("
                 SELECT *
                 FROM INFORMATION_SCHEMA.COLUMNS
                 WHERE table_name = ?
@@ -135,7 +135,7 @@
         }
 
         public static function primary_keys($table) {
-            $sql = core::sql()->prepare("
+            $sql = sql::instance()->prepare("
                 SELECT
                     pg_attribute.attname
                 FROM
@@ -158,7 +158,7 @@
         }
 
         public static function unique_keys($table) {
-            $sql = core::sql()->prepare("
+            $sql = sql::instance()->prepare("
                 SELECT
                     tc.constraint_name,
                     kcu.column_name
@@ -184,7 +184,7 @@
         }
 
         public static function indexes($table) {
-            $sql = core::sql()->prepare("
+            $sql = sql::instance()->prepare("
                 SELECT
                     t.relname table_name,
                     i.relname index_name,
@@ -213,7 +213,7 @@
         }
 
         public static function foreign_keys($table) {
-            $sql = core::sql()->prepare("
+            $sql = sql::instance()->prepare("
                 SELECT
                     tc.constraint_name,
                     tc.table_name,
@@ -316,7 +316,6 @@
                 case 'macaddr':
                 case 'cidr':
                 case 'inet':
-                case 'bytea':
                 case 'character varying':
                 case 'character':
                 case 'uuid':

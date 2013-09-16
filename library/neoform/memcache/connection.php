@@ -2,19 +2,17 @@
 
     namespace neoform\memcache;
 
-    use neoform\core;
+    use neoform\config;
 
     /**
      * Memcache Instance
      * to use: core::memcache($pool)
      */
-    class instance extends \memcached {
-
-        use core\instance;
+    class connection extends \memcached {
 
         public function __construct($name) {
             //only maintain persistent connections for each site (key_prefix is used for this)
-            $prefix = core::config()['memcache']['key_prefix'];
+            $prefix = config::instance()['memcache']['key_prefix'];
             parent::__construct(($prefix ? "{$prefix}:" : '') . $name);
         }
 

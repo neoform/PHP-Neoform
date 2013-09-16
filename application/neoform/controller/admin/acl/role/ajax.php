@@ -5,17 +5,17 @@
     class controller_admin_acl_role_ajax extends controller_admin {
 
         public function default_action() {
-            core::output()->output_type('json');
-            core::http()->ref();
+            output::instance()->output_type('json');
+            http::instance()->ref();
 
             $json = new render\json;
 
-            switch (core::http()->segment('action')) {
+            switch (http::instance()->segment('action')) {
 
                 case 'insert':
                     try {
                         acl\role\api::insert(
-                            core::http()->posts()
+                            http::instance()->posts()
                         );
                         $json->status = 'good';
                     } catch (input\exception $e) {
@@ -28,8 +28,8 @@
                 case 'update':
                     try {
                         acl\role\api::update(
-                            new acl\role\model(core::http()->parameter('id')),
-                            core::http()->posts()
+                            new acl\role\model(http::instance()->parameter('id')),
+                            http::instance()->posts()
                         );
                         $json->status = 'good';
                     } catch (input\exception $e) {
@@ -42,7 +42,7 @@
                 case 'delete':
                     try {
                         acl\role\api::delete(
-                            new acl\role\model(core::http()->parameter('id'))
+                            new acl\role\model(http::instance()->parameter('id'))
                         );
                         $json->status = 'good';
                     } catch (input\exception $e) {

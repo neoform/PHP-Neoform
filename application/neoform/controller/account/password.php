@@ -6,7 +6,7 @@
 
         public function default_action() {
 
-            switch (core::http()->segment('action')) {
+            switch (http::instance()->segment('action')) {
                 case 'update':
                     $this->update();
                     break;
@@ -18,17 +18,17 @@
 
         protected function update() {
 
-            core::http()->ref();
+            http::instance()->ref();
 
             $json = new render\json;
 
             try {
                 user\api::update_password(
-                    core::auth()->user(),
+                    auth::instance()->user(),
                     [
-                        'current_password' => core::http()->post('current_password'),
-                        'password1'        => core::http()->post('password1'),
-                        'password2'        => core::http()->post('password2'),
+                        'current_password' => http::instance()->post('current_password'),
+                        'password1'        => http::instance()->post('password1'),
+                        'password2'        => http::instance()->post('password2'),
                     ]
                 );
                 $json->status = 'good';
@@ -45,9 +45,9 @@
             //display time
             $view = new render\view;
 
-            if (core::http()->parameter('p')) {
+            if (http::instance()->parameter('p')) {
                 $view->reset     = true;
-                $view->forgotten = core::http()->parameter('p');
+                $view->forgotten = http::instance()->parameter('p');
             }
 
             $view->meta_title      = 'Change Password / Account';

@@ -2,6 +2,6 @@
 
     namespace neoform\http;
 
-    interface routes {
-        public static function get();
+    abstract class routes {
+        abstract public function get();
     }

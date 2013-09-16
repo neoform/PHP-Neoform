@@ -38,7 +38,7 @@
             neoform\entity::dao('user\date')->update(
                 $user->user_date(),
                 [
-                    'last_login' => $now->datetime(),
+                    'last_login' => $now->timestamp(),
                 ]
             );
 

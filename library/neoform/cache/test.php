@@ -18,15 +18,15 @@
             $cache_instance          = "\\neoform\\redis";
 
             // Delete cache
-            neoform\cache\lib::delete($cache_engine, $cache_engine_pool_write, "{$key_prefix}{$key}:111");
-            neoform\cache\lib::delete($cache_engine, $cache_engine_pool_write, "{$key_prefix}{$key}:222");
+            lib::delete($cache_engine, $cache_engine_pool_write, "{$key_prefix}{$key}:111");
+            lib::delete($cache_engine, $cache_engine_pool_write, "{$key_prefix}{$key}:222");
 
 
 
 
             // Pull data for the first time
             $pulled = false;
-            $result = neoform\cache\lib::single(
+            $result = lib::single(
                 $cache_engine,
                 $cache_engine_pool_read,
                 $cache_engine_pool_write,
@@ -45,7 +45,7 @@
 
             // Pull the same data again, this time it should not get from origin, instead from cache
             $pulled = false;
-            $result = neoform\cache\lib::single(
+            $result = lib::single(
                 $cache_engine,
                 $cache_engine_pool_read,
                 $cache_engine_pool_write,
@@ -69,7 +69,7 @@
             memory::delete(null, "{$key_prefix}{$key}:111"); //don't let it pull from memory
 
             $pulled = 0;
-            $result = neoform\cache\lib::multi(
+            $result = lib::multi(
                 $cache_engine,
                 $cache_engine_pool_read,
                 $cache_engine_pool_write,

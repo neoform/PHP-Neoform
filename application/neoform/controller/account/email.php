@@ -5,7 +5,7 @@
     class controller_account_email extends controller_account {
 
         public function default_action() {
-            switch (core::http()->segment('action')) {
+            switch (http::instance()->segment('action')) {
                 case 'update':
                     $this->update();
                     break;
@@ -16,15 +16,15 @@
         }
 
         protected function update() {
-            core::http()->ref();
+            http::instance()->ref();
 
             $json = new render\json;
 
             try {
                 user\api::update_email(
-                    core::auth()->user(),
+                    auth::instance()->user(),
                     [
-                        'email' => core::http()->post('email'),
+                        'email' => http::instance()->post('email'),
                     ]
                 );
                 $json->status = 'good';

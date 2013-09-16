@@ -6,7 +6,7 @@
 
         public function default_action() {
 
-            $page = (int) core::http()->parameter('page');
+            $page = (int) http::instance()->parameter('page');
             $per_page = 20;
 
             if ($page < 1) {

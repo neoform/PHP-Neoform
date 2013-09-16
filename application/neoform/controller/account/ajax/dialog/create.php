@@ -6,13 +6,13 @@
 
         public function default_action() {
 
-            if (core::auth()->logged_in()) {
+            if (auth::instance()->logged_in()) {
                 $json = new render\json;
                 $json->status = 'close';
 
-                if ($bounce = core::http_flash()->get('login_bounce')) {
+                if ($bounce = http\flash::instance()->get('login_bounce')) {
                     $json->bounce = current($bounce);
-                    core::http_flash()->del('login_bounce');
+                    http\flash::instance()->del('login_bounce');
                 }
 
                 $json->render();

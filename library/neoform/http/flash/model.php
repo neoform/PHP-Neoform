@@ -8,9 +8,7 @@
      * Short term data storage - useful for very short lived sessions, data is highly volatile and not guarantied to
      * exist on read. Best uses are for redirect session data.
      */
-    class instance {
-
-        use neoform\core\instance;
+    class model {
 
         protected $session_engine;
         protected $hash;
@@ -38,7 +36,7 @@
          * @return mixed
          */
         public function get($key) {
-            $engine = "\\neoform\\cache\\{$this->flash_cache_engine}\\driver";
+            $engine = "\\neoform\\cache\\driver\\{$this->flash_cache_engine}";
             return $engine::get($this->flash_cache_pool_read, "http_flash:{$this->hash}:{$key}");
         }
 
@@ -52,7 +50,7 @@
          * @return mixed
          */
         public function set($key, $val, $ttl=null) {
-            $engine = "\\neoform\\cache\\{$this->flash_cache_engine}\\driver";
+            $engine = "\\neoform\\cache\\driver\\{$this->flash_cache_engine}";
             return $engine::set(
                 $this->flash_cache_pool_write,
                 "http_flash:{$this->hash}:{$key}",
@@ -69,7 +67,7 @@
          * @return mixed
          */
         public function del($key) {
-            $engine = "\\neoform\\cache\\{$this->flash_cache_engine}\\driver";
+            $engine = "\\neoform\\cache\\driver\\{$this->flash_cache_engine}";
             return $engine::delete($this->flash_cache_pool_write, "http_flash:{$this->hash}:{$key}");
         }
     }

@@ -267,7 +267,7 @@
          * @return collection
          */
         public function callback(callable $func) {
-            $this->error ='invalid type (array given)';
+            $this->error = 'invalid type (array given)';
             return $this;
         }
 

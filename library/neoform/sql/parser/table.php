@@ -2,7 +2,7 @@
 
     namespace neoform\sql\parser;
 
-    use neoform;
+    use neoform\sql;
 
     /**
      * An object representation of an SQL table
@@ -285,6 +285,6 @@
          * @return bool
          */
         public function is_tiny() {
-            return neoform\sql\parser::is_table_tiny($this);
+            return sql\parser::is_table_tiny($this);
         }
     }

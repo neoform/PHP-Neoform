@@ -2,17 +2,17 @@
 
     namespace neoform\output;
 
-    use neoform\core;
-    use neoform;
+    use neoform\config;
+    use neoform\http;
+    use neoform\locale;
+    use neoform\render;
 
     /**
      * Handle all output that goes to the browser, this includes headers
      *
-     * Standard usage: core::output()
+     * Standard usage: output::instance()
      */
-    class instance {
-
-        use core\instance;
+    class model {
 
         protected $http_response_code = 200;
         protected $headers = [];
@@ -36,13 +36,12 @@
          * @param string      $type
          * @param string|null $val
          *
-         * @return instance
+         * @return model
          */
         public function header($type, $val=null) {
             $header = $type . ($val ? ": {$val}" : '');
-            $hash   = md5($header);
-            if (! isset($this->headers[$hash])) {
-                $this->headers[$hash] = $header;
+            if (! isset($this->headers[$header])) {
+                $this->headers[$header] = $header;
             }
             return $this;
         }
@@ -58,7 +57,7 @@
          */
         public function cookie_set($key, $val, $ttl=null) {
 
-            $config = core::config();
+            $config = config::instance();
 
             if ($ttl === null || ! is_numeric($ttl)) {
                 $ttl = time() + $config['cookies']['ttl'];
@@ -68,7 +67,7 @@
                 $key,
                 base64_encode($val),
                 time() + intval($ttl),
-                isset($config['cookies']['path']) ? $config['cookies']['path'] : core::http()->server('subdir'),
+                isset($config['cookies']['path']) ? $config['cookies']['path'] : http::instance()->server('subdir'),
                 $config['http']['domain'],
                 (bool) $config['cookies']['secure'],
                 (bool) $config['cookies']['httponly']
@@ -83,12 +82,12 @@
          * @return bool
          */
         public static function cookie_delete($key) {
-            $config = core::config();
+            $config = config::instance();
             return setcookie(
                 $key,
                 '',
                 time() - 100000,
-                isset($config['cookies']['path']) ? $config['cookies']['path'] : core::http()->server('subdir'),
+                isset($config['cookies']['path']) ? $config['cookies']['path'] : http::instance()->server('subdir'),
                 $config['core']['domain']
             );
         }
@@ -105,7 +104,7 @@
         /**
          * Send all HTTP headers to browser
          *
-         * @return instance
+         * @return model
          */
         public function send_headers() {
             if (! $this->headers_sent) {
@@ -123,7 +122,7 @@
          *
          * @param string|null $str
          *
-         * @return string|instance
+         * @return string|model
          */
         public function body($str=null) {
             if ($str === null) {
@@ -139,30 +138,30 @@
          *
          * @param string $type 'json', 'xml', defaults to 'html', if null passed the output type is returned
          *
-         * @return instance|string
+         * @return model|string
          */
         public function output_type($type='') {
             if ($type !== null) {
                 switch ((string) $type) {
                     case 'json':
                         $this->output_type = self::JSON;
-                        $this->header('Content-type', self::JSON . '; charset="' . core::config()['core']['encoding'] . '"');
+                        $this->header('Content-type', self::JSON . '; charset="' . config::instance()['core']['encoding'] . '"');
                         break;
 
                     case 'xml':
                         $this->output_type = self::XML;
-                        $this->header('Content-type', self::XML . '; charset="' . core::config()['core']['encoding'] . '"');
+                        $this->header('Content-type', self::XML . '; charset="' . config::instance()['core']['encoding'] . '"');
                         break;
 
                     case 'html':
                     case '':
                         $this->output_type = self::HTML;
-                        $this->header('Content-type', self::HTML . '; charset="' . core::config()['core']['encoding'] . '"');
+                        $this->header('Content-type', self::HTML . '; charset="' . config::instance()['core']['encoding'] . '"');
                         break;
 
                     default:
                         $this->output_type = $type;
-                        $this->header('Content-type', $type . '; charset="' . core::config()['core']['encoding'] . '"');
+                        $this->header('Content-type', $type . '; charset="' . config::instance()['core']['encoding'] . '"');
                         break;
                 }
                 return $this;
@@ -177,14 +176,14 @@
          * @param string $url
          * @param int    $http_code
          *
-         * @return instance
+         * @return model
          */
         public function redirect($url='', $http_code=303) {
-            $base_url = substr(core::http()->server('url'), 0, -1);
+            $base_url = substr(http::instance()->server('url'), 0, -1);
             if (substr($url, 0, 1) !== '/') {
-                $this->header('Location', $base_url . core::locale()->route("/{$url}"), true, $http_code);
+                $this->header('Location', $base_url . locale::instance()->route("/{$url}"), true, $http_code);
             } else {
-                $this->header('Location', $base_url . core::locale()->route($url), true, $http_code);
+                $this->header('Location', $base_url . locale::instance()->route($url), true, $http_code);
             }
             return $this;
         }
@@ -206,7 +205,7 @@
 
             if ($this->output_type === self::JSON) {
 
-                $json = new neoform\render\json;
+                $json = new render\json;
                 $json->status = 'fault';
 
                 if ($title && $message) {
@@ -222,7 +221,7 @@
             } else {
 
                 try {;
-                    neoform\http\controller::error($status_code, $title, $message);
+                    http\controller::error($status_code, $title, $message);
                 } catch (\exception $e) {
                     $this->body = $message;
                 }
@@ -250,7 +249,7 @@
          *
          * @param integer|null $code if passed, changes the current http status code, if not set, returns the current code
          *
-         * @return int|instance
+         * @return int|model
          */
         public function http_status_code($code=null) {
             if ($code === null) {

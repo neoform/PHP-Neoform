@@ -21,9 +21,9 @@
             // Create expiry date for session
             $expires = new datetime;
             if ($remember) {
-                $expires->add(new dateinterval('P' . neoform\core::config()['auth']['long_auth_lifetime']));
+                $expires->add(new dateinterval('P' . neoform\config::instance()['auth']['long_auth_lifetime']));
             } else {
-                $expires->add(new dateinterval('P' . neoform\core::config()['auth']['normal_auth_lifetime']));
+                $expires->add(new dateinterval('P' . neoform\config::instance()['auth']['normal_auth_lifetime']));
             }
 
             // Create session
@@ -38,7 +38,7 @@
             neoform\entity::dao('user\date')->update(
                 $user->user_date(),
                 [
-                    'last_login' => $now->datetime(),
+                    'last_login' => $now->timestamp(),
                 ]
             );
 
@@ -51,7 +51,7 @@
          * @return null|string
          */
         public static function get_hash_cookie() {
-            if (strlen($hash = neoform\core::http()->cookie(neoform\core::config()['auth']['cookie'])) === 40) {
+            if (strlen($hash = neoform\http::instance()->cookie(neoform\config::instance()['auth']['cookie'])) === 40) {
                 return $hash;
             } else {
                 return self::create_hash_cookie();
@@ -71,8 +71,8 @@
                 $hash = self::generate_hash();
             }
 
-            neoform\core::output()->cookie_set(
-                neoform\core::config()['auth']['cookie'],
+            neoform\output::instance()->cookie_set(
+                neoform\config::instance()['auth']['cookie'],
                 $hash
             );
 

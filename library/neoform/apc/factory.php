@@ -7,6 +7,6 @@
     class factory implements neoform\core\factory {
 
         public static function init(array $args) {
-            return new neoform\apc\instance(neoform\core::config()['apc']);
+            return new neoform\apc\instance(neoform\config::instance()['apc']);
         }
     }

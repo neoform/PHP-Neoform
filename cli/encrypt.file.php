@@ -35,7 +35,7 @@
 
             $file_contents = file_get_contents($filepath);
 
-            $encrypt = neoform\core::encrypt();
+            $encrypt = neoform\encrypt::instance();
 
             if (substr($filepath, -6) === '.crypt') {
                 $decrypted_string = $encrypt->decrypt($password, $file_contents);

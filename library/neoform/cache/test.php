@@ -2,7 +2,7 @@
 
     namespace neoform\cache;
 
-    use neoform\cache\driver\memory;
+    use neoform\cache\memory;
     use neoform;
 
     class test extends neoform\test\model {
@@ -14,8 +14,7 @@
             $cache_engine_pool_write = 'master';
             $cache_engine            = 'redis';
             $key_prefix              = 'cache_test:';
-            $cache_engine_class      = "\\neoform\\cache\\driver\\{$cache_engine}";
-            $cache_instance          = '\neoform\redis';
+            $cache_engine_class      = "cache_{$cache_engine}_driver";
 
             // Delete cache
             neoform\cache\lib::delete($cache_engine, $cache_engine_pool_write, "{$key_prefix}{$key}:111");
@@ -145,8 +144,8 @@
 
 
             // Pull multi - same keys, none should get pulled from origin - same as before, but using memory only
-            $cache_instance::instance($cache_engine_pool_write)->delete("{$key_prefix}{$key}:111");
-            $cache_instance::instance($cache_engine_pool_write)->delete("{$key_prefix}{$key}:222");
+            core::$cache_engine($cache_engine_pool_write)->delete("{$key_prefix}{$key}:111");
+            core::$cache_engine($cache_engine_pool_write)->delete("{$key_prefix}{$key}:222");
 
             $this->assert_true(memory::exists(null, "{$key_prefix}{$key}:111"), __LINE__);
             $this->assert_true(memory::exists(null, "{$key_prefix}{$key}:222"), __LINE__);

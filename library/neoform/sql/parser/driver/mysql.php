@@ -193,7 +193,7 @@
 
         //KEY `hash_method` (`hash_method`),
         protected function key($field_info) {
-            if (preg_match('/^KEY\s+`([a-z0-9\_]+)`\s*\(([a-z0-9\_,`\s]*)\).*$/i', $field_info, $match)) {
+            if (preg_match('/^KEY\s+`([a-z0-9\_]+)`\s*\(([a-z0-9\_,`\s\(\)]*)\).*$/i', $field_info, $match)) {
                 if (preg_match_all('/`([a-z0-9\_]+)`/i', strtolower($match[2]), $keys)) {
                     return $keys[1];
                 }

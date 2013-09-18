@@ -2,7 +2,6 @@
 
     namespace neoform\http;
 
-    use neoform\output;
     use neoform\http;
 
     class lib {
@@ -13,7 +12,9 @@
          * @param string $segment_regex
          */
         public static function limit_url($segment_regex) {
-            if (! preg_match($segment_regex, join('/', http::instance()->segments()))) {
+            $segments = http::instance()->segments();
+            array_shift($segments); // we don't want to have root be part of this
+            if (! preg_match($segment_regex, '/' . join('/', $segments))) {
                 controller::show404();
             }
         }

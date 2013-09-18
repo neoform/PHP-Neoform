@@ -14,7 +14,7 @@
          */
         public static function limit_url($segment_regex) {
             if (! preg_match($segment_regex, join('/', http::instance()->segments()))) {
-                output::instance()->redirect('error/not_found', 301);
+                controller::show404();
             }
         }
     }

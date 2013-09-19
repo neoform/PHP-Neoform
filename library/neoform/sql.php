@@ -12,7 +12,7 @@
             $config = config::instance()['sql'];
 
             if (! isset($config['pools'][$name])) {
-                if ($name !== $config['default_pool_write'] && $config['default_pool_write']) {
+                if ($name !== $config['default_pool_write'] && ! $name && $config['default_pool_write']) {
                     //try fallback connection
                     return sql::instance($config['default_pool_write']);
                 } else {

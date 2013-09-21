@@ -153,12 +153,12 @@
          */
         public static function shorten($n)
         {
-            static $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-';
+            static $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
             $str = '';
             while ($n > 0) {
-                $remainder = $n % 64;
-                $n         = ($n - $remainder) / 64;
+                $remainder = $n % 62;
+                $n         = ($n - $remainder) / 62;
                 $str       = $alphabet{$remainder} . $str;
             }
 
@@ -182,14 +182,13 @@
                 'K' => 36, 'L' => 37, 'M' => 38, 'N' => 39, 'O' => 40, 'P' => 41, 'Q' => 42, 'R' => 43, 'S' => 44, 'T' => 45,
                 'U' => 46, 'V' => 47, 'W' => 48, 'X' => 49, 'Y' => 50, 'Z' => 51,
                 '0' => 52, '1' => 53, '2' => 54, '3' => 55, '4' => 56, '5' => 57, '6' => 58, '7' => 59, '8' => 60, '9' => 61,
-                '_' => 62, '-' => 63,
             ];
 
             $n = 0;
             $len = strlen($str);
             for ($i=0; $i < $len; $i++) {
                 $c = $str{$i};
-                $n = $n * 64 + $alphabet[$c];
+                $n = $n * 62 + $alphabet[$c];
             }
 
             return $n;

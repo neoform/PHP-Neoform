@@ -26,9 +26,7 @@
                 return true;
             }
 
-            $slugs = http::instance()->non_controller_slugs();
-            array_shift($slugs); // we don't want to have root be part of this
-            if (! preg_match($non_controller_slug_regex, '/' . join('/', $slugs))) {
+            if (! preg_match($non_controller_slug_regex, join('/', http::instance()->non_controller_slugs()))) {
                 controller::show404();
                 return true;
             }

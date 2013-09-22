@@ -602,7 +602,7 @@
             } else {
 
                 // If it's not in $this->controller_slugs then it goes in $this->non_controller_slugs
-                $this->non_controller_slugs[] = array_slice($this->slugs, count($this->controller_slugs));
+                $this->non_controller_slugs = array_slice($this->slugs, count($this->controller_slugs));
 
                 // Name the slug variables based on the controller config
                 if ($controller_slugs) {

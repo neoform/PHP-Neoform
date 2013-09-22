@@ -100,7 +100,7 @@
                 foreach ($dates as $date) {
                     $this->code .= "\t\t\t\t\tcase '{$date->name}':\n";
                 }
-                $this->code .= "\t\t\t\t\t\treturn \$this->_model(\$k, \$this->vars[\$k], '\\neoform\\type\\date');\n\n";
+                $this->code .= "\t\t\t\t\t\treturn \$this->_model(\$k, \$this->vars[\$k], 'type\\date');\n\n";
             }
 
             // STRINGS

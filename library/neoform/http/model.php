@@ -606,10 +606,22 @@
 
                 // Name the slug variables based on the controller config
                 if ($controller_slugs) {
-                    foreach ($controller_slugs as $k => $slug_name) {
-                        $this->slugs[$slug_name] = isset($this->slugs[$k]) ? $this->slugs[$k] : null;
-                        unset($this->slugs[$k]);
+                    $slugs = [];
+                    foreach ($this->slugs as $k => $slug) {
+                        if (isset($controller_slugs[$k])) {
+                            $slugs[$controller_slugs[$k]] = $slug;
+                        } else {
+                            $slugs[$k] = $slug;
+                        }
                     }
+
+                    foreach ($controller_slugs as $slug_name) {
+                        if (! isset($slugs[$slug_name])) {
+                            $slugs[$slug_name] = null;
+                        }
+                    }
+
+                    $this->slugs = $slugs;
                 }
 
                 // if no class set, 404

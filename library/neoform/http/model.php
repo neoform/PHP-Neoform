@@ -607,7 +607,7 @@
                 // Name the slug variables based on the controller config
                 if ($controller_slugs) {
                     $slugs = [];
-                    foreach ($this->slugs as $k => $slug) {
+                    foreach ($this->non_controller_slugs as $k => $slug) {
                         if (isset($controller_slugs[$k])) {
                             $slugs[$controller_slugs[$k]] = $slug;
                         } else {

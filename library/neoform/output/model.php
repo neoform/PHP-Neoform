@@ -2,10 +2,10 @@
 
     namespace neoform\output;
 
-    use neoform\config;
     use neoform\http;
     use neoform\locale;
     use neoform\render;
+    use neoform;
 
     /**
      * Handle all output that goes to the browser, this includes headers
@@ -57,7 +57,7 @@
          */
         public function cookie_set($key, $val, $ttl=null) {
 
-            $config = config::instance();
+            $config = neoform\config::instance();
 
             if ($ttl === null || ! is_numeric($ttl)) {
                 $ttl = time() + $config['cookies']['ttl'];
@@ -82,7 +82,7 @@
          * @return bool
          */
         public static function cookie_delete($key) {
-            $config = config::instance();
+            $config = neoform\config::instance();
             return setcookie(
                 $key,
                 '',
@@ -145,23 +145,23 @@
                 switch ((string) $type) {
                     case 'json':
                         $this->output_type = self::JSON;
-                        $this->header('Content-type', self::JSON . '; charset="' . config::instance()['core']['encoding'] . '"');
+                        $this->header('Content-type', self::JSON . '; charset="' . neoform\config::instance()['core']['encoding'] . '"');
                         break;
 
                     case 'xml':
                         $this->output_type = self::XML;
-                        $this->header('Content-type', self::XML . '; charset="' . config::instance()['core']['encoding'] . '"');
+                        $this->header('Content-type', self::XML . '; charset="' . neoform\config::instance()['core']['encoding'] . '"');
                         break;
 
                     case 'html':
                     case '':
                         $this->output_type = self::HTML;
-                        $this->header('Content-type', self::HTML . '; charset="' . config::instance()['core']['encoding'] . '"');
+                        $this->header('Content-type', self::HTML . '; charset="' . neoform\config::instance()['core']['encoding'] . '"');
                         break;
 
                     default:
                         $this->output_type = $type;
-                        $this->header('Content-type', $type . '; charset="' . config::instance()['core']['encoding'] . '"');
+                        $this->header('Content-type', $type . '; charset="' . neoform\config::instance()['core']['encoding'] . '"');
                         break;
                 }
                 return $this;

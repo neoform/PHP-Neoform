@@ -5,8 +5,8 @@
     use neoform\core;
     use neoform\http;
     use neoform\routes;
-    use neoform\config;
     use neoform\disk;
+    use neoform;
 
     class dao {
 
@@ -56,7 +56,7 @@
 
             $return = null;
 
-            foreach (config::instance()['locale']['allowed'] as $file_locale) {
+            foreach (neoform\config::instance()['locale']['allowed'] as $file_locale) {
                 $info = [
                     'controllers'   => [],
                     'routes'        => [],

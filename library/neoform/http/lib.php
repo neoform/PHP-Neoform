@@ -16,8 +16,8 @@
          *
          * @return bool true on 404
          */
-        public static function limit_url($controller_slug_regex, $non_controller_slug_regex, array $permitted_gets=[],
-                                         array $permitted_parameters=[]) {
+        public static function limit_url($controller_slug_regex='`(^/$)`', $non_controller_slug_regex='`(^$)`',
+                                         array $permitted_gets=[], array $permitted_parameters=[]) {
 
             $slugs = http::instance()->controller_slugs();
             array_shift($slugs); // we don't want to have root be part of this

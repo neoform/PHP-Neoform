@@ -2,7 +2,7 @@
 
     namespace neoform\memcache;
 
-    use neoform\config;
+    use neoform;
 
     /**
      * Memcache Instance
@@ -12,7 +12,7 @@
 
         public function __construct($name) {
             //only maintain persistent connections for each site (key_prefix is used for this)
-            $prefix = config::instance()['memcache']['key_prefix'];
+            $prefix = neoform\config::instance()['memcache']['key_prefix'];
             parent::__construct(($prefix ? "{$prefix}:" : '') . $name);
         }
 

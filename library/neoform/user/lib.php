@@ -2,34 +2,49 @@
 
     namespace neoform\user;
 
-    use neoform\config;
+    use neoform;
 
     class lib {
 
+        /**
+         * @return status\model
+         */
         public static function default_status() {
             static $status;
             if ($status === null) {
-                $status = new status\model(config::instance()['auth']['default_user_account_status_id']);
+                $status = new status\model(neoform\config::instance()['auth']['default_user_account_status_id']);
             }
             return $status;
         }
 
+        /**
+         * @return hashmethod\model
+         */
         public static function default_hashmethod() {
             static $hashmethod;
             if ($hashmethod === null) {
-                $hashmethod = new hashmethod\model(config::instance()['auth']['default_hash_method_id']);
+                $hashmethod = new hashmethod\model(neoform\config::instance()['auth']['default_hash_method_id']);
             }
             return $hashmethod;
         }
 
+        /**
+         * @return int
+         */
         public static function default_hashmethod_cost() {
-            return (int) config::instance()['auth']['default_hash_method_cost'];
+            return (int) neoform\config::instance()['auth']['default_hash_method_cost'];
         }
 
+        /**
+         * @return int
+         */
         public static function max_salt_length() {
-            return (int) config::instance()['auth']['max_salt_length'];
+            return (int) neoform\config::instance()['auth']['max_salt_length'];
         }
 
+        /**
+         * @return string
+         */
         public static function generate_salt() {
             $salt = '';
             $len = self::max_salt_length();
@@ -42,6 +57,12 @@
             return $salt;
         }
 
+        /**
+         * @param model  $user
+         * @param string $password
+         *
+         * @return bool
+         */
         public static function password_matches(model $user, $password) {
             $hash = $user->user_hashmethod()->hash(
                 $password,

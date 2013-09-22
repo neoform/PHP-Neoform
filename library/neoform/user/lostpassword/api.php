@@ -7,12 +7,12 @@
     use neoform\auth;
     use neoform\user;
     use neoform\redirect;
-    use neoform\config;
     use neoform\http;
+    use neoform;
 
     class api {
 
-        public static function lost(\neoform\site\model $site, array $info) {
+        public static function lost(neoform\site\model $site, array $info) {
 
             if (auth::instance()->logged_in()) {
                 throw new redirect\exception;
@@ -44,7 +44,7 @@
                 );
 
                 // Generate random hash
-                $hash = \neoform\type\string\lib::random_chars(40);
+                $hash = neoform\type\string\lib::random_chars(40);
 
                 entity::dao('user\lostpassword')->insert([
                     'user_id' => $user->id,
@@ -52,33 +52,33 @@
                 ]);
 
                 //email the request to the friend to tell them the good news
-                $email            = new \neoform\email\model('password/lost');
+                $email            = new neoform\email\model('password/lost');
                 $email->url       = http::instance()->server('surl') . "account/passwordreset/{$hash}";
-                $email->site_name = config::instance()['core']['site_name'];
+                $email->site_name = neoform\config::instance()['core']['site_name'];
 
                 try {
                     $email->send($user->email, 'html');
                     return true;
-                } catch (\neoform\email\exception $e) {
-                    throw new \neoform\error\exception($e->getMessage());
+                } catch (neoform\email\exception $e) {
+                    throw new neoform\error\exception($e->getMessage());
                 }
             }
 
             throw $input->exception();
         }
 
-        public static function find(\neoform\site\model $site, $hash) {
+        public static function find(neoform\site\model $site, $hash) {
             if (auth::instance()->logged_in()) {
-                throw new \neoform\redirect\exception;
+                throw new neoform\redirect\exception;
             }
 
             try {
                 $lost_password = new user\lostpassword\model($hash);
             } catch (user\lostpassword\exception $e) {
-                throw new \neoform\error\exception('You password reset link has either expired or is not valid');
+                throw new neoform\error\exception('You password reset link has either expired or is not valid');
             }
 
-            $password      = \neoform\type\string\lib::random_chars(8, 12);
+            $password      = neoform\type\string\lib::random_chars(8, 12);
             $salt          = user\lib::generate_salt();
             $password_cost = user\lib::default_hashmethod_cost();
             $hash_method   = user\lib::default_hashmethod();

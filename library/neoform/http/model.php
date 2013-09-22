@@ -5,7 +5,6 @@
     use neoform\locale;
     use neoform\auth;
     use neoform\output;
-    use neoform\config;
     use neoform;
 
     class model {
@@ -644,7 +643,7 @@
 
             $good = true;
 
-            $cookied_code = $this->cookie(config::instance()['auth']['cookie']);
+            $cookied_code = $this->cookie(neoform\config::instance()['auth']['cookie']);
 
             if (! $cookied_code) {
                 $cookied_code = neoform\auth\lib::create_hash_cookie();
@@ -708,7 +707,7 @@
 
             if (! $this->ref_code_cache) {
 
-                $cookied_code = $this->cookie(config::instance()['auth']['cookie']);
+                $cookied_code = $this->cookie(neoform\config::instance()['auth']['cookie']);
 
                 if (! $cookied_code) {
                     $cookied_code = neoform\auth\lib::create_hash_cookie();

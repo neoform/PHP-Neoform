@@ -2,11 +2,11 @@
 
     namespace neoform\http;
 
-    use neoform\config;
+    use neoform;
 
-    class flash extends \neoform\core\singleton {
+    class flash extends neoform\core\singleton {
 
         public static function init($name) {
-            return new flash\model(config::instance()['http']['session']);
+            return new flash\model(neoform\config::instance()['http']['session']);
         }
     }

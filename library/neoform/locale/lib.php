@@ -2,9 +2,9 @@
 
     namespace neoform\locale;
 
-    use neoform\config;
     use neoform\sql;
     use neoform\cache;
+    use neoform;
 
     class lib {
 
@@ -30,11 +30,11 @@
             static $config;
 
             if (! $config) {
-                $config = config::instance()['locale'];
+                $config = neoform\config::instance()['locale'];
             }
 
             $get = function() use ($locale_iso2, $namespace_id) {
-                $messages = sql::instance(config::instance()['sql']['default_pool_read'])->prepare("
+                $messages = sql::instance(neoform\config::instance()['sql']['default_pool_read'])->prepare("
                     SELECT
                         locale_key.body k,
                         locale_key_message.body v
@@ -79,7 +79,7 @@
          */
         public static function flush_by_locale_namespace($locale_iso2, \neoform\locale\nspace\model $namespace) {
 
-            $config = config::instance()['locale'];
+            $config = neoform\config::instance()['locale'];
 
             cache\lib::delete(
                 $config['cache_engine'],

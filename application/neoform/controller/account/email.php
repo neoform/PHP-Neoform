@@ -5,7 +5,7 @@
     class controller_account_email extends controller_account {
 
         public function default_action() {
-            switch (http::instance()->segment('action')) {
+            switch (http::instance()->slug('action')) {
                 case 'update':
                     $this->update();
                     break;

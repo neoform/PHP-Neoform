@@ -6,7 +6,7 @@
 
     /**
      * This class is used in the route.php config file, which contains all the site's routing information.
-     * Each instance of a route is points to a single controller based on a url segment or pattern.
+     * Each instance of a route is points to a single controller based on a url slug or pattern.
      */
     class model {
 
@@ -52,11 +52,11 @@
         protected $children;
 
         /**
-         * URL segments
+         * URL slugs
          *
          * @var array|null
          */
-        protected $segments;
+        protected $slugs;
 
         /**
          * Assemble route information
@@ -70,7 +70,7 @@
             $this->resource         = isset($info['resources']) ? $info['resources'] : null;
             $this->locale           = isset($info['locale']) && is_array($info['locale']) && $info['locale'] ? $info['locale'] : null;
             $this->children         = isset($info['children']) && is_array($info['children']) && $info['children'] ? $info['children'] : null;
-            $this->segments         = isset($info['segments']) && is_array($info['segments']) && $info['segments'] ? $info['segments'] : null;
+            $this->slugs            = isset($info['slugs']) && is_array($info['slugs']) && $info['slugs'] ? $info['slugs'] : null;
         }
 
         // Don't use these functions in the routes file, they're intended for the core http classes.
@@ -143,7 +143,7 @@
                 'controller_class' => $this->controller_class,
                 'action_name'      => $this->action_name,
                 'children'         => $children ? $children : null,
-                'segments'         => $this->segments,
+                'slugs'            => $this->slugs,
             ];
         }
     }

@@ -11,7 +11,7 @@
             } else {
                 list($user, $new_password) = user\lostpassword\api::find(
                     new site\model(config::instance()['core']['site_id']),
-                    http::instance()->segment('code')
+                    http::instance()->slug('code')
                 );
 
                 auth\lib::activate_session($user);

@@ -69,7 +69,7 @@
         }
 
         /**
-         * Read a segment of a file
+         * Read a slug of a file
          *
          * @param $fp
          * @param $offset

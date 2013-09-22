@@ -44,8 +44,8 @@
                             ]),
                             'passwordretreive' => new route([
                                 'controller' => 'controller_account_passwordlost',
-                                'segments'   => [
-                                    3 => 'action',
+                                'slugs'   => [
+                                    0 => 'action',
                                 ],
                                 'locale' => [
                                     'en' => 'passwordretreive',
@@ -58,8 +58,8 @@
                                     'en' => 'passwordreset',
                                     //'fr' => 'mot_de_passe_trouvé',
                                 ],
-                                'segments' => [
-                                    3 => 'code',
+                                'slugs' => [
+                                    0 => 'code',
                                 ],
                             ]),
                             'info' => new route([
@@ -75,8 +75,8 @@
                                     'en' => 'password',
                                     //'fr' => 'mot_de_passe',
                                 ],
-                                'segments' => [
-                                    3 => 'action',
+                                'slugs' => [
+                                    0 => 'action',
                                 ],
                             ]),
                             'email' => new route([
@@ -85,8 +85,8 @@
                                     'en' => 'email',
                                     //'fr' => 'courriel',
                                 ],
-                                'segments'   => [
-                                    3 => 'action',
+                                'slugs'   => [
+                                    0 => 'action',
                                 ],
                             ]),
 
@@ -96,14 +96,14 @@
 
                                     'check' => new route([
                                         'controller' => 'controller_account_ajax_check',
-                                        'segments'   => [
-                                            4 => 'action',
+                                        'slugs'   => [
+                                            0 => 'action',
                                         ],
                                     ]),
                                     'login' => new route([
                                         'controller' => 'controller_account_ajax_login',
-                                        'segments'   => [
-                                            4 => 'action',
+                                        'slugs'   => [
+                                            0 => 'action',
                                         ],
                                     ]),
                                     'insert' => new route([
@@ -156,8 +156,8 @@
                                     // Ajax
                                     'ajax' => new route([
                                         'controller' => 'controller_admin_user_ajax',
-                                        'segments'   => [
-                                            4 => 'action',
+                                        'slugs'   => [
+                                            0 => 'action',
                                         ],
                                     ]),
                                 ],
@@ -194,8 +194,8 @@
                                             // Ajax
                                             'ajax' => new route([
                                                 'controller' => 'controller_admin_acl_role_ajax',
-                                                'segments'   => [
-                                                    5 => 'action',
+                                                'slugs'   => [
+                                                    0 => 'action',
                                                 ],
                                             ]),
                                         ],
@@ -209,8 +209,8 @@
                                             // Ajax
                                             'ajax' => new route([
                                                 'controller' => 'controller_admin_acl_resource_ajax',
-                                                'segments' => [
-                                                    5 => 'action',
+                                                'slugs' => [
+                                                    0 => 'action',
                                                 ],
                                             ]),
                                         ],
@@ -219,8 +219,8 @@
                                     // Ajax
                                     'ajax' => new route([
                                         'controller' => 'controller_admin_group_ajax',
-                                        'segments'   => [
-                                            4 => 'action',
+                                        'slugs'   => [
+                                            0 => 'action',
                                         ],
                                     ]),
                                 ],
@@ -240,8 +240,8 @@
                                             // Ajax
                                             'ajax' => new route([
                                                 'controller' => 'controller_admin_locale_namespaces_ajax',
-                                                'segments' => [
-                                                    5 => 'action',
+                                                'slugs' => [
+                                                    0 => 'action',
                                                 ]
                                             ]),
 
@@ -253,8 +253,8 @@
                                                     // Ajax
                                                     'ajax' => new route([
                                                         'controller' => 'controller_admin_locale_namespaces_messages_ajax',
-                                                        'segments' => [
-                                                            6 => 'action',
+                                                        'slugs' => [
+                                                            0 => 'action',
                                                         ]
                                                     ]),
                                                 ],

@@ -10,7 +10,7 @@
 
             $json = new render\json;
 
-            switch (http::instance()->segment('action')) {
+            switch (http::instance()->slug('action')) {
 
                 case 'insert':
                     try {

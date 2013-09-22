@@ -28,12 +28,10 @@
          */
         public static function get($file) {
             try {
-                $config = include(neoform\core::path('application') . self::CONF_CACHE_DIR . '/' . neoform\core::environment() . ($file ? "/{$file}." : '.') . EXT);
+                return include(neoform\core::path('application') . self::CONF_CACHE_DIR . '/' . neoform\core::environment() . ($file ? "/{$file}." : '.') . EXT);
             } catch (\exception $e) {
-                $config = null;
+                return self::set($file);
             }
-
-            return $config ?: self::set($file);
         }
 
         /**

@@ -57,7 +57,7 @@
          */
         public function cookie_set($key, $val, $ttl=null) {
 
-            $config = neoform\config::instance();
+            $config = neoform\config::instance()['http'];
 
             if ($ttl === null || ! is_numeric($ttl)) {
                 $ttl = time() + $config['cookies']['ttl'];
@@ -68,7 +68,7 @@
                 base64_encode($val),
                 time() + intval($ttl),
                 isset($config['cookies']['path']) ? $config['cookies']['path'] : http::instance()->server('subdir'),
-                $config['http']['domain'],
+                $config['domain'],
                 (bool) $config['cookies']['secure'],
                 (bool) $config['cookies']['httponly']
             );
@@ -82,13 +82,13 @@
          * @return bool
          */
         public static function cookie_delete($key) {
-            $config = neoform\config::instance();
+            $config = neoform\config::instance()['http'];
             return setcookie(
                 $key,
                 '',
                 time() - 100000,
                 isset($config['cookies']['path']) ? $config['cookies']['path'] : http::instance()->server('subdir'),
-                $config['core']['domain']
+                $config['domain']
             );
         }
 

@@ -37,7 +37,7 @@
 
             // If any get values exist that aren't permitted, 404.
             if ($permitted_gets !== null) {
-                if (array_diff_key(http::instance()->gets(), array_flip($permitted_gets))) {
+                if (array_diff_key(http::instance()->gets(), array_flip($permitted_gets + ['rc']))) {
                     controller::show404();
                     return true;
                 }

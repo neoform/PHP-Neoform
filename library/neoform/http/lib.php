@@ -16,31 +16,39 @@
          *
          * @return bool true on 404
          */
-        public static function limit_url($controller_slug_regex='`(^/$)`', $non_controller_slug_regex='`(^$)`',
-                                         array $permitted_gets=[], array $permitted_parameters=[]) {
+        public static function enforce_url($controller_slug_regex=null, $non_controller_slug_regex=null,
+                                         array $permitted_gets=null, array $permitted_parameters=null) {
 
-            $slugs = http::instance()->controller_slugs();
-            array_shift($slugs); // we don't want to have root be part of this
-            if (! preg_match($controller_slug_regex, '/' . join('/', $slugs))) {
-                controller::show404();
-                return true;
+            if ($controller_slug_regex !== null) {
+                $slugs = http::instance()->controller_slugs();
+                array_shift($slugs); // we don't want to have root be part of this
+                if (! preg_match($controller_slug_regex, '/' . join('/', $slugs))) {
+                    controller::show404();
+                    return true;
+                }
             }
 
-            if (! preg_match($non_controller_slug_regex, join('/', http::instance()->non_controller_slugs()))) {
-                controller::show404();
-                return true;
+            if ($non_controller_slug_regex !== null) {
+                if (! preg_match($non_controller_slug_regex, join('/', http::instance()->non_controller_slugs()))) {
+                    controller::show404();
+                    return true;
+                }
             }
 
             // If any get values exist that aren't permitted, 404.
-            if (array_diff_key(http::instance()->gets(), array_flip($permitted_gets))) {
-                controller::show404();
-                return true;
+            if ($permitted_gets !== null) {
+                if (array_diff_key(http::instance()->gets(), array_flip($permitted_gets))) {
+                    controller::show404();
+                    return true;
+                }
             }
 
             // If any get values exist that aren't permitted, 404.
-            if (array_diff_key(http::instance()->parameters(), array_flip($permitted_parameters))) {
-                controller::show404();
-                return true;
+            if ($permitted_parameters !== null) {
+                if (array_diff_key(http::instance()->parameters(), array_flip($permitted_parameters))) {
+                    controller::show404();
+                    return true;
+                }
             }
 
             return false;

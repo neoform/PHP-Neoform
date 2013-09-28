@@ -5,6 +5,15 @@
     class lib {
 
         /**
+         * @param string $ip_str
+         *
+         * @return int
+         */
+        public static function ip2long($ip_str) {
+            return (int) sprintf('%u', ip2long($ip_str));
+        }
+
+        /**
          * Same as nl2br, but with <p> instead of <br>
          *
          * @param string $str

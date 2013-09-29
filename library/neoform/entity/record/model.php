@@ -66,6 +66,19 @@
         }
 
         /**
+         * Get a value from this model - no casting or modifications
+         *
+         * @param string $k
+         *
+         * @return mixed|null
+         */
+        public function get($k) {
+            if (isset($this->vars[$k])) {
+                return $this->vars[$k];
+            }
+        }
+
+        /**
          * Empty the current model
          */
         public function reset() {

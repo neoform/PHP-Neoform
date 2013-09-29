@@ -190,7 +190,9 @@
          * @return model
          */
         public function callback($func) {
-            $func($this);
+            if (! $this->error && (! $this->optional || ! $this->is_empty)) {
+                $func($this);
+            }
             return $this;
         }
 

@@ -30,6 +30,19 @@
         }
 
         /**
+         * Get a value from this model - no casting or modifications
+         *
+         * @param string $k
+         *
+         * @return mixed|null
+         */
+        public function get($k) {
+            if (isset($this->vars[$k])) {
+                return $this->vars[$k];
+            }
+        }
+
+        /**
          * Magic getter
          *
          * @param string|int|null $k key

@@ -596,7 +596,7 @@
              * cache if nothing actually changed
              */
             $old_info = $model->export();
-            $new_info = array_diff($new_info, $old_info);
+            $new_info = array_intersect_key($new_info, $old_info);
 
             if (! $new_info) {
                 return $return_model ? $model : false;

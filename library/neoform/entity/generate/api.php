@@ -78,7 +78,7 @@
                 $this->code .= "\t\t\t\$input->" . $field->name . "->cast('" . $field->casting . "')";
 
                 // Make everything optional since its an update.
-                $this->code .= "->optional()";
+                $this->code .= "->optional(" . ($field->allows_null() ? 'true' : 'false') . ")";
 
                 $this->code .= parser::driver_specific_api_validation($field);
 

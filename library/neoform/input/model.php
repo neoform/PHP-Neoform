@@ -9,13 +9,16 @@
         protected $data     = [];
         protected $optional = false;
         protected $is_empty;
+        protected $exists;
 
         /**
          * @param string|int|float|null $val
+         * @param bool                  $exists
          */
-        public function __construct($val=null) {
+        public function __construct($val=null, $exists=true) {
             $this->val      = $val;
             $this->is_empty = ! (bool) strlen(trim((string) $this->val));
+            $this->exists   = $exists;
         }
 
         /**
@@ -64,6 +67,15 @@
                 }
             }
             return $this;
+        }
+
+        /**
+         * Does this entry exist
+         *
+         * @return bool
+         */
+        public function exists() {
+            return (bool) $this->exists;
         }
 
         /**

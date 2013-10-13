@@ -37,7 +37,7 @@
          */
         public function __get($k) {
             if (! isset($this[$k])) {
-                $this[$k] = new model;
+                $this[$k] = new model(null, false);
             }
 
             return $this[$k];
@@ -68,7 +68,7 @@
                 if (count($args) === 1) {
                     if (! is_array($args[0])) {
                         if (! isset($this[$args[0]])) {
-                            $this[$args[0]] = new model;
+                            $this[$args[0]] = new model(null, false);
                         }
 
                         return $this[$args[0]];

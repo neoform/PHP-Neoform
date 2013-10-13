@@ -136,11 +136,11 @@
         /**
          * Set the content-type header
          *
-         * @param string $type 'json', 'xml', defaults to 'html', if null passed the output type is returned
+         * @param string|null $type 'json', 'xml', defaults to 'html', if null passed the output type is returned
          *
          * @return model|string
          */
-        public function output_type($type='') {
+        public function output_type($type=null) {
             if ($type !== null) {
                 switch ((string) $type) {
                     case 'json':

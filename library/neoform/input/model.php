@@ -86,7 +86,8 @@
          * @return model
          */
         public function set($v) {
-            $this->val = $v;
+            $this->val    = $v;
+            $this->exists = true;
             return $this;
         }
 

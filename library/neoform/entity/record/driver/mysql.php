@@ -482,6 +482,7 @@
                  * since we need the returned IDs for cache-busting and to return a model
                  */
                 if ($autoincrement) {
+                    $sql->beginTransaction();
 
                     $insert = $sql->prepare("
                         " . ($replace ? 'REPLACE' : 'INSERT') . " INTO

@@ -86,8 +86,9 @@
          * @return model
          */
         public function set($v) {
-            $this->val    = $v;
-            $this->exists = true;
+            $this->val      = $v;
+            $this->exists   = true;
+            $this->is_empty = ! (bool) strlen(trim((string) $v));
             return $this;
         }
 

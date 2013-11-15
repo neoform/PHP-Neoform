@@ -161,7 +161,7 @@
             self::$paths['library'] = realpath(__DIR__ . '/..');
 
             if (! isset($params['environment']) || ! self::$environment = $params['environment']) {
-                die("Config Error: PHP file extension not set. core::init([\"environment\" => [...] [)\n");
+                die("Config Error: Environment name not set. core::init([\"environment\" => [...] [)\n");
             }
 
             if (! isset($params['application']) || ! self::$paths['application'] = realpath($params['application'])) {

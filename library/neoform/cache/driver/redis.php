@@ -92,7 +92,13 @@
          * @return mixed
          */
         public static function set($pool, $key, $data, $ttl=null) {
-            return neoform\redis::instance($pool)->set($key, $data, $ttl);
+            // Due to a bug that was introduced in phpredis 2.2.4 (fixed in 2.2.5), the 3rd param is not included
+            // when not used
+            if ($ttl) {
+                return neoform\redis::instance($pool)->set($key, $data, $ttl);
+            } else {
+                return neoform\redis::instance($pool)->set($key, $data);
+            }
         }
 
         /**

@@ -144,7 +144,7 @@
             $https = isset($this->server['HTTPS']) && $this->server['HTTPS'] == 'on';
 
             // Check if subdomain is valid (in the config)
-            if ($subdomain && count($subdomains)) {
+            if ($subdomain && $subdomains) {
                 foreach ($subdomains as $subdomain_pair) {
                     if ($subdomain_pair['regular'] == $subdomain || $subdomain_pair['secure'] == $subdomain) {
                         $subdomain_regular = $subdomain_pair['regular'];

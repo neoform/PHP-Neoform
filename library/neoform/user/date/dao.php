@@ -42,7 +42,7 @@
         public function insert(array $info) {
 
             // Insert record
-            return parent::_insert($info);
+            return parent::_insert($info, false, true, true);
         }
 
         /**
@@ -55,7 +55,7 @@
         public function insert_multi(array $infos) {
 
             // Insert record
-            return parent::_insert_multi($infos);
+            return parent::_insert_multi($infos, true, false, true, true);
         }
 
         /**

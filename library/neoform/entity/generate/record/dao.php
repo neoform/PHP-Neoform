@@ -279,7 +279,7 @@
                     $this->code .= "\t\t\t\$keys_arr = [];\n";
                     $this->code .= "\t\t\tforeach (\${$name}_arr as \$k => \${$name}) {\n";
                     if (count($fields) === 1) {
-                        $this->code .= "\t\t\t\t\$keys_arr[\$k] = [ '{$index_field->name}' => ({$index_field->casting}) \${$index_field->name}, ];\n";
+                        $this->code .= "\t\t\t\t\$keys_arr[\$k] = [ '{$index_field->name}' => ({$index_field->casting}) \${$name}, ];\n";
                     } else {
                         $this->code .= "\t\t\t\t\$keys_arr[\$k] = [\n";
                         $longest_part = $this->longest_length($fields, false, true);
@@ -344,7 +344,7 @@
                     $this->code .= "\t\t\t\$keys_arr = [];\n";
                     $this->code .= "\t\t\tforeach (\${$name}_arr as \$k => \${$name}) {\n";
                     if (count($fields) === 1) {
-                        $this->code .= "\t\t\t\t\$keys_arr[\$k] = [ '{$index_field->name}' => ({$index_field->casting}) \${$index_field->name}, ];\n";
+                        $this->code .= "\t\t\t\t\$keys_arr[\$k] = [ '{$index_field->name}' => ({$index_field->casting}) \${$name}, ];\n";
                     } else {
                         $this->code .= "\t\t\t\t\$keys_arr[\$k] = [\n";
                         $longest_part = $this->longest_length($fields, false, true);

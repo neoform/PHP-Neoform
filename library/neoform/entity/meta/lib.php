@@ -15,7 +15,7 @@
          */
         public static function pull($engine, $engine_pool, $list_keys) {
 
-            if (! $list_keys) {
+            if (! $list_keys || ! $engine) {
                 return;
             }
 
@@ -35,7 +35,7 @@
          */
         public static function push($engine, $engine_pool, $cache_key, array $list_keys) {
 
-            if (! $list_keys) {
+            if (! $list_keys || ! $engine) {
                 return;
             }
 
@@ -54,7 +54,7 @@
          */
         public static function push_multi($engine, $engine_pool, array $cache_keys) {
 
-            if (! $cache_keys) {
+            if (! $cache_keys || ! $engine) {
                 return;
             }
 

@@ -181,10 +181,11 @@
         public function redirect($url='', $http_code=303) {
             $base_url = substr(http::instance()->server('url'), 0, -1);
             if (substr($url, 0, 1) !== '/') {
-                $this->header('Location', $base_url . locale::instance()->route("/{$url}"), true, $http_code);
+                $this->header('Location', $base_url . locale::instance()->route("/{$url}"));
             } else {
-                $this->header('Location', $base_url . locale::instance()->route($url), true, $http_code);
+                $this->header('Location', $base_url . locale::instance()->route($url));
             }
+            $this->http_response_code = $http_code;
             return $this;
         }
 

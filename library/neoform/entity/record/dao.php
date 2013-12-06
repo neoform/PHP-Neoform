@@ -592,11 +592,11 @@
             }
 
             /**
-             * Filter out any fields that have no actually changed - no point in updating the record and destroying
+             * Filter out any fields that have not actually changed - no point in updating the record and destroying
              * cache if nothing actually changed
              */
             $old_info = $model->export();
-            $new_info = array_intersect_key($new_info, $old_info);
+            $new_info = array_intersect_key($new_info, $this->field_bindings);
 
             if (! $new_info) {
                 return $return_model ? $model : false;

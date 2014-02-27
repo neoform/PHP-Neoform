@@ -406,8 +406,8 @@
         var _setOptions = function(opts) {
 
             // Custom data that we want to carry over from one dialog to another
-            if (typeof options.carryOver !== "undefine") {
-                opts = $.extend({}, opts, options.carryOver);
+            if (typeof options.persistentData !== "undefine") {
+                opts = $.extend({}, opts, options.persistentData);
             }
 
             options = $.extend({}, defaultOptions, typeof opts === "object" ? opts: {} );

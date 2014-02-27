@@ -94,7 +94,7 @@ Core = (function(){
                     CoreDialog.showUrl(
                         self.route("/account/ajax/dialog/captcha"),
                         {
-                            "carryOver": {
+                            "persistentData": {
                                 "resubmit": function() {
                                     $.ajax(captchaOpts);
                                 }

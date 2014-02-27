@@ -404,6 +404,12 @@
 
         // creates new set of options based on defaults + opts param
         var _setOptions = function(opts) {
+
+            // Custom data that we want to carry over from one dialog to another
+            if (typeof options.carryOver !== "undefine") {
+                opts = $.extend({}, opts, options.carryOver);
+            }
+
             options = $.extend({}, defaultOptions, typeof opts === "object" ? opts: {} );
         };
 
@@ -437,6 +443,7 @@
                             for (var k in resp.callbacks) {
                                 if (typeof resp.callbacks[k] === "string") {
                                     try {
+                                        // jsonp callback
                                         resp.callbacks[k] = eval("(function(){" + resp.callbacks[k] + "})");
                                     } catch (e) {
                                         if (console && console.log) {
@@ -618,18 +625,18 @@
             elements.loadingInner = $("<div/>")
                 .addClass("loading-inner")
                 .append(
-                $("<div/>").addClass("loading-message").text("Loading...")
-            )
+                    $("<div/>").addClass("loading-message").text("Loading...")
+                )
                 .append(elements.spinner);
 
             // Loading
             elements.loading = $("<div/>")
                 .addClass("loading")
                 .append(
-                $("<div/>")
-                    .addClass("loading-outer")
-                    .append(elements.loadingInner)
-            )
+                    $("<div/>")
+                        .addClass("loading-outer")
+                        .append(elements.loadingInner)
+                )
                 .appendTo(elements.form);
 
             // CSS

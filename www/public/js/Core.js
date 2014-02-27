@@ -88,7 +88,19 @@ Core = (function(){
                     break;
 
                 case "captcha":
-                    CoreDialog.showUrl(self.route("/account/ajax/dialog/captcha"));
+                    // Due to scoping, this needs to be held in a local var
+                    var captchaOpts = opts;
+
+                    CoreDialog.showUrl(
+                        self.route("/account/ajax/dialog/captcha"),
+                        {
+                            "carryOver": {
+                                "resubmit": function() {
+                                    $.ajax(captchaOpts);
+                                }
+                            }
+                        }
+                    );
                     break;
 
                 case "fault":

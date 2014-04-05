@@ -79,7 +79,7 @@
 
         protected function get_all_tables() {
             $sql = sql::instance()->prepare("
-                SHOW TABLES
+                SHOW FULL TABLES WHERE Table_Type = 'BASE TABLE'
             ");
             $sql->execute();
             $tables = [];

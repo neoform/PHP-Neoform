@@ -4,7 +4,8 @@
 
     class entity {
 
-        protected static $daos = [];
+        protected static $daos           = [];
+        protected static $daos_cacheless = [];
 
         protected static $readonly_config = [
             'source_engine_pool_write'     => null, // set to null, since we can't allow any writing to the source
@@ -54,17 +55,14 @@
          * @return entity\record\dao|entity\link\dao
          */
         public static function dao_override($name, array $override) {
-            if (! isset(self::$daos[$name])) {
-                $class_name = "\\neoform\\{$name}\\dao";
-                $config     = config::instance()['entity'];
+            $class_name = "\\neoform\\{$name}\\dao";
+            $config     = config::instance()['entity'];
 
-                if (isset($config['overrides'][$name])) {
-                    self::$daos[$name] = new $class_name($override + $config['overrides'][$name] + $config['defaults']);
-                } else {
-                    self::$daos[$name] = new $class_name($override + $config['defaults']);
-                }
+            if (isset($config['overrides'][$name])) {
+                self::$daos[$name] = new $class_name($override + $config['overrides'][$name] + $config['defaults']);
+            } else {
+                self::$daos[$name] = new $class_name($override + $config['defaults']);
             }
-            return self::$daos[$name];
         }
 
         /**
@@ -79,6 +77,9 @@
          * @return entity\record\dao|entity\link\dao
          */
         public static function dao_cacheless($name) {
-            return self::dao_override($name, self::$readonly_config);
+            if (! isset(self::$daos_cacheless[$name])) {
+                self::$daos_cacheless[$name] = self::dao_override($name, self::$readonly_config);
+            }
+            return self::$daos_cacheless[$name];
         }
     }

@@ -31,6 +31,8 @@
         }
 
         /**
+         * Get an input model
+         * 
          * @param string $k
          *
          * @return mixed
@@ -41,6 +43,17 @@
             }
 
             return $this[$k];
+        }
+        
+        /**
+         * Check if an input model exists
+         * 
+         * @param string $k key
+         * 
+         * @return boolean
+         */
+        public function exists($k) {
+            return isset($this[$k]) && $this[$k]->exists(); 
         }
 
         /**

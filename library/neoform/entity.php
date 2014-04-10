@@ -53,7 +53,7 @@
          *
          * @return entity\record\dao|entity\link\dao
          */
-        public static function dao_overriden($name, array $override) {
+        public static function dao_override($name, array $override) {
             if (! isset(self::$daos[$name])) {
                 $class_name = "\\neoform\\{$name}\\dao";
                 $config     = config::instance()['entity'];
@@ -79,6 +79,6 @@
          * @return entity\record\dao|entity\link\dao
          */
         public static function dao_cacheless($name) {
-            return self::dao_overriden($name, self::$readonly_config);
+            return self::dao_override($name, self::$readonly_config);
         }
     }

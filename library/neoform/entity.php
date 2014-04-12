@@ -59,9 +59,9 @@
             $config     = config::instance()['entity'];
 
             if (isset($config['overrides'][$name])) {
-                self::$daos[$name] = new $class_name($override + $config['overrides'][$name] + $config['defaults']);
+                return new $class_name($override + $config['overrides'][$name] + $config['defaults']);
             } else {
-                self::$daos[$name] = new $class_name($override + $config['defaults']);
+                return new $class_name($override + $config['defaults']);
             }
         }
 

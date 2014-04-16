@@ -5,7 +5,7 @@
     class lib {
 
         /**
-         * Delete lists
+         * Get union of multiple lists, then delete the lists
          *
          * @param string $engine
          * @param string $engine_pool

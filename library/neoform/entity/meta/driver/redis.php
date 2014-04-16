@@ -7,7 +7,7 @@
     class redis implements \neoform\entity\meta\driver {
 
         /**
-         * Get all members of multiple list or get matching members of multiple lists
+         * Get all unique members of multiple list or get matching members of multiple lists, then delete the lists
          *
          * @param string $pool
          * @param array  $list_keys
@@ -24,7 +24,6 @@
 
         /**
          * Create a list and/or Add a value to a list
-         * It is recommended this function be wrapped in a batch operation
          *
          * @param string $pool
          * @param string $cache_key
@@ -54,7 +53,6 @@
 
         /**
          * Create a list and/or Add a value to a list
-         * It is recommended this function be wrapped in a batch operation
          *
          * @param string $pool
          * @param array  $cache_keys

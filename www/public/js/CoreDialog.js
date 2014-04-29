@@ -441,7 +441,8 @@
                         done = true;
 
                         // Load external JS files
-                        if (resp.jsFiles && resp.jsFiles.length) {
+                        var hasJSFiles = resp.jsFiles && resp.jsFiles.length;
+                        if (hasJSFiles) {
                             for (var k in resp.jsFiles) {
                                 try {
                                     _jsLoad.get(
@@ -488,7 +489,7 @@
                             }
                         }
 
-                        if (! (resp.jsFile && resp.jsFile.length)) {
+                        if (! hasJSFiles) {
                             _show(resp);
                         }
                     },

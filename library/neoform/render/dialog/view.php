@@ -2,8 +2,7 @@
 
     namespace neoform\render\dialog;
 
-    use neoform\locale;
-    use neoform\core;
+    use neoform;
 
     class view {
 
@@ -14,9 +13,9 @@
 
         public function __construct($__path, array $__vars) {
             $this->__vars           = $__vars;
-            $this->__vars['locale'] = locale::instance();
+            $this->__vars['locale'] = neoform\locale::instance();
 
-            $__path = core::path('application') . "/dialogs/{$__path}." . self::VIEW_EXT;
+            $__path = neoform\core::path('application') . "/dialogs/{$__path}." . self::VIEW_EXT;
 
             ob_start();
 
@@ -31,7 +30,7 @@
                     while (ob_get_length()) {
                         $this->__html .= ob_get_clean();
                     }
-                } catch (\exception $e) {
+                   } catch (\exception $e) {
                     throw new \exception('Output buffer error occurred');
                 }
 

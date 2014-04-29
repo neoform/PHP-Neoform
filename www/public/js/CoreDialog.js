@@ -439,6 +439,40 @@
                     "cache": false,
                     "success": function(resp) {
                         done = true;
+
+                        // Load external JS files
+                        if (resp.jsFiles && resp.jsFiles.length) {
+                            for (var k in resp.jsFiles) {
+                                try {
+                                    _jsLoad.get(
+                                        resp.jsFiles[k].url,
+                                        resp.jsFiles[k].sync && true
+                                    );
+                                } catch (e) {
+                                    if (console && console.log) {
+                                        console.log(e);
+                                    }
+                                }
+                            }
+
+                            _jsLoad.fetch(function() {
+                                _show(resp);
+                            });
+                        }
+
+                        if (resp.cssFiles && resp.cssFiles.length) {
+                            for (var k in resp.cssFiles) {
+                                try {
+                                    _cssLoad.fetch(resp.cssFiles[k]);
+                                } catch (e) {
+                                    if (console && console.log) {
+                                        console.log(e);
+                                    }
+                                }
+                            }
+                        }
+
+                        // Load callbacks
                         if (resp.callbacks) {
                             for (var k in resp.callbacks) {
                                 if (typeof resp.callbacks[k] === "string") {
@@ -453,7 +487,10 @@
                                 }
                             }
                         }
-                        _show(resp);
+
+                        if (! (resp.jsFile && resp.jsFile.length)) {
+                            _show(resp);
+                        }
                     },
                     "error": function(resp) {
                         _error("Error", "There was a problem loading this dialog box");
@@ -819,6 +856,91 @@
             self.clear = function() {
                 arr = [];
             };
+
+            return self;
+        })();
+
+        var _cssLoad = (function() {
+            var self      = {},
+                loadedCSS = [];
+
+            self.fetch = function(path) {
+                if ($.inArray(path, loadedCSS) === -1) {
+                    loadedCSS.push(path);
+                    $("<link/>", {
+                        rel:  "stylesheet",
+                        type: "text/css",
+                        href: path
+                    }).appendTo("head");
+                }
+            };
+
+            return self;
+        })();
+
+        var _jsLoad = (function() {
+            var self     = {},
+                queued   = [],    // pending queue
+                q        = [],    // in progress queue
+                loadedJS = [],    // scripts that have already been loaded
+                func,             // function to load on complete
+                fetching = false; // we currently fetching
+
+            /**
+             * Queue up a JS file to be fetched
+             * @param jsPath
+             * @param synchronous
+             */
+            self.get = function(jsPath, synchronous) {
+                queued.push([jsPath, synchronous]);
+            };
+
+            /**
+             * Once all the JS files have been loaded
+             * @param onLoad
+             */
+            self.fetch = function(onLoad) {
+                if (! fetching && queued.length) {
+                    func     = onLoad;
+                    fetching = true;
+                    q        = queued; // local copy
+                    queued   = [];
+                    loadNext();
+                }
+            };
+
+            function loadNext() {
+                var fileFetched = false;
+                while (q.length) {
+                    var file = q.shift();
+                    if ($.inArray(file[0], loadedJS) === -1) {
+                        loadedJS.push(file[0]);
+                        $.getScript(file[0], complete);
+                        fileFetched = true;
+                        if (file[1]) {
+                            // break the loop since we cannot keep loading files until this one is done
+                            return;
+                        }
+                    }
+                }
+
+                // If no files need fetching, we're done
+                if (! fileFetched) {
+                    complete();
+                }
+            };
+
+            function complete() {
+                // If this is not the last file, fetch another one
+                if (q.length) {
+                    loadNext();
+
+                // If nothing left to load, we're done
+                } else {
+                    fetching = false;
+                    func();
+                }
+            }
 
             return self;
         })();

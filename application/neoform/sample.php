@@ -58,6 +58,10 @@
                     'cache_engine_write' => 'master',
                 ]),
 
+                'web' => new web\config([
+                    'user_agent' => 'php-neoform-crawler/1.0',
+                ]),
+
                 'sql' => new sql\config([
 
                     // Which server is used when reading

@@ -16,9 +16,13 @@
          */
         public static function wget($url, array $post=null, $bind_to_ip=null) {
 
+            if (! self::valid_url($url)) {
+                throw new exception('Invalid URL');
+            }
+
             $curl = curl_init($url);
 
-            curl_setopt($curl, CURLOPT_USERAGENT, 'Mozilla/5.0 (X11; U; Linux i686; pl-PL; rv:1.9.0.2) Gecko/20121223 Ubuntu/9.25 (jaunty) Firefox/3.8');
+            curl_setopt($curl, CURLOPT_USERAGENT, \neoform\config::instance()['web']['user_agent']);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             //curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($curl, CURLOPT_TIMEOUT, 20);
@@ -39,7 +43,7 @@
                 return $contents;
             }
 
-            throw new exception("Server returned HTTP/{$info['http_code']}");
+            throw new exception("Server returned HTTP/{$info['http_code']}", (int) $info['http_code']);
         }
 
         /**
@@ -53,9 +57,14 @@
          * @throws exception
          */
         public static function wget_info($url, array $post=null, $bind_to_ip=null) {
+
+            if (! self::valid_url($url)) {
+                throw new exception('Invalid URL');
+            }
+
             $curl = curl_init($url);
 
-            curl_setopt($curl, CURLOPT_USERAGENT, 'Mozilla/5.0 (X11; U; Linux i686; pl-PL; rv:1.9.0.2) Gecko/20121223 Ubuntu/9.25 (jaunty) Firefox/3.8');
+            curl_setopt($curl, CURLOPT_USERAGENT, \neoform\config::instance()['web']['user_agent']);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($curl, CURLOPT_TIMEOUT, 20);
@@ -81,7 +90,7 @@
                 return $info;
             }
 
-            throw new exception("Server returned HTTP/{$info['http_code']}");
+            throw new exception("Server returned HTTP/{$info['http_code']}", (int) $info['http_code']);
         }
 
         /**
@@ -95,9 +104,14 @@
          * @throws exception
          */
         public static function wget_full($url, array $post=null, $bind_to_ip=null) {
+
+            if (! self::valid_url($url)) {
+                throw new exception('Invalid URL');
+            }
+
             $curl = curl_init($url);
 
-            curl_setopt($curl, CURLOPT_USERAGENT, 'Mozilla/5.0 (X11; U; Linux i686; pl-PL; rv:1.9.0.2) Gecko/20121223 Ubuntu/9.25 (jaunty) Firefox/3.8');
+            curl_setopt($curl, CURLOPT_USERAGENT, \neoform\config::instance()['web']['user_agent']);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($curl, CURLOPT_TIMEOUT, 20);
@@ -121,6 +135,29 @@
                 ];
             }
 
-            throw new exception("Server returned HTTP/{$head['http_code']}");
+            throw new exception("Server returned HTTP/{$head['http_code']}", (int) $head['http_code']);
+        }
+
+        /**
+         * Tests if a URL is valid to be fetched or not
+         *
+         * @param string $url
+         *
+         * @return bool
+         */
+        public static function valid_url($url) {
+            if (! $info = parse_url($url)) {
+                return false;
+            }
+
+            if (empty($info['host']) || $info['host'] === 'localhost') {
+                return false;
+            }
+
+            if (empty($info['scheme']) || ! ($info['scheme'] === 'http' || $info['scheme'] === 'https')) {
+                return false;
+            }
+
+            return true;
         }
     }

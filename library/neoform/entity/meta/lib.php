@@ -13,7 +13,7 @@
          *
          * @return array|null
          */
-        public static function pull($engine, $engine_pool, $list_keys) {
+        public static function pull($engine, $engine_pool, array $list_keys) {
 
             if (! $list_keys || ! $engine) {
                 return;

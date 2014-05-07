@@ -44,6 +44,11 @@
                     // and that change has not yet propagated to the slave, resulting in inaccurate cache.
                     // This value only has effect when the master and slave source is not the same server.
                     'cache_delete_expire_ttl' => 0,
+
+                    // When using a caching engine that supports binary keys, activate this feature.
+                    // This will result in smaller cache keys, since the default is to store the hashed values as hex
+                    // which is far less efficient
+                    'use_binary_keys' => false,
                 ],
 
                 'overrides' => [],

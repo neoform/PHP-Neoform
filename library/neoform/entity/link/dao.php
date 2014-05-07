@@ -34,10 +34,10 @@
             $param_count = count($fieldvals);
             if ($param_count === 1) {
                 return static::CACHE_KEY . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
-                       md5(json_encode($order_by)) . ':' . md5(reset($fieldvals));
+                       md5(json_encode($order_by), $this->use_binary_keys) . ':' . md5(reset($fieldvals), $this->use_binary_keys);
             } else if ($param_count === 0) {
                 return static::CACHE_KEY . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
-                       md5(json_encode($order_by)) . ':';
+                       md5(json_encode($order_by), $this->use_binary_keys) . ':';
             } else {
                 ksort($fieldvals);
                 foreach ($fieldvals as & $val) {
@@ -45,7 +45,7 @@
                 }
                 // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
                 return static::CACHE_KEY . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
-                       md5(json_encode($order_by)) . ':' . md5(json_encode(array_values($fieldvals)));
+                       md5(json_encode($order_by), $this->use_binary_keys) . ':' . md5(json_encode(array_values($fieldvals)), $this->use_binary_keys);
             }
         }
 

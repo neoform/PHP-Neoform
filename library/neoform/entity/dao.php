@@ -20,7 +20,7 @@
 
         protected $cache_delete_expire_ttl;
 
-        protected $use_binary_keys;
+        protected $cache_use_binary_keys;
 
         /**
          * Order By
@@ -62,7 +62,7 @@
 
             $this->cache_delete_expire_ttl      = $config['cache_delete_expire_ttl'];
         
-            $this->use_binary_keys              = $config['use_binary_keys'];
+            $this->cache_use_binary_keys        = $config['cache_use_binary_keys'];
         }
 
         /**
@@ -158,7 +158,7 @@
             // each key is namespaced with the name of the class, then the name of the function ($cache_key_name)
             $param_count = count($fieldvals);
             if ($param_count === 1) {
-                return static::CACHE_KEY . ":{$cache_key_name}:" . md5(reset($fieldvals), $this->use_binary_keys);
+                return static::CACHE_KEY . ":{$cache_key_name}:" . md5(reset($fieldvals), $this->cache_use_binary_keys);
             } else if ($param_count === 0) {
                 return static::CACHE_KEY . ":{$cache_key_name}:";
             } else {
@@ -167,7 +167,7 @@
                     $val = base64_encode($val);
                 }
                 // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
-                return static::CACHE_KEY . ":{$cache_key_name}:" . md5(json_encode(array_values($fieldvals)), $this->use_binary_keys);
+                return static::CACHE_KEY . ":{$cache_key_name}:" . md5(json_encode(array_values($fieldvals)), $this->cache_use_binary_keys);
             }
         }
 
@@ -183,7 +183,7 @@
             if ($fieldval === null) {
                 return static::CACHE_KEY . ':' . self::META . "[{$field_name}]";
             } else {
-                return static::CACHE_KEY . ':' . self::META . "[{$field_name}]:" . md5($fieldval, $this->use_binary_keys);
+                return static::CACHE_KEY . ':' . self::META . "[{$field_name}]:" . md5($fieldval, $this->cache_use_binary_keys);
             }
         }
 

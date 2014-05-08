@@ -51,24 +51,27 @@
          *
          * @return string a cache key that is unqiue to the application
          */
-        final protected static function _build_key_limit($cache_key_name, array $order_by, $offset=null, $limit=null, array $params=[]) {
+        final protected function _build_key_limit($cache_key_name, array $order_by, $offset=null, $limit=null, array $params=[]) {
             ksort($order_by);
 
             // each key is namespaced with the name of the class, then the name of the function ($cache_key_name)
             $param_count = count($params);
             if ($param_count === 1) {
-                return static::CACHE_KEY . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by), $this->cache_use_binary_keys) .
-                       ':' . md5(reset($params), $this->cache_use_binary_keys);
+                return static::CACHE_KEY . ":{$cache_key_name}:{$offset},{$limit}:" .
+                    md5(json_encode($order_by), $this->cache_use_binary_keys) . ':' .
+                    md5(reset($params), $this->cache_use_binary_keys);
             } else if ($param_count === 0) {
-                return static::CACHE_KEY . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by), $this->cache_use_binary_keys) . ':';
+                return static::CACHE_KEY . ":{$cache_key_name}:{$offset},{$limit}:" .
+                    md5(json_encode($order_by), $this->cache_use_binary_keys) . ':';
             } else {
                 ksort($params);
                 foreach ($params as & $param) {
                     $param = base64_encode($param);
                 }
                 // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
-                return static::CACHE_KEY . ":{$cache_key_name}:{$offset},{$limit}:" . md5(json_encode($order_by), $this->cache_use_binary_keys) .
-                       ':' . md5(json_encode(array_values($params)), $this->cache_use_binary_keys);
+                return static::CACHE_KEY . ":{$cache_key_name}:{$offset},{$limit}:" .
+                    md5(json_encode($order_by), $this->cache_use_binary_keys) . ':' .
+                    md5(json_encode(array_values($params)), $this->cache_use_binary_keys);
             }
         }
 
@@ -178,7 +181,7 @@
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
-                parent::_build_key(self::ALL),
+                $this->_build_key(self::ALL),
                 function() use ($fieldvals) {
                     $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
                     return $source_driver::all($this, $this->source_engine_pool_read, $this::PRIMARY_KEY, $fieldvals);
@@ -206,7 +209,7 @@
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
-                parent::_build_key(parent::COUNT, $fieldvals ?: []),
+                $this->_build_key(parent::COUNT, $fieldvals ?: []),
                 function() use ($fieldvals) {
                     $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
                     return $source_driver::count($this, $this->source_engine_pool_read, $fieldvals);
@@ -236,7 +239,7 @@
                 $this->cache_engine_pool_write,
                 $fieldvals_arr,
                 function($fieldvals) {
-                    return $this::_build_key($this::COUNT, $fieldvals ?: []);
+                    return $this->_build_key($this::COUNT, $fieldvals ?: []);
                 },
                 function(array $fieldvals_arr) {
                     $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
@@ -273,7 +276,7 @@
                 $limit  = $limit === null ? null : (int) $limit;
                 $offset = $offset === null ? null : (int) $offset;
 
-                $cache_key = self::_build_key_limit(
+                $cache_key = $this->_build_key_limit(
                     $cache_key_name,
                     $order_by,
                     $offset,
@@ -317,7 +320,7 @@
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
-                    parent::_build_key($cache_key_name, $fieldvals),
+                    $this->_build_key($cache_key_name, $fieldvals),
                     function() use ($fieldvals) {
                         $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
                         return $source_driver::by_fields(
@@ -370,7 +373,7 @@
                     $this->cache_engine_pool_write,
                     $fieldvals_arr,
                     function($fieldvals) use ($cache_key_name, $order_by, $offset, $limit) {
-                        return $this::_build_key_limit(
+                        return $this->_build_key_limit(
                             $cache_key_name,
                             $order_by,
                             $offset,
@@ -422,7 +425,7 @@
                     $this->cache_engine_pool_write,
                     $fieldvals_arr,
                     function($fieldvals) use ($cache_key_name) {
-                        return $this::_build_key($cache_key_name, $fieldvals);
+                        return $this->_build_key($cache_key_name, $fieldvals);
                     },
                     function(array $fieldvals_arr) {
                         $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
@@ -562,6 +565,7 @@
             self::_delete_meta_cache_multi($infos);
 
             if ($load_models_from_source) {
+                $collection = '\\neoform\\' . static::ENTITY_NAME . '\\collection';
                 return $return_collection ? new $collection(null, $infos) : true;
             } else {
                 if ($return_collection) {

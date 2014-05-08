@@ -154,7 +154,7 @@
          *
          * @return string a cache key that is unqiue to the application
          */
-        final protected static function _build_key($cache_key_name, array $fieldvals=[]) {
+        final protected function _build_key($cache_key_name, array $fieldvals=[]) {
             // each key is namespaced with the name of the class, then the name of the function ($cache_key_name)
             $param_count = count($fieldvals);
             if ($param_count === 1) {
@@ -167,7 +167,10 @@
                     $val = base64_encode($val);
                 }
                 // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
-                return static::CACHE_KEY . ":{$cache_key_name}:" . md5(json_encode(array_values($fieldvals)), $this->cache_use_binary_keys);
+                return static::CACHE_KEY . ":{$cache_key_name}:" . md5(
+                    json_encode(array_values($fieldvals)),
+                    $this->cache_use_binary_keys
+                );
             }
         }
 
@@ -179,11 +182,12 @@
          *
          * @return string
          */
-        final protected static function _build_key_list($field_name, $fieldval) {
+        final protected function _build_key_list($field_name, $fieldval) {
             if ($fieldval === null) {
                 return static::CACHE_KEY . ':' . self::META . "[{$field_name}]";
             } else {
-                return static::CACHE_KEY . ':' . self::META . "[{$field_name}]:" . md5($fieldval, $this->cache_use_binary_keys);
+                return static::CACHE_KEY . ':' . self::META . "[{$field_name}]:"
+                    . md5($fieldval, $this->cache_use_binary_keys);
             }
         }
 
@@ -194,7 +198,7 @@
          *
          * @return string
          */
-        final protected static function _build_key_list_field($field_name) {
+        final protected function _build_key_list_field($field_name) {
             return static::CACHE_KEY . ':' . self::META . ":{$field_name}";
         }
 
@@ -247,7 +251,7 @@
 
             if ($fields) {
                 foreach ($fields as $field) {
-                    $list_keys[] = self::_build_key_list_field($field);
+                    $list_keys[] = $this->_build_key_list_field($field);
                 }
             }
 
@@ -255,10 +259,10 @@
                 foreach ($fields ? array_diff_key($fieldvals, array_flip($fields)) : $fieldvals as $field => $value) {
                     if (is_array($value)) {
                         foreach ($value as $val) {
-                            $list_keys[] = self::_build_key_list($field, $val);
+                            $list_keys[] = $this->_build_key_list($field, $val);
                         }
                     } else {
-                        $list_keys[] = self::_build_key_list($field, $value);
+                        $list_keys[] = $this->_build_key_list($field, $value);
                     }
                 }
             } else {
@@ -287,7 +291,7 @@
             if ($fields) {
                 $build_key_list_fields = [];
                 foreach ($fields as $field) {
-                    $build_key_list_fields[] = self::_build_key_list_field($field);
+                    $build_key_list_fields[] = $this->_build_key_list_field($field);
                 }
 
                 foreach (array_keys($cache_keys) as $cache_key) {
@@ -300,10 +304,10 @@
                     foreach ($fields ? array_diff_key($fieldvals, array_flip($fields)) : $fieldvals as $field => $value) {
                         if (is_array($value)) {
                             foreach ($value as $val) {
-                                $list_keys[$cache_key][] = self::_build_key_list($field, $val);
+                                $list_keys[$cache_key][] = $this->_build_key_list($field, $val);
                             }
                         } else {
-                            $list_keys[$cache_key][] = self::_build_key_list($field, $value);
+                            $list_keys[$cache_key][] = $this->_build_key_list($field, $value);
                         }
                     }
                 } else {
@@ -333,14 +337,14 @@
 
             foreach ($fieldvals as $field => $value) {
 
-                $list_keys[] = self::_build_key_list_field($field);
+                $list_keys[] = $this->_build_key_list_field($field);
 
                 if (is_array($value)) {
                     foreach ($value as $val) {
-                        $list_keys[] = self::_build_key_list($field, $val);
+                        $list_keys[] = $this->_build_key_list($field, $val);
                     }
                 } else {
-                    $list_keys[] = self::_build_key_list($field, $value);
+                    $list_keys[] = $this->_build_key_list($field, $value);
                 }
             }
 
@@ -384,14 +388,14 @@
 
                 foreach ($fieldvals as $field => $value) {
 
-                    $list_keys[] = self::_build_key_list_field($field);
+                    $list_keys[] = $this->_build_key_list_field($field);
 
                     if (is_array($value)) {
                         foreach ($value as $val) {
-                            $list_keys[] = self::_build_key_list($field, $val);
+                            $list_keys[] = $this->_build_key_list($field, $val);
                         }
                     } else {
-                        $list_keys[] = self::_build_key_list($field, $value);
+                        $list_keys[] = $this->_build_key_list($field, $value);
                     }
                 }
             }

@@ -26,7 +26,7 @@
          *
          * @return string a cache key that is unqiue to the application
          */
-        final protected static function _build_key_limit($cache_key_name, $select_field, array $order_by, $offset=null,
+        final protected function _build_key_limit($cache_key_name, $select_field, array $order_by, $offset=null,
                                                          $limit=null, array $fieldvals=[]) {
             ksort($order_by);
 
@@ -34,10 +34,11 @@
             $param_count = count($fieldvals);
             if ($param_count === 1) {
                 return static::CACHE_KEY . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
-                       md5(json_encode($order_by), $this->cache_use_binary_keys) . ':' . md5(reset($fieldvals), $this->cache_use_binary_keys);
+                    md5(json_encode($order_by), $this->cache_use_binary_keys) . ':' .
+                    md5(reset($fieldvals), $this->cache_use_binary_keys);
             } else if ($param_count === 0) {
                 return static::CACHE_KEY . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
-                       md5(json_encode($order_by), $this->cache_use_binary_keys) . ':';
+                    md5(json_encode($order_by), $this->cache_use_binary_keys) . ':';
             } else {
                 ksort($fieldvals);
                 foreach ($fieldvals as & $val) {
@@ -45,7 +46,8 @@
                 }
                 // Use only the array_values() and not the named array, since each $cache_key_name is unique per function
                 return static::CACHE_KEY . ":{$cache_key_name}:{$select_field}:{$offset},{$limit}:" .
-                       md5(json_encode($order_by), $this->cache_use_binary_keys) . ':' . md5(json_encode(array_values($fieldvals)), $this->cache_use_binary_keys);
+                    md5(json_encode($order_by), $this->cache_use_binary_keys) . ':' .
+                    md5(json_encode(array_values($fieldvals)), $this->cache_use_binary_keys);
             }
         }
 
@@ -76,7 +78,7 @@
 
                 $foreign_dao = entity::dao($this->referenced_entities[$select_field]);
 
-                $cache_key = self::_build_key_limit(
+                $cache_key = $this->_build_key_limit(
                     $cache_key_name,
                     $select_field,
                     $order_by,
@@ -128,7 +130,7 @@
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
-                    parent::_build_key($cache_key_name, $fieldvals),
+                    $this->_build_key($cache_key_name, $fieldvals),
                     function() use ($select_fields, $fieldvals) {
                         $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
                         return $source_driver::by_fields(
@@ -194,7 +196,7 @@
                     $this->cache_engine_pool_write,
                     $keys_arr,
                     function($fieldvals) use ($cache_key_name, $select_field, $order_by, $limit, $offset) {
-                        return $this::_build_key_limit(
+                        return $this->_build_key_limit(
                             $cache_key_name,
                             $select_field,
                             $order_by,
@@ -251,7 +253,7 @@
                     $this->cache_engine_pool_write,
                     $keys_arr,
                     function($fieldvals) use ($cache_key_name) {
-                        return $this::_build_key($cache_key_name, $fieldvals);
+                        return $this->_build_key($cache_key_name, $fieldvals);
                     },
                     function($fieldvals_arr) use ($select_fields) {
                         $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
@@ -305,7 +307,7 @@
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
-                parent::_build_key(parent::COUNT, $fieldvals ?: []),
+                $this->_build_key(parent::COUNT, $fieldvals ?: []),
                 function() use ($fieldvals) {
                     $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
                     return $source_driver::count($this, $this->source_engine_pool_read, $fieldvals);
@@ -335,7 +337,7 @@
                 $this->cache_engine_pool_write,
                 $fieldvals_arr,
                 function($fieldvals) {
-                    return $this::_build_key($this::COUNT, $fieldvals ?: []);
+                    return $this->_build_key($this::COUNT, $fieldvals ?: []);
                 },
                 function(array $fieldvals_arr) {
                     $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
@@ -378,7 +380,7 @@
                 return false;
             }
 
-            self::_delete_meta_cache($info);
+            $this->_delete_meta_cache($info);
 
             return true;
         }
@@ -405,7 +407,7 @@
                 return false;
             }
 
-            self::_delete_meta_cache_multi($infos);
+            $this->_delete_meta_cache_multi($infos);
 
             return true;
         }
@@ -429,7 +431,7 @@
                 }
 
                 // Delete any cache relating to the $new_info or the $where
-                self::_delete_meta_cache(array_merge_recursive($new_info, $where));
+                $this->_delete_meta_cache(array_merge_recursive($new_info, $where));
 
                 return true;
             }

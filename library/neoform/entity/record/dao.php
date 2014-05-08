@@ -135,7 +135,7 @@
          * @return array of User ids
          */
         public function limit(array $order_by=null, $offset=null, $limit=null) {
-            return self::_by_fields(
+            return $this->_by_fields(
                 self::LIMIT,
                 [],
                 $order_by,
@@ -154,7 +154,7 @@
          * @return array of User ids
          */
         public function limit_multi(array $order_by=null, $offset=null, $limit=null) {
-            return self::_by_fields_multi(
+            return $this->_by_fields_multi(
                 self::LIMIT,
                 [],
                 $order_by,
@@ -501,7 +501,7 @@
                 $info
             );
 
-            self::_delete_meta_cache($info);
+            $this->_delete_meta_cache($info);
 
             if ($return_model) {
                 $model = '\\neoform\\' . static::ENTITY_NAME . '\\model';
@@ -562,7 +562,7 @@
                 $insert_cache_data
             );
 
-            self::_delete_meta_cache_multi($infos);
+            $this->_delete_meta_cache_multi($infos);
 
             if ($load_models_from_source) {
                 $collection = '\\neoform\\' . static::ENTITY_NAME . '\\collection';
@@ -677,7 +677,7 @@
             neoform\cache\lib::pipeline_execute($this->cache_engine, $this->cache_engine_pool_write);
 
             // Destroy cache based on the fields that were changed - do not wrap this function in a batch execution
-            self::_delete_meta_cache(
+            $this->_delete_meta_cache(
                 array_merge_recursive(
                     array_diff($new_info, $old_info),
                     array_diff($old_info, $new_info)
@@ -732,7 +732,7 @@
             }
 
             // Destroy cache based on table fieldvals - do not wrap this function in a batch execution
-            self::_delete_meta_cache($model->export());
+            $this->_delete_meta_cache($model->export());
 
             return true;
         }
@@ -794,7 +794,7 @@
                 $collection_data_organized[$field] = array_column($collection_data, $field);
             }
 
-            self::_delete_meta_cache($collection_data_organized);
+            $this->_delete_meta_cache($collection_data_organized);
 
             return true;
         }

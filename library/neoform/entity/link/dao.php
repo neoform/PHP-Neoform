@@ -455,7 +455,7 @@
                 return false;
             }
 
-            parent::_delete_meta_cache($keys);
+            $this->_delete_meta_cache($keys);
 
             return true;
         }
@@ -476,7 +476,7 @@
                 return false;
             }
 
-            parent::_delete_meta_cache_multi($keys_arr);
+            $this->_delete_meta_cache_multi($keys_arr);
 
             return true;
         }

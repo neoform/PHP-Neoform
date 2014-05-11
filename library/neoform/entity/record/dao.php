@@ -482,7 +482,8 @@
                     $this->source_engine_pool_write,
                     $info,
                     static::AUTOINCREMENT,
-                    $replace
+                    $replace,
+                    $this->source_engine_ttl
                 );
             } catch (exception $e) {
                 return false;
@@ -534,7 +535,8 @@
                     $infos,
                     $keys_match,
                     static::AUTOINCREMENT,
-                    $replace
+                    $replace,
+                    $this->source_engine_ttl
                 );
             } catch (exception $e) {
                 return false;
@@ -615,7 +617,8 @@
                     $this->source_engine_pool_write,
                     static::PRIMARY_KEY,
                     $model,
-                    $new_info
+                    $new_info,
+                    $this->source_engine_ttl
                 );
             } catch (exception $e) {
                 return false;

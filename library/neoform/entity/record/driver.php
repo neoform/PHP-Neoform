@@ -23,11 +23,11 @@
         public static function by_fields_offset_multi(dao $self, $pool, array $keys_arr, $pk, array $order_by, $offset,
                                                       $limit);
 
-        public static function insert(dao $self, $pool, array $info, $autoincrement, $replace);
+        public static function insert(dao $self, $pool, array $info, $autoincrement, $replace, $ttl);
 
-        public static function insert_multi(dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace);
+        public static function insert_multi(dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace, $ttl);
 
-        public static function update(dao $self, $pool, $pk, model $model, array $info);
+        public static function update(dao $self, $pool, $pk, model $model, array $info, $ttl);
 
         public static function delete(dao $self, $pool, $pk, model $model);
 

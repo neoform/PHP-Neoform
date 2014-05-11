@@ -464,14 +464,19 @@
          * @param array      $info
          * @param bool       $autoincrement
          * @param bool       $replace
+         * @param int        $ttl
          *
          * @return array
          * @throws entity\exception
          */
-        public static function insert(record\dao $dao, $pool, array $info, $autoincrement, $replace) {
+        public static function insert(record\dao $dao, $pool, array $info, $autoincrement, $replace, $ttl) {
 
             if ($replace) {
                 throw new entity\exception('PostgreSQL does not support REPLACE INTO.');
+            }
+
+            if ($ttl) {
+                throw new entity\exception('PostgreSQL does not support TTL');
             }
 
             $insert_fields = [];
@@ -516,14 +521,19 @@
          * @param bool       $keys_match
          * @param bool       $autoincrement
          * @param bool       $replace
+         * @param int        $ttl
          *
          * @return array
          * @throws entity\exception
          */
-        public static function insert_multi(record\dao $dao, $pool, array $infos, $keys_match, $autoincrement, $replace) {
+        public static function insert_multi(record\dao $dao, $pool, array $infos, $keys_match, $autoincrement, $replace, $ttl) {
 
             if ($replace) {
                 throw new entity\exception('PostgreSQL does not support REPLACE INTO.');
+            }
+
+            if ($ttl) {
+                throw new entity\exception('PostgreSQL does not support TTL');
             }
 
             if ($keys_match) {
@@ -659,10 +669,16 @@
          * @param int|string   $pk
          * @param record\model $model
          * @param array        $info
+         * @param int          $ttl
          *
          * @throws entity\exception
          */
-        public static function update(record\dao $dao, $pool, $pk, record\model $model, array $info) {
+        public static function update(record\dao $dao, $pool, $pk, record\model $model, array $info, $ttl) {
+
+            if ($ttl) {
+                throw new entity\exception('PostgreSQL does not support TTL');
+            }
+
             $update_fields = [];
             foreach (array_keys($info) as $key) {
                 $update_fields[] = "\"{$key}\" = :{$key}";

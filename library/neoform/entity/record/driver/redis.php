@@ -185,18 +185,26 @@
          * @param array      $info
          * @param bool       $autoincrement
          * @param bool       $replace
+         * @param int        $ttl
          *
          * @return array
          * @throws entity\exception
          */
-        public static function insert(record\dao $self, $pool, array $info, $autoincrement, $replace) {
-            if (! neoform\redis::instance($pool)->set(
-                '_db_:' . $self::TABLE . ':' . $info[$self::PRIMARY_KEY],
+        public static function insert(record\dao $self, $pool, array $info, $autoincrement, $replace, $ttl) {
+            $redis     = neoform\redis::instance($pool);
+            $cache_key = '_db_:' . $self::TABLE . ':' . $info[$self::PRIMARY_KEY];
+
+            if (! $redis->set(
+                $cache_key,
                 $info
             )) {
                 $message = neoform\redis::instance($pool)->getLastError();
                 neoform\redis::instance($pool)->clearLastError();
                 throw new entity\exception("Insert failed - {$message}");
+            }
+
+            if ($ttl) {
+                $redis->expire($cache_key, $ttl);
             }
 
             return $info;
@@ -206,26 +214,37 @@
          * Insert multiple records
          *
          * @param record\dao $self the name of the DAO
-         * @param string            $pool which source engine pool to use
-         * @param array             $infos
-         * @param bool              $keys_match
-         * @param bool              $autoincrement
-         * @param bool              $replace
+         * @param string     $pool which source engine pool to use
+         * @param array      $infos
+         * @param bool       $keys_match
+         * @param bool       $autoincrement
+         * @param bool       $replace
+         * @param int        $ttl
          *
          * @return array
          * @throws entity\exception
          */
-        public static function insert_multi(record\dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace) {
+        public static function insert_multi(record\dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace, $ttl) {
 
             $inserts = [];
             foreach ($infos as $info) {
                 $inserts['_db_:' . $self::TABLE . ':' . $info[$self::PRIMARY_KEY]] = $info;
             }
 
-            if (! neoform\redis::instance($pool)->mset($inserts)) {
+            $redis = neoform\redis::instance($pool);
+
+            if (! $redis->mset($inserts)) {
                 $message = neoform\redis::instance($pool)->getLastError();
                 neoform\redis::instance($pool)->clearLastError();
                 throw new entity\exception("Insert multi failed - {$message}");
+            }
+
+            if ($ttl) {
+                $redis = neoform\redis::instance($pool)->multi();
+                foreach ($inserts as $key => $info) {
+                    $redis->expire($key, $ttl);
+                }
+                $redis->exec();
             }
 
             return $infos;
@@ -239,18 +258,26 @@
          * @param int|string   $pk
          * @param record\model $model
          * @param array        $info
+         * @param int          $ttl
          *
          * @return bool
          * @throws entity\exception
          */
-        public static function update(record\dao $self, $pool, $pk, record\model $model, array $info) {
-            if (! neoform\redis::instance($pool)->set(
-                '_db_:' . $self::TABLE . ":{$model->$pk}",
+        public static function update(record\dao $self, $pool, $pk, record\model $model, array $info, $ttl) {
+            $redis     = neoform\redis::instance($pool);
+            $cache_key = '_db_:' . $self::TABLE . ":{$model->$pk}";
+
+            if (! $redis->set(
+                $cache_key,
                 array_merge($model->export(), $info)
             )) {
                 $message = neoform\redis::instance($pool)->getLastError();
                 neoform\redis::instance($pool)->clearLastError();
                 throw new entity\exception("Update failed - {$message}");
+            }
+
+            if ($ttl) {
+                $redis->expire($cache_key, $ttl);
             }
 
             return true;

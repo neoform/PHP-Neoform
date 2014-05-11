@@ -425,11 +425,17 @@
          * @param array      $info
          * @param bool       $autoincrement
          * @param bool       $replace
+         * @param int        $ttl
          *
          * @return array
          * @throws entity\exception
          */
-        public static function insert(record\dao $self, $pool, array $info, $autoincrement, $replace) {
+        public static function insert(record\dao $self, $pool, array $info, $autoincrement, $replace, $ttl) {
+
+            if ($ttl) {
+                throw new entity\exception('MySQL does not support TTL');
+            }
+
             $insert_fields = [];
             foreach (array_keys($info) as $key) {
                 $insert_fields[] = "`{$key}`";
@@ -464,11 +470,17 @@
          * @param bool       $keys_match
          * @param bool       $autoincrement
          * @param bool       $replace
+         * @param int        $ttl
          *
          * @return array
          * @throws entity\exception
          */
-        public static function insert_multi(record\dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace) {
+        public static function insert_multi(record\dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace, $ttl) {
+
+            if ($ttl) {
+                throw new entity\exception('MySQL does not support TTL');
+            }
+
             $sql = sql::instance($pool);
 
             if ($keys_match) {
@@ -570,10 +582,16 @@
          * @param int|string   $pk
          * @param record\model $model
          * @param array        $info
+         * @param int          $ttl
          *
          * @throws entity\exception
          */
-        public static function update(record\dao $self, $pool, $pk, record\model $model, array $info) {
+        public static function update(record\dao $self, $pool, $pk, record\model $model, array $info, $ttl) {
+
+            if ($ttl) {
+                throw new entity\exception('MySQL does not support TTL');
+            }
+
             $update_fields = [];
             foreach (array_keys($info) as $field) {
                 $update_fields[] = "`{$field}` = :{$field}";

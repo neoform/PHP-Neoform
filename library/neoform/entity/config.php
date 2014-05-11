@@ -19,6 +19,9 @@
                     // Default source engine write connection name
                     'source_engine_pool_write' => null,
 
+                    // If the source engine supports a TTL, the record will expire after this many seconds (0 never expires)
+                    'source_engine_ttl' => 0,
+
                     // When no entity cache engine is defined in definition file, use this engine
                     'cache_engine' => null,
 

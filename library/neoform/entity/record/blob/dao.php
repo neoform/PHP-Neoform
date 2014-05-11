@@ -41,13 +41,14 @@
         /**
          * Inserts a record into the database
          *
-         * @param array   $info          an associative array of into to be put into the database
-         * @param boolean $replace       optional - user REPLACE INTO instead of INSERT INTO
-         * @param boolean $return_model  optional - return a model of the new record
+         * @param array   $info                   an associative array of into to be put into the database
+         * @param boolean $replace                optional - user REPLACE INTO instead of INSERT INTO
+         * @param boolean $return_model           optional - return a model of the new record
+         * @param boolean $load_model_from_source optional - after insert, load data from source - this is needed if the DB changes values on insert (eg, timestamps)
          *
-         * @return record\model|bool if $return_model is set to true, the model created from the info is returned
+         * @return model|boolean if $return_model is set to true, the model created from the info is returned
          */
-        protected function _insert(array $info, $replace=false, $return_model=true) {
+        protected function _insert(array $info, $replace=false, $return_model=true, $load_model_from_source=false) {
             if (isset($info[static::BLOB]) && is_array($info[static::BLOB])) {
                 $info[static::BLOB] = json_encode(array_lib::collapse($info[static::BLOB], false));
             } else {
@@ -59,14 +60,17 @@
         /**
          * Inserts multiple record into the database
          *
-         * @param array   $infos             an array of associative arrays of into to be put into the database, if this dao represents multiple tables, the info will be split up across the applicable tables.
-         * @param boolean $keys_match        optional - if all the records being inserted have the same array keys this should be true. it is faster to insert all the records at the same time, but this can only be done if they all have the same keys.
-         * @param boolean $replace           optional - user REPLACE INTO instead of INSERT INTO
-         * @param boolean $return_collection optional - return a collection of models created
+         * @param array   $infos                    an array of associative arrays of into to be put into the database, if this dao represents multiple tables, the info will be split up across the applicable tables.
+         * @param boolean $keys_match               optional - if all the records being inserted have the same array keys this should be true. it is faster to insert all the records at the same time, but this can only be done if they all have the same keys.
+         * @param boolean $replace                  optional - user REPLACE INTO instead of INSERT INTO
+         * @param boolean $return_collection        optional - return a collection of models created
+         * @param boolean $load_models_from_source  optional - after insert, load data from source - this is needed if the DB changes values on insert (eg, timestamps)
          *
-         * @return record\collection|bool if $return_collection is true function returns a collection
+         * @return record\collection|boolean if $return_collection is true function returns a collection
+         * @throws record\exception
          */
-        protected function _insert_multi(array $infos, $keys_match = true, $replace=false, $return_collection=true) {
+        protected function _insert_multi(array $infos, $keys_match=true, $replace=false, $return_collection=true,
+                                         $load_models_from_source=false) {
             foreach ($infos as & $info) {
                 if (isset($info[static::BLOB]) && is_array($info[static::BLOB])) {
                     $info[static::BLOB] = json_encode(array_lib::collapse($info[static::BLOB], false));
@@ -80,13 +84,16 @@
         /**
          * Updates a record in the database
          *
-         * @param record\model $model        the model that is to be updated
-         * @param array        $info         the new info to be put into the model
-         * @param boolean      $return_model optional - return a model of the new record
+         * @param record\model $model                    the model that is to be updated
+         * @param array        $new_info                 the new info to be put into the model
+         * @param boolean      $return_model             optional - return a model of the new record
+         * @param boolean      $reload_model_from_source optional - after update, load data from source - this is needed if the DB changes values on update (eg, timestamps)
          *
-         * @return record\model|bool if $return_model is true, an updated model is returned
+         * @return model|bool if $return_model is true, an updated model is returned
+         * @throws record\exception
          */
-        protected function _update(record\model $model, array $info, $return_model=true) {
+        protected function _update(record\model $model, array $new_info, $return_model=true,
+                                   $reload_model_from_source=false) {
             if (isset($info[static::BLOB]) && is_array($info[static::BLOB])) {
                 $info[static::BLOB] = json_encode(array_lib::collapse($info[static::BLOB], false));
             } else {

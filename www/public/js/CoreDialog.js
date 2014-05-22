@@ -502,7 +502,7 @@
             // else, it's static
             } else {
                 _callback("beforeShow");
-                _keypress_bind();
+                _keypressBind();
                 _load();
 
                 if (! active) {
@@ -766,34 +766,42 @@
 
         // Keypress listeners
         var _keypressSet;
+        var _keyDown = false;
 
-        var _keypress_bind = function() {
+        var _keypressBind = function() {
             //_keypressUnbind();
             if (! _keypressSet) {
-                // don't bind the key listener instantly
-                // certain keys (eg. return) could be in up/down state while this dialog is loading
-                // creating a thread avoids this problem
-                setTimeout(function(){
-                    $window.on("keyup", _keypressHandler);
-                }, 50);
+                $window
+                    .on("keydown", _keyDownHandler)
+                    .on("keyup", _keypressHandler);
                 _keypressSet = true; //don't set it twice
             }
         };
 
         var _keypressUnbind = function() {
             if (_keypressSet) {
-                $window.off("keyup", _keypressHandler);
+                $window
+                    .off("keydown", _keyDownHandler)
+                    .off("keyup", _keypressHandler);
                 _keypressSet = false;
             }
         };
 
+        var _keyDownHandler = function(e) {
+            _keyDown = true;
+        };
+
         var _keypressHandler = function(e) {
-            var code = e.keyCode || e.which;
-            if ($.inArray(code, options.closekeys) !== -1) {
-                setTimeout(function(){ _close(e); }, 0);
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
+            // We don't want to register a keyup if it was not keydown'ed on this window
+            if (_keyDown) {
+                _keyDown = false;
+                var code = e.keyCode || e.which;
+                if ($.inArray(code, options.closekeys) !== -1) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    _close(e);
+                    return false;
+                }
             }
         };
 

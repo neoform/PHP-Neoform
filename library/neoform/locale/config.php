@@ -4,8 +4,22 @@
 
     use neoform;
 
-    class config extends neoform\config\defaults {
+    class config extends neoform\config\model {
 
+        /**
+         * The array key this config file uses in the compiled configs
+         *
+         * @return string
+         */
+        public function get_array_key() {
+            return 'locale';
+        }
+
+        /**
+         * Config default values
+         *
+         * @return array
+         */
         protected function defaults() {
             return [
                 // locale translations active
@@ -55,5 +69,12 @@
                     throw new neoform\config\exception('"cache_engine_read" must be set');
                 }
             }
+        }
+
+        /**
+         * Validate the config values after the config has been compiled
+         */
+        public function validate_post(array $config) {
+
         }
     }

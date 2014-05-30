@@ -16,7 +16,7 @@
             parent::__construct(($prefix ? "{$prefix}:" : '') . $name);
         }
 
-        public function set($key, $val, $ttl=false) {
+        public function set($key, $val, $ttl=false, $udf_flags=null) {
             if ($ttl === false) { //default becomes 1 hour
                 $ttl = 3660;
             }

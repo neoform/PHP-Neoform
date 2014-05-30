@@ -21,15 +21,22 @@
         'website'     => "{$root}/www/",
     ]);
 
-    class regenerate_config extends cli\model {
+    class post_deploy extends neoform\cli\model {
 
         public function init() {
-            config\dao::set(
-                $this->opt('file'),
-                $this->opt('env')
-            );
+
+            // Compile Configs
+            echo "Compiling configs\t";
+            neoform\config::instance();
+            echo self::color_text('[GOOD]', 'green') . "\n";
+
+            // Compile Assets
+            echo "Compiling assets\t";
+            neoform\assets\lib::compile();
+            echo self::color_text('[GOOD]', 'green') . "\n";
+
+            echo "\ndone\n";
         }
     }
 
-    new regenerate_config('', ['env:', 'file::', ]);
-
+    new post_deploy;

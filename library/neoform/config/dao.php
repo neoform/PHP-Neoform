@@ -15,11 +15,6 @@
         const CONF_CACHE_DIR = '/cache/config';
 
         /**
-         * Directory where config files are stored
-         */
-        const CONF_INI_DIR = '/config';
-
-        /**
          * Load a config
          *
          * @param string $file
@@ -48,7 +43,7 @@
 
             $config_class = '\\neoform\\' . neoform\core::environment() . ($file ? '_' . str_replace('/', '_', $file) : '');
 
-            $config = (new $config_class)->to_array();
+            $config = (new $config_class)->validate()->get_array();
 
             $code = '<'.'?'.'php'.
                     "\n\n// DO NOT MODIFY THIS FILE DIRECTLY, IT IS A CACHE FILE AND GETS OVERWRITTEN AUTOMATICALLY.\n\n".

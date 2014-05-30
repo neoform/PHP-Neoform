@@ -4,8 +4,22 @@
 
     use neoform;
 
-    class config extends neoform\config\defaults {
+    class config extends neoform\config\model {
 
+        /**
+         * The array key this config file uses in the compiled configs
+         *
+         * @return string
+         */
+        public function get_array_key() {
+            return 'http';
+        }
+
+        /**
+         * Config default values
+         *
+         * @return array
+         */
         protected function defaults() {
             return [
                 // Site domain name [required]
@@ -102,5 +116,12 @@
             if (empty($this->config['session']['flash_cache_pool_write'])) {
                 throw new neoform\config\exception('$this->config[\'session\'][\'flash_cache_pool_write\'] must be set');
             }
+        }
+
+        /**
+         * Validate the config values after the config has been compiled
+         */
+        public function validate_post(array $config) {
+
         }
     }

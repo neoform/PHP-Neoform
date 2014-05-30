@@ -1,11 +1,19 @@
 #!/usr/bin/env php
 <?php
 
+    $opts = getopt('', [ 'env:' ]);
+    $env  = trim(strtolower(isset($opts['env']) ? $opts['env'] : ''));
+
+    if (! $env) {
+        echo "\033[1;31mERROR\033[0m --env {env_name} must be set\n";
+        die;
+    }
+
     $root = realpath(__DIR__ . '/..');
-    require_once($root . '/library/neoform/core.php');
+    require_once("{$root}/library/neoform/core.php");
     neoform\core::init([
         'extension'   => 'php',
-        'environment' => 'sling',
+        'environment' => $env,
 
         'application' => "{$root}/application/",
         'external'    => "{$root}/external/",

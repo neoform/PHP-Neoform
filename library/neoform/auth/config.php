@@ -4,8 +4,22 @@
 
     use neoform;
 
-    class config extends neoform\config\defaults {
+    class config extends neoform\config\model {
 
+        /**
+         * The array key this config file uses in the compiled configs
+         *
+         * @return string
+         */
+        public function get_array_key() {
+            return 'auth';
+        }
+
+        /**
+         * Config default values
+         *
+         * @return array
+         */
         protected function defaults() {
             return [
                 // the normal auth session lifespan [3 months in seconds] [required]
@@ -48,5 +62,12 @@
             if (empty($this->config['login_account_statuses'])) {
                 throw new neoform\config\exception('"login_account_statuses" must have at least one status');
             }
+        }
+
+        /**
+         * Validate the config values after the config has been compiled
+         */
+        public function validate_post(array $config) {
+
         }
     }

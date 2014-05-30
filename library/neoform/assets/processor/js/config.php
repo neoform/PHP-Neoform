@@ -1,6 +1,6 @@
 <?php
 
-    namespace neoform\web;
+    namespace neoform\assets\processor\js;
 
     use neoform;
 
@@ -12,18 +12,13 @@
          * @return string
          */
         public function get_array_key() {
-            return 'web';
+            return 'assets\processor\css';
         }
 
-        /**
-         * Config default values
-         *
-         * @return array
-         */
         protected function defaults() {
             return [
-                // User agent
-                'user_agent' => null,
+                'search_replace' => [], // str_replace
+                'patterns'       => [], // preg_replace or preg_replace_callback
             ];
         }
 
@@ -34,13 +29,19 @@
          */
         public function validate() {
 
-            if (empty($this->config['user_agent'])) {
-                throw new neoform\config\exception('"user_agent" must be set');
+            if (! is_array($this->config['search_replace'])) {
+                throw new neoform\config\exception('"search_replace" must be an array');
+            }
+
+            if (! is_array($this->config['patterns'])) {
+                throw new neoform\config\exception('"patterns" must be an array');
             }
         }
 
         /**
          * Validate the config values after the config has been compiled
+         *
+         * @throws neoform\config\exception
          */
         public function validate_post(array $config) {
 

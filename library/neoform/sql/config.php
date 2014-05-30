@@ -4,8 +4,22 @@
 
     use neoform;
 
-    class config extends neoform\config\defaults {
+    class config extends neoform\config\model {
 
+        /**
+         * The array key this config file uses in the compiled configs
+         *
+         * @return string
+         */
+        public function get_array_key() {
+            return 'sql';
+        }
+
+        /**
+         * Config default values
+         *
+         * @return array
+         */
         protected function defaults() {
             return [
                 // SQL charset (encoding)
@@ -38,5 +52,12 @@
             if (empty($this->config['pools']) || ! is_array($this->config['pools']) || ! count($this->config['pools'])) {
                 throw new neoform\config\exception('"pools" must contain at least one server');
             }
+        }
+
+        /**
+         * Validate the config values after the config has been compiled
+         */
+        public function validate_post(array $config) {
+
         }
     }

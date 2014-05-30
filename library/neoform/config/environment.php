@@ -48,9 +48,17 @@
          *
          * @return $this
          */
-        protected function append_value(model $config) {
-            $this->config          = array_merge_recursive($this->config, $config->get_array());
-            $this->config_models[] = $config;
+        protected function append(model $config) {
+            $key = $config->get_array_key();
+
+            // If a previous config exists, merge new data into it
+            if (isset($this->config_models[$key])) {
+                $this->config_models[$key]->append($config);
+                $this->config[$key] = $this->config_models[$key]->get_array();
+            } else {
+                $this->config[$key]        = $config->get_array();
+                $this->config_models[$key] = $config;
+            }
 
             return $this;
         }
@@ -63,23 +71,50 @@
          * @return $this
          */
         protected function merge(model $config) {
-            $this->config          = array_replace_recursive($this->config, $config->get_array());
-            $this->config_models[] = $config;
+            $key = $config->get_array_key();
+
+            // If a previous config exists, merge new data into it
+            if (isset($this->config_models[$key])) {
+                $this->config_models[$key]->merge($config);
+                $this->config[$key] = $this->config_models[$key]->get_array();
+            } else {
+                $this->config[$key]        = $config->get_array();
+                $this->config_models[$key] = $config;
+            }
 
             return $this;
         }
 
         /**
-         * Replace entire arrays of data in the config
+         * Replace using array_replace on the values in the config
          *
          * @param model $config
          *
          * @return $this
          */
         protected function crush(model $config) {
-            $this->config          = array_replace($this->config, $config->get_array());
-            $this->config_models[] = $config;
+            $key = $config->get_array_key();
+
+            // Crush previous values in a config
+            if (isset($this->config_models[$key])) {
+                $this->config[$key] = array_replace($this->config[$key], $config->get_array());
+            } else {
+                $this->config_models[$key] = $config;
+            }
 
             return $this;
+        }
+
+        /**
+         * Replace all values in this config
+         *
+         * @param model $config
+         */
+        protected function replace(model $config) {
+            $key = $config->get_array_key();
+
+            // Crush all previous config values by that key
+            $this->config[$key]        = $config->get_array();
+            $this->config_models[$key] = $config;
         }
     }

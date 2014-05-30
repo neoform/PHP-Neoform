@@ -57,8 +57,26 @@
          * @return array
          */
         final public function get_array() {
-            return [
-                $this->get_array_key() => $this->config,
-            ];
+            return $this->config;
+        }
+
+        /**
+         * Append a config to this one
+         *
+         * @param model $config
+         */
+        final public function append(model $config) {
+            $this->config = array_merge_recursive($this->config, $config->get_array());
+            $this->validate();
+        }
+
+        /**
+         * Merge a config into this one
+         *
+         * @param model $config
+         */
+        final public function merge(model $config) {
+            $this->config = array_replace_recursive($this->config, $config->get_array());
+            $this->validate();
         }
     }

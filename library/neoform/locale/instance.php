@@ -92,11 +92,6 @@
          * @param $iso2
          */
         public function set($iso2) {
-
-            if (! $this->active) {
-                return;
-            }
-
             $this->current_iso2 = $iso2;
             $this->struct       = $iso2 === $this->default_iso2 ? '' : "/{$iso2}";
         }

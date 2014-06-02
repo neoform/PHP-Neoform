@@ -151,4 +151,49 @@
         public static function expire_multi($pool, array $keys, $ttl=0) {
             throw new memory\exception('Expire is not supported by memory');
         }
+
+        /**
+         * Append values to a list
+         *
+         * @param string $pool
+         * @param string $list_key
+         * @param array  $values
+         *
+         * @throws memory\exception
+         */
+        public static function list_append($pool, $list_key, array $values) {
+            if (array_key_exists($list_key, self::$local)) {
+                $arr = & self::$local[$list_key];
+
+                if (! is_array($arr)) {
+                    throw new memory\exception('Value is not a list');
+                }
+
+                foreach ($values as $value) {
+                    if (! in_array($value, $arr)) {
+                        $arr[] = $value;
+                    }
+                }
+            } else {
+                self::$local[$list_key] = array_unique($values);
+            }
+        }
+
+        /**
+         * Get a union of multiple lists
+         *
+         * @param string $pool
+         * @param array  $list_keys
+         *
+         * @return array
+         */
+        public static function list_union($pool, array $list_keys) {
+            return call_user_func(
+                'array_merge',
+                array_intersect_key(
+                    self::$local,
+                    array_flip($list_keys)
+                )
+            );
+        }
     }

@@ -2,6 +2,8 @@
 
     namespace neoform\entity\meta;
 
+    use neoform;
+
     class lib {
 
         /**
@@ -15,9 +17,15 @@
          */
         public static function pull($engine, $engine_pool, array $list_keys) {
 
-            if (! $list_keys || ! $engine) {
+            if (! $list_keys) {
                 return;
             }
+
+            if (! $engine) {
+                return neoform\entity\meta\driver\memory::pull($engine_pool, $list_keys);
+            }
+
+            neoform\entity\meta\driver\memory::pull($engine_pool, $list_keys);
 
             $engine_driver = "\\neoform\\entity\\meta\\driver\\{$engine}";
             return $engine_driver::pull($engine_pool, $list_keys);
@@ -35,9 +43,15 @@
          */
         public static function push($engine, $engine_pool, $cache_key, array $list_keys) {
 
-            if (! $list_keys || ! $engine) {
+            if (! $list_keys) {
                 return;
             }
+
+            if (! $engine) {
+                return neoform\entity\meta\driver\memory::push($engine_pool, $cache_key, $list_keys);
+            }
+
+            neoform\entity\meta\driver\memory::push($engine_pool, $cache_key, $list_keys);
 
             $engine_driver = "\\neoform\\entity\\meta\\driver\\{$engine}";
             return $engine_driver::push($engine_pool, $cache_key, $list_keys);
@@ -54,9 +68,15 @@
          */
         public static function push_multi($engine, $engine_pool, array $cache_keys) {
 
-            if (! $cache_keys || ! $engine) {
+            if (! $cache_keys) {
                 return;
             }
+
+            if (! $engine) {
+                return neoform\entity\meta\driver\memory::push_multi($engine_pool, $cache_keys);
+            }
+
+            neoform\entity\meta\driver\memory::push_multi($engine_pool, $cache_keys);
 
             $engine_driver = "\\neoform\\entity\\meta\\driver\\{$engine}";
             return $engine_driver::push_multi($engine_pool, $cache_keys);

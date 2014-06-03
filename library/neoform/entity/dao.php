@@ -65,6 +65,8 @@
             $this->cache_delete_expire_ttl      = $config['cache_delete_expire_ttl'];
 
             $this->cache_use_binary_keys        = $config['cache_use_binary_keys'];
+
+            $this->cache_engine_memory          = $config['cache_engine_memory'];
         }
 
         /**
@@ -219,6 +221,7 @@
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
+                $this->cache_engine_memory,
                 $key,
                 $get
             );
@@ -236,6 +239,7 @@
             neoform\cache\lib::delete(
                 $this->cache_engine,
                 $this->cache_engine_pool_write,
+                $this->cache_engine_memory,
                 $key
             );
         }
@@ -362,6 +366,7 @@
                         neoform\cache\lib::expire_multi(
                             $this->cache_engine,
                             $this->cache_engine_pool_write,
+                            $this->cache_engine_memory,
                             $cache_keys,
                             $this->cache_delete_expire_ttl
                         );
@@ -369,6 +374,7 @@
                         neoform\cache\lib::delete_multi(
                             $this->cache_engine,
                             $this->cache_engine_pool_write,
+                            $this->cache_engine_memory,
                             $cache_keys
                         );
                     }
@@ -414,6 +420,7 @@
                         neoform\cache\lib::expire_multi(
                             $this->cache_engine,
                             $this->cache_engine_pool_write,
+                            $this->cache_engine_memory,
                             $cache_keys,
                             $this->cache_delete_expire_ttl
                         );
@@ -421,6 +428,7 @@
                         neoform\cache\lib::delete_multi(
                             $this->cache_engine,
                             $this->cache_engine_pool_write,
+                            $this->cache_engine_memory,
                             $cache_keys
                         );
                     }

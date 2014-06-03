@@ -12,14 +12,15 @@
             $key                     = 'cli:cache_unit_test';
             $cache_engine_pool_read  = 'master';
             $cache_engine_pool_write = 'master';
+            $cache_engine_memory     = true;
             $cache_engine            = 'redis';
             $key_prefix              = 'cache_test:';
             $cache_engine_class      = "\\neoform\\cache\\driver\\{$cache_engine}";
             $cache_instance          = "\\neoform\\redis";
 
             // Delete cache
-            lib::delete($cache_engine, $cache_engine_pool_write, "{$key_prefix}{$key}:111");
-            lib::delete($cache_engine, $cache_engine_pool_write, "{$key_prefix}{$key}:222");
+            lib::delete($cache_engine, $cache_engine_pool_write, $cache_engine_memory, "{$key_prefix}{$key}:111");
+            lib::delete($cache_engine, $cache_engine_pool_write, $cache_engine_memory, "{$key_prefix}{$key}:222");
 
 
 
@@ -30,6 +31,7 @@
                 $cache_engine,
                 $cache_engine_pool_read,
                 $cache_engine_pool_write,
+                $cache_engine_memory,
                 "{$key_prefix}{$key}:111",
                 function() use (& $pulled) {
                     $pulled = true;
@@ -49,6 +51,7 @@
                 $cache_engine,
                 $cache_engine_pool_read,
                 $cache_engine_pool_write,
+                $cache_engine_memory,
                 "{$key_prefix}{$key}:111",
                 function() use (& $pulled) {
                     $pulled = true;
@@ -73,6 +76,7 @@
                 $cache_engine,
                 $cache_engine_pool_read,
                 $cache_engine_pool_write,
+                $cache_engine_memory,
                 [
                     3 => 111,
                     9 => 222,
@@ -108,6 +112,7 @@
                 $cache_engine,
                 $cache_engine_pool_read,
                 $cache_engine_pool_write,
+                $cache_engine_memory,
                 [
                     3 => 111,
                     9 => 222,
@@ -158,6 +163,7 @@
                 $cache_engine,
                 $cache_engine_pool_read,
                 $cache_engine_pool_write,
+                $cache_engine_memory,
                 [
                     3 => 111,
                     9 => 222,

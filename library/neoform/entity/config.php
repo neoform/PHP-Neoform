@@ -66,6 +66,9 @@
                     // This will result in smaller cache keys, since the default is to store the hashed values as hex
                     // which is far less efficient
                     'cache_use_binary_keys' => false,
+
+                    // Store info in local cache, thereby reducing the number of reads to the main cache engine
+                    'cache_engine_memory' => true,
                 ],
 
                 'overrides' => [],

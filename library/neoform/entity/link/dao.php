@@ -91,6 +91,7 @@
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
+                    $this->cache_engine_memory,
                     $cache_key,
                     function() use ($select_field, $fieldvals, $foreign_dao, $order_by, $offset, $limit) {
                         $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
@@ -130,6 +131,7 @@
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
+                    $this->cache_engine_memory,
                     $this->_build_key($cache_key_name, $fieldvals),
                     function() use ($select_fields, $fieldvals) {
                         $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
@@ -194,6 +196,7 @@
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
+                    $this->cache_engine_memory,
                     $keys_arr,
                     function($fieldvals) use ($cache_key_name, $select_field, $order_by, $limit, $offset) {
                         return $this->_build_key_limit(
@@ -251,6 +254,7 @@
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
+                    $this->cache_engine_memory,
                     $keys_arr,
                     function($fieldvals) use ($cache_key_name) {
                         return $this->_build_key($cache_key_name, $fieldvals);
@@ -307,6 +311,7 @@
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
+                $this->cache_engine_memory,
                 $this->_build_key(parent::COUNT, $fieldvals ?: []),
                 function() use ($fieldvals) {
                     $source_driver = "\\neoform\\entity\\link\\driver\\{$this->source_engine}";
@@ -335,6 +340,7 @@
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
+                $this->cache_engine_memory,
                 $fieldvals_arr,
                 function($fieldvals) {
                     return $this->_build_key($this::COUNT, $fieldvals ?: []);

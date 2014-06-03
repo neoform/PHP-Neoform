@@ -88,6 +88,7 @@
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
+                $this->cache_engine_memory,
                 static::CACHE_KEY . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($pk, $this->cache_use_binary_keys) : $pk),
                 function() use ($pk) {
                     $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
@@ -114,6 +115,7 @@
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
+                $this->cache_engine_memory,
                 $pks,
                 function($pk) {
                     return $this::CACHE_KEY . ':' . $this::RECORD . ':' . ($this->binary_pk ? md5($pk, $this->cache_use_binary_keys) : $pk);
@@ -181,6 +183,7 @@
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
+                $this->cache_engine_memory,
                 $this->_build_key(self::ALL),
                 function() use ($fieldvals) {
                     $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
@@ -209,6 +212,7 @@
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
+                $this->cache_engine_memory,
                 $this->_build_key(parent::COUNT, $fieldvals ?: []),
                 function() use ($fieldvals) {
                     $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
@@ -237,6 +241,7 @@
                 $this->cache_engine,
                 $this->cache_engine_pool_read,
                 $this->cache_engine_pool_write,
+                $this->cache_engine_memory,
                 $fieldvals_arr,
                 function($fieldvals) {
                     return $this->_build_key($this::COUNT, $fieldvals ?: []);
@@ -288,6 +293,7 @@
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
+                    $this->cache_engine_memory,
                     $cache_key,
                     function() use ($cache_key, $fieldvals, $order_by, $offset, $limit) {
                         $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
@@ -320,6 +326,7 @@
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
+                    $this->cache_engine_memory,
                     $this->_build_key($cache_key_name, $fieldvals),
                     function() use ($fieldvals) {
                         $source_driver = "\\neoform\\entity\\record\\driver\\{$this->source_engine}";
@@ -371,6 +378,7 @@
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
+                    $this->cache_engine_memory,
                     $fieldvals_arr,
                     function($fieldvals) use ($cache_key_name, $order_by, $offset, $limit) {
                         return $this->_build_key_limit(
@@ -423,6 +431,7 @@
                     $this->cache_engine,
                     $this->cache_engine_pool_read,
                     $this->cache_engine_pool_write,
+                    $this->cache_engine_memory,
                     $fieldvals_arr,
                     function($fieldvals) use ($cache_key_name) {
                         return $this->_build_key($cache_key_name, $fieldvals);
@@ -498,6 +507,7 @@
             neoform\cache\lib::set(
                 $this->cache_engine,
                 $this->cache_engine_pool_write,
+                $this->cache_engine_memory,
                 static::CACHE_KEY . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($info[static::PRIMARY_KEY], $this->cache_use_binary_keys) : $info[static::PRIMARY_KEY]),
                 $info
             );
@@ -561,6 +571,7 @@
             neoform\cache\lib::set_multi(
                 $this->cache_engine,
                 $this->cache_engine_pool_write,
+                $this->cache_engine_memory,
                 $insert_cache_data
             );
 
@@ -648,6 +659,7 @@
                 neoform\cache\lib::set(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
+                    $this->cache_engine_memory,
                     static::CACHE_KEY . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($new_info[$pk], $this->cache_use_binary_keys) : $new_info[$pk]),
                     $new_info + $old_info
                 );
@@ -657,6 +669,7 @@
                     neoform\cache\lib::expire(
                         $this->cache_engine,
                         $this->cache_engine_pool_write,
+                        $this->cache_engine_memory,
                         static::CACHE_KEY . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($model->$pk, $this->cache_use_binary_keys) : $model->$pk),
                         $this->cache_delete_expire_ttl
                     );
@@ -664,6 +677,7 @@
                     neoform\cache\lib::delete(
                         $this->cache_engine,
                         $this->cache_engine_pool_write,
+                        $this->cache_engine_memory,
                         static::CACHE_KEY . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($model->$pk, $this->cache_use_binary_keys) : $model->$pk)
                     );
                 }
@@ -672,6 +686,7 @@
                 neoform\cache\lib::set(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
+                    $this->cache_engine_memory,
                     static::CACHE_KEY . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($model->$pk, $this->cache_use_binary_keys) : $model->$pk),
                     $new_info + $old_info
                 );
@@ -723,6 +738,7 @@
                 neoform\cache\lib::expire(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
+                    $this->cache_engine_memory,
                     static::CACHE_KEY . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($model->$pk, $this->cache_use_binary_keys) : $model->$pk),
                     $this->cache_delete_expire_ttl
                 );
@@ -730,6 +746,7 @@
                 neoform\cache\lib::delete(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
+                    $this->cache_engine_memory,
                     static::CACHE_KEY . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($model->$pk, $this->cache_use_binary_keys) : $model->$pk)
                 );
             }
@@ -777,6 +794,7 @@
                 neoform\cache\lib::expire_multi(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
+                    $this->cache_engine_memory,
                     $delete_cache_keys,
                     $this->cache_delete_expire_ttl
                 );
@@ -784,6 +802,7 @@
                 neoform\cache\lib::delete_multi(
                     $this->cache_engine,
                     $this->cache_engine_pool_write,
+                    $this->cache_engine_memory,
                     $delete_cache_keys
                 );
             }

@@ -66,6 +66,7 @@
                 $config['cache_engine'],
                 $config['cache_engine_read'],
                 $config['cache_engine_write'],
+                true,
                 self::by_locale_namespace_key($locale_iso2, $namespace_id),
                 $get
             );
@@ -85,6 +86,7 @@
                 $config['cache_engine'],
                 $config['cache_engine_read'],
                 $config['cache_engine_write'],
+                true,
                 self::by_locale_namespace_key($locale_iso2, $namespace->id)
             );
         }

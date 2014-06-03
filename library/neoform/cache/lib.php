@@ -46,16 +46,19 @@
          *
          * @param string  $engine
          * @param string  $engine_pool
+         * @param bool    $cache_engine_memory Use memory cache
          * @param string  $key
          * @param mixed   $data
          * @param integer $ttl seconds
          *
          * @return mixed|null
          */
-        public static function set($engine, $engine_pool, $key, $data, $ttl=null) {
+        public static function set($engine, $engine_pool, $cache_engine_memory, $key, $data, $ttl=null) {
 
             // Memory
-            driver\memory::set(null, $key, $data);
+            if ($cache_engine_memory) {
+                driver\memory::set(null, $key, $data);
+            }
 
             if ($engine) {
                 $engine_driver = "\\neoform\\cache\\driver\\{$engine}";
@@ -68,17 +71,20 @@
          *
          * @param string  $engine
          * @param string  $engine_pool
+         * @param bool    $cache_engine_memory Use memory cache
          * @param array   $rows
          * @param integer $ttl seconds
          */
-        public static function set_multi($engine, $engine_pool, array $rows, $ttl=null) {
+        public static function set_multi($engine, $engine_pool, $cache_engine_memory, array $rows, $ttl=null) {
 
             if (! $rows) {
                 return;
             }
 
             // Memory
-            driver\memory::set_multi(null, $rows);
+            if ($cache_engine_memory) {
+                driver\memory::set_multi(null, $rows);
+            }
 
             if ($engine) {
                 $engine_driver = "\\neoform\\cache\\driver\\{$engine}";
@@ -91,14 +97,15 @@
          *
          * @param string $engine
          * @param string $engine_pool
+         * @param bool   $cache_engine_memory Use memory cache
          * @param string $key
          *
          * @return mixed|null
          */
-        public static function get($engine, $engine_pool, $key) {
+        public static function get($engine, $engine_pool, $cache_engine_memory, $key) {
 
             // Memory
-            if (driver\memory::exists(null, $key)) {
+            if ($cache_engine_memory && driver\memory::exists(null, $key)) {
                 return driver\memory::get(null, $key);
             }
 
@@ -115,13 +122,16 @@
          *
          * @param string  $engine
          * @param string  $engine_pool
+         * @param bool    $cache_engine_memory Use memory cache
          * @param string  $key
          * @param integer $offset
          */
-        public static function increment($engine, $engine_pool, $key, $offset=1) {
+        public static function increment($engine, $engine_pool, $cache_engine_memory, $key, $offset=1) {
 
             // Memory
-            driver\memory::increment(null, $key, $offset);
+            if ($cache_engine_memory) {
+                driver\memory::increment(null, $key, $offset);
+            }
 
             if ($engine) {
                 $engine = "\\neoform\\cache\\driver\\{$engine}";
@@ -134,13 +144,16 @@
          *
          * @param string  $engine
          * @param string  $engine_pool
+         * @param bool    $cache_engine_memory Use memory cache
          * @param string  $key
          * @param integer $offset
          */
-        public static function decrement($engine, $engine_pool, $key, $offset=1) {
+        public static function decrement($engine, $engine_pool, $cache_engine_memory, $key, $offset=1) {
 
             // Memory
-            driver\memory::decrement(null, $key, $offset);
+            if ($cache_engine_memory) {
+                driver\memory::decrement(null, $key, $offset);
+            }
 
             if ($engine) {
                 $engine = "\\neoform\\cache\\driver\\{$engine}";
@@ -154,6 +167,7 @@
          * @param string       $engine              Which caching engines to use
          * @param string       $engine_pool_read    Caching pool
          * @param string       $engine_pool_write   Caching pool
+         * @param bool         $cache_engine_memory Use memory cache
          * @param string       $key                 Cache key
          * @param callable     $data_func           Source data function
          * @param callable     $after_cache_func    After cache function
@@ -166,11 +180,12 @@
 
         // re-arrange order of params, $key shouldn't be there.
 
-        public static function single($engine, $engine_pool_read, $engine_pool_write, $key, callable $data_func,
-                                      callable $after_cache_func=null, $args=null, $ttl=null, $cache_empty_results=true) {
+        public static function single($engine, $engine_pool_read, $engine_pool_write, $cache_engine_memory,
+                                      $key, callable $data_func, callable $after_cache_func=null, $args=null,
+                                      $ttl=null, $cache_empty_results=true) {
 
             // Memory
-            if (driver\memory::exists(null, $key)) {
+            if ($cache_engine_memory && driver\memory::exists(null, $key)) {
                 return driver\memory::get(null, $key);
             }
 
@@ -184,7 +199,9 @@
                     $data = reset($data);
 
                     // Save to memory - for faster lookup if this record gets requested again
-                    driver\memory::set(null, $key, $data);
+                    if ($cache_engine_memory) {
+                        driver\memory::set(null, $key, $data);
+                    }
 
                     return $data;
                 }
@@ -195,8 +212,10 @@
 
             if ($data !== null || $cache_empty_results) {
 
-                //save to memory (always)
-                driver\memory::set(null, $key, $data);
+                //save to memory
+                if ($cache_engine_memory) {
+                    driver\memory::set(null, $key, $data);
+                }
 
                 // cache data to engine
                 if ($engine) {
@@ -226,6 +245,7 @@
          * @param string       $engine              Which caching engines to use
          * @param string       $engine_pool_read    Which caching pool to use
          * @param string       $engine_pool_write   Which caching pool to use
+         * @param bool         $cache_engine_memory Use memory cache
          * @param array        $rows                Rows to look up in cache
          * @param callable     $key_func            generates the cache key based on data from $rows
          * @param callable     $data_func           Source data function(array $keys [, array $args])
@@ -236,9 +256,9 @@
          *
          * @return array of mixed values from $data_func() calls
          */
-        public static function multi($engine, $engine_pool_read, $engine_pool_write, array $rows, callable $key_func,
-                                     callable $data_func, callable $after_cache_func=null, $args=null, $ttl=null,
-                                     $cache_empty_results=true) {
+        public static function multi($engine, $engine_pool_read, $engine_pool_write, $cache_engine_memory, array $rows,
+                                     callable $key_func, callable $data_func, callable $after_cache_func=null,
+                                     $args=null, $ttl=null, $cache_empty_results=true) {
 
             if (! $rows) {
                 return [];
@@ -256,7 +276,7 @@
             /*
              * PHP Memory
              */
-            if ($found_in_memory = driver\memory::get_multi(null, $missing_rows)) {
+            if ($cache_engine_memory && $found_in_memory = driver\memory::get_multi(null, $missing_rows)) {
                 foreach ($found_in_memory as $index => $key) {
                     $matched_rows[$index] = $key;
                     unset($missing_rows[$index]);
@@ -304,7 +324,7 @@
             }
 
             // Save to memory
-            if ($rows_not_in_memory) {
+            if ($cache_engine_memory && $rows_not_in_memory) {
                 $save_to_memory = [];
                 foreach (array_intersect_key($matched_rows, $rows_not_in_memory) as $index => $row) {
                     // either we cache empty results, or the row is not empty
@@ -346,12 +366,15 @@
          *
          * @param string $engine
          * @param string $engine_pool
+         * @param bool   $cache_engine_memory Use memory cache
          * @param string $key
          */
-        public static function delete($engine, $engine_pool, $key) {
+        public static function delete($engine, $engine_pool, $cache_engine_memory, $key) {
 
             // Memory
-            driver\memory::delete(null, $key);
+            if ($cache_engine_memory) {
+                driver\memory::delete(null, $key);
+            }
 
             if ($engine) {
                 $engine = "\\neoform\\cache\\driver\\{$engine}";
@@ -364,14 +387,17 @@
          *
          * @param string $engine
          * @param string $engine_pool
+         * @param bool   $cache_engine_memory Use memory cache
          * @param array  $keys
          */
-        public static function delete_multi($engine, $engine_pool, array $keys) {
+        public static function delete_multi($engine, $engine_pool, $cache_engine_memory, array $keys) {
 
             if ($keys) {
 
                 // Memory
-                driver\memory::delete_multi(null, $keys);
+                if ($cache_engine_memory) {
+                    driver\memory::delete_multi(null, $keys);
+                }
 
                 if ($engine) {
                     $engine = "\\neoform\\cache\\driver\\{$engine}";
@@ -385,13 +411,16 @@
          *
          * @param string  $engine
          * @param string  $engine_pool
+         * @param bool    $cache_engine_memory Use memory cache
          * @param string  $key
          * @param integer $ttl seconds to live
          */
-        public static function expire($engine, $engine_pool, $key, $ttl) {
+        public static function expire($engine, $engine_pool, $cache_engine_memory, $key, $ttl) {
 
             // Memory
-            driver\memory::delete(null, $key);
+            if ($cache_engine_memory) {
+                driver\memory::delete(null, $key);
+            }
 
             if ($engine) {
                 $engine = "\\neoform\\cache\\driver\\{$engine}";
@@ -404,15 +433,18 @@
          *
          * @param string  $engine
          * @param string  $engine_pool
+         * @param bool    $cache_engine_memory Use memory cache
          * @param array   $keys
          * @param integer $ttl seconds to live
          */
-        public static function expire_multi($engine, $engine_pool, array $keys, $ttl) {
+        public static function expire_multi($engine, $engine_pool, $cache_engine_memory, array $keys, $ttl) {
 
             if ($keys) {
 
                 // Memory
-                driver\memory::delete_multi(null, $keys);
+                if ($cache_engine_memory) {
+                    driver\memory::delete_multi(null, $keys);
+                }
 
                 if ($engine) {
                     $engine = "\\neoform\\cache\\driver\\{$engine}";

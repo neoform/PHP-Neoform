@@ -156,26 +156,25 @@
          * Append values to a list
          *
          * @param string $pool
-         * @param string $list_key
-         * @param array  $values
+         * @param string $cache_key to be put in the lists
+         * @param array  $list_keys
          *
          * @throws memory\exception
          */
-        public static function list_append($pool, $list_key, array $values) {
-            if (array_key_exists($list_key, self::$local)) {
-                $arr = & self::$local[$list_key];
+        public static function list_append($pool, $cache_key, array $list_keys) {
 
-                if (! is_array($arr)) {
-                    throw new memory\exception('Value is not a list');
-                }
-
-                foreach ($values as $value) {
-                    if (! in_array($value, $arr)) {
-                        $arr[] = $value;
+            foreach ($list_keys as $list_key) {
+                if (array_key_exists($list_key, self::$local)) {
+                    if (! is_array(self::$local[$list_key])) {
+                        throw new memory\exception('Value is not a list');
                     }
+
+                    if (! in_array($cache_key, self::$local[$list_key])) {
+                        self::$local[$list_key][] = $cache_key;
+                    }
+                } else {
+                    self::$local[$list_key] = [ $cache_key, ];
                 }
-            } else {
-                self::$local[$list_key] = array_unique($values);
             }
         }
 
@@ -188,12 +187,19 @@
          * @return array
          */
         public static function list_union($pool, array $list_keys) {
-            return call_user_func(
-                'array_merge',
-                array_intersect_key(
-                    self::$local,
-                    array_flip($list_keys)
-                )
+
+            $list = [];
+            $arrs = array_intersect_key(
+                self::$local,
+                array_flip($list_keys)
             );
+
+            foreach ($arrs as $arr) {
+                foreach ($arr as $val) {
+                    $list[] = $val;
+                }
+            }
+
+            return $list;
         }
     }

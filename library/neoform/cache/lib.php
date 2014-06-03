@@ -221,10 +221,10 @@
                 if ($engine) {
 
                     $engine_driver::set($engine_pool_write, $key, $data, $ttl);
+                }
 
-                    if ($after_cache_func) {
-                        $after_cache_func($key, $data);
-                    }
+                if (($engine || $cache_engine_memory) && $after_cache_func) {
+                    $after_cache_func($key, $data);
                 }
             }
 
@@ -348,14 +348,14 @@
                 }
 
                 $engine::set_multi($engine_pool_write, $save_to_cache, $ttl);
+            }
 
-                if ($after_cache_func) {
-                    $after_cache_func(
-                        $rows_not_in_cache,
-                        array_intersect_key($rows, $rows_not_in_cache),
-                        $matched_rows
-                    );
-                }
+            if (($engine || $cache_engine_memory) && $rows_not_in_cache && $after_cache_func) {
+                $after_cache_func(
+                    $rows_not_in_cache,
+                    array_intersect_key($rows, $rows_not_in_cache),
+                    $matched_rows
+                );
             }
 
             return $matched_rows;

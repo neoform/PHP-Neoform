@@ -98,6 +98,10 @@
          * @return mixed
          */
         protected function bind_field($field_name, $value) {
+            if ($value === null) {
+                return;
+            }
+
             switch ($this->field_bindings[$field_name]) {
                 case self::TYPE_STRING:
                     return (string) $value;
@@ -124,6 +128,10 @@
          */
         protected function bind_fields(array &$fields) {
             foreach ($fields as $k => &$v) {
+                if ($v === null) {
+                    continue;
+                }
+
                 switch ($this->field_bindings[$k]) {
                     case self::TYPE_STRING:
                         $v = (string) $v;

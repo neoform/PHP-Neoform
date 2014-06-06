@@ -48,4 +48,32 @@
             }
             return $return;
         }
+
+        /**
+         * A strict version of array_diff_assoc()
+         *
+         * @param $arr1
+         * @param $arr2
+         *
+         * @return array 
+         */
+        function array_diff_assoc_strict($arr1, $arr2) {
+            $diff = [];
+
+            // arr1
+            foreach ($arr1 as $k => $v) {
+                // Common Keys between the two arrays
+                if (array_key_exists($k, $arr2)) {
+                    // vals are not the same
+                    if ($v !== $arr2[$k]) {
+                        $diff[$k] = $v;
+                    }
+                // Key/Val from arr1 doesn't exist in arr2
+                } else {
+                    $diff[$k] = $v;
+                }
+            }
+
+            return $diff;
+        }
     }

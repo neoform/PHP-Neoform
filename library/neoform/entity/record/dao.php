@@ -696,9 +696,9 @@
 
             // Destroy cache based on the fields that were changed - do not wrap this function in a batch execution
             $this->_delete_meta_cache(
-                array_merge_recursive(
-                    array_diff($new_info, $old_info),
-                    array_diff($old_info, $new_info)
+                $this->array_differences(
+                    $new_info,
+                    $old_info
                 )
             );
 

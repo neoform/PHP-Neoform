@@ -208,16 +208,26 @@
          * @param string  $pool
          * @param array   $keys
          * @param integer $ttl how many seconds left for this key to live - if not set, it will expire now
+         * @param bool    $pipeline
          *
          * @return integer the number of keys deleted
          */
-        public static function expire_multi($pool, array $keys, $ttl=0) {
+        public static function expire_multi($pool, array $keys, $ttl=0, $pipeline=false) {
             if ($ttl) {
-                $redis = neoform\redis::instance($pool)->multi();
+                $redis = neoform\redis::instance($pool);
+
+                if ($pipeline) {
+                    $redis->multi();
+                }
+
                 foreach ($keys as $key) {
                     $redis->expire($key, $ttl);
                 }
-                $redis->exec();
+
+                if ($pipeline) {
+                    $redis->exec();
+                }
+
             } else {
                 neoform\redis::instance($pool)->delete($keys, $ttl);
             }

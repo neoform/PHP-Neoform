@@ -785,7 +785,7 @@
 
             $delete_cache_keys = [];
             foreach ($collection->field(static::PRIMARY_KEY) as $pk) {
-                $delete_cache_keys[] = static::CACHE_KEY . ':' . self::RECORD . ':' . ($this->binary_pk ? ':' . md5($pk, $this->cache_use_binary_keys) : ":{$pk}");
+                $delete_cache_keys[] = static::CACHE_KEY . ':' . self::RECORD . ':' . ($this->binary_pk ? md5($pk, $this->cache_use_binary_keys) : $pk);
             }
 
             neoform\cache\lib::pipeline_start($this->cache_engine, $this->cache_engine_pool_write);
@@ -819,5 +819,45 @@
             $this->_delete_meta_cache($collection_data_organized);
 
             return true;
+        }
+
+        /**
+         * Compare two arrays and return all the differences
+         *
+         * @param array $arr1
+         * @param array $arr2
+         *
+         * @return array containing the differences, if two differences share the same key, an array is created with the two values
+         */
+        protected function array_differences(array $arr1, array $arr2) {
+            $diff = [];
+
+            // Arr1
+            foreach ($arr1 as $k => $v) {
+                // Common Keys between the two arrays
+                if (array_key_exists($k, $arr2)) {
+
+                    // Vals are not the same
+                    if ($v !== $arr2[$k]) {
+                        $diff[$k] = [
+                            $v,
+                            $arr2[$k]
+                        ];
+                    }
+                    // Key/Val from arr1 doesn't exist in arr2
+                } else {
+                    $diff[$k] = $v;
+                }
+            }
+
+            // Arr2
+            foreach ($arr2 as $k => $v) {
+                // Key/Val from arr2 doesn't exist in arr1
+                if (! array_key_exists($k, $arr1)) {
+                    $diff[$k] = $v;
+                }
+            }
+
+            return $diff;
         }
     }

@@ -4,7 +4,7 @@ CREATE TABLE `acl_group` (
   `name` varchar(64) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
 
 CREATE TABLE `acl_group_role` (
   `acl_group_id` int(10) unsigned NOT NULL,
@@ -29,8 +29,7 @@ CREATE TABLE `acl_resource` (
   `parent_id` int(10) unsigned DEFAULT NULL,
   `name` char(32) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`) USING HASH,
-  KEY `parent_id` (`parent_id`),
+  UNIQUE KEY `parent_id` (`parent_id`,`name`) USING BTREE,
   CONSTRAINT `acl_resource_ibfk_parent_id` FOREIGN KEY (`parent_id`) REFERENCES `acl_resource` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

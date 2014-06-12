@@ -7,8 +7,8 @@
      */
     class dao extends \neoform\entity\record\dao implements definition {
 
-        const BY_NAME   = 'by_name';
-        const BY_PARENT = 'by_parent';
+        const BY_PARENT      = 'by_parent';
+        const BY_PARENT_NAME = 'by_parent_name';
 
         /**
          * $var array $field_bindings list of fields and their corresponding bindings
@@ -55,17 +55,19 @@
         }
 
         /**
-         * Get Acl Resource ids by name
+         * Get Acl Resource ids by parent and name
          *
+         * @param int $parent_id
          * @param string $name
          *
          * @return array of Acl Resource ids
          */
-        public function by_name($name) {
+        public function by_parent_name($parent_id, $name) {
             return parent::_by_fields(
-                self::BY_NAME,
+                self::BY_PARENT_NAME,
                 [
-                    'name' => (string) $name,
+                    'parent_id' => $parent_id === null ? null : (int) $parent_id,
+                    'name'      => (string) $name,
                 ]
             );
         }
@@ -105,19 +107,22 @@
         }
 
         /**
-         * Get Acl Resource id_arr by an array of names
+         * Get Acl Resource id_arr by an array of parent and names
          *
-         * @param array $name_arr an array containing names
+         * @param array $parent_name_arr an array of arrays containing parent_ids and names
          *
          * @return array of arrays of Acl Resource ids
          */
-        public function by_name_multi(array $name_arr) {
+        public function by_parent_name_multi(array $parent_name_arr) {
             $keys_arr = [];
-            foreach ($name_arr as $k => $name) {
-                $keys_arr[$k] = [ 'name' => (string) $name, ];
+            foreach ($parent_name_arr as $k => $parent_name) {
+                $keys_arr[$k] = [
+                    'parent_id' => (int) $parent_name['parent_id'],
+                    'name'      => (string) $parent_name['name'],
+                ];
             }
             return parent::_by_fields_multi(
-                self::BY_NAME,
+                self::BY_PARENT_NAME,
                 $keys_arr
             );
         }

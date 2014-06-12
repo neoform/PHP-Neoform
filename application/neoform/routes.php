@@ -144,38 +144,34 @@
                         'children'   => [
 
                             // User
-                            'users' => new route([
+                            'user' => new route([
                                 'controller' => 'controller_admin_user',
-                                'resources'  => 'user',
+                                'resources'  => 'admin/user',
                                 'children'   => [
-                                    // View
-                                    'view' => new route([
-                                        'controller' => 'controller_admin_user_view',
-                                        'resources'  => 'user view',
-                                    ]),
                                     // Ajax
                                     'ajax' => new route([
                                         'controller' => 'controller_admin_user_ajax',
-                                        'slugs'   => [
+                                        'slugs'      => [
                                             0 => 'action',
                                         ],
                                     ]),
-                                ],
-                            ]),
 
-                            // Groups
-                            'groups' => new route([
-                                'controller' => 'controller_admin_group',
-                                //'resources' => 'group',
-                                'children' => [
+                                    // New
+                                    'new' => new route([
+                                        'controller' => 'controller_admin_user_new',
+                                        'resources'  => 'admin/user/create',
+                                    ]),
+
                                     // View
                                     'view' => new route([
-                                        'controller' => 'controller_admin_group_view',
-                                        //'resources' => 'group view',
+                                        'controller' => 'controller_admin_user_view',
+                                        'resources'  => 'admin/user/view',
                                     ]),
-                                    // Ajax
-                                    'ajax' => new route([
-                                        'controller' => 'controller_admin_group_ajax',
+
+                                    // Edit
+                                    'edit' => new route([
+                                        'controller' => 'controller_admin_user_edit',
+                                        'resources'  => 'admin/user/edit',
                                     ]),
                                 ],
                             ]),
@@ -183,44 +179,117 @@
                             // ACL
                             'acl' => new route([
                                 'controller' => 'controller_admin_acl',
-                                //'resources' => 'acl',
+                                //'resources' => 'admin/acl',
                                 'children' => [
 
+                                    // Groups
+                                    'group' => new route([
+                                        'controller' => 'controller_admin_acl_group',
+                                        'resources'  => 'admin/acl/group',
+                                        'children'   => [
+                                            // Ajax
+                                            'ajax' => new route([
+                                                'controller' => 'controller_admin_acl_group_ajax',
+                                                'slugs'      => [
+                                                    0 => 'action',
+                                                ],
+                                            ]),
+
+                                            // New
+                                            'new' => new route([
+                                                'controller' => 'controller_admin_acl_group_new',
+                                                'resources'  => 'admin/acl/group/create',
+                                            ]),
+
+                                            // View
+                                            'view' => new route([
+                                                'controller' => 'controller_admin_acl_group_view',
+                                                'resources'  => 'admin/acl/group/view',
+                                            ]),
+
+                                            // Edit
+                                            'edit' => new route([
+                                                'controller' => 'controller_admin_acl_group_edit',
+                                                'resources'  => 'admin/acl/group/edit',
+                                            ]),
+                                        ],
+                                    ]),
+
                                     // Roles
-                                    'roles' => new route([
+                                    'role' => new route([
                                         'controller' => 'controller_admin_acl_role',
-                                        //'resources' => 'acl role',
-                                        'children' => [
+                                        'resources'  => 'admin/acl/role',
+                                        'children'   => [
                                             // Ajax
                                             'ajax' => new route([
                                                 'controller' => 'controller_admin_acl_role_ajax',
-                                                'slugs'   => [
+                                                'slugs' => [
                                                     0 => 'action',
                                                 ],
+                                            ]),
+
+                                            // New
+                                            'new' => new route([
+                                                'controller' => 'controller_admin_acl_role_new',
+                                                'resources'  => 'admin/acl/role/create',
+                                            ]),
+
+                                            // View
+                                            'view' => new route([
+                                                'controller' => 'controller_admin_acl_role_view',
+                                                'resources'  => 'admin/acl/role/view',
+                                            ]),
+
+                                            // Edit
+                                            'edit' => new route([
+                                                'controller' => 'controller_admin_acl_role_edit',
+                                                'resources'  => 'admin/acl/role/edit',
                                             ]),
                                         ],
                                     ]),
 
                                     // Resources
-                                    'resources' => new route([
+                                    'resource' => new route([
                                         'controller' => 'controller_admin_acl_resource',
-                                        //'resources' => 'acl resource',
+                                        'resources'  => 'admin/acl/resource',
+                                        'slugs'      => [
+                                            0 => 'id',
+                                        ],
                                         'children' => [
                                             // Ajax
                                             'ajax' => new route([
                                                 'controller' => 'controller_admin_acl_resource_ajax',
-                                                'slugs' => [
+                                                'slugs'      => [
                                                     0 => 'action',
                                                 ],
+                                                'children' => [
+                                                    // Ajax
+                                                    'dialog' => new route([
+                                                        'controller' => 'controller_admin_acl_resource_ajax_dialog',
+                                                        'slugs'      => [
+                                                            0 => 'action',
+                                                        ],
+                                                    ]),
+                                                ],
                                             ]),
-                                        ],
-                                    ]),
 
-                                    // Ajax
-                                    'ajax' => new route([
-                                        'controller' => 'controller_admin_group_ajax',
-                                        'slugs'   => [
-                                            0 => 'action',
+                                            // New
+                                            'new' => new route([
+                                                'controller' => 'controller_admin_acl_resource_new',
+                                                'resources'  => 'admin/acl/resource/create',
+                                            ]),
+
+                                            // View
+                                            'view' => new route([
+                                                'controller' => 'controller_admin_acl_resource_view',
+                                                'resources'  => 'admin/acl/resource/view',
+                                            ]),
+
+                                            // Edit
+                                            'edit' => new route([
+                                                'controller' => 'controller_admin_acl_resource_edit',
+                                                'resources'  => 'admin/acl/resource/edit',
+                                            ]),
                                         ],
                                     ]),
                                 ],
@@ -229,18 +298,18 @@
                             // Locale
                             'locale' => new route([
                                 'controller' => 'controller_admin_locale',
-                                'resources'  => 'locale',
+                                'resources'  => 'admin/locale',
                                 'children'   => [
 
                                     // Namespaces
                                     'namespaces' => new route([
                                         'controller' => 'controller_admin_locale_namespaces',
-                                        'children' => [
+                                        'children'   => [
 
                                             // Ajax
                                             'ajax' => new route([
                                                 'controller' => 'controller_admin_locale_namespaces_ajax',
-                                                'slugs' => [
+                                                'slugs'      => [
                                                     0 => 'action',
                                                 ]
                                             ]),
@@ -253,7 +322,7 @@
                                                     // Ajax
                                                     'ajax' => new route([
                                                         'controller' => 'controller_admin_locale_namespaces_messages_ajax',
-                                                        'slugs' => [
+                                                        'slugs'      => [
                                                             0 => 'action',
                                                         ]
                                                     ]),

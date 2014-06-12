@@ -4,8 +4,48 @@
 
     use neoform\input;
     use neoform\entity;
+    use neoform;
 
     class api {
+
+        /**
+         * Give a user access to the following acl groups
+         * ACL groups not found in $groups will be removed from this user if they belong to them
+         *
+         * @param neoform\acl\group\model     $group
+         * @param neoform\acl\role\collection $roles
+         */
+        public static function let(neoform\acl\group\model $group, neoform\acl\role\collection $roles) {
+            $current_role_ids = $group->acl_role_collection()->field('id');
+            $role_ids         = $roles->field('id');
+
+            $inserts = [];
+            $deletes = [];
+
+            // Insert
+            foreach (array_diff($role_ids, $current_role_ids) as $role_id) {
+                $inserts[] = [
+                    'acl_group_id' => $group->id,
+                    'acl_role_id'  => (int) $role_id,
+                ];
+            }
+
+            if ($inserts) {
+                entity::dao('acl\group\role')->insert_multi($inserts);
+            }
+
+            // Delete
+            foreach (array_diff($current_role_ids, $role_ids) as $role_id) {
+                $deletes[] = [
+                    'acl_group_id' => $group->id,
+                    'acl_role_id'  => (int) $role_id,
+                ];
+            }
+
+            if ($deletes) {
+                entity::dao('acl\group\role')->delete_multi($deletes);
+            }
+        }
 
         /**
          * Creates a Acl Group Role model with $info

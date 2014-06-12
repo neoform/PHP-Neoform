@@ -4,8 +4,48 @@
 
     use neoform\input;
     use neoform\entity;
+    use neoform;
 
     class api {
+
+        /**
+         * Give a user access to the following sites
+         * Sites not found in $sites will be removed from this user if they have access
+         *
+         * @param neoform\user\model      $user
+         * @param neoform\site\collection $sites
+         */
+        public static function let(neoform\user\model $user, neoform\site\collection $sites) {
+            $current_site_ids = $user->site_collection()->field('id');
+            $site_ids         = $sites->field('id');
+
+            $inserts = [];
+            $deletes = [];
+
+            // Insert
+            foreach (array_diff($site_ids, $current_site_ids) as $site_id) {
+                $inserts[] = [
+                    'user_id' => $user->id,
+                    'site_id' => (int) $site_id,
+                ];
+            }
+
+            if ($inserts) {
+                entity::dao('user\site')->insert_multi($inserts);
+            }
+
+            // Delete
+            foreach (array_diff($current_site_ids, $site_ids) as $site_id) {
+                $deletes[] = [
+                    'user_id' => $user->id,
+                    'site_id' => (int) $site_id,
+                ];
+            }
+
+            if ($deletes) {
+                entity::dao('user\site')->delete_multi($deletes);
+            }
+        }
 
         /**
          * Creates a User Site model with $info

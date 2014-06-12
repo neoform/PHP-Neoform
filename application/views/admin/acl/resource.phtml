@@ -1,66 +1,124 @@
 <?php $this->inc('admin/templates/header'); ?>
 
 <script>
-    var page = {
+    (function(){
 
-        onload: function() {
-            page.div     = $("#page");
-            page.i         = 0;
+        var self = {},
+            div;
+
+        var deleteResource = function(id, onSuccess) {
+            CoreDialog.confirm(
+                "Are you sure you want to delete this resource and all it's children?",
+                "Delete Resource",
+                [
+                    {
+                        "value": "yes",
+                        "label": "Delete",
+                        "action": function() {
+                            this.close();
+
+                            Core.ajax({
+                                "url": "/admin/acl/resource/ajax/delete/id:" + id,
+                                "success": function(response) {
+                                    if (response.status === 'good') {
+                                        onSuccess();
+                                    } else {
+                                        error("Resource could not be deleted");
+                                    }
+                                }
+                            });
+
+                        },
+                        "cssClass": "error"
+                    },
+                    {
+                        "value": "no",
+                        "label": "Cancel",
+                        "action": function() {
+                            this.close();
+                        }
+                    }
+                ],
+                {
+                    "cssClass": "padded error"
+                }
+            );
+        };
+
+        /**
+         * Init
+         */
+        $(function() {
+            div = $("div#page");
 
             // Nav form
-            $(".nav form", page.div).on("submit", function(e) {
-                e.preventDefault();
-            });
+            $(".nav form", page.div)
+                .on("submit", function(e) {
+                    e.preventDefault();
+                });
 
             // List forms
-            $(".inside form", page.div).on("submit", function(e) {
-                e.preventDefault();
-            });
+            $(".inside form", page.div)
+                .on("submit", function(e) {
+                    e.preventDefault();
+                });
 
             $("button[name='new']", page.div)
-                .on("click", function(){
-                    CoreDialog.prompt(
-                        "",
-                        "New Resource",
-                        [
-                            {
-                                "type": "text",
-                                "label": "Resource name",
-                                "name": "name",
-                                "css": {
-                                    "width": "300px"
-                                }
-                            }
-                        ],
-                        [
-                            {
-                                "label": "Save",
-                                "action": function() {
-                                    Core.ajax({
-                                        "url": "/admin/acl/resources/ajax/insert",
-                                        "data": {
-                                            "name": $("input[name='name']", this.elements.form).val()
-                                        },
-                                        "success": function(response) {
-                                            if (response.status === "good") {
-                                                location.href = location.href;
-                                            } else {
-                                                CoreDialog.alert("A resource with that name already exists");
-                                            }
-                                        }
-                                    });
+                .on("click", function(e){
+                    e.preventDefault();
+                    location.href = "/admin/acl/resource/new<?php if ($this->resource) { echo "/id:{$this->resource->id}"; } ?>";
+                });
 
-                                },
-                                "cssClass": "good"
+            <?php if ($this->resource): ?>
+                $("button[name='edit']", div)
+                    .on("click", function(){
+                        location.href = "/admin/acl/resource/edit<?php echo "/id:{$this->resource->id}"; ?>";
+                    });
+
+                $("button[name='move']", div)
+                    .on("click", function(e){
+                        e.preventDefault();
+                        CoreDialog.showUrl("/admin/acl/resource/ajax/dialog/move/id:<?php echo $this->resource->id; ?>");
+                    });
+
+                $("button[name='delete']", div)
+                    .on("click", function(e) {
+                        e.preventDefault();
+                        deleteResource(
+                            <?php echo $this->resource->id; ?>,
+                            function() {
+                                location.href = "/admin/acl/resource<?php if ($this->resource->parent_id) { echo "/{$this->resource->parent_id}"; } ?>"
                             }
-                        ]
+                        );
+                    });
+            <?php endif; ?>
+
+            $(".inside form button.edit", div)
+                .on("click", function(e){
+                    e.preventDefault();
+                    location.href = "/admin/acl/resource/edit/id:" + $(this).closest("li").data("id");
+                });
+
+            $(".inside form button.move", div)
+                .on("click", function(e){
+                    e.preventDefault();
+                    CoreDialog.showUrl("/admin/acl/resource/ajax/dialog/move/id:" + $(this).closest("li").data("id"));
+                });
+
+            $(".inside form button.delete", div)
+                .on("click", function(e) {
+                    e.preventDefault();
+                    deleteResource(
+                        $(this).closest("li").data("id"),
+                        function() {
+                            location.reload(true);
+                        }
                     );
                 });
-        }
-    };
+        });
 
-    $(page.onload);
-
+        return self;
+    })();
 </script>
 
 <div id="page">
@@ -72,31 +130,49 @@
         <div class="nav">
             <div class="side">
                 <form>
-                    <button name="new" class="btn"><?php echo htmlspecialchars($this->locale->translate('New Resource')); ?></button>
+                    <button name="new" class="btn"><?php echo htmlspecialchars($this->locale->translate('New')); ?></button>
+                    <?php if ($this->resource): ?>
+                        <button name="edit" class="btn"><?php echo htmlspecialchars($this->locale->translate('Edit')); ?></button>
+                        <button name="move" class="btn"><?php echo htmlspecialchars($this->locale->translate('Move')); ?></button>
+                        <button name="delete" class="btn error"><?php echo htmlspecialchars($this->locale->translate('Delete')); ?></button>
+                    <?php endif; ?>
                 </form>
             </div>
         </div>
 
         <div class="inside">
 
+            <div style="padding: 0 5px 10px 5px;">
+                <h3>
+                    <a href="/admin/acl/resource<?php echo $this->sorter->get_params(); ?>">public</a>
+                    <?php if ($this->resource): ?>
+                        <?php foreach ($this->resource->ancestors() as $resource): ?>
+                            / <a href="/admin/acl/resource/<?php echo $resource->id; ?>"><?php echo htmlspecialchars($resource->name); ?></a>
+                        <?php endforeach; ?>
+                        / <?php echo htmlspecialchars($this->resource->name); ?>
+                    <?php endif; ?>
+                </h3>
+            </div>
+
             <?php if ($this->resources): ?>
-
-                <div class="counts">
-                    Total Resources: <?php echo number_format($this->total); ?>
-                </div>
-
                 <div class="box">
                     <div class="table-head">
                         <table width="100%" cellspacing="0" cellpadding="0">
                             <tr>
+                                <td width="60">
+                                    &nbsp;
+                                </td>
                                 <td width="100">
-                                    ID
+                                    <a href="/admin/acl/resource<?php echo $this->sorter->get_params('id'); ?>">ID</a>
                                 </td>
                                 <td width="250">
-                                    Name
+                                    <a href="/admin/acl/resource<?php echo $this->sorter->get_params('name'); ?>">Name</a>
                                 </td>
                                 <td>
                                     Roles
+                                </td>
+                                <td width="160">
+                                    &nbsp;
                                 </td>
                             </tr>
                         </table>
@@ -106,23 +182,30 @@
                         <div class="table-body">
                             <ul id="resources">
                                 <?php foreach ($this->resources as $resource): ?>
-                                    <li>
+                                    <li data-id="<?php echo $resource->id; ?>">
                                         <table width="100%" cellspacing="0" cellpadding="0">
                                             <tr>
+                                                <td width="60">
+                                                    <button name="edit" class="small edit" style="">Edit</button>
+                                                </td>
                                                 <td width="100">
                                                     <?php echo $resource->id; ?>
                                                 </td>
                                                 <td width="250">
-                                                    <b><?php echo htmlspecialchars($resource->name); ?></b>
+                                                    <a href="/admin/acl/resource/<?php echo $resource->id; ?>"><?php echo htmlspecialchars($resource->name); ?></a>
                                                 </td>
                                                 <td>
                                                     <?php
                                                         $links = [];
                                                         foreach ($resource->acl_role_collection() as $role) {
-                                                            $links[] = '<a href="/admin/acl/roles/view/id:' . $role->id . '">' . htmlspecialchars($role->name) . '</a>';
+                                                            $links[] = '<a href="/admin/acl/role/view/id:' . $role->id . '">' . htmlspecialchars($role->name) . '</a>';
                                                         }
                                                         echo join(', ', $links);
                                                     ?>&nbsp;
+                                                </td>
+                                                <td width="160">
+                                                    <button name="delete" class="small error delete right">Delete</button>
+                                                    <button name="move" class="small move right" style="">Move</button>
                                                 </td>
                                             </tr>
                                         </table>
@@ -132,12 +215,15 @@
                         </div>
                     </form>
                     <div class="table-foot">
+                        <div class="right">
+                            <span class="unbold">Total:</span> <?php echo number_format($this->total); ?> Categories
+                        </div>
                         Page
                         <?php
                             $this->inc(
                                 'templates/pagination',
                                 [
-                                    'url'          => '/admin/acl/resources',
+                                    'url'          => '/admin/acl/resource' . $this->sorter->get_params(),
                                     'current_page' => (int) $this->page,
                                     'page_count'   => $this->total > 1 ? ceil($this->total / $this->per_page) : 1,
                                     'link_count'   => 5,
@@ -150,7 +236,7 @@
 
             <?php else: ?>
 
-                <div class="fat big">No resource to show</div>
+                <div class="fat big">No resources to show</div>
 
             <?php endif; ?>
         </div>

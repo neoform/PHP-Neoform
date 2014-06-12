@@ -43,7 +43,7 @@
                                         },
                                         "success": function(response) {
                                             if (response.status === "good") {
-                                                location.href = location.href;
+                                                location.reload(true);
                                             } else {
                                                 CoreDialog.alert(response.message || "A namespace with that name already exists");
                                             }

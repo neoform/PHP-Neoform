@@ -83,6 +83,38 @@
             throw $input->exception();
         }
 
+        public static function admin_insert(array $info) {
+
+            $input = new input\collection($info);
+
+            self::_validate_admin_insert($input);
+
+            if ($input->is_valid()) {
+
+                $hashmethod = $input->password_hashmethod->data('model');
+
+                $user = entity::dao('user')->insert([
+                    'email'               => $input->email->val(),
+                    'password_hash'       => $hashmethod->hash(
+                        $input->password->val(),
+                        $input->password_salt->val(),
+                        $input->password_cost->val()
+                    ),
+                    'password_hashmethod' => $hashmethod->id,
+                    'password_cost'       => $input->password_cost->val(),
+                    'password_salt'       => $input->password_salt->val(),
+                    'status_id'           => $input->status_id->data('model')->id,
+                ]);
+
+                entity::dao('user\date')->insert([
+                    'user_id' => $user->id,
+                ]);
+
+                return $user;
+            }
+            throw $input->exception();
+        }
+
         public static function admin_update(model $user, array $info) {
 
             $input = new input\collection($info);
@@ -199,7 +231,7 @@
             });
 
             // password_hash
-            $input->password->cast('string')->length(1, 255);
+            $input->password->cast('string')->length(6, 255);
 
             // password_hashmethod
             $input->password_hashmethod->cast('int')->digit(0, 255)->callback(function($password_hashmethod){
@@ -211,7 +243,7 @@
             });
 
             // password_cost
-            $input->password_cost->cast('int')->digit(0, 4294967295);
+            $input->password_cost->cast('int')->digit(1, 4294967295);
 
             // password_salt
             $input->password_salt->cast('string')->length(1, 40);
@@ -261,7 +293,7 @@
             });
 
             // password_cost
-            $input->password_cost->cast('int')->digit(0, 4294967295);
+            $input->password_cost->cast('int')->digit(1, 4294967295);
 
             // password_salt
             $input->password_salt->cast('string')->length(1, 40);

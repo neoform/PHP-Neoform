@@ -9,7 +9,7 @@
 
         const NAME          = 'acl group';
         const TABLE         = 'acl_group';
-        const AUTOINCREMENT = false;
+        const AUTOINCREMENT = true;
         const PRIMARY_KEY   = 'id';
         const ENTITY_NAME   = 'acl\group';
         const CACHE_KEY     = 'acl_group';

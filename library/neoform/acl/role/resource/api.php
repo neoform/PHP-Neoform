@@ -4,8 +4,87 @@
 
     use neoform\input;
     use neoform\entity;
+    use neoform;
 
     class api {
+
+        /**
+         * Give a role access to the following acl resources
+         * ACL resources not found in $resources will be removed from this role if they belong to them
+         *
+         * @param neoform\acl\role\model          $role
+         * @param neoform\acl\resource\collection $resources
+         */
+        public static function let(neoform\acl\role\model $role, neoform\acl\resource\collection $resources) {
+            $current_resource_ids = $role->acl_resource_collection()->field('id');
+            $resource_ids         = $resources->field('id');
+
+            $inserts = [];
+            $deletes = [];
+
+            // Insert
+            foreach (array_diff($resource_ids, $current_resource_ids) as $resource_id) {
+                $inserts[] = [
+                    'acl_role_id'     => $role->id,
+                    'acl_resource_id' => (int) $resource_id,
+                ];
+            }
+
+            if ($inserts) {
+                entity::dao('acl\role\resource')->insert_multi($inserts);
+            }
+
+            // Delete
+            foreach (array_diff($current_resource_ids, $resource_ids) as $resource_id) {
+                $deletes[] = [
+                    'acl_role_id'     => $role->id,
+                    'acl_resource_id' => (int) $resource_id,
+                ];
+            }
+
+            if ($deletes) {
+                entity::dao('acl\role\resource')->delete_multi($deletes);
+            }
+        }
+
+        /**
+         * Give a resource access to the following acl roles
+         * ACL roles not found in $roles will be removed from this resource if they belong to them
+         *
+         * @param neoform\acl\resource\model  $resource
+         * @param neoform\acl\role\collection $roles
+         */
+        public static function let_resource(neoform\acl\resource\model $resource, neoform\acl\role\collection $roles) {
+            $current_role_ids = $resource->acl_role_collection()->field('id');
+            $role_ids         = $roles->field('id');
+
+            $inserts = [];
+            $deletes = [];
+
+            // Insert
+            foreach (array_diff($role_ids, $current_role_ids) as $role_id) {
+                $inserts[] = [
+                    'acl_resource_id' => $resource->id,
+                    'acl_role_id'     => (int) $role_id,
+                ];
+            }
+
+            if ($inserts) {
+                entity::dao('acl\role\resource')->insert_multi($inserts);
+            }
+
+            // Delete
+            foreach (array_diff($current_role_ids, $role_ids) as $role_id) {
+                $deletes[] = [
+                    'acl_resource_id' => $resource->id,
+                    'acl_role_id'     => (int) $role_id,
+                ];
+            }
+
+            if ($deletes) {
+                entity::dao('acl\role\resource')->delete_multi($deletes);
+            }
+        }
 
         /**
          * Creates a Acl Role Resource model with $info

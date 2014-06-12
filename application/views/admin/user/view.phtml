@@ -1,139 +1,117 @@
 <?php $this->inc('admin/templates/header'); ?>
 
 <script>
-    var page = {
+    (function(){
+        var self = {},
+            div;
 
-        onload: function() {
-            page.div     = $("#page");
-            page.i         = 0;
+        /**
+         * Init
+         */
+        $(function(){
+            div = $("div#page");
 
             // Nav form
-            $(".nav form", page.div).on("submit", function(e) {
-                e.preventDefault();
-            });
+            $(".nav form", div)
+                .on("submit", function(e) {
+                    e.preventDefault();
+                });
 
             // List forms
-            $(".inside form", page.div).on("submit", function(e) {
-                e.preventDefault();
-            });
+            $(".inside form", div)
+                .on("submit", function(e) {
+                    e.preventDefault();
+                });
 
-            $("button[name='new']", page.div)
+            $("button[name='new']", div)
                 .on("click", function(){
-
+                    location.href = "/admin/user/new";
                 });
 
-            $("form[name='update']", page.div)
+            $("button[name='edit']", div)
+                .on("click", function(){
+                    location.href = "/admin/user/edit/id:<?php echo $this->user->id; ?>";
+                });
+
+            // Roles
+            $("form[name='roles']", div)
                 .on("submit", function(e){
 
                     e.preventDefault();
 
                     var form = $(this);
 
+                    var role_ids = [];
+                    $("input[name='role[]']:checked", form).each(function(){
+                        role_ids.push($(this).val());
+                    });
+
                     Core.ajax({
                         url: form.attr("action"),
                         data: {
-                            "email":     $("input[name='email']", form).val(),
-                            "status_id": $("select[name='status']", form).val()
+                            "roles":  role_ids.join(",")
                         },
                         success: function(response) {
                             if (response.status === 'good') {
-                                CoreDialog.alert("User info has been updated", null, "good");
+                                alert("User roles have been saved", null, "good");
                             } else {
-                                if (response.message && response.message.length) {
-                                    alert(response.message);
-                                }
-                            }
-
-                            $(".error", form).hide();
-
-                            if (response && response.errors) {
-                                for (var k in response.errors) {
-                                    $(".id-error-" + k, form).html(response.errors[k]).show();
-                                }
+                                alert(response.message || "User roles could not be updated");
                             }
                         },
                         error: function(response) {
-                            alert("There was a problem saving your user info");
+                            alert("There was a problem saving your user roles");
                         }
                     });
                 });
 
-            $("form[name='update-password']", page.div)
+            // Groups
+            $("form[name='groups']", div)
                 .on("submit", function(e){
 
                     e.preventDefault();
 
                     var form = $(this);
 
+                    var group_ids = [];
+                    $("input[name='group[]']:checked", form).each(function(){
+                        group_ids.push($(this).val());
+                    });
+
                     Core.ajax({
                         url: form.attr("action"),
                         data: {
-                            "password":            $("input[name='password']", form).val(),
-                            "password_salt":       $("input[name='password_salt']", form).val(),
-                            "password_hashmethod": $("select[name='hashmethod']", form).val(),
-                            "password_cost":       $("input[name='password_cost']", form).val()
+                            "groups": group_ids.join(",")
                         },
                         success: function(response) {
                             if (response.status === 'good') {
-                                CoreDialog.alert("User password has been updated", null, "good");
+                                alert("User groups have been saved", null, "good");
                             } else {
-                                if (response.message && response.message.length) {
-                                    alert(response.message);
-                                }
-                            }
-
-                            $(".error", form).hide();
-
-                            if (response && response.errors) {
-                                for (var k in response.errors) {
-                                    $(".id-error-" + k, form).html(response.errors[k]).show();
-                                }
+                                alert(response.message || "User groups could not be updated");
                             }
                         },
                         error: function(response) {
-                            alert("There was a problem saving your user password");
+                            alert("There was a problem saving your user groups");
                         }
                     });
                 });
+        });
 
-            $("button[name='random']", page.div)
-                .on("click", function(e) {
-                    e.preventDefault();
-                    var form = $(this).parents("form");
-                    Core.ajax({
-                        url: "/admin/users/ajax/random",
-                        success: function(response) {
-                            if (response.status === 'good') {
-                                $("input[name='password_salt']", form).val(response.random);
-                            } else {
-                                if (response.message && response.message.length) {
-                                    CoreDialog.alert(response.message, null, "error");
-                                }
-                            }
-                        },
-                        error: function(response) {
-                            alert("There was a problem generating a random string");
-                        }
-                    });
-                });
-
-        }
-    };
-
-    $(page.onload);
+        return self;
+    })();
 
 </script>
 
 <div id="page">
 
-    <h3 class="header"><a href="/admin">Admin</a> / <a href="/admin/users">Users</a> / <?php echo htmlspecialchars($this->user->email); ?></h3>
+    <h3 class="header"><a href="/admin">Admin</a> / <a href="/admin/user">Users</a> / <?php echo htmlspecialchars($this->user->email); ?></h3>
 
     <?php $this->inc('admin/templates/sidebar'); ?>
     <div>
         <div class="nav">
             <div class="side">
                 <form>
-                    <button name="new" class="btn"><?php echo htmlspecialchars($this->locale->translate('New User')); ?></button>
+                    <button name="new" class="btn"><?php echo htmlspecialchars($this->locale->translate('New')); ?></button>
+                    <button name="edit" class="btn"><?php echo htmlspecialchars($this->locale->translate('Edit')); ?></button>
                 </form>
             </div>
         </div>
@@ -143,134 +121,88 @@
                 <div class="table-head">
                     User Info
                 </div>
-                <form name="update" action="/admin/users/ajax/update/id:<?php echo $this->user->id; ?>">
-                    <div class="table-body">
-                        <div style="padding: 10px 0;">
-                            <table width="100%">
-                                <tr>
-                                    <td width="175" align="right">
-                                        Email
-                                        <div class="id-error-email tiny error" style="display: none;"></div>
-                                    </td>
-                                    <td width="10"></td>
-                                    <td>
-                                        <input type="text" name="email" value="<?php echo htmlspecialchars($this->user->email); ?>" style="width: 300px;" />
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div style="padding: 0 0 10px 0;">
-                            <table width="100%">
-                                <tr>
-                                    <td width="175" align="right">
-                                        Status
-                                        <div class="id-error-status tiny error" style="display: none;"></div>
-                                    </td>
-                                    <td width="10"></td>
-                                    <td>
-                                        <select name="status">
-                                            <?php foreach ($this->all_statuses as $status): ?>
-                                                <?php if ($status->id === $this->user->status_id): ?>
-                                                    <option value="<?php echo $status->id; ?>" selected="selected"><?php echo htmlspecialchars(ucwords($status->name)); ?></option>
-                                                <?php else: ?>
-                                                    <option value="<?php echo $status->id; ?>"><?php echo htmlspecialchars(ucwords($status->name)); ?></option>
-                                                <?php endif; ?>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
+                <div class="table-body">
+                    <div style="padding: 10px 0;">
+                        <table width="100%">
+                            <tr>
+                                <td width="175" align="right">
+                                    Email
+                                </td>
+                                <td width="10"></td>
+                                <td>
+                                    <div class="bold"><?php echo htmlspecialchars($this->user->email); ?></div>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
-                    <div class="table-foot">
-                        <div class="padded">
-                            <button class="good" style="margin-left: 177px;">Update</button>
-                        </div>
+                    <div style="padding: 0 0 10px 0;">
+                        <table width="100%">
+                            <tr>
+                                <td width="175" align="right">
+                                    Status
+                                </td>
+                                <td width="10"></td>
+                                <td>
+                                    <div class="bold"><?php echo htmlspecialchars(ucwords($this->user->user_status()->name)); ?></div>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
-                </form>
-            </div>
-        </div>
 
-        <div class="inside">
-            <div class="box">
-                <div class="table-head">
-                    User Password
+                    <div style="padding: 10px 0;">
+                        <table width="100%">
+                            <tr>
+                                <td width="175" align="right">
+                                    Password
+                                </td>
+                                <td width="10"></td>
+                                <td>
+                                    <div>&lt;Hidden&gt;</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div style="padding: 0 0 10px 0;">
+                        <table width="100%">
+                            <tr>
+                                <td width="175" align="right">
+                                    Password Salt
+                                </td>
+                                <td width="10"></td>
+                                <td>
+                                    <div>&lt;hidden&gt;</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div style="padding: 0 0 10px 0;">
+                        <table width="100%">
+                            <tr>
+                                <td width="175" align="right">
+                                    Password Hashmethod
+                                </td>
+                                <td width="10"></td>
+                                <td>
+                                    <div class="bold"><?php echo htmlspecialchars($this->user->user_hashmethod()->name); ?></div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div style="padding: 0 0 10px 0;">
+                        <table width="100%">
+                            <tr>
+                                <td width="175" align="right">
+                                    Password Cost
+                                    <div class="id-error-password_cost tiny error" style="display: none;"></div>
+                                </td>
+                                <td width="10"></td>
+                                <td>
+                                    <div class="bold"><?php echo $this->user->password_cost; ?></div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
-                <form name="update-password" action="/admin/users/ajax/update_password/id:<?php echo $this->user->id; ?>">
-                    <div class="table-body">
-                        <div style="padding: 10px 0;">
-                            <table width="100%">
-                                <tr>
-                                    <td width="175" align="right">
-                                        Password
-                                        <div class="id-error-password tiny error" style="display: none;"></div>
-                                    </td>
-                                    <td width="10"></td>
-                                    <td>
-                                        <input type="password" name="password" value="" style="width: 300px;" />
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div style="padding: 0 0 10px 0;">
-                            <table width="100%">
-                                <tr>
-                                    <td width="175" align="right">
-                                        Password Salt
-                                        <div class="id-error-password_salt tiny error" style="display: none;"></div>
-                                    </td>
-                                    <td width="10"></td>
-                                    <td>
-                                        <input type="text" name="password_salt" value="<?php echo htmlspecialchars($this->user->password_salt); ?>" style="width: 600px;" />
-                                        <button name="random">Generate Random</button>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div style="padding: 0 0 10px 0;">
-                            <table width="100%">
-                                <tr>
-                                    <td width="175" align="right">
-                                        Password Hashmethod
-                                        <div class="id-error-password_hashmethod tiny error" style="display: none;"></div>
-                                    </td>
-                                    <td width="10"></td>
-                                    <td>
-                                        <select name="hashmethod">
-                                            <?php foreach ($this->password_hashmethods as $password_hashmethod): ?>
-                                            <?php if ($password_hashmethod->id === $this->user->password_hashmethod): ?>
-                                                <option value="<?php echo $password_hashmethod->id; ?>" selected="selected"><?php echo htmlspecialchars($password_hashmethod->name); ?></option>
-                                                <?php else: ?>
-                                                <option value="<?php echo $password_hashmethod->id; ?>"><?php echo htmlspecialchars($password_hashmethod->name); ?></option>
-                                                <?php endif; ?>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div style="padding: 0 0 10px 0;">
-                            <table width="100%">
-                                <tr>
-                                    <td width="175" align="right">
-                                        Password Cost
-                                        <div class="id-error-password_cost tiny error" style="display: none;"></div>
-                                    </td>
-                                    <td width="10"></td>
-                                    <td>
-                                        <input type="text" name="password_cost" value="<?php echo $this->user->password_cost; ?>" style="width: 100px;" />
-                                        <span class="tiny">(The larger the number the longer it will take to login)</span>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="table-foot">
-                        <div class="padded">
-                            <button class="good" style="margin-left: 177px;">Update</button>
-                        </div>
-                    </div>
-                </form>
             </div>
         </div>
 
@@ -279,23 +211,21 @@
                 <div class="table-head">
                     User Groups
                 </div>
-                <form name="groups" action="/admin/users/ajax/update_groups">
-                    <div class="standard-body">
-                        <div style="padding: 10px;">
-                            <ul>
-                                <?php foreach ($this->all_groups as $group): ?>
-                                <li>
-                                    <label>
-                                        <input type="checkbox" name="group[]" value="<?php echo $group->id; ?>" <?php if (in_array($group->id, $this->user->acl_group_collection()->field('id'))) { echo 'checked="checked" '; } ?>/>
-                                        <b><?php echo htmlspecialchars($group->name); ?></b>
-                                        <?php if (count($group->acl_role_collection()->acl_resource_collection())): ?>
-                                            (<?php echo join(', ', $group->acl_role_collection()->acl_resource_collection()->field('name')); ?>)
-                                        <?php endif; ?>
-                                    </label>
-                                </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        </div>
+                <form name="groups" action="/admin/user/ajax/update_groups/id:<?php echo $this->user->id; ?>">
+                    <div class="table-body">
+                        <ul>
+                            <?php foreach ($this->all_groups as $group): ?>
+                            <li>
+                                <label>
+                                    <input type="checkbox" name="group[]" value="<?php echo $group->id; ?>" <?php if (in_array($group->id, $this->user->acl_group_collection()->field('id'))) { echo 'checked="checked" '; } ?>/>
+                                    <b><?php echo htmlspecialchars($group->name); ?></b>
+                                    <?php if (0 && count($resources = $group->acl_role_collection()->acl_resource_collection())): ?>
+                                        <span class="unbold">(<?php echo join(', ', $resources->field('name')); ?>)</span>
+                                    <?php endif; ?>
+                                </label>
+                            </li>
+                            <?php endforeach; ?>
+                        </ul>
                     </div>
                     <div class="table-foot">
                         <div class="padded">
@@ -311,23 +241,21 @@
                 <div class="table-head">
                     User Roles
                 </div>
-                <form name="roles" action="/admin/users/ajax/update_roles">
-                    <div class="standard-body">
-                        <div style="padding: 10px;">
-                            <ul>
-                                <?php foreach ($this->all_roles as $role): ?>
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="role[]" value="<?php echo $role->id; ?>" <?php if (in_array($role->id, $this->user->acl_role_collection()->field('id'))) { echo 'checked="checked" '; } ?>/>
-                                            <b><?php echo htmlspecialchars($role->name); ?></b>
-                                            <?php if (count($role->acl_resource_collection())): ?>
-                                                (<?php echo join(', ', $role->acl_resource_collection()->field('name')); ?>)
-                                            <?php endif; ?>
-                                        </label>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        </div>
+                <form name="roles" action="/admin/user/ajax/update_roles/id:<?php echo $this->user->id; ?>">
+                    <div class="table-body">
+                        <ul>
+                            <?php foreach ($this->all_roles as $role): ?>
+                                <li>
+                                    <label>
+                                        <input type="checkbox" name="role[]" value="<?php echo $role->id; ?>" <?php if (in_array($role->id, $this->user->acl_role_collection()->field('id'))) { echo 'checked="checked" '; } ?>/>
+                                        <div style="display: inline-block; margin-left: 5px;"><?php echo htmlspecialchars($role->name); ?></div>
+                                        <?php if (0 && count($resources = $role->acl_resource_collection())): ?>
+                                            <span class="unbold">(<?php echo join(', ', $resources->field('name')); ?>)</span>
+                                        <?php endif; ?>
+                                    </label>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
                     </div>
                     <div class="table-foot">
                         <div class="padded">

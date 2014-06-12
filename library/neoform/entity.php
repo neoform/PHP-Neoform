@@ -19,7 +19,6 @@
             'cache_meta_engine_pool_write' => null,
 
             'cache_delete_expire_ttl'      => null,
-
         ];
 
         /**

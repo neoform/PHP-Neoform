@@ -1,0 +1,21 @@
+<style>
+    div[name='categories'] select {
+        font-size: 14px;
+        line-height: 26px;
+        display: inline-block;
+        margin: 6px 2px;
+    }
+    div[name='categories'] div {
+        display: inline-block;
+    }
+</style>
+<form name="move" style="margin: 0 auto; display: block;">
+    <div class="regular-body" style="padding: 0 0 10px 0;">
+        <div class="padded info message">
+            Where would you like to move "<?php echo htmlspecialchars($this->resource->name); ?>"?
+        </div>
+
+        <div name="resources" style="padding: 5px 10px;"></div>
+    </div>
+    <input type="submit" style="position: fixed; left: -9999px"/>
+</form>

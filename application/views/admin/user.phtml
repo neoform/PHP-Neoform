@@ -1,31 +1,36 @@
 <?php $this->inc('admin/templates/header'); ?>
 
 <script>
-    var page = {
+    (function() {
+        var self = {},
+            div;
 
-        onload: function() {
-            page.div     = $("#page");
-            page.i         = 0;
+        /**
+         * Init
+         */
+        $(function(){
+            div = $("div#page");
 
             // Nav form
-            $(".nav form", page.div).on("submit", function(e) {
-                e.preventDefault();
-            });
+            $(".nav form", div)
+                .on("submit", function(e) {
+                    e.preventDefault();
+                });
 
             // List forms
-            $(".inside form", page.div).on("submit", function(e) {
-                e.preventDefault();
-            });
-
-            $("button[name='new']", page.div)
-                .on("click", function(){
-
+            $(".inside form", div)
+                .on("submit", function(e) {
+                    e.preventDefault();
                 });
-        }
-};
 
-$(page.onload);
+            $("button[name='new']", div)
+                .on("click", function(){
+                    location.href = "/admin/user/new";
+                });
+        });
 
+        return self;
+    })();
 </script>
 
 <div id="page">
@@ -37,7 +42,7 @@ $(page.onload);
         <div class="nav">
             <div class="side">
                 <form>
-                    <button name="new" class="btn"><?php echo htmlspecialchars($this->locale->translate('New User')); ?></button>
+                    <button name="new" class="btn"><?php echo htmlspecialchars($this->locale->translate('New')); ?></button>
                 </form>
             </div>
         </div>
@@ -55,19 +60,22 @@ $(page.onload);
                         <table width="100%" cellspacing="0" cellpadding="0">
                             <tr>
                                 <td width="100">
-                                    ID
+                                    <a href="/admin/user<?php echo $this->sorter->get_params('id'); ?>">ID</a>
                                 </td>
                                 <td>
-                                    Email
+                                    <a href="/admin/user<?php echo $this->sorter->get_params('email'); ?>">Email</a>
+                                </td>
+                                <td width="170">
+                                    Sites
                                 </td>
                                 <td width="100">
-                                    Status
+                                    <a href="/admin/user<?php echo $this->sorter->get_params('status_id'); ?>">Status</a>
                                 </td>
                                 <td width="160">
-                                    Created On
+                                    <a href="/admin/user<?php echo $this->sorter->get_params('created_on'); ?>">Created On</a>
                                 </td>
                                 <td width="160">
-                                    Last Login
+                                    <a href="/admin/user<?php echo $this->sorter->get_params('last_login'); ?>">Last Login</a>
                                 </td>
                             </tr>
                         </table>
@@ -84,7 +92,10 @@ $(page.onload);
                                                     <?php echo $user->id; ?>
                                                 </td>
                                                 <td>
-                                                    <a href="/admin/users/view/id:<?php echo $user->id; ?>"><?php echo htmlspecialchars($user->email); ?></a>
+                                                    <a href="/admin/user/view/id:<?php echo $user->id; ?>"><?php echo htmlspecialchars($user->email); ?></a>
+                                                </td>
+                                                <td width="170">
+                                                    <?php echo htmlspecialchars(join(',', $user->site_collection()->field('name'))); ?>
                                                 </td>
                                                 <td width="100">
                                                     <?php echo htmlspecialchars($user->user_status()->name); ?>
@@ -108,7 +119,7 @@ $(page.onload);
                             $this->inc(
                                 'templates/pagination',
                                 [
-                                    'url'          => '/admin/users',
+                                    'url'          => '/admin/user' . $this->sorter->get_params(),
                                     'current_page' => (int) $this->page,
                                     'page_count'   => $this->total > 1 ? ceil($this->total / $this->per_page) : 1,
                                     'link_count'   => 5,
@@ -121,7 +132,11 @@ $(page.onload);
 
             <?php else: ?>
 
-                <div class="fat big">No users to show</div>
+                <form>
+                    <div class="table-body">
+                        <div class="empty">No users to show</div>
+                    </div>
+                </form>
 
             <?php endif; ?>
         </div>

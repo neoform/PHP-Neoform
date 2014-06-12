@@ -116,6 +116,7 @@
          */
         public function _controllers($locale) {
 
+            // Child controllers
             $children = [];
             if ($this->children) {
                 foreach ($this->children as $struct => $route) {
@@ -123,18 +124,13 @@
                 }
             }
 
-            $resource_ids = [];
+            // This controller
             if ($this->resource) {
-                $resources = is_array($this->resource) ? $this->resource : [ $this->resource ];
-                foreach (neoform\entity::dao('acl\resource')->by_name_multi($resources) as $resource_id) {
-                    if ($resource_id = (int) current($resource_id)) {
-                        $resource_ids[$resource_id] = $resource_id;
-                    } else {
-                        throw new neoform\acl\resource\exception(
-                            'Resource' . (count($resources) > 1 ? 's' : '') . ' "' . join(", ", $resources) . '" do' . (count($resources) > 1 ? 'es' : '') . ' not exist'
-                        );
-                    }
-                }
+                $resource_ids = $this->_get_resource_ids(
+                    is_array($this->resource) ? $this->resource : [ $this->resource ]
+                );
+            } else {
+                $resource_ids = [];
             }
 
             return [
@@ -145,5 +141,51 @@
                 'children'         => $children ? $children : null,
                 'slugs'            => $this->slugs,
             ];
+        }
+
+        /**
+         * Parse the acl resource name(s) and return the acl resource ids
+         *
+         * @param array $resources
+         *
+         * @return array
+         * @throws neoform\acl\resource\exception
+         */
+        protected function _get_resource_ids(array $resources) {
+            $resource_ids = [];
+
+            foreach ($resources as $resource) {
+
+                if ($resource_names = preg_split('`\s*/\s*`', $resource, -1, PREG_SPLIT_NO_EMPTY)) {
+
+                    // If resource is not nested (eg, "admin")
+                    if (count($resource_names) === 1) {
+                        if ($resource_id = neoform\entity::dao('acl\resource')->by_parent_name(null, reset($resource_names))) {
+                            if ($parent_id = (int) reset($resource_id)) {
+                                $resource_ids[] = (int) reset($resource_id);
+                            }
+                        } else {
+                            throw new neoform\acl\resource\exception("Resource \"" . reset($resource_names) . "\" does not exist");
+                        }
+
+                    // If resource is nested (eg, "admin:acl:role")
+                    } else {
+                        $parent_id = null;
+                        foreach ($resource_names as $resource_name) {
+                            if ($resource_model = neoform\entity::dao('acl\resource')->by_parent_name($parent_id, $resource_name)) {
+                                $parent_id = (int) reset($resource_model);
+                            } else {
+                                throw new neoform\acl\resource\exception("Resource \"{$resource}\" does not exist");
+                            }
+                        }
+
+                        if ($parent_id) {
+                            $resource_ids[] = $parent_id;
+                        }
+                    }
+                }
+            }
+
+            return array_unique($resource_ids);
         }
     }

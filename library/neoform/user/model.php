@@ -3,6 +3,7 @@
     namespace neoform\user;
 
     use neoform\entity;
+    use neoform;
 
     /**
      * User Model
@@ -57,12 +58,12 @@
             }
 
             // Don't have any roles? You clearly don't have access.
-            if (! ($role_ids = $this->role_ids())) {
+            if (! $this->role_ids()) {
                 return false;
             }
 
             // No resources in your roles? (that's weird) You may not continue.
-            if (! ($role_resource_ids = $this->role_resource_ids($role_ids))) {
+            if (! ($role_resource_ids = $this->role_resource_ids())) {
                 return false;
             }
 
@@ -94,7 +95,10 @@
          * @return bool
          */
         public function has_resource($resource_name) {
-            return in_array($resource_name, $this->acl_resource_collection()->field('name'));
+            return in_array(
+                neoform\acl\resource\lib::id_from_slug($resource_name),
+                $this->role_resource_ids()
+            );
         }
 
         /**
@@ -127,17 +131,13 @@
         /**
          * Returns a list of resource IDs this user has access to
          *
-         * @param array $role_ids
-         *
          * @return array
          */
-        public function role_resource_ids(array $role_ids = null) {
+        public function role_resource_ids() {
             // Collect all resources these roles have access to
             if (! isset($this->_vars['role_resource_ids'])) {
 
-                if ($role_ids === null) {
-                    $role_ids = $this->role_ids();
-                }
+                $role_ids = $this->role_ids();
 
                 $role_resource_ids = [];
                 foreach (entity::dao('acl\role\resource')->by_acl_role_multi($role_ids) as $ids) {

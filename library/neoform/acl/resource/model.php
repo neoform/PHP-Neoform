@@ -33,6 +33,42 @@
         }
 
         /**
+         * Get the slug of the resource
+         *
+         * @return string
+         */
+        public function slug() {
+            if (! array_key_exists('slug', $this->_vars)) {
+                $arr = [];
+                foreach ($this->ancestors() as $resource) {
+                    $arr[] = $resource->name;
+                }
+                $arr[] = $this->name;
+                $this->_vars['slug'] = join('/', $arr);
+            }
+
+            return $this->_vars['slug'];
+        }
+
+        /**
+         * Get the ancestor (parents) of this resource
+         *
+         * @return array
+         */
+        public function ancestors() {
+            if (! array_key_exists('ancestors', $this->_vars)) {
+                $ancestors = [];
+                $resource  = $this;
+                while ($resource->parent_id && $resource = $resource->parent_acl_resource()) {
+                    array_unshift($ancestors, $resource);
+                }
+                $this->_vars['ancestors'] = $ancestors;
+            }
+
+            return $this->_vars['ancestors'];
+        }
+
+        /**
          * Child Acl Resource Collection
          *
          * @param array|null   $order_by array of field names (as the key) and sort direction (entity_record_dao::SORT_ASC, entity_record_dao::SORT_DESC)

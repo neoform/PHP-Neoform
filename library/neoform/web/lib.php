@@ -24,7 +24,7 @@
 
             curl_setopt($curl, CURLOPT_USERAGENT, \neoform\config::instance()['web']['user_agent']);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-            //curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($curl, CURLOPT_TIMEOUT, 20);
 
             if ($bind_to_ip) {

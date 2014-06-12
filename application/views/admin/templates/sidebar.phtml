@@ -1,9 +1,26 @@
+<?php $user = neoform\auth::instance()->user(); ?>
 <div class="box inner sidebar">
     <ul>
-        <li><a href="<?php echo $this->locale->route('/admin/users'); ?>"><?php echo htmlspecialchars($this->locale->translate('Users')); ?></a></li>
-        <li><a href="<?php echo $this->locale->route('/admin/groups'); ?>"><?php echo htmlspecialchars($this->locale->translate('Groups')); ?></a></li>
-        <li><a href="<?php echo $this->locale->route('/admin/acl/roles'); ?>"><?php echo htmlspecialchars($this->locale->translate('ACL Roles')); ?></a></li>
-        <li><a href="<?php echo $this->locale->route('/admin/acl/resources'); ?>"><?php echo htmlspecialchars($this->locale->translate('ACL Resources')); ?></a></li>
-        <li><a href="<?php echo $this->locale->route('/admin/locale/namespaces'); ?>"><?php echo htmlspecialchars($this->locale->translate('Translations')); ?></a></li>
+        <?php if ($user->has_resource('admin/user')): ?>
+            <li><a href="<?php echo $this->locale->route('/admin/user'); ?>"><?php echo htmlspecialchars($this->locale->translate('Users')); ?></a></li>
+        <?php endif; ?>
+        <?php if ($user->has_resource('admin/acl/group')): ?>
+            <li><a href="<?php echo $this->locale->route('/admin/acl/group'); ?>"><?php echo htmlspecialchars($this->locale->translate('ACL Groups')); ?></a></li>
+        <?php endif; ?>
+        <?php if ($user->has_resource('admin/acl/role')): ?>
+            <li><a href="<?php echo $this->locale->route('/admin/acl/role'); ?>"><?php echo htmlspecialchars($this->locale->translate('ACL Roles')); ?></a></li>
+        <?php endif; ?>
+        <?php if ($user->has_resource('admin/acl/resource')): ?>
+            <li><a href="<?php echo $this->locale->route('/admin/acl/resource'); ?>"><?php echo htmlspecialchars($this->locale->translate('ACL Resources')); ?></a></li>
+        <?php endif; ?>
+        <?php if ($user->has_resource('admin/locale')): ?>
+            <li><a href="<?php echo $this->locale->route('/admin/locale/namespaces'); ?>"><?php echo htmlspecialchars($this->locale->translate('Translations')); ?></a></li>
+        <?php endif; ?>
+    </ul>
+    <hr />
+    <ul>
+        <?php if ($user->has_resource('admin/category')): ?>
+            <li><a href="<?php echo $this->locale->route('/admin/category'); ?>"><?php echo htmlspecialchars($this->locale->translate('Categories')); ?></a></li>
+        <?php endif; ?>
     </ul>
 </div>

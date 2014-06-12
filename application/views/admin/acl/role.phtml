@@ -1,78 +1,50 @@
 <?php $this->inc('admin/templates/header'); ?>
 
 <script>
-    var page = {
+    (function(){
 
-        onload: function() {
-            page.div     = $("#page");
-            page.i         = 0;
+        var self = {},
+            div;
+
+        /**
+         * Init
+         */
+        $(function() {
+            div = $("div#page");
 
             // Nav form
-            $(".nav form", page.div).on("submit", function(e) {
-                e.preventDefault();
-            });
+            $(".nav form", page.div)
+                .on("submit", function(e) {
+                    e.preventDefault();
+                });
 
             // List forms
-            $(".inside form", page.div).on("submit", function(e) {
-                e.preventDefault();
-            });
+            $(".inside form", page.div)
+                .on("submit", function(e) {
+                    e.preventDefault();
+                });
 
             $("button[name='new']", page.div)
-                .on("click", function(){
-                    CoreDialog.prompt(
-                        "",
-                        "New Role",
-                        [
-                            {
-                                "type": "text",
-                                "label": "Role name",
-                                "name": "name",
-                                "css": {
-                                    "width": "300px"
-                                }
-                            }
-                        ],
-                        [
-                            {
-                                "label": "Save",
-                                "action": function() {
-                                    Core.ajax({
-                                        "url": "/admin/acl/roles/ajax/insert",
-                                        "data": {
-                                            "name": $("input[name='name']", this.elements.form).val()
-                                        },
-                                        "success": function(response) {
-                                            if (response.status === "good") {
-                                                location.href = location.href;
-                                            } else {
-                                                CoreDialog.alert("A role with that name already exists");
-                                            }
-                                        }
-                                    });
-
-                                },
-                                "cssClass": "good"
-                            }
-                        ]
-                    );
+                .on("click", function(e){
+                    e.preventDefault();
+                    location.href = "/admin/acl/role/new";
                 });
-        }
-    };
+        });
 
-    $(page.onload);
-
+        return self;
+    })();
 </script>
 
 <div id="page">
 
-    <h3 class="header"><a href="/admin">Admin</a> / ACL / Roles</h3>
+    <h3 class="header"><a href="/admin">Admin</a> / <a href="/admin/acl">ACL</a> / Roles</h3>
 
     <?php $this->inc('admin/templates/sidebar'); ?>
     <div>
         <div class="nav">
             <div class="side">
                 <form>
-                    <button name="new" class="btn"><?php echo htmlspecialchars($this->locale->translate('New Role')); ?></button>
+                    <button name="new" class="btn"><?php echo htmlspecialchars($this->locale->translate('New')); ?></button>
                 </form>
             </div>
         </div>
@@ -90,14 +62,15 @@
                         <table width="100%" cellspacing="0" cellpadding="0">
                             <tr>
                                 <td width="100">
-                                    ID
+                                    <a href="/admin/acl/role<?php echo $this->sorter->get_params('id'); ?>">ID</a>
                                 </td>
                                 <td width="250">
-                                    Name
+                                    <a href="/admin/acl/role<?php echo $this->sorter->get_params('name'); ?>">Name</a>
                                 </td>
-                                <td width="250">
+                                <td width="300">
                                     Resources
                                 </td>
+                                <td width="10">&nbsp;</td>
                                 <td>
                                     Groups
                                 </td>
@@ -116,19 +89,34 @@
                                                     <?php echo $role->id; ?>
                                                 </td>
                                                 <td width="250">
-                                                    <b><?php echo htmlspecialchars($role->name); ?></b>
+                                                    <a href="/admin/acl/role/view/id:<?php echo $role->id; ?>"><?php echo htmlspecialchars($role->name); ?></a>
                                                 </td>
-                                                <td width="250">
-                                                    <?php echo htmlspecialchars(join(', ', $role->acl_resource_collection()->field('name'))); ?>
+                                                <td width="300">
+                                                    <?php
+                                                        $links = [];
+                                                        foreach ($role->acl_resource_collection() as $resource) {
+                                                            $links[] = '<a href="/admin/acl/resource/view/id:' . $resource->id . '">' . htmlspecialchars($resource->slug()) . '</a>';
+                                                        }
+                                                    ?>
+                                                    <?php if ($links): ?>
+                                                        <?php echo join(', ', $links); ?>
+                                                    <?php else: ?>
+                                                        --
+                                                    <?php endif; ?>
                                                 </td>
+                                                <td width="10">&nbsp;</td>
                                                 <td>
                                                     <?php
                                                         $links = [];
                                                         foreach ($role->acl_group_collection() as $group) {
-                                                            $links[] = '<a href="/admin/groups/view/id:' . $group->id . '">' . htmlspecialchars($group->name) . '</a>';
+                                                            $links[] = '<a href="/admin/acl/group/view/id:' . $group->id . '">' . htmlspecialchars($group->name) . '</a>';
                                                         }
-                                                        echo join(', ', $links);
-                                                    ?>&nbsp;
+                                                    ?>
+                                                    <?php if ($links): ?>
+                                                        <?php echo join(', ', $links); ?>
+                                                    <?php else: ?>
+                                                        --
+                                                    <?php endif; ?>
                                                 </td>
                                             </tr>
                                         </table>
@@ -143,7 +131,7 @@
                             $this->inc(
                                 'templates/pagination',
                                 [
-                                    'url'          => '/admin/acl/roles',
+                                    'url'          => '/admin/acl/role' . $this->sorter->get_params(),
                                     'current_page' => (int) $this->page,
                                     'page_count'   => $this->total > 1 ? ceil($this->total / $this->per_page) : 1,
                                     'link_count'   => 5,

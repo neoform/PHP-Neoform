@@ -1,0 +1,152 @@
+<?php $this->inc('admin/templates/header'); ?>
+
+<script>
+    (function(){
+        var self = {},
+            div;
+
+        $(function() {
+            div = $("div#page");
+
+            // Nav form
+            $(".nav form", div)
+                .on("submit", function(e) {
+                    e.preventDefault();
+                });
+
+            // List forms
+            $(".inside form", div)
+                .on("submit", function(e) {
+                    e.preventDefault();
+                });
+
+            $("button[name='new']", div)
+                .on("click", function(){
+                    location.href = "/admin/acl/group/new";
+                });
+
+            $("button[name='edit']", div)
+                .on("click", function(){
+                    location.href = "/admin/acl/group/edit/id:<?php echo $this->group->id; ?>";
+                });
+
+            // Roles
+            $("form[name='roles']", div)
+                .on("submit", function(e){
+
+                    e.preventDefault();
+
+                    var form = $(this);
+
+                    var role_ids = [];
+                    $("input[name='role[]']:checked", form).each(function(){
+                        role_ids.push($(this).val());
+                    });
+
+                    Core.ajax({
+                        url: form.attr("action"),
+                        data: {
+                            "roles": role_ids.join(",")
+                        },
+                        success: function(response) {
+                            if (response.status === 'good') {
+                                CoreDialog.alert("Group roles have been saved", null, "good");
+                            } else {
+                                CoreDialog.alert(response.message || "Group roles could not be updated");
+                            }
+
+                            $(".error", form).hide();
+
+                            if (response && response.errors) {
+                                for (var k in response.errors) {
+                                    $(".id-error-" + k, form).html(response.errors[k]).show();
+                                }
+                            }
+                        },
+                        error: function(response) {
+                            alert("There was a problem saving your user info");
+                        }
+                    });
+                });
+        });
+
+        return self;
+    })();
+
+</script>
+
+<div id="page">
+
+    <h3 class="header">
+        <a href="/admin"><?php echo htmlspecialchars($this->locale->translate('Admin')); ?></a>
+        / <a href="/admin/acl/group"><?php echo htmlspecialchars($this->locale->translate('Groups')); ?></a>
+        / <?php echo htmlspecialchars($this->group->name); ?>
+    </h3>
+
+    <?php $this->inc('admin/templates/sidebar'); ?>
+
+    <div>
+        <div class="nav">
+            <div class="side">
+                <form>
+                    <button name="new" class="btn"><?php echo htmlspecialchars($this->locale->translate('New')); ?></button>
+                    <button name="edit" class="btn"><?php echo htmlspecialchars($this->locale->translate('Edit')); ?></button>
+                </form>
+            </div>
+        </div>
+
+        <div class="inside">
+            <div class="box">
+                <div class="table-head">
+                    <?php echo htmlspecialchars($this->locale->translate('Group')); ?>
+                </div>
+                <div class="table-body">
+                    <div style="padding: 10px 0;">
+                        <table width="100%">
+                            <tr>
+                                <td width="175" align="right">
+                                    Name
+                                </td>
+                                <td width="10"></td>
+                                <td>
+                                    <div class="bold"><?php echo htmlspecialchars($this->group->name); ?></div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="inside">
+            <div class="box">
+                <form name="roles" action="/admin/acl/group/ajax/update_roles/id:<?php echo $this->group->id; ?>">
+                    <div class="table-head">
+                        Roles
+                    </div>
+                    <div class="table-body">
+                        <ul>
+                            <?php foreach ($this->roles as $role): ?>
+                                <li>
+                                    <label>
+                                        <input type="checkbox" name="role[]" value="<?php echo $role->id; ?>" <?php if (in_array($role->id, $this->group->acl_role_collection()->field('id'))) { echo 'checked="checked" '; } ?>/>
+                                        <b><?php echo htmlspecialchars($role->name); ?></b>
+                                        <?php if (0 && count($role->acl_resource_collection())): ?>
+                                            <span class="unbold">(<?php echo join(', ', $role->acl_resource_collection()->field('name')); ?>)</span>
+                                        <?php endif; ?>
+                                    </label>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                    <div class="table-foot">
+                        <button class="good">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<?php $this->inc('admin/templates/footer'); ?>

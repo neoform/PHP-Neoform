@@ -180,38 +180,42 @@
 
                     <form>
                         <div class="table-body">
-                            <ul id="resources">
-                                <?php foreach ($this->resources as $resource): ?>
-                                    <li data-id="<?php echo $resource->id; ?>">
-                                        <table width="100%" cellspacing="0" cellpadding="0">
-                                            <tr>
-                                                <td width="60">
-                                                    <button name="edit" class="small edit" style="">Edit</button>
-                                                </td>
-                                                <td width="100">
-                                                    <?php echo $resource->id; ?>
-                                                </td>
-                                                <td width="250">
-                                                    <a href="/admin/acl/resource/<?php echo $resource->id; ?>"><?php echo htmlspecialchars($resource->name); ?></a>
-                                                </td>
-                                                <td>
-                                                    <?php
-                                                        $links = [];
-                                                        foreach ($resource->acl_role_collection() as $role) {
-                                                            $links[] = '<a href="/admin/acl/role/view/id:' . $role->id . '">' . htmlspecialchars($role->name) . '</a>';
-                                                        }
-                                                        echo join(', ', $links);
-                                                    ?>&nbsp;
-                                                </td>
-                                                <td width="160">
-                                                    <button name="delete" class="small error delete right">Delete</button>
-                                                    <button name="move" class="small move right" style="">Move</button>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
+                            <?php if (count($this->resources)): ?>
+                                <ul id="resources">
+                                    <?php foreach ($this->resources as $resource): ?>
+                                        <li data-id="<?php echo $resource->id; ?>">
+                                            <table width="100%" cellspacing="0" cellpadding="0">
+                                                <tr>
+                                                    <td width="60">
+                                                        <button name="edit" class="small edit" style="">Edit</button>
+                                                    </td>
+                                                    <td width="100">
+                                                        <?php echo $resource->id; ?>
+                                                    </td>
+                                                    <td width="250">
+                                                        <a href="/admin/acl/resource/<?php echo $resource->id; ?>"><?php echo htmlspecialchars($resource->name); ?></a>
+                                                    </td>
+                                                    <td>
+                                                        <?php
+                                                            $links = [];
+                                                            foreach ($resource->acl_role_collection() as $role) {
+                                                                $links[] = '<a href="/admin/acl/role/view/id:' . $role->id . '">' . htmlspecialchars($role->name) . '</a>';
+                                                            }
+                                                            echo join(', ', $links);
+                                                        ?>&nbsp;
+                                                    </td>
+                                                    <td width="160">
+                                                        <button name="delete" class="small error delete right">Delete</button>
+                                                        <button name="move" class="small move right" style="">Move</button>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php else: ?>
+                                <div class="empty">No resources to show</div>
+                            <?php endif; ?>
                         </div>
                     </form>
                     <div class="table-foot">

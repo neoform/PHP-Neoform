@@ -1,0 +1,145 @@
+<?php $this->inc('admin/templates/header'); ?>
+
+<script>
+    (function(){
+        var self = {},
+            div;
+
+        $(function() {
+            div = $("div#page");
+
+            // Nav form
+            $(".nav form", div)
+                .on("submit", function(e) {
+                    e.preventDefault();
+                });
+
+            // List forms
+            $(".inside form", div)
+                .on("submit", function(e) {
+                    e.preventDefault();
+                });
+
+            $("button[name='new']", div)
+                .on("click", function(){
+                    location.href = "/admin/acl/group/new";
+                });
+
+            // Insert
+            $("form[name='insert']", div)
+                .on("submit", function(e){
+
+                    e.preventDefault();
+
+                    var form = $(this);
+
+                    var role_ids = [];
+                    $("input[name='role[]']:checked", form).each(function(){
+                        role_ids.push($(this).val());
+                    });
+
+                    Core.ajax({
+                        url: form.attr("action"),
+                        data: {
+                            "name":  $("input[name='name']", form).val(),
+                            "roles": role_ids.join(",")
+                        },
+                        success: function(response) {
+                            if (response.status === 'good') {
+                                location.href = "/admin/acl/group/view/id:" + response.group.id;
+                            } else {
+                                CoreDialog.alert(response.message || "Group info has not be saved");
+                            }
+
+                            $(".error", form).hide();
+
+                            if (response && response.errors) {
+                                for (var k in response.errors) {
+                                    $(".id-error-" + k, form).html(response.errors[k]).show();
+                                }
+                            }
+                        },
+                        error: function(response) {
+                            alert("There was a problem saving your group");
+                        }
+                    });
+                });
+        });
+
+        return self;
+    })();
+
+</script>
+
+<div id="page">
+
+    <h3 class="header">
+        <a href="/admin"><?php echo htmlspecialchars($this->locale->translate('Admin')); ?></a>
+        <a href="/admin/acl"><?php echo htmlspecialchars($this->locale->translate('ACL')); ?></a>
+        / <a href="/admin/acl/group"><?php echo htmlspecialchars($this->locale->translate('Groups')); ?></a>
+        / New
+    </h3>
+
+    <?php $this->inc('admin/templates/sidebar'); ?>
+
+    <div>
+        <div class="nav">
+            <div class="side">
+                <form>
+                    <button name="new" class="btn"><?php echo htmlspecialchars($this->locale->translate('New')); ?></button>
+                </form>
+            </div>
+        </div>
+
+        <div class="inside">
+            <div class="box">
+                <div class="table-head">
+                    <?php echo htmlspecialchars($this->locale->translate('Group')); ?>
+                </div>
+                <form name="insert" action="/admin/acl/group/ajax/insert">
+                    <div class="table-body">
+                        <div style="padding: 10px 0;">
+                            <table width="100%">
+                                <tr>
+                                    <td width="175" align="right">
+                                        <label name="name">Name</label>
+                                        <div name="name" class="tiny error" style="display: none;"></div>
+                                    </td>
+                                    <td width="10"></td>
+                                    <td>
+                                        <input type="text" name="name" value="" style="width: 300px;" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="table-head">
+                            Roles
+                        </div>
+                        <div class="table-body">
+                            <ul>
+                                <?php foreach ($this->roles as $role): ?>
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" name="role[]" value="<?php echo $role->id; ?>" />
+                                            <b><?php echo htmlspecialchars($role->name); ?></b>
+                                            <?php if (0 && count($role->acl_resource_collection())): ?>
+                                                <span class="unbold">(<?php echo join(', ', $role->acl_resource_collection()->field('name')); ?>)</span>
+                                            <?php endif; ?>
+                                        </label>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="table-foot">
+                        <button class="good" style="margin: 0 0 0 177px;">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<?php $this->inc('admin/templates/footer'); ?>

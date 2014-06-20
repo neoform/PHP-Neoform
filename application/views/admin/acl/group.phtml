@@ -1,0 +1,142 @@
+<?php $this->inc('admin/templates/header'); ?>
+
+<script>
+    (function(){
+
+        var self = {},
+            div;
+
+        /**
+         * Init
+         */
+        $(function(){
+            div = $("div#page");
+
+            // Nav form
+            $(".nav form", div)
+                .on("submit", function(e) {
+                    e.preventDefault();
+                });
+
+            // List forms
+            $(".inside form", div)
+                .on("submit", function(e) {
+                    e.preventDefault();
+                });
+
+            $("button[name='new']", div)
+                .on("click", function(){
+                    location.href = "/admin/acl/group/new";
+                });
+        });
+
+        return self;
+    })();
+
+</script>
+
+<div id="page">
+
+    <h3 class="header"><a href="/admin">Admin</a> / ACL / Groups</h3>
+
+    <?php $this->inc('admin/templates/sidebar'); ?>
+    <div>
+        <div class="nav">
+            <div class="side">
+                <form>
+                    <button name="new" class="btn"><?php echo htmlspecialchars($this->locale->translate('New')); ?></button>
+                </form>
+            </div>
+        </div>
+
+        <div class="inside">
+
+            <?php if ($this->groups): ?>
+
+                <div class="counts">
+                    Total Groups: <?php echo number_format($this->total); ?>
+                </div>
+
+                <div class="box">
+                    <div class="table-head">
+                        <table width="100%" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td width="100">
+                                    <a href="/admin/acl/group<?php echo $this->sorter->get_params('id'); ?>">ID</a>
+                                </td>
+                                <td width="300">
+                                    <a href="/admin/acl/group<?php echo $this->sorter->get_params('name'); ?>">Name</a>
+                                </td>
+                                <td width="100">
+                                    User Count
+                                </td>
+                                <td>
+                                    Roles
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <form>
+                        <div class="table-body">
+                            <ul id="groups">
+                                <?php foreach ($this->groups as $group): ?>
+                                <li>
+                                    <table width="100%" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <td width="100">
+                                                <?php echo $group->id; ?>
+                                            </td>
+                                            <td width="300">
+                                                <a href="/admin/acl/group/view/id:<?php echo $group->id; ?>"><?php echo htmlspecialchars($group->name); ?></a>
+                                            </td>
+                                            <td width="100">
+                                                <?php echo count(neoform\entity::dao('acl\group\user')->by_acl_group($group->id)); ?>
+                                            </td>
+                                            <td>
+                                                <?php
+                                                    $links = [];
+                                                    foreach ($group->acl_role_collection() as $role) {
+                                                        $links[] = '<a href="/admin/acl/role/view/id:' . $role->id . '">' . htmlspecialchars($role->name) . '</a>';
+                                                    }
+                                                ?>
+                                                <?php if ($links): ?>
+                                                    <?php echo join(', ', $links); ?>
+                                                <?php else: ?>
+                                                    --
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    </form>
+                    <div class="table-foot">
+                        Page
+                        <?php
+                        $this->inc(
+                            'templates/pagination',
+                            [
+                                'url'          => '/admin/acl/group' . $this->sorter->get_params(),
+                                'current_page' => (int) $this->page,
+                                'page_count'   => $this->total > 1 ? ceil($this->total / $this->per_page) : 1,
+                                'link_count'   => 5,
+                                'next'         => true,
+                            ]
+                        );
+                        ?>
+                    </div>
+                </div>
+
+            <?php else: ?>
+
+                <div class="fat big">No groups to show</div>
+
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
+<?php $this->inc('admin/templates/footer'); ?>

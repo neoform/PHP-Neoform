@@ -37,11 +37,17 @@
 
                     var form = $(this);
 
+                    var site_ids = [];
+                    $("input[name='site[]']:checked", form).each(function(){
+                        site_ids.push($(this).val());
+                    });
+
                     Core.ajax({
                         url: form.attr("action"),
                         data: {
                             "email":     $("input[name='email']", form).val(),
-                            "status_id": $("select[name='status']", form).val()
+                            "status_id": $("select[name='status']", form).val(),
+                            "sites":     site_ids.join(",")
                         },
                         success: function(response) {
                             if (response.status === 'good') {
@@ -50,11 +56,17 @@
                                 CoreDialog.error(response.message || "User info could not be updated");
                             }
 
-                            $(".error", form).hide();
+                            $("div.error", form).hide();
+                            $("label.error", form).removeClass("error");
 
                             if (response && response.errors) {
                                 for (var k in response.errors) {
-                                    $(".id-error-" + k, form).html(response.errors[k]).show();
+                                    $("div[name='" + k + "']", form)
+                                        .text(response.errors[k])
+                                        .show();
+
+                                    $("label[name='" + k + "']", form)
+                                        .addClass("error");
                                 }
                             }
                         },
@@ -89,11 +101,25 @@
                                 }
                             }
 
-                            $(".error", form).hide();
+                            $("div.error", form).hide();
+                            $("label.error", form).removeClass("error");
 
                             if (response && response.errors) {
+
+                                if (response.errors["password1"]) {
+                                    response.errors["password"] = response.errors["password1"];
+                                }
+                                if (response.errors["password2"]) {
+                                    response.errors["password"] = response.errors["password2"];
+                                }
+
                                 for (var k in response.errors) {
-                                    $("div[name='" + k + "']", form).html(response.errors[k]).show();
+                                    $("div[name='" + k + "']", form)
+                                        .text(response.errors[k])
+                                        .show();
+
+                                    $("label[name='" + k + "']", form)
+                                        .addClass("error");
                                 }
                             }
                         },
@@ -213,7 +239,7 @@
                 <div class="table-head">
                     User Info
                 </div>
-                <form name="update" action="/admin/users/ajax/update/id:<?php echo $this->user->id; ?>">
+                <form name="update" action="/admin/user/ajax/update/id:<?php echo $this->user->id; ?>">
                     <div class="table-body">
                         <div style="padding: 10px 0;">
                             <table width="100%">
@@ -233,8 +259,8 @@
                             <table width="100%">
                                 <tr>
                                     <td width="175" align="right">
-                                        <label name="site">Status</label>
-                                        <div name="site" class="tiny error" style="display: none;"></div>
+                                        <label name="status">Status</label>
+                                        <div name="status" class="tiny error" style="display: none;"></div>
                                     </td>
                                     <td width="10"></td>
                                     <td>
@@ -264,7 +290,7 @@
                                         <ul>
                                             <?php foreach ($this->all_sites as $site): ?>
                                                 <label>
-                                                    <input type="checkbox" name="site[]" value="<?php echo $site->id; ?>" />
+                                                    <input type="checkbox" name="site[]" value="<?php echo $site->id; ?>"<?php if (in_array($site->id, $this->user->site_collection()->field('id'))) { echo 'checked="checked" '; } ?> />
                                                     <b><?php echo htmlspecialchars($site->name); ?></b>
                                                 </label>
                                             <?php endforeach; ?>
@@ -330,10 +356,10 @@
                                     <td>
                                         <select name="hashmethod">
                                             <?php foreach ($this->password_hashmethods as $password_hashmethod): ?>
-                                            <?php if ($password_hashmethod->id === $this->user->password_hashmethod): ?>
-                                                <option value="<?php echo $password_hashmethod->id; ?>" selected="selected"><?php echo htmlspecialchars($password_hashmethod->name); ?></option>
+                                                <?php if ($password_hashmethod->id === $this->user->password_hashmethod): ?>
+                                                    <option value="<?php echo $password_hashmethod->id; ?>" selected="selected"><?php echo htmlspecialchars($password_hashmethod->name); ?></option>
                                                 <?php else: ?>
-                                                <option value="<?php echo $password_hashmethod->id; ?>"><?php echo htmlspecialchars($password_hashmethod->name); ?></option>
+                                                    <option value="<?php echo $password_hashmethod->id; ?>"><?php echo htmlspecialchars($password_hashmethod->name); ?></option>
                                                 <?php endif; ?>
                                             <?php endforeach; ?>
                                         </select>

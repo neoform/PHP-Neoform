@@ -18,27 +18,36 @@
             try {
                 $redis = new \redis;
 
+                // Persistent Connect
                 if ($config['persistent_connection']) {
-                    if (isset($server['host'])) {
+
+                    // IP based connect
+                    if ($server['host']) {
                         $redis->pconnect(
                             $server['host'],
-                            isset($server['port']) ? $server['port'] : 6379,
-                            isset($config['persistent_connection_timeout']) ? $config['persistent_connection_timeout'] : null,
-                            isset($config['persistent_connection_id']) ? $config['persistent_connection_id'] : null
+                            $server['port'],
+                            $config['persistent_connection_timeout'],
+                            $config['persistent_connection_id']
                         );
-                    } else if (isset($server['socket'])) {
+
+                    // Socket based connect
+                    } else if ($server['socket']) {
                         $redis->pconnect($server['socket']);
                     } else {
                         throw new redis\exception("Redis server configuration \"{$name}\" does not contain a host or a socket.");
                     }
                 } else {
+
+                    // IP based connect
                     if (isset($server['host'])) {
                         $redis->connect(
                             $server['host'],
-                            isset($server['port']) ? $server['port'] : 6379,
-                            isset($config['persistent_connection_timeout']) ? $config['persistent_connection_timeout'] : null,
-                            isset($config['persistent_connection_id']) ? $config['persistent_connection_id'] : null
+                            $server['port'],
+                            $config['persistent_connection_timeout'],
+                            $config['persistent_connection_id']
                         );
+
+                    // Socket based connect
                     } else if (isset($server['socket'])) {
                         $redis->connect($server['socket']);
                     } else {
@@ -46,8 +55,20 @@
                     }
                 }
 
+                // PHP serializer
                 $redis->setOption(\redis::OPT_SERIALIZER, \redis::SERIALIZER_PHP);
-                $redis->setOption(\redis::OPT_PREFIX, isset($server['key_prefix']) ? "{$server['key_prefix']}:" : "{$config['key_prefix']}:");
+
+                // Key prefix
+                if ($server['key_prefix']) {
+                    $redis->setOption(\redis::OPT_PREFIX, "{$server['key_prefix']}:");
+                } else if ($config['key_prefix']) {
+                    $redis->setOption(\redis::OPT_PREFIX, "{$config['key_prefix']}:");
+                }
+
+                // Database
+                if ($server['database']) {
+                    $redis->select($server['database']);
+                }
 
             } catch (\redisexception $e) {
                 throw new redis\exception("Could not create redis instance \"{$name}\" -- " . $e->getMessage());

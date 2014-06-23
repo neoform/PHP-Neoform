@@ -224,7 +224,7 @@
         public static function _validate_admin_insert(input\collection $input) {
 
             // email
-            $input->email->cast('string')->length(1, 255)->callback(function($email) {
+            $input->email->cast('string')->length(1, 255)->is_email()->callback(function($email) {
                 if (entity::dao('user')->by_email($email->val())) {
                     $email->errors('already in use');
                 }
@@ -261,7 +261,7 @@
         public static function _validate_admin_update(model $user, input\collection $input) {
 
             // email
-            $input->email->cast('string')->length(1, 255)->callback(function($email) use ($user) {
+            $input->email->cast('string')->length(1, 255)->is_email()->callback(function($email) use ($user) {
                 $id_arr = entity::dao('user')->by_email($email->val());
                 if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $user->id) {
                     $email->errors('already in use');

@@ -79,13 +79,10 @@
                         );
 
                         // Sites
-                        $site_ids = preg_split('`\s*,\s*`', http::instance()->post('sites'), -1, PREG_SPLIT_NO_EMPTY);
-                        if ($site_ids && is_array($site_ids)) {
-                            user\site\api::let(
-                                $user,
-                                new site\collection($site_ids)
-                            );
-                        }
+                        user\site\api::let(
+                            $user,
+                            new site\collection(preg_split('`\s*,\s*`', http::instance()->post('sites'), -1, PREG_SPLIT_NO_EMPTY))
+                        );
 
                         $json->status = 'good';
                     } catch (input\exception $e) {

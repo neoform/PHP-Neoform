@@ -22,10 +22,6 @@
          */
         protected function defaults() {
             return [
-                //leave black (empty string) if no prefix is needed
-                //this prefix is useful if you have multiple instances of the same code base
-                'key_prefix' => null,
-
                 'default_pool_read'  => null,
                 'default_pool_write' => null,
 
@@ -54,6 +50,38 @@
 
             if (empty($this->config['pools']) || ! is_array($this->config['pools']) || ! $this->config['pools']) {
                 throw new neoform\config\exception('"pools" must contain at least one server');
+            }
+
+            foreach ($this->config['pools'] as $name => &$servers) {
+                if (!is_array($servers)) {
+                    throw new neoform\config\exception('servers in "pools" must be an array with server info');
+                }
+
+                foreach ($servers as &$server) {
+                    if (empty($server['host']) && empty($server['socket'])) {
+                        throw new neoform\config\exception('server "host" or "socket" must be set');
+                    }
+
+                    if (empty($server['host'])) {
+                        $server['host'] = null;
+                    }
+
+                    if (empty($server['socket'])) {
+                        $server['socket'] = null;
+                    }
+
+                    if (empty($server['port'])) {
+                        $server['port'] = 6379;
+                    }
+
+                    if (empty($server['database'])) {
+                        $server['database'] = null;
+                    }
+
+                    if (empty($server['key_prefix'])) {
+                        $server['key_prefix'] = null;
+                    }
+                }
             }
         }
 

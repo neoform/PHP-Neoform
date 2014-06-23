@@ -53,4 +53,41 @@
 
             return false;
         }
+
+        /**
+         * Checks the http slugs, if they don't match the $slug_regex then user is redirected to a 404 page
+         *
+         * @param string $slug_regex
+         * @param array  $permitted_gets       GET parameter names that are allowed
+         * @param array  $permitted_parameters /var1:val1/var2:val2/ parameter names that are allowed
+         *
+         * @return bool true on 404
+         */
+        public static function enforce_url_custom($slug_regex=null, array $permitted_gets=null,
+                                                  array $permitted_parameters=null) {
+
+            if ($slug_regex !== null) {
+                $slugs = http::instance()->slugs();
+                array_shift($slugs);
+                if (! preg_match($slug_regex, '/' . join('/', $slugs))) {
+                    return true;
+                }
+            }
+
+            // If any get values exist that aren't permitted, 404.
+            if ($permitted_gets !== null) {
+                if (array_diff_key(http::instance()->gets(), array_flip($permitted_gets + ['rc']))) {
+                    return true;
+                }
+            }
+
+            // If any get values exist that aren't permitted, 404.
+            if ($permitted_parameters !== null) {
+                if (array_diff_key(http::instance()->parameters(), array_flip($permitted_parameters))) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }

@@ -525,9 +525,9 @@
             if (! $this->error && (! $this->optional || ! $this->is_empty)) {
                 $float = (float) $this->val;
                 if ($min && $float < $min) {
-                    $this->errors("must be at least " . $min);
+                    $this->errors("must be at least {$min}");
                 } else if ($max && $float > $max) {
-                    $this->errors("must be at most " . $min);
+                    $this->errors("must be at most {$max}");
                 }
             }
             return $this;

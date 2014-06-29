@@ -23,8 +23,4 @@
         public function all() {
             return (array) $this;
         }
-
-        public function count() {
-            return count($this);
-        }
     }

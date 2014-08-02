@@ -78,7 +78,7 @@ img { border: 0; }
 
 label { vertical-align: middle; }
 
-hr { background: #528fcf; height: 1px; padding: 0; margin: 10px 60px; border: 0; }
+hr { background: rgba(120, 122, 141, 0.61); height: 1px; padding: 0; margin: 10px 60px; border: 0; }
 
 h1, h2, h3 { font-family: 'Open Sans', sans-serif; font-weight: bold; margin: 0; padding: 0; }
 h1           { font-size: 30px; line-height: 36px; }
@@ -257,10 +257,30 @@ form button:active {
     -webkit-box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
        -moz-box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
-
+}
+form select {
+    height: 30px;
+    font-size: 14px;
+    line-height: 30px;
+    font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
+    padding: 5px 3px;
 }
 
+form input[disabled], form button[disabled], form select[disabled], form textarea[disabled], form input[readonly], form select[readonly], form textarea[readonly] {
 
-form input[disabled], form select[disabled], form textarea[disabled], form input[readonly], form select[readonly], form textarea[readonly] { cursor: not-allowed; }
+}
+form input[disabled],       form input[disabled]:active,    form input[disabled]:hover,
+form button[disabled],      form button[disabled]:active,   form button[disabled]:hover,
+form button[disabled],      form button[disabled]:active,   form select[disabled]:hover,
+form textarea[disabled],    form textarea[disabled]:active, form textarea[disabled]:hover,
+form input[readonly],       form input[readonly]:active,    form input[readonly]:hover,
+form select[readonly],      form select[readonly]:active,   form select[readonly]:hover,
+form textarea[readonly],    form textarea[readonly]:active, form textarea[readonly]:hover {
+    cursor: not-allowed;
+    color: #bbb;
+    background: #f7f7f7;
+    box-shadow: none !important;
+    border-color: rgba(0, 0, 0, 0.12);
+}
 
 form label:hover { cursor: pointer; text-decoration: underline; }

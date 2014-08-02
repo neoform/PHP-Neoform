@@ -23,6 +23,12 @@
                     e.preventDefault();
                 });
 
+            $(".inside form button.edit", div)
+                .on("click", function(e){
+                    e.preventDefault();
+                    location.href = "/admin/user/edit/id:" + $(this).closest("li").data("id");
+                });
+
             $("button[name='new']", div)
                 .on("click", function(){
                     location.href = "/admin/user/new";
@@ -59,23 +65,36 @@
                     <div class="table-head">
                         <table width="100%" cellspacing="0" cellpadding="0">
                             <tr>
+                                <td width="60">
+                                    &nbsp;
+                                </td>
                                 <td width="100">
-                                    <a href="/admin/user<?php echo $this->sorter->get_params('id'); ?>">ID</a>
+                                    <a href="/admin/user<?php echo $this->sorter->get_params('id'); ?>"
+                                        <?php if ($this->sorter->get_order('id')) { echo 'class="sort-' . $this->sorter->get_order('id') . '"'; } ?>
+                                        >ID</a>
                                 </td>
                                 <td>
-                                    <a href="/admin/user<?php echo $this->sorter->get_params('email'); ?>">Email</a>
+                                    <a href="/admin/user<?php echo $this->sorter->get_params('email'); ?>"
+                                        <?php if ($this->sorter->get_order('email')) { echo 'class="sort-' . $this->sorter->get_order('email') . '"'; } ?>
+                                        >Email</a>
                                 </td>
                                 <td width="170">
                                     Sites
                                 </td>
                                 <td width="100">
-                                    <a href="/admin/user<?php echo $this->sorter->get_params('status_id'); ?>">Status</a>
+                                    <a href="/admin/user<?php echo $this->sorter->get_params('status_id'); ?>"
+                                        <?php if ($this->sorter->get_order('status_id')) { echo 'class="sort-' . $this->sorter->get_order('status_id') . '"'; } ?>
+                                        >Status</a>
                                 </td>
                                 <td width="160">
-                                    <a href="/admin/user<?php echo $this->sorter->get_params('created_on'); ?>">Created On</a>
+                                    <a href="/admin/user<?php echo $this->sorter->get_params('created_on'); ?>"
+                                        <?php if ($this->sorter->get_order('created_on')) { echo 'class="sort-' . $this->sorter->get_order('created_on') . '"'; } ?>
+                                        >Created On</a>
                                 </td>
                                 <td width="160">
-                                    <a href="/admin/user<?php echo $this->sorter->get_params('last_login'); ?>">Last Login</a>
+                                    <a href="/admin/user<?php echo $this->sorter->get_params('last_login'); ?>"
+                                        <?php if ($this->sorter->get_order('last_login')) { echo 'class="sort-' . $this->sorter->get_order('last_login') . '"'; } ?>
+                                        >Last Login</a>
                                 </td>
                             </tr>
                         </table>
@@ -85,9 +104,12 @@
                         <div class="table-body">
                             <ul id="users">
                                 <?php foreach ($this->users as $user): ?>
-                                    <li>
+                                    <li data-id="<?php echo $user->id; ?>">
                                         <table width="100%" cellspacing="0" cellpadding="0">
                                             <tr>
+                                                <td width="60">
+                                                    <button name="edit" class="small edit" style="">Edit</button>
+                                                </td>
                                                 <td width="100">
                                                     <?php echo $user->id; ?>
                                                 </td>

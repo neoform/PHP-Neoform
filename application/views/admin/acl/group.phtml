@@ -24,6 +24,12 @@
                     e.preventDefault();
                 });
 
+            $(".inside form button.edit", div)
+                .on("click", function(e){
+                    e.preventDefault();
+                    location.href = "/admin/acl/group/edit/id:" + $(this).closest("li").data("id");
+                });
+
             $("button[name='new']", div)
                 .on("click", function(){
                     location.href = "/admin/acl/group/new";
@@ -61,11 +67,18 @@
                     <div class="table-head">
                         <table width="100%" cellspacing="0" cellpadding="0">
                             <tr>
+                                <td width="60">
+                                    &nbsp;
+                                </td>
                                 <td width="100">
-                                    <a href="/admin/acl/group<?php echo $this->sorter->get_params('id'); ?>">ID</a>
+                                    <a href="/admin/acl/group<?php echo $this->sorter->get_params('id'); ?>"
+                                        <?php if ($this->sorter->get_order('id')) { echo 'class="sort-' . $this->sorter->get_order('id') . '"'; } ?>
+                                        >ID</a>
                                 </td>
                                 <td width="300">
-                                    <a href="/admin/acl/group<?php echo $this->sorter->get_params('name'); ?>">Name</a>
+                                    <a href="/admin/acl/group<?php echo $this->sorter->get_params('name'); ?>"
+                                        <?php if ($this->sorter->get_order('name')) { echo 'class="sort-' . $this->sorter->get_order('name') . '"'; } ?>
+                                        >Name</a>
                                 </td>
                                 <td width="100">
                                     User Count
@@ -81,9 +94,12 @@
                         <div class="table-body">
                             <ul id="groups">
                                 <?php foreach ($this->groups as $group): ?>
-                                <li>
+                                <li data-id="<?php echo $group->id; ?>">
                                     <table width="100%" cellspacing="0" cellpadding="0">
                                         <tr>
+                                            <td width="60">
+                                                <button name="edit" class="small edit" style="">Edit</button>
+                                            </td>
                                             <td width="100">
                                                 <?php echo $group->id; ?>
                                             </td>

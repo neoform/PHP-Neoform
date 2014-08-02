@@ -163,10 +163,14 @@
                                     &nbsp;
                                 </td>
                                 <td width="100">
-                                    <a href="/admin/acl/resource<?php echo $this->sorter->get_params('id'); ?>">ID</a>
+                                    <a href="/admin/acl/resource<?php echo $this->sorter->get_params('id'); ?>"
+                                        <?php if ($this->sorter->get_order('id')) { echo 'class="sort-' . $this->sorter->get_order('id') . '"'; } ?>
+                                        >ID</a>
                                 </td>
                                 <td width="250">
-                                    <a href="/admin/acl/resource<?php echo $this->sorter->get_params('name'); ?>">Name</a>
+                                    <a href="/admin/acl/resource<?php echo $this->sorter->get_params('name'); ?>"
+                                        <?php if ($this->sorter->get_order('name')) { echo 'class="sort-' . $this->sorter->get_order('name') . '"'; } ?>
+                                        >Name</a>
                                 </td>
                                 <td>
                                     Roles

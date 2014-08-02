@@ -207,17 +207,13 @@ footer {
 }
 .message.error {
     border: 1px solid #efc0c0;
-    -webkit-box-shadow: inset 0 -2px 0 0 #efc0c0;
-       -moz-box-shadow: inset 0 -2px 0 0 #efc0c0;
-            box-shadow: inset 0 -2px 0 0 #efc0c0;
+    box-shadow: inset 0 -2px 0 0 #efc0c0;
     background: #faeeee;
     color: #c71010;
 }
 .message.alert {
     border: 1px solid #edd7bf;
-    -webkit-box-shadow: inset 0 -2px 0 0 #edd7bf;
-       -moz-box-shadow: inset 0 -2px 0 0 #edd7bf;
-            box-shadow: inset 0 -2px 0 0 #edd7bf;
+    box-shadow: inset 0 -2px 0 0 #edd7bf;
     background: #faf4ee;
     color: #cf7b0a;
 }
@@ -230,15 +226,16 @@ footer {
     padding: 1px;
     background: #fff;
     border-radius: 4px;
-    -webkit-box-shadow: 0 0 4px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.15);
-       -moz-box-shadow: 0 0 4px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.15);
-            box-shadow: 0 0 4px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.15);
+}
+.box-clear {
+
 }
 .box.standalone {
     margin: 10px;
 }
     /* regular */
-    .box .regular-head {
+    .box .regular-head, .box-clear .regular-head {
         background: #f0f0f0;
         border: 1px solid #eaeaea;
         border-radius: 4px 4px 0 0;
@@ -250,7 +247,7 @@ footer {
         margin: 0;
         color: #666;
     }
-    .box .regular-body {
+    .box .regular-body, .box-clear .regular-body {
         background: #fff;
         border: 1px solid #f4f4f4;
         font-size: 12px;
@@ -259,7 +256,7 @@ footer {
         margin: 1px 0;
         color: #333;
     }
-    .box .regular-foot {
+    .box .regular-foot, .box-clear .regular-foot {
         background: #f0f0f0;
         border: 1px solid #eaeaea;
         border-radius: 0 0 4px 4px;
@@ -271,7 +268,7 @@ footer {
     }
 
     /* table */
-    .box .table-head {
+    .box .table-head, .box-clear .table-head {
         background: #ffffff;
         background: -moz-linear-gradient(top,  #ffffff 0%, #f2f2f2 100%);
         background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(100%,#f2f2f2));
@@ -291,13 +288,23 @@ footer {
         color: #555;
         font-weight: 700;
     }
-    .box .table-body {
+        .box .table-head a.sort-asc, .box-clear .table-head a.sort-asc {
+            padding-right: 16px;
+            display: inline-block;
+            background: url('//staticsa.city17.ca/images/arrow.up.png') no-repeat 100% 18px;
+        }
+        .box .table-head a.sort-desc, .box-clear .table-head a.sort-desc {
+            padding-right: 16px;
+            display: inline-block;
+            background: url('//staticsa.city17.ca/images/arrow.down.png') no-repeat 100% 18px;
+        }
+    .box .table-body, .box-clear .table-body {
         background: #fafafa;
         font-size: 12px;
         line-height: 16px;
         color: #333;
     }
-    .box .table-foot {
+    .box .table-foot, .box-clear .table-foot {
         background: #f2f2f2;
         background: -moz-linear-gradient(top,  #f2f2f2 0%, #ffffff 100%);
         background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f2f2f2), color-stop(100%,#ffffff));
@@ -317,11 +324,11 @@ footer {
         color: #555;
         font-weight: 700;
     }
-        .box .table-foot .padded {
+        .box .table-foot .padded, .box-clear .table-foot .padded {
             margin: 0 0 5px 0;
         }
 
-        .box .table-head-mid {
+        .box .table-head-mid, .box-clear .table-head-mid {
             background: #fff;
             background: linear-gradient(to bottom, #fff 0%,#f2f2f2 100%);
             border-radius: 4px 4px 0 0;
@@ -338,32 +345,42 @@ footer {
         }
 
     /* lists */
-    .box .table-body ul { margin: 0; padding: 0; }
-    .box .table-body ul li {
+    .box .table-body ul, .box-clear .table-body ul {
+        margin: 0; padding: 0;
+    }
+    .box .table-body ul li, .box-clear .table-body ul li {
         padding: 3px 8px;
         margin: 0;
         border-bottom: 1px solid #eae9e7;
     }
-    .box .table-body ul li:last-child { border-bottom: 0; }
+    .box .table-body ul li:last-child,
+    .box-clear .table-body ul li:last-child {
+        border-bottom: 0;
+    }
     .box .table-body ul li:hover:nth-child(odd),
-    .box .table-body ul li:hover:nth-child(even)       { background: #fff; }
-    .box .table-body ul li:nth-child(odd) {
+    .box-clear .table-body ul li:hover:nth-child(odd),
+    .box .table-body ul li:hover:nth-child(even),
+    .box-clear .table-body ul li:hover:nth-child(even) {
+        background: #fff;
+    }
+    .box .table-body ul li:nth-child(odd),
+    .box-clear .table-body ul li:nth-child(odd) {
         border-top: 1px solid #fff;
         background: #f4f4f5;
     }
-    .box .table-body ul li:nth-child(even) {
+    .box .table-body ul li:nth-child(even), .box-clear .table-body ul li:nth-child(even) {
         border-top: 1px solid #f5f6fa;
         background: #f8f8f7;
     }
 
-    .box .table-body ul li a {
+    .box .table-body ul li a, .box-clear .table-body ul li a {
         text-decoration: none;
         font-weight: bold;
     }
-    .box .table-body ul li a:hover {
+    .box .table-body ul li a:hover, .box-clear .table-body ul li a:hover {
         text-decoration: underline;
     }
-    .box .table-body .empty {
+    .box .table-body .empty, .box-clear .table-body .empty {
         padding: 20px;
         margin: 0;
         border-bottom: 1px solid #eae9e7;
@@ -373,52 +390,37 @@ footer {
     }
 
     /* Messages */
-    .box .regular-body .padded {
-        -webkit-border-radius: 5px;
-        -moz-border-radius: 5px;
+    .box .regular-body .padded, .box-clear .regular-body .padded {
         border-radius: 5px;
         padding: 14px 10px;
         margin: 8px;
         font-weight: bold;
     }
-        .box .regular-body .padded.good {
+        .box .regular-body .padded.good, .box-clear .regular-body .padded.good {
             color: #121d35;
             border: 1px solid #d7e1f0;
             background: #eef1f6;
-
-            -webkit-box-shadow: inset 0 -1px 0 0 #d7e1f0;
-            -moz-box-shadow: inset 0 -1px 0 0 #d7e1f0;
             box-shadow: inset 0 -1px 0 0 #d7e1f0;
         }
 
-        .box .regular-body .padded.error {
+        .box .regular-body .padded.error, .box-clear .regular-body .padded.error {
             color: #c20000;
             border: 1px solid #f0c0c0;
             background: #fae2e2;
-
-            -webkit-box-shadow: inset 0 -1px 0 0 rgba(213, 103, 103, .3);
-            -moz-box-shadow: inset 0 -1px 0 0 rgba(213, 103, 103, .3);
             box-shadow: inset 0 -1px 0 0 rgba(213, 103, 103, .3);
-
         }
 
-        .box .regular-body .padded.info {
+        .box .regular-body .padded.info, .box-clear .regular-body .padded.info {
             color: #121d35;
             border: 1px solid #d7e1f0;
             background: #eef1f6;
-
-            -webkit-box-shadow: inset 0 -1px 0 0 #d7e1f0;
-            -moz-box-shadow: inset 0 -1px 0 0 #d7e1f0;
             box-shadow: inset 0 -1px 0 0 #d7e1f0;
         }
 
-        .box .regular-body .padded.alert {
+        .box .regular-body .padded.alert, .box-clear .regular-body .padded.alert {
             color: #cf7b0a;
             border: 1px solid #edd7bf;
             background: #faf4ee;
-
-            -webkit-box-shadow: inset 0 -2px 0 0 #edd7bf;
-            -moz-box-shadow: inset 0 -2px 0 0 #edd7bf;
             box-shadow: inset 0 -2px 0 0 #edd7bf;
         }
 
@@ -426,62 +428,50 @@ footer {
 /**
 * Box Buttons
 */
-.box .regular-body a.button {
+.box .regular-body a.button, .box-clear .regular-body a.button {
     text-decoration: none;
     display: inline-block;
     color: #444;
     vertical-align: middle;
     padding: 4px;
-    -webkit-border-radius: 4px;
-       -moz-border-radius: 4px;
             border-radius: 4px;
 }
-.box .regular-body a.button:hover {
+.box .regular-body a.button:hover, .box-clear .regular-body a.button:hover {
     text-decoration: none;
     background: #ddd;
     border: 1px solid #ccc;
     padding: 3px;
-    -webkit-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .05);
-       -moz-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .05);
-            box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .05);
+    box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .05);
 }
-.box .regular-body a.button:active {
+.box .regular-body a.button:active, .box-clear .regular-body a.button:active {
     text-decoration: none;
     background: #ccc;
     border: 1px solid #bababa;
     padding: 3px;
-    -webkit-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .1);
-       -moz-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .1);
-            box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .1);
+    box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .1);
 }
 
-.box .regular-foot a.button {
+.box .regular-foot a.button, .box-clear .regular-foot a.button {
     text-decoration: none;
     display: inline-block;
     color: #444;
     vertical-align: middle;
     padding: 5px;
-    -webkit-border-radius: 3px;
-       -moz-border-radius: 3px;
-            border-radius: 3px;
+    border-radius: 3px;
 }
-.box .regular-foot a.button:hover {
+.box .regular-foot a.button:hover, .box-clear .regular-foot a.button:hover {
     text-decoration: none;
     background: #ddd;
     border: 1px solid #ccc;
     padding: 4px;
-    -webkit-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .05);
-       -moz-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .05);
-            box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .05);
+    box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .05);
 }
-.box .regular-foot a.button:active {
+.box .regular-foot a.button:active, .box-clear .regular-foot a.button:active {
     text-decoration: none;
     background: #ccc;
     border: 1px solid #bababa;
     padding: 4px;
-    -webkit-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .1);
-       -moz-box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .1);
-            box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .1);
+    box-shadow: inset 2px 2px 2px rgba(0, 0, 0, .1);
 }
 
 h3.header {
@@ -489,13 +479,8 @@ h3.header {
     margin: 0 10px;
     background: #ececec;
     padding: 7px 14px;
-    -webkit-box-shadow: 0 -1px 0 rgba(0, 0, 0, .2), 0 1px 0 rgba(255, 255, 255, .7), inset 0 0 1px rgba(0, 0, 0, .15);
-       -moz-box-shadow: 0 -1px 0 rgba(0, 0, 0, .2), 0 1px 0 rgba(255, 255, 255, .7), inset 0 0 1px rgba(0, 0, 0, .15);
-            box-shadow: 0 -1px 0 rgba(0, 0, 0, .2), 0 1px 0 rgba(255, 255, 255, .7), inset 0 0 1px rgba(0, 0, 0, .15);
-
-    -webkit-border-radius: 5px;
-       -moz-border-radius: 5px;
-            border-radius: 5px;
+    box-shadow: 0 -1px 0 rgba(0, 0, 0, .2), 0 1px 0 rgba(255, 255, 255, .7), inset 0 0 1px rgba(0, 0, 0, .15);
+    border-radius: 5px;
 }
 
 .inside .counts {

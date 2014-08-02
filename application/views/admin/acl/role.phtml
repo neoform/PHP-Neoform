@@ -24,6 +24,12 @@
                     e.preventDefault();
                 });
 
+            $(".inside form button.edit", div)
+                .on("click", function(e){
+                    e.preventDefault();
+                    location.href = "/admin/acl/role/edit/id:" + $(this).closest("li").data("id");
+                });
+
             $("button[name='new']", page.div)
                 .on("click", function(e){
                     e.preventDefault();
@@ -61,11 +67,18 @@
                     <div class="table-head">
                         <table width="100%" cellspacing="0" cellpadding="0">
                             <tr>
+                                <td width="60">
+                                    &nbsp;
+                                </td>
                                 <td width="100">
-                                    <a href="/admin/acl/role<?php echo $this->sorter->get_params('id'); ?>">ID</a>
+                                    <a href="/admin/acl/role<?php echo $this->sorter->get_params('id'); ?>"
+                                        <?php if ($this->sorter->get_order('id')) { echo 'class="sort-' . $this->sorter->get_order('id') . '"'; } ?>
+                                        >ID</a>
                                 </td>
                                 <td width="250">
-                                    <a href="/admin/acl/role<?php echo $this->sorter->get_params('name'); ?>">Name</a>
+                                    <a href="/admin/acl/role<?php echo $this->sorter->get_params('name'); ?>"
+                                        <?php if ($this->sorter->get_order('name')) { echo 'class="sort-' . $this->sorter->get_order('name') . '"'; } ?>
+                                        >Name</a>
                                 </td>
                                 <td width="300">
                                     Resources
@@ -82,9 +95,12 @@
                         <div class="table-body">
                             <ul id="roles">
                                 <?php foreach ($this->roles as $role): ?>
-                                    <li>
+                                    <li data-id="<?php echo $role->id; ?>">
                                         <table width="100%" cellspacing="0" cellpadding="0">
                                             <tr>
+                                                <td width="60">
+                                                    <button name="edit" class="small edit" style="">Edit</button>
+                                                </td>
                                                 <td width="100">
                                                     <?php echo $role->id; ?>
                                                 </td>

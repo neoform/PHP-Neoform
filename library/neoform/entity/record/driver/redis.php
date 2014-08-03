@@ -16,7 +16,6 @@
          * @param integer|string    $pk
          *
          * @return mixed
-         * @throws entity\exception
          */
         public static function record(record\dao $self, $pool, $pk) {
 
@@ -27,8 +26,8 @@
 
             // since false is potentially a valid result being stored in redis, we must check if the key exists
             if ($data === false && ! $redis->exists($key)) {
-                $exception = '\\neoform\\' . $self::ENTITY_NAME . '\\exception';
-                throw new $exception('That ' . $self::NAME . ' doesn\'t exist');
+                //$exception = '\\neoform\\' . $self::ENTITY_NAME . '\\exception';
+                //throw new $exception('That ' . $self::NAME . ' doesn\'t exist');
             } else {
                 return $data;
             }

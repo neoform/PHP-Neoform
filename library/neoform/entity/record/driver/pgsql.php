@@ -570,7 +570,9 @@
 
                         if (! $insert->execute()) {
                             $error = $sql->errorInfo();
-                            $sql->rollback();
+                            if ($sql->isTransactionActive()) {
+                                $sql->rollBack();
+                            }
                             throw new entity\exception("Inserts failed - {$error[0]}: {$error[2]}");
                         }
 
@@ -581,6 +583,9 @@
 
                     if (! $sql->commit()) {
                         $error = $sql->errorInfo();
+                        if ($sql->isTransactionActive()) {
+                            $sql->rollBack();
+                        }
                         throw new entity\exception("Inserts failed - {$error[0]}: {$error[2]}");
                     }
                 } else {
@@ -643,7 +648,9 @@
 
                     if (! $insert->execute()) {
                         $error = $sql->errorInfo();
-                        $sql->rollback();
+                        if ($sql->isTransactionActive()) {
+                            $sql->rollBack();
+                        }
                         throw new entity\exception("Inserts failed - {$error[0]}: {$error[2]}");
                     }
 
@@ -654,6 +661,9 @@
 
                 if (! $sql->commit()) {
                     $error = $sql->errorInfo();
+                    if ($sql->isTransactionActive()) {
+                        $sql->rollBack();
+                    }
                     throw new entity\exception("Inserts failed - {$error[0]}: {$error[2]}");
                 }
             }

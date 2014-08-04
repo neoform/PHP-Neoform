@@ -506,7 +506,9 @@
                     foreach ($infos as &$info) {
                         if (! $insert->execute(array_values($info))) {
                             $error = $sql->errorInfo();
-                            $sql->rollBack();
+                            if ($sql->isTransactionActive()) {
+                                $sql->rollBack();
+                            }
                             throw new entity\exception("Insert multi failed - {$error[0]}: {$error[2]}");
                         }
 
@@ -517,6 +519,9 @@
 
                     if (! $sql->commit()) {
                         $error = $sql->errorInfo();
+                        if ($sql->isTransactionActive()) {
+                            $sql->rollBack();
+                        }
                         throw new entity\exception("Insert multi failed - {$error[0]}: {$error[2]}");
                     }
                 } else {
@@ -567,6 +572,9 @@
 
                 if (! $sql->commit()) {
                     $error = $sql->errorInfo();
+                    if ($sql->isTransactionActive()) {
+                        $sql->rollBack();
+                    }
                     throw new entity\exception("Insert multi failed - {$error[0]}: {$error[2]}");
                 }
             }

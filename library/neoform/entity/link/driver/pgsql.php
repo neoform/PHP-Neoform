@@ -435,13 +435,18 @@
             foreach ($infos as $info) {
                 if (! $insert->execute(array_values($info))) {
                     $error = $sql->errorInfo();
-                    $sql->rollback();
+                    if ($sql->isTransactionActive()) {
+                        $sql->rollBack();
+                    }
                     throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                 }
             }
 
             if ($multi && ! $sql->commit()) {
                 $error = $sql->errorInfo();
+                if ($sql->isTransactionActive()) {
+                    $sql->rollBack();
+                }
                 throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
             }
 

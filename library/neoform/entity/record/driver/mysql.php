@@ -3,6 +3,7 @@
     namespace neoform\entity\record\driver;
 
     use neoform\entity\record;
+    use neoform\entity\exception;
     use neoform\entity;
     use neoform\sql;
 
@@ -428,12 +429,12 @@
          * @param int        $ttl
          *
          * @return array
-         * @throws entity\exception
+         * @throws exception
          */
         public static function insert(record\dao $self, $pool, array $info, $autoincrement, $replace, $ttl) {
 
             if ($ttl) {
-                throw new entity\exception('MySQL does not support TTL');
+                throw new exception('MySQL does not support TTL');
             }
 
             $insert_fields = [];
@@ -449,9 +450,14 @@
                 ( " . join(',', \array_fill(0, count($insert_fields), '?')) . " )
             ");
 
-            if (! $insert->execute(array_values($info))) {
-                $error = $sql->errorInfo();
-                throw new entity\exception("Insert failed - {$error[0]}: {$error[2]}");
+            try {
+                if (! $insert->execute(array_values($info))) {
+                    $error = $sql->errorInfo();
+                    throw new exception("Insert failed - {$error[0]}: {$error[2]}");
+                }
+            } catch (\PDOException $e) {
+                $error = sql::instance($pool)->errorInfo();
+                throw new exception("Insert failed - {$error[0]}: {$error[2]}");
             }
 
             if ($autoincrement) {
@@ -473,12 +479,12 @@
          * @param int        $ttl
          *
          * @return array
-         * @throws entity\exception
+         * @throws exception
          */
         public static function insert_multi(record\dao $self, $pool, array $infos, $keys_match, $autoincrement, $replace, $ttl) {
 
             if ($ttl) {
-                throw new entity\exception('MySQL does not support TTL');
+                throw new exception('MySQL does not support TTL');
             }
 
             $sql = sql::instance($pool);
@@ -506,10 +512,10 @@
                     foreach ($infos as &$info) {
                         if (! $insert->execute(array_values($info))) {
                             $error = $sql->errorInfo();
-                            if ($sql->isTransactionActive()) {
+                            if ($sql->inTransaction()) {
                                 $sql->rollBack();
                             }
-                            throw new entity\exception("Insert multi failed - {$error[0]}: {$error[2]}");
+                            throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                         }
 
                         if ($autoincrement) {
@@ -519,10 +525,10 @@
 
                     if (! $sql->commit()) {
                         $error = $sql->errorInfo();
-                        if ($sql->isTransactionActive()) {
+                        if ($sql->inTransaction()) {
                             $sql->rollBack();
                         }
-                        throw new entity\exception("Insert multi failed - {$error[0]}: {$error[2]}");
+                        throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                     }
                 } else {
                     // this might explode if $keys_match was a lie
@@ -541,7 +547,7 @@
                         " . join(', ', \array_fill(0, count($infos), '( ' . join(',', \array_fill(0, count($insert_fields), '?')) . ')')) . "
                     ")->execute($insert_vals)) {
                         $error = $sql->errorInfo();
-                        throw new entity\exception("Insert multi failed - {$error[0]}: {$error[2]}");
+                        throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                     }
                 }
             } else {
@@ -562,7 +568,7 @@
                     ")->execute(array_values($info))) {
                         $error = $sql->errorInfo();
                         $sql->rollBack();
-                        throw new entity\exception("Insert multi failed - {$error[0]}: {$error[2]}");
+                        throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                     }
 
                     if ($autoincrement) {
@@ -572,10 +578,10 @@
 
                 if (! $sql->commit()) {
                     $error = $sql->errorInfo();
-                    if ($sql->isTransactionActive()) {
+                    if ($sql->inTransaction()) {
                         $sql->rollBack();
                     }
-                    throw new entity\exception("Insert multi failed - {$error[0]}: {$error[2]}");
+                    throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                 }
             }
 
@@ -592,12 +598,12 @@
          * @param array        $info
          * @param int          $ttl
          *
-         * @throws entity\exception
+         * @throws exception
          */
         public static function update(record\dao $self, $pool, $pk, record\model $model, array $info, $ttl) {
 
             if ($ttl) {
-                throw new entity\exception('MySQL does not support TTL');
+                throw new exception('MySQL does not support TTL');
             }
 
             $update_fields = [];
@@ -607,13 +613,18 @@
 
             $info[$pk] = $model->$pk;
 
-            if (! sql::instance($pool)->prepare("
-                UPDATE `" . self::table($self::TABLE) . "`
-                SET " . join(", \n", $update_fields) . "
-                WHERE `{$pk}` = :{$pk}
-            ")->execute($info)) {
+            try {
+                if (! sql::instance($pool)->prepare("
+                    UPDATE `" . self::table($self::TABLE) . "`
+                    SET " . join(", \n", $update_fields) . "
+                    WHERE `{$pk}` = :{$pk}
+                ")->execute($info)) {
+                    $error = sql::instance($pool)->errorInfo();
+                    throw new exception("Update failed - {$error[0]}: {$error[2]}");
+                }
+            } catch (\PDOException $e) {
                 $error = sql::instance($pool)->errorInfo();
-                throw new entity\exception("Update failed - {$error[0]}: {$error[2]}");
+                throw new exception("Update failed - {$error[0]}: {$error[2]}");
             }
         }
 
@@ -625,18 +636,24 @@
          * @param int|string   $pk
          * @param record\model $model
          *
-         * @throws entity\exception
+         * @throws exception
          */
         public static function delete(record\dao $self, $pool, $pk, record\model $model) {
             $delete = sql::instance($pool)->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE `{$pk}` = ?
             ");
-            if (! $delete->execute([
-                $model->$pk,
-            ])) {
+
+            try {
+                if (! $delete->execute([
+                    $model->$pk,
+                ])) {
+                    $error = sql::instance($pool)->errorInfo();
+                    throw new exception("Delete failed - {$error[0]}: {$error[2]}");
+                }
+            } catch (\PDOException $e) {
                 $error = sql::instance($pool)->errorInfo();
-                throw new entity\exception("Delete failed - {$error[0]}: {$error[2]}");
+                throw new exception("Delete failed - {$error[0]}: {$error[2]}");
             }
         }
 
@@ -648,18 +665,24 @@
          * @param int|string        $pk
          * @param record\collection $collection
          *
-         * @throws entity\exception
+         * @throws exception
          */
         public static function delete_multi(record\dao $self, $pool, $pk, record\collection $collection) {
             $delete = sql::instance($pool)->prepare("
                 DELETE FROM `" . self::table($self::TABLE) . "`
                 WHERE `{$pk}` IN (" . join(',', \array_fill(0, count($collection), '?')) . ")
             ");
-            if (! $delete->execute(
-                array_values($collection->field($pk))
-            )) {
+
+            try {
+                if (! $delete->execute(
+                    array_values($collection->field($pk))
+                )) {
+                    $error = sql::instance($pool)->errorInfo();
+                    throw new exception("Delete multi failed - {$error[0]}: {$error[2]}");
+                }
+            } catch (\PDOException $e) {
                 $error = sql::instance($pool)->errorInfo();
-                throw new entity\exception("Delete multi failed - {$error[0]}: {$error[2]}");
+                throw new exception("Delete multi failed - {$error[0]}: {$error[2]}");
             }
         }
     }

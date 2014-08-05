@@ -396,7 +396,12 @@
                 ( " . join(',', \array_fill(0, count($info), '?')) . " )
             ");
 
-            if (! $insert->execute(array_values($info))) {
+            try {
+                if (! $insert->execute(array_values($info))) {
+                    $error = sql::instance($pool)->errorInfo();
+                    throw new exception("Insert failed - {$error[0]}: {$error[2]}");
+                }
+            } catch (\PDOException $e) {
                 $error = sql::instance($pool)->errorInfo();
                 throw new exception("Insert failed - {$error[0]}: {$error[2]}");
             }
@@ -440,7 +445,7 @@
             foreach ($infos as $info) {
                 if (! $insert->execute(array_values($info))) {
                     $error = $sql->errorInfo();
-                    if ($sql->isTransactionActive()) {
+                    if ($sql->inTransaction()) {
                         $sql->rollBack();
                     }
                     throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
@@ -449,7 +454,7 @@
 
             if ($multi && ! $sql->commit()) {
                 $error = $sql->errorInfo();
-                if ($sql->isTransactionActive()) {
+                if ($sql->inTransaction()) {
                     $sql->rollBack();
                 }
                 throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
@@ -487,11 +492,16 @@
                 }
             }
 
-            if (! sql::instance($pool)->prepare("
-                UPDATE `" . self::table($self::TABLE) . "`
-                SET " . join(", \n", $update_fields) . "
-                WHERE " . join(" AND \n", $where_fields) . "
-            ")->execute($vals)) {
+            try {
+                if (! sql::instance($pool)->prepare("
+                    UPDATE `" . self::table($self::TABLE) . "`
+                    SET " . join(", \n", $update_fields) . "
+                    WHERE " . join(" AND \n", $where_fields) . "
+                ")->execute($vals)) {
+                    $error = sql::instance($pool)->errorInfo();
+                    throw new exception("Update failed - {$error[0]}: {$error[2]}");
+                }
+            } catch (\PDOException $e) {
                 $error = sql::instance($pool)->errorInfo();
                 throw new exception("Update failed - {$error[0]}: {$error[2]}");
             }
@@ -519,10 +529,15 @@
                 }
             }
 
-            if (! sql::instance($pool)->prepare("
-                DELETE FROM `" . self::table($self::TABLE) . "`
-                WHERE " . join(" AND ", $where) . "
-            ")->execute($vals)) {
+            try {
+                if (! sql::instance($pool)->prepare("
+                    DELETE FROM `" . self::table($self::TABLE) . "`
+                    WHERE " . join(" AND ", $where) . "
+                ")->execute($vals)) {
+                    $error = sql::instance($pool)->errorInfo();
+                    throw new exception("Delete failed - {$error[0]}: {$error[2]}");
+                }
+            } catch (\PDOException $e) {
                 $error = sql::instance($pool)->errorInfo();
                 throw new exception("Delete failed - {$error[0]}: {$error[2]}");
             }
@@ -554,10 +569,15 @@
                 $where[] = "(" . join(" AND ", $w) . ")";
             }
 
-            if (! sql::instance($pool)->prepare("
-                DELETE FROM `" . self::table($self::TABLE) . "`
-                WHERE " . join(" OR ", $where) . "
-            ")->execute($vals)) {
+            try {
+                if (! sql::instance($pool)->prepare("
+                    DELETE FROM `" . self::table($self::TABLE) . "`
+                    WHERE " . join(" OR ", $where) . "
+                ")->execute($vals)) {
+                    $error = sql::instance($pool)->errorInfo();
+                    throw new exception("Delete multi failed - {$error[0]}: {$error[2]}");
+                }
+            } catch (\PDOException $e) {
                 $error = sql::instance($pool)->errorInfo();
                 throw new exception("Delete multi failed - {$error[0]}: {$error[2]}");
             }

@@ -3,6 +3,7 @@
     namespace neoform\entity\record\driver;
 
     use neoform\entity\record;
+    use neoform\entity\exception;
     use neoform\entity;
     use neoform\sql;
 
@@ -467,16 +468,16 @@
          * @param int        $ttl
          *
          * @return array
-         * @throws entity\exception
+         * @throws exception
          */
         public static function insert(record\dao $dao, $pool, array $info, $autoincrement, $replace, $ttl) {
 
             if ($replace) {
-                throw new entity\exception('PostgreSQL does not support REPLACE INTO.');
+                throw new exception('PostgreSQL does not support REPLACE INTO.');
             }
 
             if ($ttl) {
-                throw new entity\exception('PostgreSQL does not support TTL');
+                throw new exception('PostgreSQL does not support TTL');
             }
 
             $insert_fields = [];
@@ -500,9 +501,14 @@
                 $insert->bindParam($i++, $v, self::$binding_conversions[$bindings[$k]]);
             }
 
-            if (! $insert->execute()) {
+            try {
+                if (! $insert->execute()) {
+                    $error = sql::instance($pool)->errorInfo();
+                    throw new exception("Insert failed - {$error[0]}: {$error[2]}");
+                }
+            } catch (\PDOException $e) {
                 $error = sql::instance($pool)->errorInfo();
-                throw new entity\exception("Insert failed - {$error[0]}: {$error[2]}");
+                throw new exception("Insert failed - {$error[0]}: {$error[2]}");
             }
 
             if ($autoincrement) {
@@ -524,16 +530,16 @@
          * @param int        $ttl
          *
          * @return array
-         * @throws entity\exception
+         * @throws exception
          */
         public static function insert_multi(record\dao $dao, $pool, array $infos, $keys_match, $autoincrement, $replace, $ttl) {
 
             if ($replace) {
-                throw new entity\exception('PostgreSQL does not support REPLACE INTO.');
+                throw new exception('PostgreSQL does not support REPLACE INTO.');
             }
 
             if ($ttl) {
-                throw new entity\exception('PostgreSQL does not support TTL');
+                throw new exception('PostgreSQL does not support TTL');
             }
 
             if ($keys_match) {
@@ -570,10 +576,10 @@
 
                         if (! $insert->execute()) {
                             $error = $sql->errorInfo();
-                            if ($sql->isTransactionActive()) {
+                            if ($sql->inTransaction()) {
                                 $sql->rollBack();
                             }
-                            throw new entity\exception("Inserts failed - {$error[0]}: {$error[2]}");
+                            throw new exception("Inserts failed - {$error[0]}: {$error[2]}");
                         }
 
                         if ($autoincrement) {
@@ -583,10 +589,10 @@
 
                     if (! $sql->commit()) {
                         $error = $sql->errorInfo();
-                        if ($sql->isTransactionActive()) {
+                        if ($sql->inTransaction()) {
                             $sql->rollBack();
                         }
-                        throw new entity\exception("Inserts failed - {$error[0]}: {$error[2]}");
+                        throw new exception("Inserts failed - {$error[0]}: {$error[2]}");
                     }
                 } else {
                     // this might explode if $keys_match was a lie
@@ -614,7 +620,7 @@
 
                     if (! $inserts->execute()) {
                         $error = sql::instance($pool)->errorInfo();
-                        throw new entity\exception("Inserts failed - {$error[0]}: {$error[2]}");
+                        throw new exception("Inserts failed - {$error[0]}: {$error[2]}");
                     }
                 }
             } else {
@@ -648,10 +654,10 @@
 
                     if (! $insert->execute()) {
                         $error = $sql->errorInfo();
-                        if ($sql->isTransactionActive()) {
+                        if ($sql->inTransaction()) {
                             $sql->rollBack();
                         }
-                        throw new entity\exception("Inserts failed - {$error[0]}: {$error[2]}");
+                        throw new exception("Inserts failed - {$error[0]}: {$error[2]}");
                     }
 
                     if ($autoincrement) {
@@ -661,10 +667,10 @@
 
                 if (! $sql->commit()) {
                     $error = $sql->errorInfo();
-                    if ($sql->isTransactionActive()) {
+                    if ($sql->inTransaction()) {
                         $sql->rollBack();
                     }
-                    throw new entity\exception("Inserts failed - {$error[0]}: {$error[2]}");
+                    throw new exception("Inserts failed - {$error[0]}: {$error[2]}");
                 }
             }
 
@@ -681,12 +687,12 @@
          * @param array        $info
          * @param int          $ttl
          *
-         * @throws entity\exception
+         * @throws exception
          */
         public static function update(record\dao $dao, $pool, $pk, record\model $model, array $info, $ttl) {
 
             if ($ttl) {
-                throw new entity\exception('PostgreSQL does not support TTL');
+                throw new exception('PostgreSQL does not support TTL');
             }
 
             $update_fields = [];
@@ -708,9 +714,14 @@
                 $update->bindParam($k, $v, self::$binding_conversions[$bindings[$k]]);
             }
 
-            if (! $update->execute()) {
+            try {
+                if (! $update->execute()) {
+                    $error = sql::instance($pool)->errorInfo();
+                    throw new exception("Update failed - {$error[0]}: {$error[2]}");
+                }
+            } catch (\PDOException $e) {
                 $error = sql::instance($pool)->errorInfo();
-                throw new entity\exception("Update failed - {$error[0]}: {$error[2]}");
+                throw new exception("Update failed - {$error[0]}: {$error[2]}");
             }
         }
 
@@ -722,7 +733,7 @@
          * @param int|string   $pk
          * @param record\model $model
          *
-         * @throws entity\exception
+         * @throws exception
          */
         public static function delete(record\dao $dao, $pool, $pk, record\model $model) {
             $delete = sql::instance($pool)->prepare("
@@ -730,9 +741,15 @@
                 WHERE \"{$pk}\" = ?
             ");
             $delete->bindValue(1, $model->$pk, self::$binding_conversions[$dao->field_binding($dao::PRIMARY_KEY)]);
-            if (! $delete->execute()) {
+
+            try {
+                if (! $delete->execute()) {
+                    $error = sql::instance($pool)->errorInfo();
+                    throw new exception("Delete failed - {$error[0]}: {$error[2]}");
+                }
+            } catch (\PDOException $e) {
                 $error = sql::instance($pool)->errorInfo();
-                throw new entity\exception("Delete failed - {$error[0]}: {$error[2]}");
+                throw new exception("Delete failed - {$error[0]}: {$error[2]}");
             }
         }
 
@@ -744,7 +761,7 @@
          * @param int|string        $pk
          * @param record\collection $collection
          *
-         * @throws entity\exception
+         * @throws exception
          */
         public static function delete_multi(record\dao $dao, $pool, $pk, record\collection $collection) {
             $pks = $collection->field($pk);
@@ -758,9 +775,15 @@
             foreach ($pks as $pk) {
                 $delete->bindValue($i++, $pk, $pdo_binding);
             }
-            if (! $delete->execute()) {
+
+            try {
+                if (! $delete->execute()) {
+                    $error = sql::instance($pool)->errorInfo();
+                    throw new exception("Deletes multi failed - {$error[0]}: {$error[2]}");
+                }
+            } catch (\PDOException $e) {
                 $error = sql::instance($pool)->errorInfo();
-                throw new entity\exception("Deletes failed - {$error[0]}: {$error[2]}");
+                throw new exception("Delete multi failed - {$error[0]}: {$error[2]}");
             }
         }
     }

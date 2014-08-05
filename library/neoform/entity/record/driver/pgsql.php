@@ -566,25 +566,33 @@
 
                     $bindings = $dao->field_bindings();
 
-                    foreach ($infos as $info) {
+                    try {
+                        foreach ($infos as $info) {
 
-                        // bindParam() expects a reference, not a value, do not remove the &
-                        $i = 1;
-                        foreach ($info as $k => &$v) {
-                            $insert->bindParam($i++, $v, self::$binding_conversions[$bindings[$k]]);
-                        }
-
-                        if (! $insert->execute()) {
-                            $error = $sql->errorInfo();
-                            if ($sql->inTransaction()) {
-                                $sql->rollBack();
+                            // bindParam() expects a reference, not a value, do not remove the &
+                            $i = 1;
+                            foreach ($info as $k => &$v) {
+                                $insert->bindParam($i++, $v, self::$binding_conversions[$bindings[$k]]);
                             }
-                            throw new exception("Inserts failed - {$error[0]}: {$error[2]}");
-                        }
 
-                        if ($autoincrement) {
-                            $info[$dao::PRIMARY_KEY] = $insert->fetch()[$pk];
+                            if (! $insert->execute()) {
+                                $error = $sql->errorInfo();
+                                if ($sql->inTransaction()) {
+                                    $sql->rollBack();
+                                }
+                                throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
+                            }
+
+                            if ($autoincrement) {
+                                $info[$dao::PRIMARY_KEY] = $insert->fetch()[$pk];
+                            }
                         }
+                    } catch (\PDOException $e) {
+                        $error = $sql->errorInfo();
+                        if ($sql->inTransaction()) {
+                            $sql->rollBack();
+                        }
+                        throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                     }
 
                     if (! $sql->commit()) {
@@ -592,7 +600,7 @@
                         if ($sql->inTransaction()) {
                             $sql->rollBack();
                         }
-                        throw new exception("Inserts failed - {$error[0]}: {$error[2]}");
+                        throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                     }
                 } else {
                     // this might explode if $keys_match was a lie
@@ -618,9 +626,14 @@
                         $inserts->bindParam($i++, $v, self::$binding_conversions[$bindings[$k]]);
                     }
 
-                    if (! $inserts->execute()) {
+                    try {
+                        if (! $inserts->execute()) {
+                            $error = sql::instance($pool)->errorInfo();
+                            throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
+                        }
+                    } catch (\PDOException $e) {
                         $error = sql::instance($pool)->errorInfo();
-                        throw new exception("Inserts failed - {$error[0]}: {$error[2]}");
+                        throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                     }
                 }
             } else {
@@ -631,38 +644,46 @@
 
                 $bindings = $dao->field_bindings();
 
-                foreach ($infos as $info) {
-                    $insert_fields = [];
+                try {
+                    foreach ($infos as $info) {
+                        $insert_fields = [];
 
-                    foreach (array_keys($info) as $key) {
-                        $insert_fields[] = "\"$key\"";
-                    }
-
-                    $insert = $sql->prepare("
-                        INSERT INTO \"{$table}\"
-                        ( " . join(', ', $insert_fields) . " )
-                        VALUES
-                        ( " . join(',', \array_fill(0, count($info), '?')) . " )
-                        " . ($autoincrement ? "RETURNING \"". $dao::PRIMARY_KEY . "\"" : '') . "
-                    ");
-
-                    // bindParam() expects a reference, not a value, do not remove the &
-                    $i = 1;
-                    foreach ($info as $k => &$v) {
-                        $insert->bindParam($i++, $v, self::$binding_conversions[$bindings[$k]]);
-                    }
-
-                    if (! $insert->execute()) {
-                        $error = $sql->errorInfo();
-                        if ($sql->inTransaction()) {
-                            $sql->rollBack();
+                        foreach (array_keys($info) as $key) {
+                            $insert_fields[] = "\"$key\"";
                         }
-                        throw new exception("Inserts failed - {$error[0]}: {$error[2]}");
-                    }
 
-                    if ($autoincrement) {
-                        $info[$dao::PRIMARY_KEY] = $insert->fetch()[$dao::PRIMARY_KEY];
+                        $insert = $sql->prepare("
+                            INSERT INTO \"{$table}\"
+                            ( " . join(', ', $insert_fields) . " )
+                            VALUES
+                            ( " . join(',', \array_fill(0, count($info), '?')) . " )
+                            " . ($autoincrement ? "RETURNING \"". $dao::PRIMARY_KEY . "\"" : '') . "
+                        ");
+
+                        // bindParam() expects a reference, not a value, do not remove the &
+                        $i = 1;
+                        foreach ($info as $k => &$v) {
+                            $insert->bindParam($i++, $v, self::$binding_conversions[$bindings[$k]]);
+                        }
+
+                        if (! $insert->execute()) {
+                            $error = $sql->errorInfo();
+                            if ($sql->inTransaction()) {
+                                $sql->rollBack();
+                            }
+                            throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
+                        }
+
+                        if ($autoincrement) {
+                            $info[$dao::PRIMARY_KEY] = $insert->fetch()[$dao::PRIMARY_KEY];
+                        }
                     }
+                } catch (\PDOException $e) {
+                    $error = $sql->errorInfo();
+                    if ($sql->inTransaction()) {
+                        $sql->rollBack();
+                    }
+                    throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                 }
 
                 if (! $sql->commit()) {
@@ -670,7 +691,7 @@
                     if ($sql->inTransaction()) {
                         $sql->rollBack();
                     }
-                    throw new exception("Inserts failed - {$error[0]}: {$error[2]}");
+                    throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                 }
             }
 

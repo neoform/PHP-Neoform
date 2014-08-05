@@ -509,18 +509,26 @@
                         VALUES
                         ( " . join(',', \array_fill(0, count($insert_fields), '?')) . " )
                     ");
-                    foreach ($infos as &$info) {
-                        if (! $insert->execute(array_values($info))) {
-                            $error = $sql->errorInfo();
-                            if ($sql->inTransaction()) {
-                                $sql->rollBack();
+                    try {
+                        foreach ($infos as &$info) {
+                            if (! $insert->execute(array_values($info))) {
+                                $error = $sql->errorInfo();
+                                if ($sql->inTransaction()) {
+                                    $sql->rollBack();
+                                }
+                                throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                             }
-                            throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
-                        }
 
-                        if ($autoincrement) {
-                            $info[$self::PRIMARY_KEY] = $sql->lastInsertId();
+                            if ($autoincrement) {
+                                $info[$self::PRIMARY_KEY] = $sql->lastInsertId();
+                            }
                         }
+                    } catch (\PDOException $e) {
+                        $error = $sql->errorInfo();
+                        if ($sql->inTransaction()) {
+                            $sql->rollBack();
+                        }
+                        throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                     }
 
                     if (! $sql->commit()) {
@@ -539,14 +547,19 @@
                         }
                     }
 
-                    if (! $sql->prepare("
-                        INSERT INTO
-                        `" . self::table($self::TABLE) . "`
-                        ( " . join(', ', $insert_fields) . " )
-                        VALUES
-                        " . join(', ', \array_fill(0, count($infos), '( ' . join(',', \array_fill(0, count($insert_fields), '?')) . ')')) . "
-                    ")->execute($insert_vals)) {
-                        $error = $sql->errorInfo();
+                    try {
+                        if (! $sql->prepare("
+                            INSERT INTO
+                            `" . self::table($self::TABLE) . "`
+                            ( " . join(', ', $insert_fields) . " )
+                            VALUES
+                            " . join(', ', \array_fill(0, count($infos), '( ' . join(',', \array_fill(0, count($insert_fields), '?')) . ')')) . "
+                        ")->execute($insert_vals)) {
+                            $error = $sql->errorInfo();
+                            throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
+                        }
+                    } catch (\PDOException $e) {
+                        $error = sql::instance($pool)->errorInfo();
                         throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                     }
                 }
@@ -559,15 +572,25 @@
                         $insert_fields[] = "`{$key}`";
                     }
 
-                    if (! $sql->prepare("
-                        INSERT INTO
-                        `" . self::table($self::TABLE) . "`
-                        ( " . join(', ', $insert_fields) . " )
-                        VALUES
-                        ( " . join(',', \array_fill(0, count($info), '?')) . " )
-                    ")->execute(array_values($info))) {
+                    try {
+                        if (! $sql->prepare("
+                            INSERT INTO
+                            `" . self::table($self::TABLE) . "`
+                            ( " . join(', ', $insert_fields) . " )
+                            VALUES
+                            ( " . join(',', \array_fill(0, count($info), '?')) . " )
+                        ")->execute(array_values($info))) {
+                            $error = $sql->errorInfo();
+                            if ($sql->inTransaction()) {
+                                $sql->rollBack();
+                            }
+                            throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
+                        }
+                    } catch (\PDOException $e) {
                         $error = $sql->errorInfo();
-                        $sql->rollBack();
+                        if ($sql->inTransaction()) {
+                            $sql->rollBack();
+                        }
                         throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                     }
 

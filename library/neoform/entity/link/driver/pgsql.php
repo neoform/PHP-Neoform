@@ -437,14 +437,22 @@
                 ( " . join(',', \array_fill(0, count($info), '?')) . " )
             ");
 
-            foreach ($infos as $info) {
-                if (! $insert->execute(array_values($info))) {
-                    $error = $sql->errorInfo();
-                    if ($sql->inTransaction()) {
-                        $sql->rollBack();
+            try {
+                foreach ($infos as $info) {
+                    if (! $insert->execute(array_values($info))) {
+                        $error = $sql->errorInfo();
+                        if ($sql->inTransaction()) {
+                            $sql->rollBack();
+                        }
+                        throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                     }
-                    throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
                 }
+            } catch (\PDOException $e) {
+                $error = $sql->errorInfo();
+                if ($sql->inTransaction()) {
+                    $sql->rollBack();
+                }
+                throw new exception("Insert multi failed - {$error[0]}: {$error[2]}");
             }
 
             if ($multi && ! $sql->commit()) {

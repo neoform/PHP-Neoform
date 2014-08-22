@@ -227,7 +227,7 @@
                 buttons = [];
             }
 
-            var bodyDiv   = $("<div/>"),
+            var bodyDiv   = $("<div/>").addClass("table-body"),
                 footerDiv = $("<div/>").addClass("center");
 
             $.each(buttons, function(k, button) {
@@ -270,6 +270,7 @@
 
             if (fields && fields.length) {
                 var fieldEl;
+                var ul = $("<ul>");
 
                 $.each(fields, function(k, field){
 
@@ -362,11 +363,14 @@
                         );
                     }
 
-                    bodyDiv.append(table);
+                    ul.append(
+                        $("<li>").css("padding", "15px 0").append(table)
+                    );
                 });
 
-
-                body.append(bodyDiv);
+                body.append(
+                    bodyDiv.append(ul)
+                );
             }
 
             _show({

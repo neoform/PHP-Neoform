@@ -478,20 +478,10 @@
         * Prompt
         */
         .CoreDialog .inner .body .prompt {
-            padding: 0 0 10px 0;
-            margin: 5px;
+            padding: 0;
+            margin: 0;
             color: #333;
         }
-            .CoreDialog .inner .body .prompt.no-message {
-                margin-top: 35px;
-            }
-
-            .CoreDialog .inner .body .prompt div:first-child,
-            .CoreDialog .inner .body .prompt div.padded
-            {
-                margin: 5px 0 20px 0;
-            }
-
             .CoreDialog .inner .body .prompt table {
                 width: 100%;
                 margin: 0;
@@ -505,7 +495,7 @@
                 width: 110px;
                 text-align: right;
                 font-weight: bold;
-                font-size: 14px;
+                font-size: 13px;
             }
 
             .CoreDialog .inner .body .prompt input,
@@ -549,3 +539,44 @@
             font-weight: bold;
             color: #000;
         }
+
+    /* lists */
+    .CoreDialog .table-body ul {
+        margin: 0; padding: 0;
+    }
+    .CoreDialog .table-body ul li {
+        padding: 3px 8px;
+        margin: 0;
+        border-bottom: 1px solid #eae9e7;
+    }
+    .CoreDialog .table-body ul li:last-child {
+        border-bottom: 0;
+    }
+    .CoreDialog .table-body ul li:hover:nth-child(odd),
+    .CoreDialog .table-body ul li:hover:nth-child(even) {
+        background: #fff;
+    }
+    .CoreDialog .table-body ul li:nth-child(odd) {
+        border-top: 1px solid #fff;
+        background: #f4f4f5;
+    }
+    .CoreDialog .table-body ul li:nth-child(even) {
+        border-top: 1px solid #f5f6fa;
+        background: #f8f8f7;
+    }
+
+    .CoreDialog .table-body ul li a {
+        text-decoration: none;
+        font-weight: bold;
+    }
+    .CoreDialog .table-body ul li a:hover {
+        text-decoration: underline;
+    }
+    .CoreDialog .table-body .empty {
+        padding: 20px;
+        margin: 0;
+        border-bottom: 1px solid #eae9e7;
+        background: #f8f8f7;
+        color: #666;
+        text-align: center;
+    }

@@ -1,0 +1,26 @@
+<?php
+
+    namespace Neoform\Input\Error;
+
+    class Collection extends \arrayobject {
+
+        public function __construct(array $errors = null) {
+            if ($errors) {
+                $this->exchangeArray($errors);
+            }
+        }
+
+        public function __get($k) {
+            if (isset($this[$k])) {
+                return $this[$k];
+            }
+        }
+
+        public function __set($k, $v) {
+            $this[$k] = $v;
+        }
+
+        public function all() {
+            return (array) $this;
+        }
+    }

@@ -27,9 +27,9 @@
         protected $body;
 
         /**
-         * @var Neoform\Http\Config
+         * @var Neoform\Router\Config
          */
-        protected $httpConfig;
+        protected $routerConfig;
 
         /**
          * @var Neoform\Request\Parameters\Cookies\Config
@@ -37,20 +37,21 @@
         protected $cookiesConfig;
 
         /**
-         * @param integer             $httpResponseCode
-         * @param string[]            $httpHeaders
-         * @param array               $cookies
-         * @param string|null         $body
-         * @param Neoform\Http\Config $httpConfig
-         * @param Neoform\Request\Parameters\Cookies\Config $cookiesConfig
+         * @param integer                                        $httpResponseCode
+         * @param string[]                                       $httpHeaders
+         * @param array                                          $cookies
+         * @param string|null                                    $body
+         * @param Neoform\Router\Config                          $routerConfig
+         * @param Neoform\Request\Parameters\Cookies\Config|null $cookiesConfig
          */
         public function __construct($httpResponseCode, array $httpHeaders, array $cookies = null, $body = null,
-                                    Neoform\Http\Config $httpConfig, Neoform\Request\Parameters\Cookies\Config $cookiesConfig) {
+                                    Neoform\Router\Config $routerConfig,
+                                    Neoform\Request\Parameters\Cookies\Config $cookiesConfig=null) {
             $this->httpResponseCode = (int) $httpResponseCode;
             $this->httpHeaders      = $httpHeaders;
             $this->cookies          = $cookies;
             $this->body             = $body;
-            $this->httpConfig       = $httpConfig;
+            $this->routerConfig     = $routerConfig;
             $this->cookiesConfig    = $cookiesConfig;
         }
 
@@ -86,6 +87,10 @@
                 return;
             }
 
+            if (! $this->cookiesConfig) {
+                throw new Exception('Cookies config is not active');
+            }
+
             foreach ($this->cookies as $cookie) {
 
                 if ($cookie['ttl'] === null || !is_numeric($cookie['ttl'])) {
@@ -97,7 +102,7 @@
                     base64_encode($cookie['val']),
                     time() + (int)$cookie['ttl'],
                     $this->cookiesConfig->getPath() ?: '/',
-                    $this->httpConfig->getDomain(),
+                    $this->routerConfig->getDomain(),
                     (bool) $this->cookiesConfig->isSecure(),
                     (bool) $this->cookiesConfig->isHttpOnly()
                 );

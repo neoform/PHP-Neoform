@@ -12,7 +12,7 @@
      * It is strongly discouraged to include any other fields in this record type, as it breaks the convention of a
      * linking table. If you must have a linking record with additional fields, use a record entity instead.
      */
-    abstract class Dao extends Entity\Dao {
+    abstract class Dao extends Entity\Dao implements Neoform\Entity\Link\Entity {
 
         /**
          * @var Entity\Repo\LinkSource\Driver
@@ -61,11 +61,11 @@
             // each key is namespaced with the name of the class, then the name of the function ($cacheKeyName)
             $paramCount = count($fieldVals);
             if ($paramCount === 1) {
-                return static::CACHE_KEY . ":{$cacheKeyName}:{$selectField}:{$offset},{$limit}:" .
+                return static::getCacheKeyPrefix() . ":{$cacheKeyName}:{$selectField}:{$offset},{$limit}:" .
                     md5(json_encode($orderBy), $this->useBinaryCacheKeys) . ':' .
                     md5(reset($fieldVals) . ':' . key($fieldVals), $this->useBinaryCacheKeys);
             } else if ($paramCount === 0) {
-                return static::CACHE_KEY . ":{$cacheKeyName}:{$selectField}:{$offset},{$limit}:" .
+                return static::getCacheKeyPrefix() . ":{$cacheKeyName}:{$selectField}:{$offset},{$limit}:" .
                     md5(json_encode($orderBy), $this->useBinaryCacheKeys) . ':';
             } else {
                 ksort($fieldVals);
@@ -74,7 +74,7 @@
                 }
                 
                 // Use only the array_values() and not the named array, since each $cacheKeyName is unique per function
-                return static::CACHE_KEY . ":{$cacheKeyName}:{$selectField}:{$offset},{$limit}:" .
+                return static::getCacheKeyPrefix() . ":{$cacheKeyName}:{$selectField}:{$offset},{$limit}:" .
                     md5(json_encode($orderBy), $this->useBinaryCacheKeys) . ':' .
                     md5(json_encode($fieldVals), $this->useBinaryCacheKeys);
             }
@@ -102,10 +102,10 @@
                 $offset      = $offset === null ? null : (int) $offset;
 
                 if (! isset($this->referencedEntities[$selectField])) {
-                    throw new Entity\Repo\Exception("Unknown foreign key field \"{$selectField}\" in " . $this::ENTITY_NAME . '.');
+                    throw new Entity\Repo\Exception("Unknown foreign key field \"{$selectField}\" in " . $this::getCacheKeyPrefix() . '.');
                 }
 
-                $foreignDao = Entity::dao($this->referencedEntities[$selectField]);
+                $foreignDao = Dao::dao($this->referencedEntities[$selectField]);
 
                 $cacheKey = $this->_buildKeyLimit(
                     $cacheKeyName,
@@ -144,7 +144,7 @@
                         $this->_setMetaCache($cacheKey, $fieldVals, [ $selectField ]);
 
                         // Foreign DAO
-                        $orderBy[$foreignDao::PRIMARY_KEY] = true; // add primary key to the list of fields
+                        $orderBy[$foreignDao::getPrimaryKeyName()] = true; // add primary key to the list of fields
                         $foreignDao->_setMetaCache($cacheKey, null, array_keys($orderBy));
                     }
                 );
@@ -202,10 +202,10 @@
                 $offset      = $offset === null ? null : (int) $offset;
 
                 if (! isset($this->referencedEntities[$selectField])) {
-                    throw new Entity\Repo\Exception("Unknown foreign key field \"{$selectField}\" in " . $this::ENTITY_NAME . '.');
+                    throw new Entity\Repo\Exception("Unknown foreign key field \"{$selectField}\" in " . $this::getNamespace() . '.');
                 }
 
-                $foreignDao = Entity::dao($this->referencedEntities[$selectField]);
+                $foreignDao = Dao::dao($this->referencedEntities[$selectField]);
 
                 return $this->cacheRepo->multi(
                     $keysArr,
@@ -253,7 +253,7 @@
                         $this->_setMetaCacheMulti($cacheKeysFieldVals, [ $selectField ]);
 
                         // Foreign DAO
-                        $orderBy[$foreignDao::PRIMARY_KEY] = true; // add primary key to the list of fields
+                        $orderBy[$foreignDao::getPrimaryKeyName()] = true; // add primary key to the list of fields
 
                         $foreignDao->_setMetaCacheMulti(array_flip($cacheKeys), array_keys($orderBy));
                     }
@@ -444,8 +444,7 @@
              */
             if (count($keys) !== count($this->fieldBindings)) {
                 throw new Entity\Repo\Exception(
-                    'Link deletes must include all table fields ('
-                    . join(', ', array_keys($this->fieldBindings)) . ')'
+                    'Link deletes must include all table fields (' . join(', ', array_keys($this->fieldBindings)) . ')'
                 );
             }
 
@@ -479,8 +478,7 @@
             foreach ($keysArr as $keys) {
                 if (count($keys) !== $fieldCount) {
                     throw new Entity\Repo\Exception(
-                        "Link deletes must include all table fields ("
-                        . join(', ', array_keys($this->fieldBindings)) . ')'
+                        "Link deletes must include all table fields (" . join(', ', array_keys($this->fieldBindings)) . ')'
                     );
                 }
             }

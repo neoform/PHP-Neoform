@@ -2,7 +2,13 @@
 
     namespace Neoform;
 
-    class entity {
+    /**
+     * Class Entity
+     *
+     * @package Neoform
+     * @deprecated
+     */
+    class Entity {
 
         protected static $daos          = [];
         protected static $daosCacheless = [];
@@ -19,29 +25,6 @@
 
             'cache_delete_expire_ttl'      => null,
         ];
-
-        /**
-         * Get a DAO object based on the config files
-         *
-         * @param string $name name of the dao
-         *
-         * @return Entity\Record\Dao|Entity\Link\Dao
-         */
-        public static function dao($name) {
-            if (! isset(self::$daos[$name])) {
-                $className = "\\{$name}\\Dao";
-                $config    = Entity\Config::get();
-
-                if (isset($config->getOverrides()[$name])) {
-                    $configValues = $config->getOverrides()[$name] + $config->getDefaults();
-                } else {
-                    $configValues = $config->getDefaults();
-                }
-
-                self::$daos[$name] = new $className(new Entity\Config\Overridden($configValues));
-            }
-            return self::$daos[$name];
-        }
 
         /**
          * Get a DAO object based on the config files

@@ -9,12 +9,19 @@
         public function code() {
 
             $this->code .= '<?php'."\n\n";
-            $this->code .= "\tnamespace Neoform\\" . str_replace('_', '\\', $this->table->name) . ";\n\n";
+            $this->code .= "\tnamespace {$this->namespace}\\{$this->table->getNameAsClass()};\n\n";
+            $this->code .= "\tuse Neoform;\n";
+            if ($this->namespace !== 'Neoform') {
+                $this->code .= "\tuse {$this->namespace};\n";
+            }
+            $this->code .= "\n";
 
             $this->code .= "\t/**\n";
-            $this->code .= "\t * " . ucwords(str_replace('_', ' ', $this->table->name)) . " link DAO\n";
+            $this->code .= "\t * {$this->table->getNameLabel()} link DAO\n";
             $this->code .= "\t */\n";
-            $this->code .= "\tclass Dao extends \\Neoform\\Entity\\Link\\Dao implements Definition {\n\n";
+            $this->code .= "\tclass Dao extends Neoform\\Entity\\Link\\Dao {\n\n";
+            $this->code .= "\t\t// Load entity details into the class\n";
+            $this->code .= "\t\tuse Details;\n\n";
 
             $this->constants();
             $this->bindings();
@@ -34,9 +41,9 @@
         }
 
         protected function constants() {
-            $longest_part = $this->table->longest_index_combinations();
-            foreach ($this->table->all_index_combinations as $keys => $fields) {
-                $this->code .= "\t\tconst " . str_pad('BY_' . strtoupper($keys), $longest_part + 3) . " = 'by_" . strtolower($keys) . "';\n";
+            $longest_part = $this->table->longestIndexCombinations();
+            foreach ($this->table->getAllIndexCombinations() as $keys => $fields) {
+                $this->code .= "\t\tconst " . str_pad('BY_' . strtoupper($keys), $longest_part + 3) . " = 'by" . str_replace(' ', '', ucwords(str_replace('_', ' ', $keys))) . "';\n";
             }
 
             $this->code .= "\n";
@@ -46,7 +53,7 @@
 
             $used_names = [];
 
-            foreach ($this->table->all_index_combinations as $name => $index) {
+            foreach ($this->table->getAllIndexCombinations() as $name => $index) {
 
                 // No duplicates
                 if (in_array($name, $used_names)) {
@@ -59,46 +66,48 @@
                 $select_fields = [];
                 $where_fields  = [];
                 $params        = [];
-                foreach ($this->table->fields as $field) {
+                foreach ($this->table->getFields() as $field) {
                     // if there is only 1 "where" key don't select that key for the result set.
                     if (count($index) !== 1 || $field !== reset($index)) {
-                        $select_fields[] = $field->name;
+                        $select_fields[] = $field->getName();
                     }
                 }
 
                 foreach ($index as $field) {
-                    $where_fields[] = $field->name;
-                    $params[]       = " * @param " . $field->casting . ($field->allows_null() ? '|null' : '') . " \$" . $field->name;
+                    $where_fields[] = $field->getName();
+                    $params[]       = " * @param " . $field->getCasting() . ($field->allowsNull() ? '|null' : '') . " \${$field->getNameCamelCase()}";
                 }
 
                 $this->code .= "\t\t/**\n";
                 $this->code .= "\t\t * Get " . self::ander($select_fields) . " by " . self::ander($where_fields) . "\n";
                 $this->code .= "\t\t *\n";
                 $this->code .= "\t\t" . join("\n\t\t", $params) . "\n";
-                $this->code .= "\t\t * @param array|null \$order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)\n";
-                $this->code .= "\t\t * @param integer|null \$offset get rows starting at this offset\n";
-                $this->code .= "\t\t * @param integer|null \$limit max number of rows to return\n";
+                $this->code .= "\t\t * @param array|null \$orderBy array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)\n";
+                $this->code .= "\t\t * @param int|null   \$offset get rows starting at this offset\n";
+                $this->code .= "\t\t * @param int|null   \$limit max number of rows to return\n";
                 $this->code .= "\t\t *\n";
                 $this->code .= "\t\t * @return array result set containing " . self::ander($select_fields) . "\n";
                 $this->code .= "\t\t */\n";
                 // end commenting
 
-                $function_params = [];
-                $longest_part = $this->longest_length($index);
+                $functionParams = [];
+                $longest_part = $this->longestLength($index);
                 foreach ($index as $field) {
-                    $function_params[] = "\${$field->name}";
+                    $functionParams[] = "\${$field->getNameCamelCase()}";
                 }
 
-                $this->code .= "\t\tpublic function by_{$name}(" . join(', ', $function_params) . ", array \$order_by=null, \$offset=null, \$limit=null) {\n";
+                $fName = str_replace(' ', '', ucwords(str_replace('_', ' ', $name)));
+
+                $this->code .= "\t\tpublic function by{$fName}(" . join(', ', $functionParams) . ", array \$orderBy=null, \$offset=null, \$limit=null) {\n";
                 $this->code .= "\t\t\treturn parent::_byFields(\n";
                 $this->code .= "\t\t\t\tself::BY_" . strtoupper($name) . ",\n";
 
                 // fields selected
                 $this->code .= "\t\t\t\t[\n";
-                foreach ($this->table->fields as $field) {
+                foreach ($this->table->getFields() as $field) {
                     // if there is only 1 where key don't select that key for the result set.
                     if (count($index) !== 1 || $field !== reset($index)) {
-                        $this->code .= "\t\t\t\t\t'{$field->name}',\n";
+                        $this->code .= "\t\t\t\t\t'{$field->getName()}',\n";
                     }
                 }
                 $this->code .= "\t\t\t\t],\n";
@@ -106,14 +115,14 @@
                 // fields where
                 $this->code .= "\t\t\t\t[\n";
                 foreach ($index as $field) {
-                    if ($field->allows_null()) {
-                        $this->code .= "\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => \${$field->name} === null ? null : ({$field->casting}) \${$field->name},\n";
+                    if ($field->allowsNull()) {
+                        $this->code .= "\t\t\t\t\t'" . str_pad($field->getName() . "'", $longest_part + 1) . " => \${$field->getNameCamelCase()} === null ? null : ({$field->getCasting()}) \${$field->getNameCamelCase()},\n";
                     } else {
-                        $this->code .= "\t\t\t\t\t'" . str_pad($field->name . "'", $longest_part + 1) . " => ({$field->casting}) \${$field->name},\n";
+                        $this->code .= "\t\t\t\t\t'" . str_pad($field->getName() . "'", $longest_part + 1) . " => ({$field->getCasting()}) \${$field->getNameCamelCase()},\n";
                     }
                 }
                 $this->code .= "\t\t\t\t],\n";
-                $this->code .= "\t\t\t\t\$order_by,\n";
+                $this->code .= "\t\t\t\t\$orderBy,\n";
                 $this->code .= "\t\t\t\t\$offset,\n";
                 $this->code .= "\t\t\t\t\$limit\n";
                 $this->code .= "\t\t\t);\n";
@@ -121,59 +130,59 @@
             }
 
             // Multi
-            foreach ($this->table->foreign_keys as $foreign_key_field) {
+            foreach ($this->table->getForeignKeys() as $foreignKeyField) {
 
                 // No duplicates
-                if (in_array("{$foreign_key_field->name_idless}_multi", $used_names)) {
+                if (in_array("{$foreignKeyField->getNameTitleCaseWithoutId()}Multi", $used_names)) {
                     continue;
                 }
-                $used_names[] = "{$foreign_key_field->name_idless}_multi";
+                $used_names[] = "{$foreignKeyField->getNameTitleCaseWithoutId()}Multi";
 
                 // comments
                 $selected_fields = [];
-                foreach ($this->table->fields as $field) {
-                    if ($foreign_key_field !== $field) {
-                        $selected_fields[] = $field->name;
+                foreach ($this->table->getFields() as $field) {
+                    if ($foreignKeyField !== $field) {
+                        $selected_fields[] = $field->getName();
                     }
                 }
 
                 $this->code .= "\t\t/**\n";
-                $this->code .= "\t\t * Get multiple sets of " . self::ander($selected_fields) . " by a collection of {$foreign_key_field->referenced_field->table->name}s\n";
+                $this->code .= "\t\t * Get multiple sets of " . self::ander($selected_fields) . " by a collection of {$foreignKeyField->getReferencedField()->getTable()->getNameLabel()}s\n";
                 $this->code .= "\t\t *\n";
-                $this->code .= "\t\t * @param \\Neoform\\" . str_replace('_', '\\', $foreign_key_field->referenced_field->table->name) . "\\Collection|array \${$foreign_key_field->referenced_field->table->name}_list\n";
-                $this->code .= "\t\t * @param array|null \$order_by array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)\n";
-                $this->code .= "\t\t * @param integer|null \$offset get rows starting at this offset\n";
-                $this->code .= "\t\t * @param integer|null \$limit max number of rows to return\n";
+                $this->code .= "\t\t * @param {$this->namespace}\\{$foreignKeyField->getReferencedField()->getTable()->getNameAsClass()}\\Collection|array \${$foreignKeyField->getReferencedField()->getTable()->getNameCamelCase()}List\n";
+                $this->code .= "\t\t * @param array|null \$orderBy array of field names (as the key) and sort direction (parent::SORT_ASC, parent::SORT_DESC)\n";
+                $this->code .= "\t\t * @param int|null   \$offset get rows starting at this offset\n";
+                $this->code .= "\t\t * @param int|null   \$limit max number of rows to return\n";
                 $this->code .= "\t\t *\n";
                 $this->code .= "\t\t * @return array of result sets containing " . self::ander($selected_fields) . "\n";
                 $this->code .= "\t\t */\n";
 
                 // end comments
 
-                $this->code .= "\t\tpublic function by_{$foreign_key_field->name_idless}_multi(\${$foreign_key_field->referenced_field->table->name}_list, array \$order_by=null, \$offset=null, \$limit=null) {\n";
+                $this->code .= "\t\tpublic function by{$foreignKeyField->getNameTitleCaseWithoutId()}Multi(\${$foreignKeyField->getReferencedField()->getTable()->getNameCamelCase()}List, array \$orderBy=null, \$offset=null, \$limit=null) {\n";
 
                 $this->code .= "\t\t\t\$keys = [];\n";
 
-                $this->code .= "\t\t\tif (\${$foreign_key_field->referenced_field->table->name}_list instanceof \\Neoform\\" . str_replace('_', '\\', $foreign_key_field->referenced_field->table->name) . "\\Collection) {\n";
+                $this->code .= "\t\t\tif (\${$foreignKeyField->getReferencedField()->getTable()->getNameCamelCase()}List instanceof {$this->namespace}\\{$foreignKeyField->getReferencedField()->getTable()->getNameAsClass()}\\Collection) {\n";
 
-                $this->code .= "\t\t\t\tforeach (\${$foreign_key_field->referenced_field->table->name}_list as \$k => \${$foreign_key_field->referenced_field->table->name}) {\n";
+                $this->code .= "\t\t\t\tforeach (\${$foreignKeyField->getReferencedField()->getTable()->getNameCamelCase()}List as \$k => \${$foreignKeyField->getReferencedField()->getTable()->getNameCamelCase()}) {\n";
                 $this->code .= "\t\t\t\t\t\$keys[\$k] = [\n";
-                if ($foreign_key_field->allows_null()) {
-                    $this->code .= "\t\t\t\t\t\t'{$foreign_key_field->name}' => \${$foreign_key_field->referenced_field->table->name}->{$foreign_key_field->referenced_field->name} === null ? null : ({$foreign_key_field->referenced_field->casting}) \${$foreign_key_field->referenced_field->table->name}->{$foreign_key_field->referenced_field->name},\n";
+                if ($foreignKeyField->allowsNull()) {
+                    $this->code .= "\t\t\t\t\t\t'{$foreignKeyField->getName()}' => \${$foreignKeyField->getReferencedField()->getTable()->getNameCamelCase()}->get{$foreignKeyField->getReferencedField()->getNameTitleCase()}() === null ? null : ({$foreignKeyField->getReferencedField()->getCasting()}) \${$foreignKeyField->getReferencedField()->getTable()->getNameCamelCase()}->get{$foreignKeyField->getReferencedField()->getNameTitleCase()},\n";
                 } else {
-                    $this->code .= "\t\t\t\t\t\t'{$foreign_key_field->name}' => ({$foreign_key_field->referenced_field->casting}) \${$foreign_key_field->referenced_field->table->name}->{$foreign_key_field->referenced_field->name},\n";
+                    $this->code .= "\t\t\t\t\t\t'{$foreignKeyField->getName()}' => ({$foreignKeyField->getReferencedField()->getCasting()}) \${$foreignKeyField->getReferencedField()->getTable()->getNameCamelCase()}->get{$foreignKeyField->getReferencedField()->getNameTitleCase()}(),\n";
                 }
                 $this->code .= "\t\t\t\t\t];\n";
                 $this->code .= "\t\t\t\t}\n\n";
 
                 $this->code .= "\t\t\t} else {\n";
 
-                $this->code .= "\t\t\t\tforeach (\${$foreign_key_field->referenced_field->table->name}_list as \$k => \${$foreign_key_field->referenced_field->table->name}) {\n";
+                $this->code .= "\t\t\t\tforeach (\${$foreignKeyField->getReferencedField()->getTable()->getNameCamelCase()}List as \$k => \${$foreignKeyField->getReferencedField()->getTable()->getNameCamelCase()}) {\n";
                 $this->code .= "\t\t\t\t\t\$keys[\$k] = [\n";
-                if ($foreign_key_field->allows_null()) {
-                    $this->code .= "\t\t\t\t\t\t'{$foreign_key_field->name}' => \${$foreign_key_field->referenced_field->table->name} === null ? null : ({$foreign_key_field->referenced_field->casting}) \${$foreign_key_field->referenced_field->table->name},\n";
+                if ($foreignKeyField->allowsNull()) {
+                    $this->code .= "\t\t\t\t\t\t'{$foreignKeyField->getName()}' => \${$foreignKeyField->getReferencedField()->getTable()->getNameCamelCase()} === null ? null : ({$foreignKeyField->getReferencedField()->getCasting()}) \${$foreignKeyField->getReferencedField()->getTable()->getNameCamelCase()},\n";
                 } else {
-                    $this->code .= "\t\t\t\t\t\t'{$foreign_key_field->name}' => ({$foreign_key_field->referenced_field->casting}) \${$foreign_key_field->referenced_field->table->name},\n";
+                    $this->code .= "\t\t\t\t\t\t'{$foreignKeyField->getName()}' => ({$foreignKeyField->getReferencedField()->getCasting()}) \${$foreignKeyField->getReferencedField()->getTable()->getNameCamelCase()},\n";
                 }
                 $this->code .= "\t\t\t\t\t];\n";
                 $this->code .= "\t\t\t\t}\n\n";
@@ -181,19 +190,19 @@
                 $this->code .= "\t\t\t}\n\n";
 
                 $this->code .= "\t\t\treturn parent::_byFieldsMulti(\n";
-                $this->code .= "\t\t\t\tself::BY_" . strtoupper($foreign_key_field->name_idless) . ",\n";
+                $this->code .= "\t\t\t\tself::BY_" . strtoupper($foreignKeyField->getNameWithoutId()) . ",\n";
 
                 // fields selected
                 $this->code .= "\t\t\t\t[\n";
-                foreach ($this->table->fields as $field) {
-                    if ($field !== $foreign_key_field) {
-                        $this->code .= "\t\t\t\t\t'{$field->name}',\n";
+                foreach ($this->table->getFields() as $field) {
+                    if ($field !== $foreignKeyField) {
+                        $this->code .= "\t\t\t\t\t'{$field->getName()}',\n";
                     }
                 }
                 $this->code .= "\t\t\t\t],\n";
 
                 $this->code .= "\t\t\t\t\$keys,\n";
-                $this->code .= "\t\t\t\t\$order_by,\n";
+                $this->code .= "\t\t\t\t\$orderBy,\n";
                 $this->code .= "\t\t\t\t\$offset,\n";
                 $this->code .= "\t\t\t\t\$limit\n";
                 $this->code .= "\t\t\t);\n";
@@ -204,11 +213,11 @@
         protected function insert() {
 
             $this->code .= "\t\t/**\n";
-            $this->code .= "\t\t * Insert " . ucwords(str_replace('_', ' ', $this->table->name)) . " link, created from an array of \$info\n";
+            $this->code .= "\t\t * Insert {$this->table->getNameLabel()} link, created from an array of \$info\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @param array \$info associative array, keys matching columns in database for this Entity\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @return boolean\n";
+            $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
             $this->code .= "\t\tpublic function insert(array \$info) {\n\n";
@@ -219,7 +228,7 @@
         protected function insertMulti() {
 
             $this->code .= "\t\t/**\n";
-            $this->code .= "\t\t * Insert multiple " . ucwords(str_replace('_', ' ', $this->table->name)) . " links, created from an array of arrays of \$info\n";
+            $this->code .= "\t\t * Insert multiple {$this->table->getNameLabel()} links, created from an array of arrays of \$info\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @param array \$infos array of associative arrays, keys matching columns in database for this Entity\n";
             $this->code .= "\t\t *\n";
@@ -234,17 +243,17 @@
         protected function update() {
 
             $this->code .= "\t\t/**\n";
-            $this->code .= "\t\t * Update " . ucwords(str_replace('_', ' ', $this->table->name)) . " link records based on \$where inputs\n";
+            $this->code .= "\t\t * Update {$this->table->getNameLabel()} link records based on \$where inputs\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @param array \$new_info the new link record data\n";
+            $this->code .= "\t\t * @param array \$newInfo the new link record data\n";
             $this->code .= "\t\t * @param array \$where associative array, matching columns with values\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic function update(array \$new_info, array \$where) {\n\n";
+            $this->code .= "\t\tpublic function update(array \$newInfo, array \$where) {\n\n";
             $this->code .= "\t\t\t// Update Link\n";
-            $this->code .= "\t\t\treturn parent::_update(\$new_info, \$where);\n";
+            $this->code .= "\t\t\treturn parent::_update(\$newInfo, \$where);\n";
             $this->code .= "\t\t}\n\n";
 
         }
@@ -252,7 +261,7 @@
         protected function delete() {
 
             $this->code .= "\t\t/**\n";
-            $this->code .= "\t\t * Delete multiple " . ucwords(str_replace('_', ' ', $this->table->name)) . " link records based on an array of associative arrays\n";
+            $this->code .= "\t\t * Delete multiple {$this->table->getNameLabel()} link records based on an array of associative arrays\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @param array \$keys keys match the column names\n";
             $this->code .= "\t\t *\n";
@@ -268,16 +277,16 @@
         protected function deleteMulti() {
 
             $this->code .= "\t\t/**\n";
-            $this->code .= "\t\t * Delete multiple sets of " . ucwords(str_replace('_', ' ', $this->table->name)) . " link records based on an array of associative arrays\n";
+            $this->code .= "\t\t * Delete multiple sets of {$this->table->getNameLabel()} link records based on an array of associative arrays\n";
             $this->code .= "\t\t *\n";
-            $this->code .= "\t\t * @param array \$keys_arr an array of arrays, keys match the column names\n";
+            $this->code .= "\t\t * @param array \$keysArr an array of arrays, keys match the column names\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @return bool\n";
             $this->code .= "\t\t */\n";
 
-            $this->code .= "\t\tpublic function deleteMulti(array \$keys_arr) {\n\n";
+            $this->code .= "\t\tpublic function deleteMulti(array \$keysArr) {\n\n";
             $this->code .= "\t\t\t// Delete links\n";
-            $this->code .= "\t\t\treturn parent::_deleteMulti(\$keys_arr);\n";
+            $this->code .= "\t\t\treturn parent::_deleteMulti(\$keysArr);\n";
             $this->code .= "\t\t}\n";
         }
     }

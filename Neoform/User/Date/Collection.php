@@ -5,7 +5,10 @@
     /**
      * User Date collection
      */
-    class Collection extends \Neoform\Entity\Record\Collection implements Definition {
+    class Collection extends \Neoform\Entity\Record\Collection {
+
+        // Load entity details into the class
+        use Details;
 
         /**
          * Preload the User models in this collection

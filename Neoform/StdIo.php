@@ -26,9 +26,10 @@
          * @return string
          */
         public function readIn($blockingIO) {
-            stream_set_blocking(STDIN, (bool) $blockingIO);
-            $buffer = new SplDoublyLinkedList;
-            $buffer->push(fread(STDIN, 1024));
+            $f = fopen('php://stdin', 'r');
+            stream_set_blocking($f, (bool) $blockingIO);
+            $buffer = [];
+            $buffer[] = fread($f, 1024);
             return join($buffer);
         }
     }

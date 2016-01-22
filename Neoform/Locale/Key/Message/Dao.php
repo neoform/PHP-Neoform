@@ -5,7 +5,10 @@
     /**
      * Locale Key Message DAO
      */
-    class Dao extends \Neoform\Entity\Record\Dao implements Definition {
+    class Dao extends \Neoform\Entity\Record\Dao {
+
+        // Load entity details into the class
+        use Details;
 
         const BY_LOCALE     = 'by_locale';
         const BY_LOCALE_KEY = 'by_locale_key';
@@ -240,7 +243,7 @@
          *
          * @param array $info associative array, keys matching columns in database for this entity
          *
-         * @return model
+         * @return Model
          */
         public function insert(array $info) {
 
@@ -253,7 +256,7 @@
          *
          * @param array $infos array of associative arrays, keys matching columns in database for this entity
          *
-         * @return collection
+         * @return Collection
          */
         public function insertMulti(array $infos) {
 
@@ -265,10 +268,10 @@
          * Updates a Locale Key Message record with new data
          *   only fields that are specified in the $info array will be written
          *
-         * @param model $locale_key_message record to be updated
+         * @param Model $locale_key_message record to be updated
          * @param array $info data to write to the record
          *
-         * @return model updated model
+         * @return Model updated model
          */
         public function update(Model $locale_key_message, array $info) {
 
@@ -279,7 +282,7 @@
         /**
          * Delete a Locale Key Message record
          *
-         * @param model $locale_key_message record to be deleted
+         * @param Model $locale_key_message record to be deleted
          *
          * @return bool
          */
@@ -292,7 +295,7 @@
         /**
          * Delete multiple Locale Key Message records
          *
-         * @param collection $locale_key_message_collection records to be deleted
+         * @param Collection $locale_key_message_collection records to be deleted
          *
          * @return bool
          */

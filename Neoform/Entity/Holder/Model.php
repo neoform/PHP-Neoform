@@ -2,7 +2,9 @@
 
     namespace Neoform\Holder;
 
-    abstract class Model {
+    use Neoform;
+
+    abstract class Model extends Neoform\Entity\Model {
 
         protected $vars;
         protected $_vars = []; // calculated fields
@@ -67,19 +69,20 @@
         /**
          * @param string         $key
          * @param string|integer $pk
-         * @param string         $model_name
+         * @param string         $modelClassName
          * @param mixed|null     $default
          *
-         * @return model|$default
+         * @return Model|$default
          */
-        protected function _model($key, $pk, $model_name, $default=null) {
+        protected function _model($key, $pk, $modelClassName, $default=null) {
             if (! array_key_exists($key, $this->_vars)) {
                 if ($pk !== null) {
-                    $this->_vars[$key] = new $model_name($pk);
+                    $this->_vars[$key] = $modelClassName::fromPk($pk);
                 } else {
                     $this->_vars[$key] = $default;
                 }
             }
+
             return $this->_vars[$key];
         }
     }

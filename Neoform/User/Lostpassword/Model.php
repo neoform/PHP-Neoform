@@ -11,9 +11,34 @@
      * @var int $user_id
      * @var datetime $posted_on
      */
-    class Model extends Entity\Record\Model implements Definition {
+    class Model extends Entity\Record\Model {
+
+        // Load entity details into the class
+        use Details;
 
         public function __get($k) {
+
+            if (isset($this->vars[$k])) {
+                switch ($k) {
+                    // integers
+                    case 'user_id':
+                        return (int) $this->vars[$k];
+
+                    // dates
+                    case 'posted_on':
+                        return $this->_model($k, $this->vars[$k], 'Neoform\Type\Date');
+
+                    // strings
+                    case 'hash':
+                        return (string) $this->vars[$k];
+
+                    default:
+                        return $this->vars[$k];
+                }
+            }
+        }
+
+        public function get($k) {
 
             if (isset($this->vars[$k])) {
                 switch ($k) {

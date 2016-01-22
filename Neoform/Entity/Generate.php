@@ -3,21 +3,41 @@
     namespace Neoform\Entity;
 
     use Neoform\Sql\Parser\Table;
+    use Neoform\Sql\Parser\Field;
 
     /**
      * Generate entity files
      */
-    class Generate {
+    abstract class Generate {
 
+        /**
+         * @var Table
+         */
         protected $table;
+
+        /**
+         * @var string
+         */
+        protected $namespace;
+
+        /**
+         * @var string
+         */
         protected $code = '';
 
         /**
-         * @param table $table
-         * @param array $options
+         * Generate code
          */
-        public function __construct(table $table, array $options = []) {
-            $this->table = $table;
+        abstract public function code();
+
+        /**
+         * @param string $namespace
+         * @param Table  $table
+         * @param array  $options
+         */
+        public function __construct($namespace, Table $table, array $options = []) {
+            $this->namespace = $namespace;
+            $this->table     = $table;
             $this->code();
         }
 
@@ -26,7 +46,7 @@
          *
          * @return string
          */
-        public function get_code() {
+        public function getCode() {
             return $this->code;
         }
 
@@ -38,24 +58,24 @@
          * @return string
          */
         protected function ander(array $arr) {
-            $tail = count($arr) > 1 ? ' and ' . \array_pop($arr) : '';
+            $tail = count($arr) > 1 ? ' and ' . array_pop($arr) : '';
             return join(', ', $arr) . $tail;
         }
 
         /**
          * Returns the length of the longest field name
          *
-         * @param array $fields
-         * @param bool  $idless
-         * @param bool  $lookupable
+         * @param Field[] $fields
+         * @param bool    $idless
+         * @param bool    $lookupable
          *
          * @return int
          */
-        protected function longest_length(array $fields, $idless=false, $lookupable=false) {
+        protected function longestLength(array $fields, $idless=false, $lookupable=false) {
             $len = 0;
             foreach ($fields as $field) {
 
-                if ($lookupable && ! $field->is_field_lookupable()) {
+                if ($lookupable && ! $field->isFieldLookupable()) {
                     continue;
                 }
 
@@ -64,8 +84,38 @@
                         $len = strlen($field);
                     }
                 } else {
-                    if (strlen($idless ? $field->name_idless : $field->name) > $len) {
-                        $len = strlen($idless ? $field->name_idless : $field->name);
+                    if (strlen($idless ? $field->getNameWithoutId() : $field->getName()) > $len) {
+                        $len = strlen($idless ? $field->getNameWithoutId() : $field->getName());
+                    }
+                }
+            }
+            return $len;
+        }
+
+        /**
+         * Returns the length of the longest field name
+         *
+         * @param Field[] $fields
+         * @param bool    $idless
+         * @param bool    $lookupable
+         *
+         * @return int
+         */
+        protected function longestLengthCamelCase(array $fields, $idless=false, $lookupable=false) {
+            $len = 0;
+            foreach ($fields as $field) {
+
+                if ($lookupable && ! $field->isFieldLookupable()) {
+                    continue;
+                }
+
+                if (is_string($field)) {
+                    if (strlen($field) > $len) {
+                        $len = strlen($field);
+                    }
+                } else {
+                    if (strlen($idless ? $field->getNameCamelCaseWithoutId() : $field->getNameCamelCase()) > $len) {
+                        $len = strlen($idless ? $field->getNameCamelCaseWithoutId() : $field->getNameCamelCase());
                     }
                 }
             }

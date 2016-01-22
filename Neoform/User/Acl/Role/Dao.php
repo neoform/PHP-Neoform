@@ -5,7 +5,10 @@
     /**
      * User Acl Role link DAO
      */
-    class Dao extends \Neoform\Entity\Link\Dao implements Definition {
+    class Dao extends \Neoform\Entity\Link\Dao {
+
+        // Load entity details into the class
+        use Details;
 
         const BY_USER          = 'by_user';
         const BY_USER_ACL_ROLE = 'by_user_acl_role';

@@ -4,7 +4,7 @@
 
     /**
      * Class assets
-     * @package neoform
+     * @package Neoform
      */
     class Assets extends Service\Singleton {
 
@@ -32,7 +32,7 @@
         }
 
         /**
-         * @throws Sql\Exception
+         * @throws Assets\Exception
          */
         public function open() {
             $this->assets = new Assets\Model(Assets\Config::get());
@@ -40,7 +40,7 @@
         }
 
         /**
-         * @throws Sql\Exception
+         * Close
          */
         public function close() {
             $this->assets = null;

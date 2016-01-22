@@ -6,6 +6,9 @@
 
     class Exception extends \Exception {
 
+        /**
+         * @var Error\Collection
+         */
         protected $errors;
 
         /**
@@ -16,23 +19,17 @@
         }
 
         /**
-         * @return string
-         */
-        public function message() {
-            return $this->getMessage();
-        }
-
-        /**
          * @return array
          */
-        public function errors() {
+        public function getErrors() {
             return self::_toArray($this->errors);
         }
 
         /**
          * @param string $k
          *
-         * @return mixed
+         * @return string|null
+         * @deprecated
          */
         public function __get($k) {
             if (isset($this->errors[$k])) {
@@ -47,7 +44,7 @@
          */
         protected static function _toArray(Error\Collection $collection) {
             $arr = [];
-            foreach ($collection->all() as $k => $error) {
+            foreach ($collection->getAll() as $k => $error) {
                 if ($error instanceof Error\Collection) {
                     $arr[$k] = self::_toArray($error);
                 } else {

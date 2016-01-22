@@ -2,7 +2,7 @@
 
     namespace Neoform\Type\String;
 
-    class json {
+    class Json {
 
         public static function last_error() {
             switch (json_last_error()) {

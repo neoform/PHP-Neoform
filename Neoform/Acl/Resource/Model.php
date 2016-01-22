@@ -3,6 +3,7 @@
     namespace Neoform\Acl\Resource;
 
     use Neoform\Entity;
+    use Neoform;
 
     /**
      * Acl Resource Model
@@ -11,9 +12,31 @@
      * @var int|null $parent_id
      * @var string $name
      */
-    class Model extends Entity\Record\Model implements Definition {
+    class Model extends Entity\Record\Model {
+
+        // Load entity details into the class
+        use Details;
 
         public function __get($k) {
+
+            if (isset($this->vars[$k])) {
+                switch ($k) {
+                    // integers
+                    case 'id':
+                    case 'parent_id':
+                        return (int) $this->vars[$k];
+
+                    // strings
+                    case 'name':
+                        return (string) $this->vars[$k];
+
+                    default:
+                        return $this->vars[$k];
+                }
+            }
+        }
+
+        public function get($k) {
 
             if (isset($this->vars[$k])) {
                 switch ($k) {
@@ -80,8 +103,8 @@
         public function child_acl_resource_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limitVarKey('child_acl_resource_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = new \Neoform\Acl\Resource\Collection(
-                    Entity::dao('Neoform\Acl\Resource')->by_parent($this->vars['id'], $order_by, $offset, $limit)
+                $this->_vars[$key] = \Neoform\Acl\Resource\Collection::fromPks(
+                    Neoform\Acl\Resource\Dao::get()->by_parent($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -99,7 +122,7 @@
 
             $key = parent::_countVarKey('child_acl_resource_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = Entity::dao('Neoform\Acl\Resource')->count($fieldvals);
+                $this->_vars[$key] = Neoform\Acl\Resource\Dao::get()->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -116,8 +139,8 @@
         public function acl_role_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limitVarKey('acl_role_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = new \Neoform\Acl\Role\Collection(
-                    Entity::dao('Neoform\Acl\Role\Resource')->by_acl_resource($this->vars['id'], $order_by, $offset, $limit)
+                $this->_vars[$key] = \Neoform\Acl\Role\Collection::fromPks(
+                    Neoform\Acl\Role\Resource\Dao::get()->by_acl_resource($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -135,7 +158,7 @@
 
             $key = parent::_countVarKey('acl_role_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = Entity::dao('Neoform\Acl\Role\Resource')->count($fieldvals);
+                $this->_vars[$key] = Neoform\Acl\Role\Resource\Dao::get()->count($fieldvals);
             }
             return $this->_vars[$key];
         }

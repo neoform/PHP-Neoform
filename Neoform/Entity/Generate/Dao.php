@@ -3,20 +3,20 @@
 
     use Neoform\Entity\Generate;
 
-    class Dao extends Generate {
+    abstract class Dao extends Generate {
 
         protected function bindings() {
 
             $this->code .= "\t\t/**\n";
-            $this->code .= "\t\t * \$var array \$fieldBindings list of fields and their corresponding bindings\n";
+            $this->code .= "\t\t * @var array \$fieldBindings list of fields and their corresponding bindings\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @return array\n";
             $this->code .= "\t\t */\n";
             $this->code .= "\t\tprotected \$fieldBindings = [\n";
-            $longest_part = $this->longest_length($this->table->fields);
+            $longest_part = $this->longestLength($this->table->getFields());
 
-            foreach ($this->table->fields as $field) {
-                switch ((string) $field->pdo_casting) {
+            foreach ($this->table->getFields() as $field) {
+                switch ((string) $field->getPdoCasting()) {
                     case 'int':
                         $binding = 'self::TYPE_INTEGER';
                         break;
@@ -42,33 +42,33 @@
                         break;
 
                     default:
-                        throw new \Exception("Unknown PDO binding for type \"{$field->pdo_casting}\".");
+                        throw new \Exception("Unknown PDO binding for type \"{$field->getPdoCasting()}\".");
                 }
 
-                $this->code .= "\t\t\t'" . str_pad("{$field->name}'", $longest_part + 1) . " => {$binding},\n";
+                $this->code .= "\t\t\t'" . str_pad("{$field->getName()}'", $longest_part + 1) . " => {$binding},\n";
             }
             $this->code .= "\t\t];\n\n";
 
             $this->code .= "\t\t/**\n";
-            $this->code .= "\t\t * \$var array \$referencedEntities list of fields (in this entity) and their related foreign Entity\n";
+            $this->code .= "\t\t * @var array \$referencedEntities list of fields (in this entity) and their related foreign Entity\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @return array\n";
             $this->code .= "\t\t */\n";
 
             $relations        = [];
             $referenced_field = [];
-//            if ($this->table->table_type() === 'link') {
-                foreach ($this->table->foreign_keys as $fk) {
+//            if ($this->table->getTable()_type() === 'link') {
+                foreach ($this->table->getForeignKeys() as $fk) {
                     $referenced_field[]   = $fk;
-                    $relations[$fk->name] = str_replace('_', '\\', $fk->referenced_field->table->name);
+                    $relations[$fk->getName()] = "{$this->namespace}\\{$fk->getReferencedField()->getTable()->getNameAsClass()}";
                 }
 //            }
 
             if ($relations) {
                 $this->code .= "\t\tprotected \$referencedEntities = [\n";
-                $longest_part = $this->longest_length($referenced_field);
+                $longest_part = $this->longestLength($referenced_field);
                 foreach ($relations as $field => $table) {
-                    $this->code .= "\t\t\t'" . str_pad($field . "'", $longest_part + 1) . " => '" . $table . "',\n";
+                    $this->code .= "\t\t\t'" . str_pad($field . "'", $longest_part + 1) . " => '{$table}',\n";
                 }
                 $this->code .= "\t\t];\n\n";
             } else {
@@ -83,14 +83,14 @@
 //
 //            $relations        = [];
 //            $referenced_field = [];
-//            foreach ($this->table->referencing_fields as $referencing_field) {
-//                $referenced_field[] = $referencing_field->referenced_field;
-//                $relations[$referencing_field->referenced_field->name][] = "'" . str_replace('_', '\\', $referencing_field->table->name) . "'";
+//            foreach ($this->table->getReferencedFields() as $referencing_field) {
+//                $referenced_field[] = $referencing_field->getReferencedField();
+//                $relations[$referencing_field->getReferencedField()->getName()][] = "'" . str_replace('_', '\\', $referencing_field->getTable()->getName()) . "'";
 //            }
 //
 //            if ($relations) {
 //                $this->code .= "\t\tprotected \$referencing_entities = [\n";
-//                $longest_part = $this->longest_length($referenced_field);
+//                $longest_part = $this->longestLength($referenced_field);
 //                foreach ($relations as $field => $tables) {
 //                    $this->code .= "\t\t\t'" . str_pad($field . "'", $longest_part + 1) . " => [ " . join(', ', $tables) . " ],\n";
 //                }

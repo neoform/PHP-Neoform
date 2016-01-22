@@ -6,27 +6,55 @@
 
     /**
      * An object representation of an SQL table
-     *
-     * @var string             $name               table name
-     * @var field[] $fields             table fields
-     * @var field[] $primary_keys       table primary key(s)
-     * @var field[] $unique_keys        table unique keys, does not include primary keys
-     * @var field[] $indexes            table indexes (does not include PKs or UKs)
-     * @var field[] $all_indexes        primary keys, unique keys, indexes, in one array
-     * @var field[] $all_unique_indexes primary keys and unique keys, in one array
-     * @var field[] $foreign_keys       array of foreign keys
-     * @var field[] $referencing_fields any/all fields that reference fields in this table
      */
     class Table {
 
+        /**
+         * Table name
+         *
+         * @var string
+         */
         protected $name;
-        protected $primary_key;
 
-        protected $fields       = [];
-        protected $primary_keys = [];
-        protected $unique_keys  = [];
-        protected $indexes      = [];
-        protected $foreign_keys = [];
+        /**
+         * @var Field
+         */
+        protected $primaryKey;
+
+        /**
+         * Table fields
+         *
+         * @var Field[]
+         */
+        protected $fields = [];
+
+        /**
+         * Table primary key(s)
+         *
+         * @var Field[]
+         */
+        protected $primaryKeys = [];
+
+        /**
+         * Table unique keys, does not include primary keys
+         *
+         * @var Field[]
+         */
+        protected $uniqueKeys = [];
+
+        /**
+         * Table indexes (does not include PKs or UKs)
+         *
+         * @var Field[]
+         */
+        protected $indexes = [];
+
+        /**
+         * Foreign keys
+         *
+         * @var Field[]
+         */
+        protected $foreignKeys = [];
 
         /**
          * @param array $info
@@ -35,17 +63,17 @@
             $this->name   = $info['name'];
             $this->fields = $info['fields'];
 
-            foreach ($info['primary_keys'] as $primary_key) {
-                $this->primary_keys[$primary_key] = $this->fields[$primary_key];
+            foreach ($info['primaryKeys'] as $primaryKey) {
+                $this->primaryKeys[$primaryKey] = $this->fields[$primaryKey];
             }
 
-            if ($this->primary_keys && count($this->primary_keys) === 1) {
-                $this->primary_key = current($this->primary_keys);
+            if ($this->primaryKeys && count($this->primaryKeys) === 1) {
+                $this->primaryKey = current($this->primaryKeys);
             }
 
-            foreach ($info['unique_keys'] as $k => $unique_key) {
-                foreach ($unique_key as $field) {
-                    $this->unique_keys[$k][$field] = $this->fields[$field];
+            foreach ($info['uniqueKeys'] as $k => $uniqueKey) {
+                foreach ($uniqueKey as $field) {
+                    $this->uniqueKeys[$k][$field] = $this->fields[$field];
                 }
             }
 
@@ -56,123 +84,206 @@
             }
         }
 
-        public function __get($k) {
+        /**
+         * @return string
+         */
+        public function getName() {
+            return trim($this->name, '_');
+        }
 
-            switch ((string) $k) {
+        /**
+         * @return string
+         */
+        public function getNameAsClass() {
+            return str_replace(' ', '\\', ucwords(str_replace('_', ' ', trim($this->name, '_'))));
+        }
 
-                case 'name':
-                    return trim($this->name, '_');
+        /**
+         * @return string
+         */
+        public function getNameTitleCase() {
+            return str_replace(' ', '', ucwords(str_replace('_', ' ', trim($this->name, '_'))));
+        }
 
-                case 'fields':
-                    return $this->fields;
+        /**
+         * @return string
+         */
+        public function getNameLabel() {
+            return ucwords(str_replace('_', ' ', trim($this->name, '_')));
+        }
 
-                case 'primary_key':
-                    return $this->primary_key;
+        /**
+         * @return string
+         */
+        public function getNameCamelCase() {
+            $words = explode(' ', ucwords(str_replace('_', ' ', trim($this->name, '_'))));
+            $words[0] = strtolower($words[0]);
+            return join($words);
+        }
 
-                case 'primary_keys':
-                    return $this->primary_keys;
+        /**
+         * @return Field[]
+         */
+        public function getFields() {
+            return $this->fields;
+        }
 
-                case 'unique_keys':
-                    return $this->unique_keys;
+        /**
+         * @return Field
+         */
+        public function getPrimaryKey() {
+            return $this->primaryKey;
+        }
 
-                case 'indexes':
-                    return $this->indexes;
+        /**
+         * @return Field[]
+         */
+        public function getPrimaryKeys() {
+            return $this->primaryKeys;
+        }
 
-                case 'all_indexes':
-                    return array_merge(
-                        [ $this->primary_keys, ],
-                        $this->unique_keys,
-                        $this->indexes
-                    );
+        /**
+         * @return Field[]
+         */
+        public function getUniqueKeys() {
+            return $this->uniqueKeys;
+        }
 
-                case 'all_unique_indexes':
-                    return array_merge(
-                        [ $this->primary_keys, ],
-                        $this->unique_keys
-                    );
+        /**
+         * @return Field[]
+         */
+        public function getIndexes() {
+            return $this->indexes;
+        }
 
-                case 'all_non_unique_indexes':
-                    $indexed_fields = [];
-                    foreach ($this->indexes as $index) {
-                        $key = [];
-                        foreach ($index as $field) {
-                            $key[] = $field->name;
-                        }
-                        $indexed_fields[join(':', $key)] = $index;
-                    }
-                    foreach (array_merge($this->unique_keys, $this->primary_keys) as $index) {
-                        if (count($index) > 1) {
-                            $index = array_slice($index, 0, count($index) - 1);
-                            $key = [];
-                            foreach ($index as $field) {
-                                $key[] = $field->name;
-                            }
-                            $indexed_fields[join(':', $key)] = $index;
-                        }
-                    }
-                    return array_values($indexed_fields);
+        /**
+         * Primary keys, unique keys, indexes, in one array
+         *
+         * @return Field[]
+         */
+        public function getAllIndexes() {
+            return array_merge(
+                [ $this->primaryKeys, ],
+                $this->uniqueKeys,
+                $this->indexes
+            );
+        }
 
-                case 'all_non_pk_indexes':
-                    return array_merge(
-                        $this->unique_keys,
-                        $this->indexes
-                    );
-
-                case 'all_index_combinations':
-                    $key_combinations = [];
-                    foreach (array_merge([ $this->primary_keys, ], $this->unique_keys, $this->indexes) as $index) {
-                        $previous        = [];
-                        $previous_fields = [];
-                        foreach ($index as $field) {
-                            $previous[$field->name]                 = $field->name_idless;
-                            $previous_fields[            ]          = $field;
-                            $key_combinations[join('_', $previous)] = $previous_fields;
-                        }
-                    }
-                    return $key_combinations;
-
-                case 'all_non_pk_index_combinations':
-                    $key_combinations = [];
-                    foreach (array_merge($this->unique_keys, $this->indexes) as $index) {
-
-                        // Skip useless indexes
-                        foreach ($index as $field) {
-                            if (! $field->is_field_lookupable()) {
-                                continue 2;
-                            }
-                        }
-
-                        $previous = [];
-                        foreach ($index as $field) {
-                            $previous[$field->name] = $field->name_idless;
-                            $key_combinations[join('_', $previous)] = $previous;
-                        }
-                    }
-                    return $key_combinations;
-
-                case 'foreign_keys':
-                    $fks = [];
-                    foreach ($this->fields as $field) {
-                        if ($field->referenced_field) {
-                            $fks[] = $field;
-                        }
-                    }
-                    return $fks;
-
-                case 'referencing_fields':
-                    $refs = [];
-                    foreach ($this->fields as $field) {
-                        if ($field->referencing_fields) {
-                            foreach ($field->referencing_fields as $ref) {
-                                $refs[] = $ref;
-                            }
-                        }
-                    }
-                    return $refs;
-
-                default:
-                    throw new \Exception('Unknown field `' . $k . '`');
+        /**
+         * @return Field[]
+         */
+        public function getForeignKeys() {
+            $fks = [];
+            foreach ($this->fields as $field) {
+                if ($field->getReferencedField()) {
+                    $fks[] = $field;
+                }
             }
+            return $fks;
+        }
+
+        /**
+         * Any/all fields that reference fields in this table
+         *
+         * @return Field[]
+         */
+        public function getReferencingFields() {
+            $refs = [];
+            foreach ($this->fields as $field) {
+                if ($field->getReferencedFields()) {
+                    foreach ($field->getReferencedFields() as $ref) {
+                        $refs[] = $ref;
+                    }
+                }
+            }
+            return $refs;
+        }
+
+        /**
+         * Primary keys and unique keys, in one array
+         *
+         * @return Field[]
+         */
+        public function getAllUniqueIndexes() {
+            return array_merge(
+                [ $this->primaryKeys, ],
+                $this->uniqueKeys
+            );
+        }
+
+        /**
+         * @return Field[]
+         */
+        public function getAllNonPkIndexes() {
+            return array_merge(
+                $this->uniqueKeys,
+                $this->indexes
+            );
+        }
+
+        /**
+         * @return Field[]
+         */
+        public function getAllNonUniqueIndexes() {
+            $indexed_fields = [];
+            foreach ($this->indexes as $index) {
+                $key = [];
+                foreach ($index as $field) {
+                    $key[] = $field->getName();
+                }
+                $indexed_fields[join(':', $key)] = $index;
+            }
+            foreach (array_merge($this->uniqueKeys, $this->primaryKeys) as $index) {
+                if (count($index) > 1) {
+                    $index = array_slice($index, 0, count($index) - 1);
+                    $key = [];
+                    foreach ($index as $field) {
+                        $key[] = $field->getName();
+                    }
+                    $indexed_fields[join(':', $key)] = $index;
+                }
+            }
+            return array_values($indexed_fields);
+        }
+
+        /**
+         * @return Field[]
+         */
+        public function getAllIndexCombinations() {
+            $key_combinations = [];
+            foreach (array_merge([ $this->primaryKeys, ], $this->uniqueKeys, $this->indexes) as $index) {
+                $previous        = [];
+                $previous_fields = [];
+                foreach ($index as $field) {
+                    $previous[$field->getName()]                 = $field->getNameWithoutId();
+                    $previous_fields[]                      = $field;
+                    $key_combinations[join('_', $previous)] = $previous_fields;
+                }
+            }
+            return $key_combinations;
+        }
+
+        /**
+         * @return Field[]
+         */
+        public function getAllNonPkIndexCombinations() {
+            $key_combinations = [];
+            foreach (array_merge($this->uniqueKeys, $this->indexes) as $index) {
+
+                // Skip useless indexes
+                foreach ($index as $field) {
+                    if (! $field->isFieldLookupable()) {
+                        continue 2;
+                    }
+                }
+
+                $previous = [];
+                foreach ($index as $field) {
+                    $previous[$field->getName()] = $field->getNameWithoutId();
+                    $key_combinations[join('_', $previous)] = $previous;
+                }
+            }
+            return $key_combinations;
         }
 
         /**
@@ -180,8 +291,8 @@
          *
          * @return bool
          */
-        public function is_record() {
-            return count($this->primary_keys) === 1;
+        public function isRecord() {
+            return count($this->primaryKeys) === 1;
         }
 
         /**
@@ -189,9 +300,9 @@
          *
          * @return bool
          */
-        public function is_link() {
+        public function isLink() {
             foreach ($this->fields as $field) {
-                if ($field->is_link_index()) {
+                if ($field->isLinkIndex()) {
                     return true;
                 }
             }
@@ -200,11 +311,11 @@
         }
 
 
-        public function table_type() {
-            if ($this->is_record()) {
-                return 'record';
-            } else if ($this->is_link()) {
-                return 'link';
+        public function tableType() {
+            if ($this->isRecord()) {
+                return 'Record';
+            } else if ($this->isLink()) {
+                return 'Link';
             } else {
                 throw new \Exception('Unknown table/entity configuration type. It doesn\'t match any design pattern in this framework.');
             }
@@ -217,11 +328,11 @@
          *
          * @return int
          */
-        public function longest_field_length($idless=false) {
+        public function longestFieldLength($idless=false) {
             $len = 0;
             foreach ($this->fields as $field) {
-                if ($len < strlen($idless ? $field->name_idless : $field->name)) {
-                    $len = strlen($idless ? $field->name_idless : $field->name);
+                if ($len < strlen($idless ? $field->getNameWithoutId() : $field->getName())) {
+                    $len = strlen($idless ? $field->getNameWithoutId() : $field->getName());
                 }
             }
             return $len;
@@ -234,13 +345,12 @@
          *
          * @return int
          */
-        public function longest_index_length($idless=false) {
+        public function longestIndexLength($idless=false) {
             $len = 0;
-
-            foreach ($this->all_indexes as $index) {
+            foreach ($this->getAllIndexes() as $index) {
                 foreach ($index as $field) {
-                    if ($len < strlen($idless ? $field->name_idless : $field->name)) {
-                        $len = strlen($idless ? $field->name_idless : $field->name);
+                    if ($len < strlen($idless ? $field->getNameWithoutId() : $field->getName())) {
+                        $len = strlen($idless ? $field->getNameWithoutId() : $field->getName());
                     }
                 }
             }
@@ -253,9 +363,9 @@
          *
          * @return int
          */
-        public function longest_non_pk_index_combinations() {
+        public function longestNonPkIndexCombinations() {
             $len = 0;
-            foreach ($this->all_non_pk_index_combinations as $key => $fields) {
+            foreach ($this->getAllNonPkIndexCombinations() as $key => $fields) {
                 if ($len < strlen($key)) {
                     $len = strlen($key);
                 }
@@ -269,9 +379,9 @@
          *
          * @return int
          */
-        public function longest_index_combinations() {
+        public function longestIndexCombinations() {
             $len = 0;
-            foreach ($this->all_index_combinations as $key => $fields) {
+            foreach ($this->getAllIndexCombinations() as $key => $fields) {
                 if ($len < strlen($key)) {
                     $len = strlen($key);
                 }
@@ -284,7 +394,7 @@
          *
          * @return bool
          */
-        public function is_tiny() {
-            return Sql\Parser::is_table_tiny($this);
+        public function isTiny() {
+            return Sql\Parser::isTableTiny($this);
         }
     }

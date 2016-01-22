@@ -77,6 +77,16 @@
         protected $referer;
 
         /**
+         * @var string|null
+         */
+        protected $date;
+
+        /**
+         * @var string|null
+         */
+        protected $authorization;
+
+        /**
          * @var bool|null
          */
         protected $isHotlinked;
@@ -109,16 +119,18 @@
                 $acceptsEncoding = [];
             }
 
-            $this->accepts    = new Server\AcceptsEncoding($acceptsEncoding);
-            $this->query      = isset($this->vals['QUERY_STRING']) ? $this->vals['QUERY_STRING'] : null;
-            $this->uri        = isset($this->vals['REQUEST_URI']) ? $this->vals['REQUEST_URI'] : null;
-            $this->isHttps    = isset($this->vals['HTTPS']) && strtolower($this->vals['HTTPS']) === 'on';
-            $this->agent      = isset($this->vals['HTTP_USER_AGENT']) ? $this->vals['HTTP_USER_AGENT'] : null;
-            $this->ip         = isset($this->vals['REMOTE_ADDR']) ? $this->vals['REMOTE_ADDR'] : null;
-            $this->method     = isset($this->vals['REQUEST_METHOD']) ? $this->vals['REQUEST_METHOD'] : null;
-            $this->referer    = isset($this->vals['HTTP_REFERER']) ? $this->vals['HTTP_REFERER'] : null;
-            $this->scriptPath = isset($this->vals['SCRIPT_NAME']) ? dirname($this->vals['SCRIPT_NAME']) : null;
-            $this->url        = ($this->isHttps ? 'https://' : 'http://') . $this->domain . $this->uri . ($this->query ? "?{$this->query}" : '');
+            $this->accepts       = new Server\AcceptsEncoding($acceptsEncoding);
+            $this->query         = isset($this->vals['QUERY_STRING']) ? $this->vals['QUERY_STRING'] : null;
+            $this->uri           = isset($this->vals['REQUEST_URI']) ? $this->vals['REQUEST_URI'] : null;
+            $this->isHttps       = isset($this->vals['HTTPS']) && strtolower($this->vals['HTTPS']) === 'on';
+            $this->agent         = isset($this->vals['HTTP_USER_AGENT']) ? $this->vals['HTTP_USER_AGENT'] : null;
+            $this->ip            = isset($this->vals['REMOTE_ADDR']) ? $this->vals['REMOTE_ADDR'] : null;
+            $this->method        = isset($this->vals['REQUEST_METHOD']) ? $this->vals['REQUEST_METHOD'] : null;
+            $this->referer       = isset($this->vals['HTTP_REFERER']) ? $this->vals['HTTP_REFERER'] : null;
+            $this->date          = isset($this->vals['DATE']) ? $this->vals['DATE'] : null;
+            $this->authorization = isset($this->vals['HTTP_AUTHORIZATION']) ? $this->vals['HTTP_AUTHORIZATION'] : null;
+            $this->scriptPath    = isset($this->vals['SCRIPT_NAME']) ? dirname($this->vals['SCRIPT_NAME']) : null;
+            $this->url           = ($this->isHttps ? 'https://' : 'http://') . $this->domain . $this->uri . ($this->query ? "?{$this->query}" : '');
         }
 
         /**
@@ -210,6 +222,20 @@
          */
         public function getReferer() {
             return $this->referer;
+        }
+
+        /**
+         * @return string|null
+         */
+        public function getDate() {
+            return $this->date;
+        }
+
+        /**
+         * @return string|null
+         */
+        public function getAuthorization() {
+            return $this->authorization;
         }
 
         /**

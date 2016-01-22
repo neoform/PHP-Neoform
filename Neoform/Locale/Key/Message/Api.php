@@ -14,29 +14,29 @@
 
             self::_validate($input);
 
-            if ($input->is_valid()) {
+            if ($input->isValid()) {
 
                 try {
-                    $message = new Model(
-                        current(Entity::dao('Neoform\Locale\Key\Message')->by_locale_key(
-                            $input->locale->val(),
-                            $input->key_id->val()
+                    $message = Model::fromPk(
+                        current(Dao::get()->by_locale_key(
+                            $input->locale->getVal(),
+                            $input->key_id->getVal()
                         ))
                     );
-                    $locale_key_message = Entity::dao('Neoform\Locale\Key\Message')->update(
+                    $locale_key_message = Dao::get()->update(
                         $message,
                         array(
-                             'key_id' => $input->key_id->val(),
-                             'body'   => $input->body->val(),
-                             'locale' => $input->locale->val(),
+                             'key_id' => $input->key_id->getVal(),
+                             'body'   => $input->body->getVal(),
+                             'locale' => $input->locale->getVal(),
                         )
                     );
                 } catch (Exception $e) {
 
-                    $locale_key_message = Entity::dao('Neoform\Locale\Key\Message')->insert(array(
-                        'key_id' => $input->key_id->val(),
-                        'body'   => $input->body->val(),
-                        'locale' => $input->locale->val(),
+                    $locale_key_message = Dao::get()->insert(array(
+                        'key_id' => $input->key_id->getVal(),
+                        'body'   => $input->body->getVal(),
+                        'locale' => $input->locale->getVal(),
                     ));
 
                     $message = null;
@@ -50,27 +50,39 @@
                 return $message;
             }
 
-            throw $input->exception();
+            throw $input->getException();
         }
 
         public static function delete(Model $locale_key_message) {
-            return Entity::dao('Neoform\Locale\Key\Message')->delete($locale_key_message);
+            return Dao::get()->delete($locale_key_message);
         }
 
         public static function _validate(Input\Collection $input) {
             $locales = [];
-            foreach (Entity::dao('Neoform\Locale')->all() as $locale) {
+            foreach (Locale\Dao::get()->all() as $locale) {
                 $locales[] = $locale['iso2'];
             }
 
-            $input->body->cast('string')->length(1, 255);
-            $input->locale->cast('string')->tolower()->trim()->length(2)->in($locales);
-            $input->key_id->cast('integer')->digit(0, 4294967295)->callback(function($key_id) {
-                try {
-                    $key_id->data('model', new Locale\Key\Model($key_id->val()));
-                } catch (Locale\Key\Exception $e) {
-                    $key_id->errors('invalid');
-                }
-            });
+            // Body
+            $input->validate('body', 'string')
+                ->requireLength(1, 255);
+
+            // Locale
+            $input->validate('locale', 'string')
+                ->toLower()
+                ->trim()
+                ->requireLength(2, 2)
+                ->isIn($locales);
+
+            // Key ID
+            $input->validate('key_id', 'integer')
+                ->requireDigit(0, 4294967295)
+                ->callback(function(Input\Input $keyId) {
+                    try {
+                        $keyId->setData('model', Locale\Key\Model::fromPk($keyId->getVal()));
+                    } catch (Locale\Key\Exception $e) {
+                        $keyId->setErrors('invalid');
+                    }
+                });
         }
     }

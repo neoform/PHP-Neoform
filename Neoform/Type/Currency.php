@@ -2,7 +2,7 @@
 
     namespace Neoform\Type;
 
-    class currency {
+    class Currency {
 
         protected $int;
         protected $float;

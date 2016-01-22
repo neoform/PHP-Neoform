@@ -31,7 +31,7 @@
             }
 
             if ($inserts) {
-                Entity::dao('Neoform\User\Acl\Role')->insertMulti($inserts);
+                Dao::get()->insertMulti($inserts);
             }
 
             // Delete
@@ -43,7 +43,7 @@
             }
 
             if ($deletes) {
-                Entity::dao('Neoform\User\Acl\Role')->deleteMulti($deletes);
+                Dao::get()->deleteMulti($deletes);
             }
         }
 
@@ -52,7 +52,7 @@
          *
          * @param array $info
          *
-         * @return model
+         * @return Model
          * @throws Input\Exception
          */
         public static function insert(array $info) {
@@ -61,13 +61,15 @@
 
             self::_validate_insert($input);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\User\Acl\Role')->insert([
-                    'user_id'     => $input->user_id->val(),
-                    'acl_role_id' => $input->acl_role_id->val(),
-                ]);
+            if ($input->isValid()) {
+                return Dao::get()->insert(
+                    $input->getVals([
+                        'user_id',
+                        'acl_role_id',
+                    ])
+                );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         /**
@@ -86,7 +88,7 @@
                     'acl_role_id' => (int) $acl_role->id,
                 ];
             }
-            return Entity::dao('Neoform\User\Acl\Role')->deleteMulti($keys);
+            return Dao::get()->deleteMulti($keys);
         }
 
         /**
@@ -105,7 +107,7 @@
                     'user_id'     => (int) $user->id,
                 ];
             }
-            return Entity::dao('Neoform\User\Acl\Role')->deleteMulti($keys);
+            return Dao::get()->deleteMulti($keys);
         }
 
         /**
@@ -116,21 +118,25 @@
         public static function _validate_insert(Input\Collection $input) {
 
             // user_id
-            $input->user_id->cast('int')->digit(0, 4294967295)->callback(function($user_id) {
-                try {
-                    $user_id->data('model', new \Neoform\User\Model($user_id->val()));
-                } catch (\Neoform\User\Exception $e) {
-                    $user_id->errors($e->getMessage());
-                }
-            });
+            $input->validate('user_id', 'int')
+                ->requireDigit(0, 4294967295)
+                ->callback(function(Input\Input $user_id) {
+                    try {
+                        $user_id->setData('model', \Neoform\User\Model::fromPk($user_id->getVal()));
+                    } catch (\Neoform\User\Exception $e) {
+                        $user_id->setErrors($e->getMessage());
+                    }
+                });
 
             // acl_role_id
-            $input->acl_role_id->cast('int')->digit(0, 4294967295)->callback(function($acl_role_id) {
-                try {
-                    $acl_role_id->data('model', new \Neoform\Acl\Role\Model($acl_role_id->val()));
-                } catch (\Neoform\Acl\Role\Exception $e) {
-                    $acl_role_id->errors($e->getMessage());
-                }
-            });
+            $input->validate('acl_role_id', 'int')
+                ->requireDigit(0, 4294967295)
+                ->callback(function(Input\Input $acl_role_id) {
+                    try {
+                        $acl_role_id->setData('model', \Neoform\Acl\Role\Model::fromPk($acl_role_id->getVal()));
+                    } catch (\Neoform\Acl\Role\Exception $e) {
+                        $acl_role_id->setErrors($e->getMessage());
+                    }
+                });
         }
     }

@@ -10,21 +10,21 @@
     class Mysql extends Driver {
 
         public function __construct() {
-            $table_names = $this->get_all_tables();
+            $tableNames = $this->getAllTables();
 
             $tables_info = [];
-            foreach ($table_names as $table_name) {
-                $table_info = $this->parse($this->get_table_definition($table_name));
+            foreach ($tableNames as $tableName) {
+                $table_info = $this->parse($this->getTableDefinition($tableName));
                 $tables_info[$table_info['name']] = $table_info;
             }
 
-            foreach ($tables_info as $table_name => $table_info) {
+            foreach ($tables_info as $tableName => $table_info) {
                 $info = [
-                    'name'         => $table_name,
-                    'fields'       => [],
-                    'primary_keys' => [],
-                    'unique_keys'  => [],
-                    'indexes'      => [],
+                    'name'        => $tableName,
+                    'fields'      => [],
+                    'primaryKeys' => [],
+                    'uniqueKeys'  => [],
+                    'indexes'     => [],
                 ];
 
                 // Fields
@@ -33,51 +33,51 @@
                 }
 
                 // Primary Keys
-                foreach ($table_info['primary_keys'] as $field_name) {
-                    $info['primary_keys'][$field_name] = $info['fields'][$field_name]->name;
+                foreach ($table_info['primaryKeys'] as $field_name) {
+                    $info['primaryKeys'][$field_name] = $info['fields'][$field_name]->getName();
                 }
 
                 // Unique Keys
-                foreach ($table_info['unique_keys'] as $k => $key) {
+                foreach ($table_info['uniqueKeys'] as $k => $key) {
                     foreach ($key as $field_name) {
-                        $info['unique_keys'][$k][$field_name] = $info['fields'][$field_name]->name;
+                        $info['uniqueKeys'][$k][$field_name] = $info['fields'][$field_name]->getName();
                     }
                 }
 
                 // Indexes
                 foreach ($table_info['indexes'] as $k => $key) {
                     foreach ($key as $field_name) {
-                        $info['indexes'][$k][$field_name] = $info['fields'][$field_name]->name;
+                        $info['indexes'][$k][$field_name] = $info['fields'][$field_name]->getName();
                     }
                 }
 
-                $this->tables[$table_name] = new Table($info);
+                $this->tables[$tableName] = new Table($info);
             }
 
             // add each table to each of its fields, so a given field can know who it belongs to
             foreach ($this->tables as $table) {
-                foreach ($table->fields as $field) {
-                    $field->_set_table($table);
+                foreach ($table->getFields() as $field) {
+                    $field->_setTable($table);
                 }
             }
 
             // Foreign keys must be done after the table has been parsed (we reference the tables to each other)
-            foreach ($tables_info as $table_name => $table_info) {
+            foreach ($tables_info as $tableName => $table_info) {
 
-                $table = $this->tables[$table_name];
+                $table = $this->tables[$tableName];
 
-                foreach ($table_info['foreign_keys'] as $fk) {
+                foreach ($table_info['foreignKeys'] as $fk) {
 
-                    if (isset($this->tables[$fk['parent_table']])) {
-                        $table->fields[$fk['field']]->_set_referenced_field($this->tables[$fk['parent_table']]->fields[$fk['parent_field']]);
+                    if (isset($this->tables[$fk['parentTable']])) {
+                        $table->getFields()[$fk['field']]->_setReferencedField($this->tables[$fk['parentTable']]->getFields()[$fk['parentField']]);
                     } else {
-                        throw new \Exception("The parent table `{$fk['parent_table']}` was not identified during parsing, is it in this database/schema?");
+                        throw new \Exception("The parent table `{$fk['parentTable']}` was not identified during parsing, is it in this database/schema?");
                     }
                 }
             }
         }
 
-        protected function get_all_tables() {
+        protected function getAllTables() {
             $sql = Sql::instance()->prepare("
                 SHOW FULL TABLES WHERE Table_Type = 'BASE TABLE'
             ");
@@ -89,9 +89,9 @@
             return array_values($tables);
         }
 
-        protected function get_table_definition($table_name) {
+        protected function getTableDefinition($tableName) {
             $sql = Sql::instance()->prepare("
-                SHOW CREATE TABLE `{$table_name}`
+                SHOW CREATE TABLE `{$tableName}`
             ");
             $sql->execute();
             $describe = $sql->fetch();
@@ -110,7 +110,7 @@
             } else if ($create_view) {
                 // views are of no interest for this...
             } else {
-                throw new \Exception("Could not find table definition of `{$table_name}`");
+                throw new \Exception("Could not find table definition of `{$tableName}`");
             }
         }
 
@@ -121,12 +121,12 @@
             }
 
             $info = [
-                'name'         => trim(strtolower($match[1])),
-                'fields'       => [],
-                'primary_keys' => [],
-                'unique_keys'  => [],
-                'indexes'      => [],
-                'foreign_keys' => [],
+                'name'        => trim(strtolower($match[1])),
+                'fields'      => [],
+                'primaryKeys' => [],
+                'uniqueKeys'  => [],
+                'indexes'     => [],
+                'foreignKeys' => [],
             ];
 
             $rows = preg_split('`\s*\n\s*`is', trim($match[2]), -1, PREG_SPLIT_NO_EMPTY);
@@ -135,13 +135,13 @@
                 if (substr($row, 0, 1) === '`') {
                     $info['fields'][] = $this->field($row);
                 } else if (substr($row, 0, 11) === 'PRIMARY KEY') {
-                    $info['primary_keys'] = $this->primary_key($row);
+                    $info['primaryKeys'] = $this->primaryKey($row);
                 } else if (substr($row, 0, 10) === 'UNIQUE KEY') {
-                    $info['unique_keys'][] = $this->unique_key($row);
+                    $info['uniqueKeys'][] = $this->uniqueKey($row);
                 } else if (substr($row, 0, 3) === 'KEY') {
                     $info['indexes'][] = $this->key($row);
                 } else if (substr($row, 0, 10) === 'CONSTRAINT') {
-                    $info['foreign_keys'][] = $this->foreign_key($row);
+                    $info['foreignKeys'][] = $this->foreignKey($row);
                 }
             }
 
@@ -149,71 +149,71 @@
         }
 
         //`hash_method` tinyint(3) unsigned NOT NULL,
-        protected function field($field_info) {
-            if (preg_match('/^`([a-z0-9\_]+)`\s*([a-z0-9]+)(?:\(([^\)]*)\))?.*$/i', $field_info, $match)) {
+        protected function field($fieldInfo) {
+            if (preg_match('/^`([a-z0-9\_]+)`\s*([a-z0-9]+)(?:\(([^\)]*)\))?.*$/i', $fieldInfo, $match)) {
                 return [
-                    'name'                 => $match[1],
-                    'type'                 => strtolower($match[2]),
-                    'size'                 => isset($match[3]) ? strtolower($match[3]) : null,
-                    'unsigned'             => strpos($field_info, 'unsigned') !== false,
-                    'autoincrement'        => strpos($field_info, 'AUTO_INCREMENT') !== false,
-                    'autogenerated_insert' => self::autogenerated_on_insert(strtolower($match[2])) || strpos($field_info, 'AUTO_INCREMENT') !== false,
-                    'allow_null'           => strpos($field_info, 'NOT NULL') === false,
-                    'casting'              => self::field_casting(strtolower($match[2]), isset($match[3]) ? strtolower($match[3]) : null),
-                    'casting_extended'     => self::field_casting_extended(strtolower($match[2]), isset($match[3]) ? strtolower($match[3]) : null),
-                    'binary'               => self::field_is_binary(strtolower($match[2])),
-                    'bool_true'            => self::boolean_true_value(isset($match[3]) ? strtolower($match[3]) : null),
+                    'name'                => $match[1],
+                    'type'                => strtolower($match[2]),
+                    'size'                => isset($match[3]) ? strtolower($match[3]) : null,
+                    'unsigned'            => strpos($fieldInfo, 'unsigned') !== false,
+                    'autoincrement'       => strpos($fieldInfo, 'AUTO_INCREMENT') !== false,
+                    'autoGeneratedInsert' => self::autoGeneratedOnInsert(strtolower($match[2])) || strpos($fieldInfo, 'AUTO_INCREMENT') !== false,
+                    'allowNull'           => strpos($fieldInfo, 'NOT NULL') === false,
+                    'casting'             => self::fieldCasting(strtolower($match[2])),
+                    'castingExtended'     => self::fieldCastingExtended(strtolower($match[2]), isset($match[3]) ? strtolower($match[3]) : null),
+                    'binary'              => self::fieldIsBinary(strtolower($match[2])),
+                    'boolTrue'            => self::booleanTrueValue(isset($match[3]) ? strtolower($match[3]) : null),
                 ];
             }
 
-            throw new \Exception("Could not parse table definition, unexpected line \"" . $field_info . "\".");
+            throw new \Exception("Could not parse table definition, unexpected line \"{$fieldInfo}\".");
         }
 
         //PRIMARY KEY (`id`),
-        protected function primary_key($field_info) {
-            if (preg_match('/^PRIMARY\s+KEY\s+\(([a-z0-9\_,`\s]+)\).*$/i', $field_info, $match)) {
+        protected function primaryKey($fieldInfo) {
+            if (preg_match('/^PRIMARY\s+KEY\s+\(([a-z0-9\_,`\s]+)\).*$/i', $fieldInfo, $match)) {
                 if (preg_match_all('/`([a-z0-9\_]+)`/i', strtolower($match[1]), $keys)) {
                     return $keys[1];
                 }
             }
 
-            throw new \Exception("Could not parse table definition, unexpected line \"" . $field_info . "\".");
+            throw new \Exception("Could not parse table definition, unexpected line \"{$fieldInfo}\".");
         }
 
         //UNIQUE KEY `key_email` (`site_id`,`email`),
-        protected function unique_key($field_info) {
-            if (preg_match('/^UNIQUE\s+KEY\s+`([a-z0-9\_]+)`\s*\(([a-z0-9\_,`\s]*)\).*$/i', $field_info, $match)) {
+        protected function uniqueKey($fieldInfo) {
+            if (preg_match('/^UNIQUE\s+KEY\s+`([a-z0-9\_]+)`\s*\(([a-z0-9\_,`\s]*)\).*$/i', $fieldInfo, $match)) {
                 if (preg_match_all('/`([a-z0-9\_]+)`/i', strtolower($match[2]), $keys)) {
                     return $keys[1];
                 }
             }
 
-            throw new \Exception("Could not parse table definition, unexpected line \"" . $field_info . "\".");
+            throw new \Exception("Could not parse table definition, unexpected line \"" . $fieldInfo . "\".");
         }
 
         //KEY `hash_method` (`hash_method`),
-        protected function key($field_info) {
-            if (preg_match('/^KEY\s+`([a-z0-9\_]+)`\s*\(([a-z0-9\_,`\s\(\)]*)\).*$/i', $field_info, $match)) {
+        protected function key($fieldInfo) {
+            if (preg_match('/^KEY\s+`([a-z0-9\_]+)`\s*\(([a-z0-9\_,`\s\(\)]*)\).*$/i', $fieldInfo, $match)) {
                 if (preg_match_all('/`([a-z0-9\_]+)`/i', strtolower($match[2]), $keys)) {
                     return $keys[1];
                 }
             }
 
-            throw new \Exception("Could not parse table definition, unexpected line \"" . $field_info . "\".");
+            throw new \Exception("Could not parse table definition, unexpected line \"" . $fieldInfo . "\".");
         }
 
         //CONSTRAINT `auth_user_ibfk_hash` FOREIGN KEY (`hash_method`) REFERENCES `auth_user_map_hashmethod` (`id`) ON UPDATE CASCADE,
-        protected function foreign_key($field_info) {
-            if (preg_match('/^CONSTRAINT\s+`([a-z0-9\_]+)`\s*FOREIGN\s+KEY\s+\(`([a-z0-9\_]+)`\)\s+REFERENCES\s+`([a-z0-9\_]+)`\s+\(`([a-z0-9\_]+)`\).*?$/i', $field_info, $match)) {
+        protected function foreignKey($fieldInfo) {
+            if (preg_match('/^CONSTRAINT\s+`([a-z0-9\_]+)`\s*FOREIGN\s+KEY\s+\(`([a-z0-9\_]+)`\)\s+REFERENCES\s+`([a-z0-9\_]+)`\s+\(`([a-z0-9\_]+)`\).*?$/i', $fieldInfo, $match)) {
                 return [
-                    'name'         => strtolower($match[1]),
-                    'field'        => strtolower($match[2]),
-                    'parent_table' => strtolower($match[3]),
-                    'parent_field' => strtolower($match[4]),
+                    'name'        => strtolower($match[1]),
+                    'field'       => strtolower($match[2]),
+                    'parentTable' => strtolower($match[3]),
+                    'parentField' => strtolower($match[4]),
                 ];
             }
 
-            throw new \Exception("Could not parse table definition, unexpected line \"" . $field_info . "\". Note: composite Foreign Keys are not supported.");
+            throw new \Exception("Could not parse table definition, unexpected line \"" . $fieldInfo . "\". Note: composite Foreign Keys are not supported.");
         }
 
         /**
@@ -224,7 +224,7 @@
          *
          * @return string
          */
-        protected static function field_casting_extended($type, $details=null) {
+        protected static function fieldCastingExtended($type, $details=null) {
             switch (trim(strtolower($type))) {
                 case 'bit':
                 case 'tinyint':
@@ -270,7 +270,7 @@
          *
          * @return string
          */
-        protected static function field_casting($type) {
+        protected static function fieldCasting($type) {
             switch (trim(strtolower($type))) {
                 case 'bit':
                 case 'tinyint':
@@ -306,7 +306,7 @@
          *
          * @return bool
          */
-        public static function autogenerated_on_insert($type) {
+        public static function autoGeneratedOnInsert($type) {
             switch (trim(strtolower($type))) {
                 case 'timestamp':
                     return true;
@@ -315,7 +315,7 @@
             return false;
         }
 
-        public function boolean_true_value($details) {
+        public function booleanTrueValue($details) {
             if (array_key_exists(strtolower($details), self::$enum_values)) {
                 return self::$enum_values[strtolower($details)];
             }
@@ -328,7 +328,7 @@
          *
          * @return bool
          */
-        protected static function field_is_binary($type) {
+        protected static function fieldIsBinary($type) {
             return in_array(
                 trim(strtolower($type)),
                 [
@@ -349,59 +349,59 @@
          *
          * @return string
          */
-        public static function api_type_validation(Field $field) {
+        public static function apiTypeValidation(Field $field) {
             //max sizes
-            switch ((string) $field->type) {
+            switch ((string) $field->getType()) {
                 case 'bit':
-                    return "->digit(0, 1)";
+                    return "->requireDigit(0, 1)";
 
                 case 'tinyint':
-                    return $field->is_unsigned() ? "->digit(0, 255)" : "->digit(-128, 127)";
+                    return $field->isUnsigned() ? "->requireDigit(0, 255)" : "->requireDigit(-128, 127)";
 
                 case 'smallint':
-                    return $field->is_unsigned() ? "->digit(0, 65535)" : "->digit(-32768, 32767)";
+                    return $field->isUnsigned() ? "->requireDigit(0, 65535)" : "->requireDigit(-32768, 32767)";
 
                 case 'mediumint':
-                    return $field->is_unsigned() ? "->digit(0, 16777215)" : "->digit(-8388608, 8388607)";
+                    return $field->isUnsigned() ? "->requireDigit(0, 16777215)" : "->requireDigit(-8388608, 8388607)";
 
                 case 'int':
                 case 'integer':
-                    return $field->is_unsigned() ? "->digit(0, 4294967295)" : "->digit(-2147483648, 2147483647)";
+                    return $field->isUnsigned() ? "->requireDigit(0, 4294967295)" : "->requireDigit(-2147483648, 2147483647)";
 
                 case 'bigint':
-                    return $field->is_unsigned() ? "->digit(0, 9223372036854775807)" : "->digit(-9223372036854775808, 9223372036854775807)";
+                    return $field->isUnsigned() ? "->requireDigit(0, 9223372036854775807)" : "->requireDigit(-9223372036854775808, 9223372036854775807)";
 
                 case 'varchar':
                 case 'char':
                 case 'varbinary':
                 case 'binary':
-                    return "->length(1, {$field->size})";
+                    return "->requireLength(1, {$field->getSize()})";
 
                 case 'tinytext':
                 case 'tinyblob':
-                    return "->length(1, 255)";
+                    return "->requireLength(1, 255)";
 
                 case 'text':
                 case 'blob':
-                    return "->length(1, 65535)";
+                    return "->requireLength(1, 65535)";
 
                 case 'mediumtext':
                 case 'mediumblob':
-                    return "->length(1, 16777215)";
+                    return "->requireLength(1, 16777215)";
 
                 case 'longtext':
                 case 'longblob':
-                    return "->length(1, 4294967295)";
+                    return "->requireLength(1, 4294967295)";
 
                 case 'timestamp':
                 case 'datetime':
-                    return "->is_datetime()";
+                    return "->isDateTime()";
 
                 case 'date':
-                    return "->is_date()";
+                    return "->isDate()";
 
                 case 'enum':
-                    return "->in([{$field->var_info}])";
+                    return "->isIn([{$field->getVarInfo()}])";
             }
         }
 
@@ -412,9 +412,9 @@
          *
          * @return bool
          */
-        public static function is_table_tiny(Table $table) {
-            if ($table->primary_key) {
-                switch ((string) $table->primary_key->type) {
+        public static function isTableTiny(Table $table) {
+            if ($table->getPrimaryKey()) {
+                switch ((string) $table->getPrimaryKey()->getType()) {
                     case 'tinyint':
                         return true;
                 }
@@ -428,8 +428,8 @@
          *
          * @return bool
          */
-        public static function is_field_lookupable(Field $field) {
-            switch ((string) $field->type) {
+        public static function isFieldLookupable(Field $field) {
+            switch ((string) $field->getType()) {
                 case 'timestamp':
                 case 'datetime':
                     return false;

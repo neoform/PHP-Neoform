@@ -12,7 +12,7 @@
      *
      * @package Neoform\Request
      */
-    class Model {
+    class Model implements Request {
 
         /**
          * @var array
@@ -40,6 +40,11 @@
         protected $post;
 
         /**
+         * @var Parameters\Payload
+         */
+        protected $payload;
+
+        /**
          * @var Parameters\Files
          */
         protected $files;
@@ -48,6 +53,11 @@
          * @var Parameters\Server
          */
         protected $server;
+
+        /**
+         * @var Parameters\HttpHeaders
+         */
+        protected $httpHeaders;
 
         /**
          * @var Parameters\Cookies
@@ -60,23 +70,16 @@
         protected $session;
 
         /**
-         * @var Parameters\Slugs
-         */
-        protected $nonControllerSlugs;
-
-        /**
-         * @var Parameters\Slugs
-         */
-        protected $controllerSlugs;
-
-        /**
-         * @param BaseUrl $baseUrl
-         * @param Path $path
-         * @param Parameters\Get $get
-         * @param Parameters\Post $post
-         * @param Parameters\Files $files
-         * @param Parameters\Server $server
-         * @param Parameters\Cookies $cookies
+         * @param BaseUrl                 $baseUrl
+         * @param Path                    $path
+         * @param Parameters\Get          $get
+         * @param Parameters\Post         $post
+         * @param Parameters\Files        $files
+         * @param Parameters\Server       $server
+         * @param Parameters\Cookies      $cookies
+         * @param Session\Model           $session
+         * @param Parameters\Payload|null $payload
+         * @param Parameters\HttpHeaders  $httpHeaders
          */
         public function __construct(
             BaseUrl $baseUrl,
@@ -85,23 +88,21 @@
             Parameters\Post $post,
             Parameters\Files $files,
             Parameters\Server $server,
-            Parameters\Cookies $cookies
+            Parameters\Cookies $cookies,
+            Session\Model $session=null,
+            Parameters\Payload $payload=null,
+            Parameters\HttpHeaders $httpHeaders=null
         ) {
-            $this->baseUrl = $baseUrl;
-            $this->path    = $path;
-            $this->get     = $get;
-            $this->post    = $post;
-            $this->files   = $files;
-            $this->server  = $server;
-            $this->cookies = $cookies;
-
-            // Run this last
-            $this->session = new Session\Model(
-                $this,
-                Neoform\Http\Config::get(),
-                Neoform\Auth\Config::get(),
-                Neoform\Session\Config::get()
-            );
+            $this->baseUrl     = $baseUrl;
+            $this->path        = $path;
+            $this->get         = $get;
+            $this->post        = $post;
+            $this->files       = $files;
+            $this->server      = $server;
+            $this->cookies     = $cookies;
+            $this->session     = $session;
+            $this->payload     = $payload;
+            $this->httpHeaders = $httpHeaders;
         }
 
         /**
@@ -133,6 +134,13 @@
         }
 
         /**
+         * @return Parameters\Payload
+         */
+        public function getPayload() {
+            return $this->payload;
+        }
+
+        /**
          * @return Parameters\Files
          */
         public function getFiles() {
@@ -144,6 +152,13 @@
          */
         public function getServer() {
             return $this->server;
+        }
+
+        /**
+         * @return Parameters\Server
+         */
+        public function getHttpHeaders() {
+            return $this->httpHeaders;
         }
 
         /**
@@ -184,7 +199,7 @@
          * @return Parameters\Slugs
          */
         public function getControllerSlugs() {
-            return $this->controllerSlugs;
+            return $this->path->getControllerSlugs();
         }
 
         /**
@@ -193,18 +208,6 @@
          * @return Parameters\Slugs
          */
         public function getNonControllerSlugs() {
-            return $this->nonControllerSlugs;
-        }
-
-        /**
-         * Once the router has determined some things about the request, apply that info to the request
-         *
-         * eg, what the controller slugs are
-         *
-         * @param Router\Model $router
-         */
-        public function applyRouter(Router\Model $router) {
-            $this->nonControllerSlugs = $router->getNonControllerSlugs();
-            $this->controllerSlugs    = $router->getControllerSlugs();
+            return $this->path->getNonControllerSlugs();
         }
     }

@@ -12,6 +12,11 @@
         protected $configValues;
 
         /**
+         * @return Model
+         */
+        abstract public function build();
+
+        /**
          * Get the default config values
          *
          * @return array

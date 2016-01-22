@@ -2,95 +2,78 @@
 
     namespace Neoform\Entity\Record;
 
-    use ArrayObject;
     use Neoform\Entity\Exception;
-    use Neoform\Entity;
+    use Neoform;
 
     /**
      * Record Collection
      */
-    class Collection extends ArrayObject {
-
-        /**
-         * @var array locally cached data
-         */
-        protected $_vars = []; //caching
-
-        /**
-         * Construct
-         *
-         * @param array       $pks       Primary keys
-         * @param array|model $infos     Preloaded data array
-         * @param string|null $map_field Assign collection keys based on this field (taken from the models)
-         */
-        public function __construct(array $pks=null, array $infos=null, $map_field=null) {
-
-            if ($pks !== null) {
-                $infos = Entity::dao(static::ENTITY_NAME)->records($pks);
-            }
-
-            if ($infos !== null && $infos) {
-                $model = '\\' . static::ENTITY_NAME . '\\Model';
-                foreach ($infos as $key => $info) {
-                    try {
-                        if (is_array($info)) {
-                            $this[$map_field !== null ? $info[$map_field] : $key] = new $model(null, $info);
-                        } else if ($info instanceof $model) {
-                            $this[$map_field !== null ? $info->$map_field : $key] = $info;
-                        }
-                    } catch (Exception $e) {
-
-                    }
-                }
-            }
-        }
+    abstract class Collection
+        extends Neoform\Entity\Collection
+        implements Neoform\Entity\Record\Entity {
 
         /**
          * Get a collection by a given field or fields
-         * folder_collection::by_parent(5) will return a folder collection.
-         * this is just a shortcut for new folder_collection(Entity::dao('Neoform\Folder')->by_parent(5));
+         * folderCollection::byParent(5) will return a folder collection.
+         * this is just a shortcut for folderCollection::fromPks(Dao::dao('Neoform\Folder')->byParent(5));
          *
          * @param string $name
          * @param array  $args
          *
-         * @return collection
+         * @return Collection
          */
-        public static function __callstatic($name, array $args) {
-            $collection = '\\' . static::ENTITY_NAME . '\\Collection';
+        public static function __callStatic($name, array $args) {
+            $collectionClassName = '\\' . static::getNamespace() . '\\Collection';
             if ($name === 'all' || $name === 'records') {
-                return new $collection(null, call_user_func_array([Entity::dao(static::ENTITY_NAME), $name], $args));
-            } else {
-                return new $collection(call_user_func_array([Entity::dao(static::ENTITY_NAME), $name], $args));
+                return $collectionClassName::fromArrays(
+                    call_user_func_array(
+                        [
+                            Dao::dao(static::getNamespace()),
+                            $name,
+                        ],
+                        $args
+                    )
+                );
             }
+
+            return $collectionClassName::fromPks(
+                call_user_func_array(
+                    [
+                        Dao::dao(static::getNamespace()),
+                        $name,
+                    ],
+                    $args
+                )
+            );
         }
 
         /**
          * Create a collection an array of PKs
          *
-         * @param array|null  $pks
+         * @param array       $pks
          * @param string|null $mapField
          *
          * @return static
          */
-        public static function fromPks(array $pks=null, $mapField=null) {
+        public static function fromPks(array $pks, $mapField=null) {
 
             if (! $pks) {
                 return new static;
             }
 
-            $infos = Entity::dao(static::ENTITY_NAME)->records($pks);
+            $infos = Dao::dao(static::getNamespace())->records($pks);
 
             if (! $infos) {
                 return new static;
             }
 
             $collection     = new static;
-            $modelClassName = '\\' . static::ENTITY_NAME . '\\Model';
+            $modelClassName = '\\' . static::getNamespace() . '\\Model';
 
             foreach ($infos as $key => $info) {
                 try {
                     if (is_array($info)) {
-                        $collection[$mapField !== null ? $info[$mapField] : $key] = new $modelClassName(null, $info);
+                        $collection->models[$mapField !== null ? $info[$mapField] : $key] = $modelClassName::fromArray($info);
                     }
                 } catch (Exception $e) {
 
@@ -101,26 +84,29 @@
         }
 
         /**
-         * Create a collection from an array of infos
+         * Create a collection from an array of info arrays
          *
-         * @param array|null $infos
+         * @param array       $arrs
          * @param string|null $mapField
          *
          * @return static
+         * @throws \Exception
          */
-        public static function fromArrays(array $infos=null, $mapField=null) {
+        public static function fromArrays(array $arrs, $mapField=null) {
 
-            if (! $infos) {
+            if (! $arrs) {
                 return new static;
             }
 
             $collection     = new static;
-            $modelClassName = '\\' . static::ENTITY_NAME . '\\Model';
+            $modelClassName = '\\' . static::getNamespace() . '\\Model';
 
-            foreach ($infos as $key => $info) {
-                if (is_array($info)) {
-                    $collection[$mapField !== null ? $info[$mapField] : $key] = new $modelClassName(null, $info);
+            foreach ($arrs as $key => $arr) {
+                if (! is_array($arr)) {
+                    throw new \Exception('fromArrays() only accepts arrays');
                 }
+
+                $collection->models[$mapField !== null ? $arr[$mapField] : $key] = $modelClassName::fromArray($arr);
             }
 
             return $collection;
@@ -129,24 +115,27 @@
         /**
          * Create a collection from an array of models
          *
-         * @param array|null  $models
+         * @param Model[]     $models
          * @param string|null $mapField
          *
          * @return static
+         * @throws \Exception
          */
-        public static function fromModels(array $models=null, $mapField=null) {
+        public static function fromModels(array $models, $mapField=null) {
 
             if (! $models) {
                 return new static;
             }
 
             $collection     = new static;
-            $modelClassName = '\\' . static::ENTITY_NAME . '\\Model';
+            $modelClassName = '\\' . static::getNamespace() . '\\Model';
 
             foreach ($models as $key => $model) {
-                if ($model instanceof $modelClassName) {
-                    $collection[$mapField !== null ? $model->$mapField : $key] = $model;
+                if (! ($model instanceof $modelClassName)) {
+                    throw new \Exception('fromArrays() only accepts arrays');
                 }
+
+                $collection->models[$mapField !== null ? $model->get($mapField) : $key] = $model;
             }
 
             return $collection;
@@ -155,42 +144,26 @@
         /**
          * Add a model to the collection
          *
-         * @param array|model $info
-         * @param string|null $map_field Assign collection keys based on this field (taken from the models)
+         * @param array|Model|string|int $info
+         * @param string|null $mapField Assign collection keys based on this field (taken from the models)
          *
-         * @return collection $this
+         * @return $this
          */
-        public function add($info, $map_field=null) {
-            $model = '\\' . static::ENTITY_NAME . '\\Model';
-            if ($info instanceof $model) {
-                $v = $info;
+        public function add($info, $mapField=null) {
+            $modelClassName = '\\' . static::getNamespace() . '\\Model';
+            if ($info instanceof $modelClassName) {
+                $model = $info;
             } else if (is_array($info)) {
-                $v = new $model(null, $info);
+                $model = $modelClassName::fromArray($info);
             } else {
-                $v = new $model($info);
+                $model = $modelClassName::fromPk($info);
             }
 
-            if ($map_field !== null) {
-                $this[$v->$map_field] = $v;
+            if ($mapField !== null) {
+                $this->models[$model->get($mapField)] = $model;
             } else {
-                $this[] = $v;
+                $this->models[] = $model;
             }
-
-            //reset
-            $this->_vars = [];
-
-            return $this;
-        }
-
-        /**
-         * Remove a model from the collection
-         *
-         * @param mixed $k Key
-         *
-         * @return collection $this
-         */
-        public function del($k) {
-            unset($this[$k]);
 
             //reset
             $this->_vars = [];
@@ -202,24 +175,24 @@
          * Remap the collection according to a certain field - this makes the key of the collection be that field
          *
          * @param string $field
-         * @param bool   $ignore_null
+         * @param bool   $ignoreNull
          *
-         * @return collection $this
+         * @return Collection $this
          */
-        public function remap($field, $ignore_null=false) {
+        public function remap($field, $ignoreNull=false) {
             $new = [];
-            if ($ignore_null) {
-                foreach ($this as $record) {
-                    if ($record->$field !== null) {
-                        $new[$record->$field] = $record;
+            if ($ignoreNull) {
+                foreach ($this->models as $model) {
+                    if ($model->get($field) !== null) {
+                        $new[$model->get($field)] = $model;
                     }
                 }
             } else {
-                foreach ($this as $record) {
-                    $new[$record->$field] = $record;
+                foreach ($this->models as $model) {
+                    $new[$model->get($field)] = $model;
                 }
             }
-            $this->exchangeArray($new);
+            $this->models = $new;
             return $this;
         }
 
@@ -233,8 +206,8 @@
          */
         public function field($field, $key=null) {
             $arr = [];
-            foreach ($this as $k => $record) {
-                $arr[$key ? $record->$key : $k] = $record->$field;
+            foreach ($this->models as $k => $model) {
+                $arr[$key ? $model->get($key) : $k] = $model->get($field);
             }
             return $arr;
         }
@@ -248,74 +221,32 @@
          */
         public function export(array $fields=null) {
             $arr = [];
-            foreach ($this as $k => $v) {
-                $arr[$k] = $v->export($fields);
+            foreach ($this->models as $k => $model) {
+                $arr[$k] = $model->export($fields);
             }
             return $arr;
-        }
-
-        /**
-         * Sort the collection based on $f (function) or $f field name
-         *
-         * @param callable|string $f
-         * @param string          $order
-         *
-         * @return collection
-         */
-        public function sort($f, $order='asc') {
-            if (is_callable($f)) {
-                $this->uasort(function ($a, $b) use ($f, $order) {
-                    $a = $f($a);
-                    $b = $f($b);
-
-                    if ($a === $b) {
-                        return 0;
-                    }
-
-                    if ($order === 'asc') {
-                        return ($a < $b) ? -1 : 1;
-                    } else {
-                        return ($a > $b) ? -1 : 1;
-                    }
-                });
-            } else {
-                $this->uasort(function ($a, $b) use ($f, $order) {
-                    $a_field = $a->$f;
-                    $b_field = $b->$f;
-
-                    if ($a_field === $b_field) {
-                        return 0;
-                    }
-
-                    if ($order === 'asc') {
-                        return ($a_field < $b_field) ? -1 : 1;
-                    } else {
-                        return ($a_field > $b_field) ? -1 : 1;
-                    }
-                });
-            }
-            return $this;
         }
 
         /**
          * Get many groups of records all in one shot. This greatly reduces the number of requests to the cache service,
          * which can greatly speed up an application.
          *
-         * @param string       $_var_key    Key (in $model::$_var) that stores preloaded model data
+         * @param string       $varKey    Key (in $model::$_var) that stores preloaded model data
          * @param string       $entity      eg, user
          * @param string       $by_function eg, by_comments
-         * @param array|null   $order_by    array of field names (as the key) and sort direction (Entity\Record\Dao::SORT_ASC, Entity\Record\Dao::SORT_DESC)
+         * @param array|null   $order_by    array of field names (as the key) and sort direction (Neoform\Entity\Record\Dao::SORT_ASC, Neoform\Entity\Record\Dao::SORT_DESC)
          * @param integer|null $offset      get PKs starting at this offset
          * @param integer|null $limit       max number of PKs to return
          *
-         * @return collection
+         * @return Collection
+         * @deprecated
          */
-        protected function _preload_one_to_many($_var_key, $entity, $by_function, array $order_by=null, $offset=null,
+        protected function _preload_one_to_many($varKey, $entity, $by_function, array $order_by=null, $offset=null,
                                                 $limit=null) {
 
             $collection_name  = "\\{$entity}\\Collection";
             $model_name       = "\\{$entity}\\Model";
-            $dao              = Entity::dao($entity);
+            $dao              = Dao::dao($entity);
             $by_function     .= '_multi';
 
             // Get the ids for those
@@ -330,7 +261,7 @@
             }
 
             // get all the records all in one shot
-            $collection = new $collection_name(null, $dao->records($pks));
+            $collection = $collection_name::fromPks($pks);
 
             // sort flat array back into grouped data again
             foreach ($pks_groups as & $pks_group) {
@@ -345,19 +276,20 @@
             }
 
             // load the child models into the $_var of each model in this collection
-            foreach ($this as $key => $model) {
+            foreach ($this->models as $key => $model) {
                 if (isset($pks_groups[$key])) {
-                    $model->_set_var(
+                    $model->_preloadCache(
                         $model_name::_limitVarKey(
-                            $_var_key,
+                            $varKey,
                             $order_by,
                             $offset,
                             $limit
                         ),
-                        new $collection_name(null, $pks_groups[$key])
+                        $collection_name::fromModels($pks_groups[$key])
                     );
                 }
             }
+
             return $collection;
         }
 
@@ -365,24 +297,90 @@
          * Get many groups of records all in one shot. This greatly reduces the number of requests to the cache service,
          * which can greatly speed up an application.
          *
-         * @param string       $_var_key       Key (in $model::$_var) that stores preloaded model data
+         * @param string       $varKey    Key (in $model::$_var) that stores preloaded model data
+         * @param string       $entity     eg, user
+         * @param string       $byFunction eg, by_comments
+         * @param array|null   $orderBy    array of field names (as the key) and sort direction (Neoform\Entity\Record\Dao::SORT_ASC, Neoform\Entity\Record\Dao::SORT_DESC)
+         * @param integer|null $offset     get PKs starting at this offset
+         * @param integer|null $limit      max number of PKs to return
+         *
+         * @return Collection
+         */
+        protected function _preloadOneToMany($varKey, $entity, $byFunction, array $orderBy=null, $offset=null,
+                                                $limit=null) {
+
+            $collectionName = "\\{$entity}\\Collection";
+            $modelName      = "\\{$entity}\\Model";
+            $dao            = Dao::dao($entity);
+            $byFunction    .= 'Multi';
+
+            // Get the ids for those
+            $pksGroups = $dao->{$byFunction}($this, $orderBy, $offset, $limit);
+            $pks       = [];
+
+            // make a flat array of all keys, removing dupes along the way.
+            foreach ($pksGroups as $pksGroup) {
+                foreach ($pksGroup as $pk) {
+                    $pks[$pk] = $pk;
+                }
+            }
+
+            // get all the records all in one shot
+            $collection = $collectionName::fromArrays($dao->records($pks));
+
+            // sort flat array back into grouped data again
+            foreach ($pksGroups as & $pksGroup) {
+                foreach ($pksGroup as $k => $pk) {
+                    if (isset($collection[$pk])) {
+                        $pksGroup[$k] = $collection[$pk];
+                    } else {
+                        // this shouldn't actually happen... if it did, something went wrong in the DAO
+                        unset($pksGroup[$k]);
+                    }
+                }
+            }
+
+            // load the child models into the $_var of each model in this collection
+            foreach ($this->models as $key => $model) {
+                if (isset($pksGroups[$key])) {
+                    $model->_preloadCache(
+                        $modelName::_limitVarKey(
+                            $varKey,
+                            $orderBy,
+                            $offset,
+                            $limit
+                        ),
+                        $collectionName::fromModels($pksGroups[$key])
+                    );
+                }
+            }
+
+            return $collection;
+        }
+
+        /**
+         * Get many groups of records all in one shot. This greatly reduces the number of requests to the cache service,
+         * which can greatly speed up an application.
+         *
+         * @param string       $varKey       Key (in $model::$_var) that stores preloaded model data
          * @param string       $entity         eg, user_permission
          * @param string       $by_function    eg, by_user
          * @param string       $foreign_type   eg, permission
-         * @param array|null   $order_by       array of field names (as the key) and sort direction (Entity\Record\Dao::SORT_ASC, Entity\Record\Dao::SORT_DESC)
+         * @param array|null   $orderBy       array of field names (as the key) and sort direction (Neoform\Entity\Record\Dao::SORT_ASC, Neoform\Entity\Record\Dao::SORT_DESC)
          * @param integer|null $offset         get PKs starting at this offset
          * @param integer|null $limit          max number of PKs to return
          *
-         * @return collection
+         * @return Collection
+         * @deprecated
          */
-        protected function _preload_many_to_many($_var_key, $entity, $by_function, $foreign_type,
-                                                 array $order_by=null, $offset=null, $limit=null) {
+        protected function _preload_many_to_many($varKey, $entity, $by_function, $foreign_type,
+                                                 array $orderBy=null, $offset=null, $limit=null) {
 
-            $by_function             .= '_multi';
+            $by_function              .= '_multi';
             $foreign_collection_name  = "\\{$foreign_type}\\Collection";
 
             // Get the ids for those
-            $pks_groups = Entity::dao($entity)->$by_function($this, $order_by, $offset, $limit);
+            $pks_groups = Dao::dao($entity)->$by_function($this, $orderBy, $offset, $limit);
             $pks        = [];
 
             // make a flat array of all keys, removing dupes along the way.
@@ -393,7 +391,7 @@
             }
 
             // get all the records all in one shot
-            $collection = new $foreign_collection_name(null, Entity::dao($foreign_type)->records($pks));
+            $collection = $foreign_collection_name::fromPks($pks);
 
             // sort flat array back into grouped data again
             foreach ($pks_groups as & $pks_group) {
@@ -407,14 +405,15 @@
                 }
             }
 
-            foreach ($this as $key => $model) {
+            foreach ($this->models as $key => $model) {
                 if (isset($pks_groups[$key])) {
-                    $model->_set_var(
-                        $_var_key,
-                        new $foreign_collection_name(null, $pks_groups[$key])
+                    $model->_preloadCache(
+                        $varKey,
+                        $foreign_collection_name::fromModels($pks_groups[$key])
                     );
                 }
             }
+
             return $collection;
         }
 
@@ -422,66 +421,199 @@
          * Get many groups of records all in one shot. This greatly reduces the number of requests to the cache service,
          * which can greatly speed up an application.
          *
-         * @param string $_var_key Key (in $model::$_var) that stores preloaded model data
-         * @param string $entity   Name of the entity
-         * @param string $field    Corresponding field for that entity
+         * @param string     $varKey      Key (in $model::$_var) that stores preloaded model data
+         * @param string     $entity      eg, user_permission
+         * @param string     $byFunction  eg, by_user
+         * @param string     $foreignType eg, permission
+         * @param array|null $orderBy     array of field names (as the key) and sort direction (Neoform\Entity\Record\Dao::SORT_ASC, Neoform\Entity\Record\Dao::SORT_DESC)
+         * @param int|null   $offset      get PKs starting at this offset
+         * @param int|null   $limit       max number of PKs to return
          *
-         * @return collection
+         * @return Collection
          */
-        protected function _preload_one_to_one($_var_key, $entity, $field) {
+        protected function _preloadManyToMany($varKey, $entity, $byFunction, $foreignType,
+                                                 array $orderBy=null, $offset=null, $limit=null) {
 
-            $model_name      = "\\{$entity}\\Model";
-            $collection_name = "\\{$entity}\\Collection";
+            $byFunction            .= 'Multi';
+            $foreignCollectionName  = "\\{$foreignType}\\Collection";
 
-            $pks = [];
-            // we don't want to look up duplicates, just unique values
-            foreach ($this as $model) {
-                $pks[$model->$field] = $model->$field;
+            // Get the ids for those
+            $pksGroups = Dao::dao($entity)->{$byFunction}($this, $orderBy, $offset, $limit);
+            $pks       = [];
+
+            // make a flat array of all keys, removing dupes along the way.
+            foreach ($pksGroups as $pksGroup) {
+                foreach ($pksGroup as $pk) {
+                    $pks[$pk] = $pk;
+                }
             }
-            $infos  = Entity::dao($entity)->records($pks);
-            $models = [];
 
-            foreach ($this as $key => $model) {
-                $k = $model->$field;
-                if (isset($infos[$k])) {
-                    $model->_set_var(
-                        $_var_key,
-                        $models[$key] = new $model_name(null, $infos[$k])
+            // get all the records all in one shot
+            $collection = $foreignCollectionName::fromPks($pks);
+
+            // sort flat array back into grouped data again
+            foreach ($pksGroups as & $pksGroup) {
+                foreach ($pksGroup as $k => $pk) {
+                    if (isset($collection[$pk])) {
+                        $pks_group[$k] = $collection[$pk];
+                    } else {
+                        // this shouldn't actually happen... if it did, something went wrong in the DAO
+                        unset($pksGroup[$k]);
+                    }
+                }
+            }
+
+            foreach ($this->models as $key => $model) {
+                if (isset($pksGroups[$key])) {
+                    $model->_preloadCache(
+                        $varKey,
+                        $foreignCollectionName::fromModels($pksGroups[$key])
                     );
                 }
             }
 
-            return new $collection_name(null, $models);
+            return $collection;
+        }
+
+        /**
+         * Get many groups of records all in one shot. This greatly reduces the number of requests to the cache service,
+         * which can greatly speed up an application.
+         *
+         * @param string $varKey Key (in $model::$_var) that stores preloaded model data
+         * @param string $entity   Name of the entity
+         * @param string $field    Corresponding field for that entity
+         *
+         * @return Collection
+         * @deprecated
+         */
+        protected function _preload_one_to_one($varKey, $entity, $field) {
+
+            $modelName      = "\\{$entity}\\Model";
+            $collectionName = "\\{$entity}\\Collection";
+
+            $pks = [];
+            // we don't want to look up duplicates, just unique values
+            foreach ($this->models as $model) {
+                $pks[$model->get($field)] = $model->get($field);
+            }
+            $infos  = Dao::dao($entity)->records($pks);
+            $models = [];
+
+            foreach ($this->models as $key => $model) {
+                $k = $model->get($field);
+                if (isset($infos[$k])) {
+                    $model->_preloadCache(
+                        $varKey,
+                        $models[$key] = $modelName::fromArray($infos[$k])
+                    );
+                }
+            }
+
+            return $collectionName::fromModels($models);
+        }
+
+        /**
+         * Get many groups of records all in one shot. This greatly reduces the number of requests to the cache service,
+         * which can greatly speed up an application.
+         *
+         * @param string $varKey                  Key (in $model::$_var) that stores preloaded model data
+         * @param string $entity                  Name of the entity
+         * @param string $fieldGetterFunctionName Corresponding field for that entity
+         *
+         * @return Collection
+         */
+        protected function _preloadOneToOne($varKey, $entity, $fieldGetterFunctionName) {
+
+            $modelName      = "\\{$entity}\\Model";
+            $collectionName = "\\{$entity}\\Collection";
+
+            $pks = [];
+            // we don't want to look up duplicates, just unique values
+            foreach ($this->models as $model) {
+                $pks[$model->{$fieldGetterFunctionName}()] = $model->{$fieldGetterFunctionName}();
+            }
+            $infos  = Dao::dao($entity)->records($pks);
+            $models = [];
+
+            foreach ($this->models as $key => $model) {
+                $k = $model->{$fieldGetterFunctionName}();
+                if (isset($infos[$k])) {
+                    $model->_preloadCache(
+                        $varKey,
+                        $models[$key] = $modelName::fromArray($infos[$k])
+                    );
+                }
+            }
+
+            return $collectionName::fromModels($models);
         }
 
         /**
          * Preload record/link counts based on fields
          *
-         * @param string $_var_key
+         * @param string $varKey
          * @param string $entity
          * @param string $foreign_field_name field name used to filter the dao count
          *
-         * @return collection
+         * @return Collection
+         * @deprecated
          */
-        protected function _preload_counts($_var_key, $entity, $foreign_field_name) {
+        protected function _preload_counts($varKey, $entity, $foreign_field_name) {
 
-            $pk = static::PRIMARY_KEY;
+            $pk = static::getPrimaryKeyName();
 
             // Build list of keyvals to filter the counts
             $fieldvals = [];
-            foreach ($this as $k => $model) {
-                $fieldvals[$k] = [ $foreign_field_name => $model->$pk, ];
+            foreach ($this->models as $k => $model) {
+                $fieldvals[$k] = [ $foreign_field_name => $model->get($pk), ];
             }
 
             // Get the counts (as a multi get)
-            $counts = Entity::dao($entity)->countMulti($fieldvals);
+            $counts = Dao::dao($entity)->countMulti($fieldvals);
 
             // Insert the counts into each model's $_var cache
-            foreach ($this as $k => $model) {
-                $model->_set_var(
+            foreach ($this->models as $k => $model) {
+                $model->_preloadCache(
                     $model::_countVarKey(
-                        $_var_key,
+                        $varKey,
                         $fieldvals[$k]
+                    ),
+                    $counts[$k]
+                );
+            }
+
+            // Return the counts
+            return $counts;
+        }
+
+        /**
+         * Preload record/link counts based on fields
+         *
+         * @param string $varKey
+         * @param string $entity
+         * @param string $foreign_field_name field name used to filter the dao count
+         *
+         * @return Collection
+         */
+        protected function _preloadCounts($varKey, $entity, $foreignFieldName) {
+
+            $pk = static::getPrimaryKeyName();
+
+            // Build list of keyvals to filter the counts
+            $fieldVals = [];
+            foreach ($this->models as $k => $model) {
+                $fieldVals[$k] = [ $foreignFieldName => $model->get($pk), ];
+            }
+
+            // Get the counts (as a multi get)
+            $counts = Dao::dao($entity)->countMulti($fieldVals);
+
+            // Insert the counts into each model's $_var cache
+            foreach ($this->models as $k => $model) {
+                $model->_preloadCache(
+                    $model::_countVarKey(
+                        $varKey,
+                        $fieldVals[$k]
                     ),
                     $counts[$k]
                 );

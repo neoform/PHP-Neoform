@@ -12,7 +12,7 @@
 
             if ($request->getSession()->hasTokenChanged()) {
                 $event->getResponse()->setCookie(
-                    $request->getSession()->sessionCookieKey(),
+                    $request->getSession()->getSessionCookieKey(),
                     $request->getSession()->getToken()
                 );
             }

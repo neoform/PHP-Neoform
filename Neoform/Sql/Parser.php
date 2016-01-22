@@ -12,7 +12,13 @@
             return Neoform\Sql::instance()->getAttribute(PDO::ATTR_DRIVER_NAME);
         }
 
-        public static function get_table($name) {
+        /**
+         * @param string $name
+         *
+         * @return Parser\Table
+         * @throws Exception
+         */
+        public static function getTable($name) {
             switch (self::driver()) {
 
                 case 'pgsql':
@@ -44,14 +50,14 @@
          * @return string
          * @throws exception
          */
-        public static function driver_specific_api_validation(Parser\Field $field) {
+        public static function driverSpecificApiValidation(Parser\Field $field) {
             switch (self::driver()) {
 
                 case 'pgsql':
-                    return Parser\Driver\Pgsql::api_type_validation($field);
+                    return Parser\Driver\Pgsql::apiTypeValidation($field);
 
                 case 'mysql':
-                    return Parser\Driver\Mysql::api_type_validation($field);
+                    return Parser\Driver\Mysql::apiTypeValidation($field);
 
                 default:
                     throw new Exception('No parsing driver exists for "' . self::driver() . '"');
@@ -66,14 +72,14 @@
          * @return bool
          * @throws exception
          */
-        public static function is_table_tiny(Parser\Table $table) {
+        public static function isTableTiny(Parser\Table $table) {
             switch (self::driver()) {
 
                 case 'pgsql':
-                    return Parser\Driver\Pgsql::is_table_tiny($table);
+                    return Parser\Driver\Pgsql::isTableTiny($table);
 
                 case 'mysql':
-                    return Parser\Driver\Mysql::is_table_tiny($table);
+                    return Parser\Driver\Mysql::isTableTiny($table);
 
                 default:
                     throw new Exception('No parsing driver exists for "' . self::driver() . '"');
@@ -88,14 +94,14 @@
          * @return bool
          * @throws exception
          */
-        public static function is_field_lookupable(Parser\Field $field) {
+        public static function isFieldLookupable(Parser\Field $field) {
             switch (self::driver()) {
 
                 case 'pgsql':
-                    return Parser\Driver\Pgsql::is_field_lookupable($field);
+                    return Parser\Driver\Pgsql::isFieldLookupable($field);
 
                 case 'mysql':
-                    return Parser\Driver\Mysql::is_field_lookupable($field);
+                    return Parser\Driver\Mysql::isFieldLookupable($field);
 
                 default:
                     throw new Exception('No parsing driver exists for "' . self::driver() . '"');

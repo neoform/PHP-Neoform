@@ -47,12 +47,13 @@
          * @return string
          */
         protected function tableName(Entity\Dao $dao) {
-            if (strpos($dao::TABLE, '.') !== false) {
-                $table = explode('.', $dao::TABLE);
+            $tableName = $dao::getSourceIdentifier();
+            if (strpos($tableName, '.') !== false) {
+                $table = explode('.', $tableName);
                 return "{$table[0]}\".\"{$table[1]}";
             }
             
-            return $dao::TABLE;
+            return $tableName;
         }
 
         /**
@@ -171,7 +172,7 @@
 
             // FK Relation
             $quotedForeignTable = $this->tableName($foreignDao);
-            $foreignPk          = $foreignDao::PRIMARY_KEY;
+            $foreignPk          = $foreignDao::getPrimaryKeyName();
 
             // WHERE
             $where = [];
@@ -236,7 +237,7 @@
 
             // FK Relation
             $quotedForeignTable = $this->tableName($foreignDao);
-            $foreignPk           = $foreignDao::PRIMARY_KEY;
+            $foreignPk           = $foreignDao::getPrimaryKeyName();
 
             // LIMIT
             $limit = $limit ? "LIMIT {$limit}" : '';

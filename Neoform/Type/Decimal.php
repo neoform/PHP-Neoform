@@ -2,7 +2,7 @@
 
     namespace Neoform\Type;
 
-    class decimal {
+    class Decimal {
 
         protected $intval;
         protected $precision;

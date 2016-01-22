@@ -5,7 +5,10 @@
     /**
      * Site DAO
      */
-    class Dao extends \Neoform\Entity\Record\Dao implements Definition {
+    class Dao extends \Neoform\Entity\Record\Dao {
+
+        // Load entity details into the class
+        use Details;
 
         const BY_NAME = 'by_name';
 
@@ -69,7 +72,7 @@
          *
          * @param array $info associative array, keys matching columns in database for this entity
          *
-         * @return model
+         * @return Model
          */
         public function insert(array $info) {
 
@@ -82,7 +85,7 @@
          *
          * @param array $infos array of associative arrays, keys matching columns in database for this entity
          *
-         * @return collection
+         * @return Collection
          */
         public function insertMulti(array $infos) {
 
@@ -94,10 +97,10 @@
          * Updates a Site record with new data
          *   only fields that are specified in the $info array will be written
          *
-         * @param model $site record to be updated
+         * @param Model $site record to be updated
          * @param array $info data to write to the record
          *
-         * @return model updated model
+         * @return Model updated model
          */
         public function update(Model $site, array $info) {
 
@@ -108,7 +111,7 @@
         /**
          * Delete a Site record
          *
-         * @param model $site record to be deleted
+         * @param Model $site record to be deleted
          *
          * @return bool
          */
@@ -121,7 +124,7 @@
         /**
          * Delete multiple Site records
          *
-         * @param collection $site_collection records to be deleted
+         * @param Collection $site_collection records to be deleted
          *
          * @return bool
          */

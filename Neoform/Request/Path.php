@@ -32,16 +32,26 @@
         protected $slugs;
 
         /**
+         * @var Parameters\Slugs
+         */
+        protected $controllerSlugs;
+
+        /**
+         * @var Parameters\Slugs
+         */
+        protected $nonControllerSlugs;
+
+        /**
          * @var bool
          */
         protected $hasTrailingSlash;
 
         /**
          * @param string $path
-         * @param Neoform\Locale\Config $localeConfig
+         * @param Neoform\Locale\Config|null $localeConfig
          * @throws Exception
          */
-        public function __construct($path, Neoform\Locale\Config $localeConfig) {
+        public function __construct($path, Neoform\Locale\Config $localeConfig=null) {
 
             if (! is_string($path)) {
                 throw new Exception('Path must be a string');
@@ -68,10 +78,26 @@
             array_unshift($slugs, '/');
 
             $this->slugs = new Parameters\Slugs($slugs);
-            $this->slugs->extractLocale(1, $localeConfig->getAllowed());
+
+            if ($localeConfig) {
+                $this->slugs->extractLocale(1, $localeConfig->getAllowed());
+            }
 
             // Re-apply the slash at the beginning
             $this->path = "/{$this->path}";
+        }
+
+        /**
+         * @param Parameters\Slugs $controllerSlugs
+         * @param Parameters\Slugs $nonControllerSlugs
+         *
+         * @return Path
+         */
+        public function routedPath(Parameters\Slugs $controllerSlugs, Parameters\Slugs $nonControllerSlugs) {
+            $clone = clone $this;
+            $clone->controllerSlugs    = $controllerSlugs;
+            $clone->nonControllerSlugs = $nonControllerSlugs;
+            return $clone;
         }
 
         /**
@@ -79,6 +105,20 @@
          */
         public function getSlugs() {
             return $this->slugs;
+        }
+
+        /**
+         * @return Parameters\Slugs
+         */
+        public function getControllerSlugs() {
+            return $this->controllerSlugs;
+        }
+
+        /**
+         * @return Parameters\Slugs
+         */
+        public function getNonControllerSlugs() {
+            return $this->nonControllerSlugs;
         }
 
         /**

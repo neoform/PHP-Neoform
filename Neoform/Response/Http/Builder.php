@@ -215,8 +215,8 @@
                 $this->headers,
                 $this->cookies,
                 $this->body,
-                Neoform\Http\Config::get(),
-                Neoform\Request\Parameters\Cookies\Config::get()
+                Neoform\Router\Config::get(),
+                $this->cookies ? Neoform\Request\Parameters\Cookies\Config::get() : null
             );
         }
 

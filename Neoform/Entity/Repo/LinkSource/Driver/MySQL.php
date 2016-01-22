@@ -29,8 +29,8 @@
 
         /**
          * @param Entity\Link\Dao $dao
-         * @param Sql        $readMySQLService
-         * @param Sql        $writeMySQLService
+         * @param Sql             $readMySQLService
+         * @param Sql             $writeMySQLService
          */
         public function __construct(Entity\Link\Dao $dao, Sql $readMySQLService, Sql $writeMySQLService) {
             $this->readMySQLService  = $readMySQLService;
@@ -44,12 +44,13 @@
          * @return string
          */
         protected function tableName(Entity\Dao $dao) {
-            if (strpos($dao::TABLE, '.') !== false) {
-                $table = explode('.', $dao::TABLE);
+            $tableName = $dao::getSourceIdentifier();
+            if (strpos($tableName, '.') !== false) {
+                $table = explode('.', $tableName);
                 return "{$table[0]}`.`{$table[1]}";
             }
 
-            return $dao::TABLE;
+            return $tableName;
         }
 
         /**
@@ -169,7 +170,7 @@
 
             // FK Relation
             $quotedForeignTable = $this->tableName($foreignDao);
-            $foreignPk           = $foreignDao::PRIMARY_KEY;
+            $foreignPk          = $foreignDao::getPrimaryKeyName();
 
             // WHERE
             $where = [];
@@ -239,7 +240,7 @@
 
             // FK Relation
             $quotedForeignTable = $this->tableName($foreignDao);
-            $foreignPk           = $foreignDao::PRIMARY_KEY;
+            $foreignPk          = $foreignDao::getPrimaryKeyName();
 
             // LIMIT
             if ($limit) {

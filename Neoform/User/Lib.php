@@ -12,7 +12,7 @@
         public static function default_status() {
             static $status;
             if ($status === null) {
-                $status = new Status\Model(Neoform\Auth\Config::get()->getDefaultUserAccountStatusId());
+                $status = Status\Model::fromPk(Neoform\Auth\Config::get()->getDefaultUserAccountStatusId());
             }
             return $status;
         }
@@ -23,7 +23,7 @@
         public static function default_hashmethod() {
             static $hashmethod;
             if ($hashmethod === null) {
-                $hashmethod = new Hashmethod\Model(Neoform\Auth\Config::get()->getDefaultHashMethodId());
+                $hashmethod = Hashmethod\Model::fromPk(Neoform\Auth\Config::get()->getDefaultHashMethodId());
             }
             return $hashmethod;
         }
@@ -58,7 +58,7 @@
         }
 
         /**
-         * @param model  $user
+         * @param Model  $user
          * @param string $password
          *
          * @return bool

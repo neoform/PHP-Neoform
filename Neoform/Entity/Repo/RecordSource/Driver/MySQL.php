@@ -47,14 +47,13 @@
             $this->readMySQLService  = $readMySQLService;
             $this->writeMySQLService = $writeMySQLService;
 
-            $this->primaryKey    = $dao::PRIMARY_KEY;
-            $this->autoIncrement = $dao::AUTOINCREMENT;
+            $this->primaryKey    = $dao::getPrimaryKeyName();
+            $this->autoIncrement = $dao::isPrimaryKeyAutoIncrement();
 
-            if (strpos($dao::TABLE, '.') !== false) {
-                $table = explode('.', $dao::TABLE);
+            $this->tableName = $dao::getSourceIdentifier();
+            if (strpos($this->tableName, '.') !== false) {
+                $table = explode('.', $this->tableName);
                 $this->tableName = "{$table[0]}`.`{$table[1]}";
-            } else {
-                $this->tableName = $dao::TABLE;
             }
         }
 

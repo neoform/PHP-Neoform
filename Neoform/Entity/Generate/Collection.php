@@ -4,7 +4,6 @@
 
     use Neoform\Entity\Generate;
 
-    class Collection extends Generate {
-
+    abstract class Collection extends Generate {
 
     }

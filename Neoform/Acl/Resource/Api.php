@@ -12,7 +12,7 @@
          *
          * @param array $info
          *
-         * @return model
+         * @return Model
          * @throws Input\Exception
          */
         public static function insert(array $info) {
@@ -21,53 +21,56 @@
 
             self::_validate_insert($input);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\Acl\Resource')->insert([
-                    'parent_id' => $input->parent_id->val(),
-                    'name'      => $input->name->val(),
-                ]);
+            if ($input->isValid()) {
+                $return = Dao::get()->insert(
+                    $input->getVals([
+                        'parent_id',
+                        'name',
+                    ])
+                );
+                return $return;
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         /**
          * Update a Acl Resource model with $info
          *
-         * @param model $acl_resource
+         * @param Model $acl_resource
          * @param array $info
-         * @param bool  $crush
+         * @param bool  $includeEmpty
          *
-         * @return model
+         * @return Model
          * @throws Input\Exception
          */
-        public static function update(Model $acl_resource, array $info, $crush=false) {
+        public static function update(Model $acl_resource, array $info, $includeEmpty=true) {
 
             $input = new Input\Collection($info);
 
-            self::_validate_update($acl_resource, $input);
+            self::_validate_update($acl_resource, $input, $includeEmpty);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\Acl\Resource')->update(
+            if ($input->isValid()) {
+                return Dao::get()->update(
                     $acl_resource,
-                    $input->vals(
+                    $input->getVals(
                         [
                             'parent_id',
                             'name',
                         ],
-                        $crush
+                        $includeEmpty
                     )
                 );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         /**
          * Move ACL resource
          *
-         * @param model   $acl_resource
+         * @param Model   $acl_resource
          * @param integer $parent_id
          *
-         * @return model
+         * @return Model
          * @throws Input\Exception
          */
         public static function move(Model $acl_resource, $parent_id) {
@@ -78,11 +81,11 @@
                 }
 
                 if ($parent_id) {
-                    $parent = new Model((int) $parent_id);
+                    $parent = Model::fromPk((int) $parent_id);
                     $parent_id = $parent->id;
                 }
 
-                if (Entity::dao('Neoform\Acl\Resource')->by_parent_name($parent_id, $acl_resource->name)) {
+                if (Dao::get()->by_parent_name($parent_id, $acl_resource->name)) {
                     return 'a resource with that name already exists in that location';
                 }
 
@@ -103,7 +106,7 @@
                 return 'resource does not exist';
             }
 
-            return Entity::dao('Neoform\Acl\Resource')->update(
+            return Dao::get()->update(
                 $acl_resource,
                 [
                     'parent_id' => $parent_id,
@@ -114,7 +117,7 @@
         /**
          * Delete a ACL Resource
          *
-         * @param model $acl_resource
+         * @param Model $acl_resource
          *
          * @return bool
          */
@@ -124,13 +127,13 @@
                 self::delete_recursive($child_resources);
             }
 
-            return Entity::dao('Neoform\Acl\Resource')->delete($acl_resource);
+            return Dao::get()->delete($acl_resource);
         }
 
         /**
          * Delete all resources
          *
-         * @param collection $resources
+         * @param Collection $resources
          */
         protected static function delete_recursive(Collection $resources) {
             // Child resources
@@ -140,7 +143,7 @@
             }
 
             // Once children are dead, kill the parents
-            Entity::dao('Neoform\Acl\Resource')->deleteMulti($resources);
+            Dao::get()->deleteMulti($resources);
         }
 
         /**
@@ -151,24 +154,26 @@
         public static function _validate_insert(Input\Collection $input) {
 
             // parent_id
-            $input->parent_id->cast('int')->optional()->digit(0, 4294967295)->callback(function($parent_id) {
-                if ($parent_id->val()) {
-                    try {
-                        $parent_id->data('model', new \Neoform\Acl\Resource\Model($parent_id->val()));
-                    } catch (\Neoform\Acl\Resource\Exception $e) {
-                        $parent_id->errors($e->getMessage());
+            $input->validate('parent_id', 'int', true)
+                ->requireDigit(0, 4294967295)
+                ->callback(function(Input\Input $parent_id) {
+                    if ($parent_id->getVal()) {
+                        try {
+                            $parent_id->setData('model', \Neoform\Acl\Resource\Model::fromPk($parent_id->getVal()));
+                        } catch (\Neoform\Acl\Resource\Exception $e) {
+                            $parent_id->setErrors($e->getMessage());
+                        }
                     }
-                }
-            });
+                });
 
             // name
-            $input->name->cast('string')
-                ->length(1, 32)
+            $input->validate('name', 'string')
+                ->requireLength(1, 32)
                 ->trim()
-                ->match_regex('`^([0-9a-z\._\-]*)$`i', 'must only contain: a-z 0-9 .-_')
-                ->callback(function($name) use ($input) {
-                    if (Entity::dao('Neoform\Acl\Resource')->by_parent_name($input->parent_id->val(), $name->val())) {
-                        $name->errors('already in use');
+                ->matchRegex('`^([0-9a-z\._\-]*)$`i', 'must only contain: a-z 0-9 .-_')
+                ->callback(function(Input\Input $name) use ($input) {
+                    if (Dao::get()->by_parent_name($input->parent_id->getVal(), $name->getVal())) {
+                        $name->setErrors('already in use');
                     }
                 });
         }
@@ -176,46 +181,48 @@
         /**
          * Validates info to update a Acl Resource model
          *
-         * @param model $acl_resource
+         * @param Model            $acl_resource
          * @param Input\Collection $input
+         * @param bool             $includeEmpty
          */
-        public static function _validate_update(Model $acl_resource, Input\Collection $input) {
+        public static function _validate_update(Model $acl_resource, Input\Collection $input, $includeEmpty) {
 
             // parent_id
-            $input->parent_id->cast('int')->optional(true)->nullify()->digit(0, 4294967295)->callback(function($parent_id) use ($acl_resource) {
-                if ($parent_id->val()) {
-                    try {
-                        $parent_resource = new \Neoform\Acl\Resource\Model($parent_id->val());
-                        $parent_id->data('model', $parent_resource);
+            $input->validate('parent_id', 'int', true)
+                ->requireDigit(0, 4294967295)
+                ->callback(function(Input\Input $parent_id) use ($acl_resource) {
+                    if ($parent_id->getVal()) {
+                        try {
+                            $parent_resource = \Neoform\Acl\Resource\Model::fromPk($parent_id->getVal());
+                            $parent_id->setData('model', $parent_resource);
 
-                        // Check if we're attempting to add a resource to itself
-                        if ($parent_resource->id === $acl_resource->id) {
-                            $parent_id->errors('cannot move a resource into itself');
-                            return;
-                        }
-
-                        foreach ($parent_resource->ancestors() as $ancestor) {
-                            if ($acl_resource->id === $ancestor->id) {
-                                $parent_id->errors('cannot move a resource into a child of itself');
+                            // Check if we're attempting to add a resource to itself
+                            if ($parent_resource->id === $acl_resource->id) {
+                                $parent_id->setErrors('cannot move a resource into itself');
                                 return;
                             }
-                        }
 
-                    } catch (\Neoform\Acl\Resource\Exception $e) {
-                        $parent_id->errors($e->getMessage());
+                            foreach ($parent_resource->ancestors() as $ancestor) {
+                                if ($acl_resource->id === $ancestor->id) {
+                                    $parent_id->setErrors('cannot move a resource into a child of itself');
+                                    return;
+                                }
+                            }
+
+                        } catch (\Neoform\Acl\Resource\Exception $e) {
+                            $parent_id->setErrors($e->getMessage());
+                        }
                     }
-                }
-            });
+                });
 
             // name
-            $input->name->cast('string')
-                ->optional()
-                ->length(1, 32)
-                ->match_regex('`^([0-9a-z\._\-]*)$`i', 'must only contain: a-z 0-9 .-_')
-                ->callback(function($name) use ($acl_resource, $input) {
-                    $id_arr = Entity::dao('Neoform\Acl\Resource')->by_parent_name($input->parent_id->val(), $name->val());
+            $input->validate('name', 'string', !$includeEmpty)
+                ->requireLength(1, 32)
+                ->matchRegex('`^([0-9a-z\._\-]*)$`i', 'must only contain: a-z 0-9 .-_')
+                ->callback(function(Input\Input $name) use ($acl_resource, $input) {
+                    $id_arr = Dao::get()->by_parent_name($input->parent_id->getVal(), $name->getVal());
                     if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $acl_resource->id) {
-                        $name->errors('already in use');
+                        $name->setErrors('already in use');
                     }
                 });
         }

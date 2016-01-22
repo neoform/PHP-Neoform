@@ -9,11 +9,6 @@
     class Model {
 
         /**
-         * @var Request\Model
-         */
-        protected $request;
-
-        /**
          * @var ControllerDetails
          */
         protected $controllerDetails;
@@ -44,22 +39,21 @@
         protected $redirectRequired;
 
         /**
-         * @param Request\Model $request
-         * @param ControllerDetails $controllerDetails
+         * @param Request\Builder          $requestBuilder
+         * @param ControllerDetails        $controllerDetails
          * @param Request\Parameters\Slugs $nonControllerSlugs
          * @param Request\Parameters\Slugs $controllerSlugs
-         * @param bool $userAuthenticationRequired
-         * @param bool $userForbidden
-         * @param bool $redirectRequired
+         * @param bool                     $userAuthenticationRequired
+         * @param bool                     $userForbidden
+         * @param bool                     $redirectRequired
          */
-        public function __construct(Request\Model $request,
+        public function __construct(Request\Builder $requestBuilder,
                                     ControllerDetails $controllerDetails,
                                     Request\Parameters\Slugs $nonControllerSlugs,
                                     Request\Parameters\Slugs $controllerSlugs,
                                     $userAuthenticationRequired,
                                     $userForbidden,
                                     $redirectRequired) {
-            $this->request                      = $request;
             $this->controllerDetails            = $controllerDetails;
             $this->nonControllerSlugs           = $nonControllerSlugs;
             $this->controllerSlugs              = $controllerSlugs;
@@ -71,33 +65,21 @@
         /**
          * Execute the controller/action
          *
+         * @param Request\Model    $request
          * @param Response\Builder $responseBuilder
          *
          * @return Response\Http|Response\Response
          * @throws Exception
          */
-        public function buildResponse(Response\Builder $responseBuilder) {
-
-//            $beforeRouting = (new Observer\Event\BeforeRouting)
-//                ->setRequest($this->request)
-//                ->setResponse($responseBuilder)
-//                ->attach(new Observer\Listener\SessionTokenChanged)
-//                ->notify();
-
-            // @todo Good candidate for an event listener
-            if ($this->request->getSession()->hasTokenChanged()) {
-                $responseBuilder->setCookie(
-                    $this->request->getSession()->sessionCookieKey(),
-                    $this->request->getSession()->getToken()
-                );
-            }
-
-            $this->request->applyRouter($this);
+        public function buildResponse(Request\Model $request, Response\Builder $responseBuilder) {
 
             // Reload/redirect the page since the domain/protocol is wrong
             if ($this->redirectRequired) {
-                // @todo I don't really like that we have this in here
-                return Response\Http\Builder::redirect($this->getUrl());
+                return $responseBuilder
+                    ->reset()
+                    ->setResponseCode(303)
+                    ->setHeader('Location', (string) $this->getUrl($request))
+                    ->build();
             }
 
             // Show login page
@@ -118,7 +100,7 @@
             }
 
             if (! is_subclass_of($controllerName, 'Neoform\Router\Controller')) {
-                throw new Exception('Controller "' . $controllerName . '" is not an instance of Neoform\Router\Controller', 500);
+                throw new Exception("Controller \"{$controllerName}\" is not an instance of Neoform\\Router\\Controller", 500);
             }
 
             $controllerActionName = $this->controllerDetails->getActionName();
@@ -129,7 +111,7 @@
             }
 
             // Execute the controller action and return the result - do not wrap in try/catch, let the bootstrap handle it
-            $view = (new $controllerName($this->request, $responseBuilder))->{$controllerActionName}();
+            $view = (new $controllerName($request, $responseBuilder))->{$controllerActionName}();
 
             // The controller action can return a view or null. If null assume there's no view, or it was already added
             // top the response by the view
@@ -155,15 +137,16 @@
         /**
          * Gets the correct URL based on the protocol required by the controller
          *
+         * @param Request\Model $request
+         *
          * @return string
          */
-        public function getUrl() {
-            $server = $this->request->getServer();
-
+        protected function getUrl(Request\Model $request) {
             return ($this->controllerDetails->requiresSecure()
-                 ? $this->request->getBaseUrl()->getSecureBaseUrl()
-                 : $this->request->getBaseUrl()->getRegularBaseUrl())
-            . $server->getUri() . ($server->getQuery() ? "?{$server->getQuery()}" : '');
+                 ? $request->getBaseUrl()->getSecureBaseUrl()
+                 : $request->getBaseUrl()->getRegularBaseUrl())
+                        . $request->getServer()->getUri()
+                        . ($request->getServer()->getQuery() ? "?{$request->getServer()->getQuery()}" : '');
         }
 
         /**

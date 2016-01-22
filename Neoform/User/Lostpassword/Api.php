@@ -7,7 +7,6 @@
     use Neoform\Auth;
     use Neoform\User;
     use Neoform\Redirect;
-    use Neoform\Http;
     use Neoform;
 
     class Api {
@@ -30,33 +29,37 @@
 
             $input = new Input\Collection($info);
 
-            $input->email->cast('string')->trim()->length(1,255)->is_email()->callback(function($email) use ($site) {
-                if (! $email->errors()) {
-                    if ($user_id = current(Entity::dao('Neoform\User')->by_email($email->val()))) {
-                        $user = new User\Model($user_id);
-                        if (count(Entity::dao('Neoform\User\Site')->by_site_user($site->id, $user->id))) {
-                            return $email->data('model', $user);
+            $input->validate('email', 'string')
+                ->trim()
+                ->requireLength(1,255)
+                ->isEmail()
+                ->callback(function(Input\Input $email) use ($site) {
+                    if (! $email->getErrors()) {
+                        if ($user_id = current(User\Dao::get()->by_email($email->getVal()))) {
+                            $user = User\Model::fromPk($user_id);
+                            if (count(Neoform\User\Site\Dao::get()->by_site_user($site->id, $user->id))) {
+                                return $email->setData('model', $user);
+                            }
                         }
+                        $email->setErrors('Email address not found');
                     }
-                    $email->errors('Email address not found');
-                }
-            });
+                });
 
-            if ($input->is_valid()) {
+            if ($input->isValid()) {
 
-                $user = $input->email->data('model');
+                $user = $input->email->getData('model');
 
                 //delete all previous reset keys
-                Entity::dao('Neoform\User\Lostpassword')->deleteMulti(
-                    new User\Lostpassword\Collection(
-                        Entity::dao('Neoform\User\Lostpassword')->by_user($user->id)
+                Dao::get()->deleteMulti(
+                    User\Lostpassword\Collection::fromPks(
+                        Dao::get()->by_user($user->id)
                     )
                 );
 
                 // Generate random hash
                 $hash = Neoform\Type\String\Lib::random_chars(40);
 
-                Entity::dao('Neoform\User\Lostpassword')->insert([
+                Dao::get()->insert([
                     'user_id' => $user->id,
                     'hash'    => $hash,
                 ]);
@@ -74,7 +77,7 @@
                 }
             }
 
-            throw $input->exception();
+            throw $input->getException();
         }
 
         /**
@@ -93,7 +96,7 @@
             }
 
             try {
-                $lost_password = new User\Lostpassword\Model($hash);
+                $lost_password = User\Lostpassword\Model::fromPk($hash);
             } catch (User\Lostpassword\Exception $e) {
                 throw new Neoform\Error\Exception('You password reset link has either expired or is not valid');
             }
@@ -104,7 +107,7 @@
             $hash_method   = User\Lib::default_hashmethod();
             $user          = $lost_password->user();
 
-            Entity::dao('Neoform\User')->update(
+            User\Dao::get()->update(
                 $user,
                 [
                     'password_salt'       => $salt,
@@ -114,7 +117,7 @@
                 ]
             );
 
-            Entity::dao('Neoform\User\Lostpassword')->delete($lost_password);
+            Dao::get()->delete($lost_password);
 
             return [$user, $password];
         }
@@ -125,93 +128,106 @@
 
             self::_validate_insert($input);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\User\Lostpassword')->insert([
-                    'hash'      => $input->hash->val(),
-                    'user_id'   => $input->user_id->val(),
-                    'posted_on' => $input->posted_on->val(),
-                ]);
+            if ($input->isValid()) {
+                return Dao::get()->insert(
+                    $input->getVals([
+                        'hash',
+                        'user_id',
+                        'posted_on',
+                    ])
+                );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
-        public static function update(Model $user_lostpassword, array $info, $crush=false) {
+        public static function update(Model $user_lostpassword, array $info, $includeEmpty=false) {
 
             $input = new Input\Collection($info);
 
-            self::_validate_update($user_lostpassword, $input);
+            self::_validate_update($user_lostpassword, $input, $includeEmpty);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\User\Lostpassword')->update(
+            if ($input->isValid()) {
+                return Dao::get()->update(
                     $user_lostpassword,
-                    $input->vals(
+                    $input->getVals(
                         [
                             'hash',
                             'user_id',
                             'posted_on',
                         ],
-                        $crush
+                        $includeEmpty
                     )
                 );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         public static function delete(Model $user_lostpassword) {
-            return Entity::dao('Neoform\User\Lostpassword')->delete($user_lostpassword);
+            return Dao::get()->delete($user_lostpassword);
         }
 
         public static function _validate_insert(Input\Collection $input) {
 
             // hash
-            $input->hash->cast('string')->length(1, 40)->callback(function($hash) {
-                if (Entity::dao('Neoform\User\Lostpassword')->record($hash->val())) {
-                    $hash->errors('already in use');
-                }
-            });
+            $input->validate('hash', 'string')
+                ->requireLength(1, 40)
+                ->callback(function(Input\Input $hash) {
+                    if (Dao::get()->record($hash->getVal())) {
+                        $hash->setErrors('already in use');
+                    }
+                });
 
             // user_id
-            $input->user_id->cast('int')->digit(0, 4294967295)->callback(function($user_id) {
-                if (Entity::dao('Neoform\User\Lostpassword')->by_user($user_id->val())) {
-                    $user_id->errors('already in use');
-                }
-            })->callback(function($user_id) {
-                try {
-                    $user_id->data('model', new User\Model($user_id->val()));
-                } catch (User\Exception $e) {
-                    $user_id->errors($e->getMessage());
-                }
-            });
+            $input->validate('user_id', 'int')
+                ->requireDigit(0, 4294967295)
+                ->callback(function(Input\Input $user_id) {
+                    if (Dao::get()->by_user($user_id->getVal())) {
+                        $user_id->setErrors('already in use');
+                    }
+                })->callback(function(Input\Input $user_id) {
+                    try {
+                        $user_id->setData('model', User\Model::fromPk($user_id->getVal()));
+                    } catch (User\Exception $e) {
+                        $user_id->setErrors($e->getMessage());
+                    }
+                });
 
             // posted_on
-            $input->posted_on->cast('string')->optional()->is_datetime();
+            $input->validate('posted_on', 'string', true)
+                ->isDateTime();
         }
 
-        public static function _validate_update(Model $user_lostpassword, Input\Collection $input) {
+        public static function _validate_update(Model $user_lostpassword, Input\Collection $input, $includeEmpty) {
 
             // hash
-            $input->hash->cast('string')->optional()->length(1, 40)->callback(function($hash) use ($user_lostpassword) {
-                $user_lostpassword_info = Entity::dao('Neoform\User\Lostpassword')->record($hash->val());
-                if ($user_lostpassword_info && (string) $user_lostpassword_info['hash'] !== $user_lostpassword->hash) {
-                    $hash->errors('already in use');
-                }
-            });
+            $input->validate('hash', 'string', !$includeEmpty)
+                ->requireLength(1, 40)
+                ->callback(function(Input\Input $hash) use ($user_lostpassword) {
+                    $user_lostpassword_info = Dao::get()->record($hash->getVal());
+                    if ($user_lostpassword_info && (string) $user_lostpassword_info['hash'] !== $user_lostpassword->hash) {
+                        $hash->setErrors('already in use');
+                    }
+                });
 
             // user_id
-            $input->user_id->cast('int')->optional()->digit(0, 4294967295)->callback(function($user_id) use ($user_lostpassword) {
-                $hash_arr = Entity::dao('Neoform\User\Lostpassword')->by_user($user_id->val());
-                if (is_array($hash_arr) && $hash_arr && (string) current($hash_arr) !== $user_lostpassword->hash) {
-                    $user_id->errors('already in use');
-                }
-            })->callback(function($user_id) {
-                try {
-                    $user_id->data('model', new User\Model($user_id->val()));
-                } catch (User\Exception $e) {
-                    $user_id->errors($e->getMessage());
-                }
-            });
+            $input->validate('user_id', 'int', !$includeEmpty)
+                ->requireDigit(0, 4294967295)
+                ->callback(function(Input\Input $user_id) use ($user_lostpassword) {
+                    $hash_arr = Dao::get()->by_user($user_id->getVal());
+                    if (is_array($hash_arr) && $hash_arr && (string) current($hash_arr) !== $user_lostpassword->hash) {
+                        $user_id->setErrors('already in use');
+                    }
+                })
+                ->callback(function(Input\Input $user_id) {
+                    try {
+                        $user_id->setData('model', User\Model::fromPk($user_id->getVal()));
+                    } catch (User\Exception $e) {
+                        $user_id->setErrors($e->getMessage());
+                    }
+                });
 
             // posted_on
-            $input->posted_on->cast('string')->optional()->is_datetime();
+            $input->validate('posted_on', 'string', !$includeEmpty)
+                ->isDateTime();
         }
     }

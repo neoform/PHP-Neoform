@@ -19,7 +19,7 @@
         protected $server;
 
         /**
-         * @var Neoform\Http\Config
+         * @var Neoform\Router\Config
          */
         protected $config;
 
@@ -59,10 +59,10 @@
         protected $isValid = false;
 
         /**
-         * @param Parameters\Server   $server
-         * @param Neoform\Http\Config $config
+         * @param Parameters\Server     $server
+         * @param Neoform\Router\Config $config
          */
-        public function __construct(Parameters\Server $server, Neoform\Http\Config $config) {
+        public function __construct(Parameters\Server $server, Neoform\Router\Config $config) {
             $this->server = $server;
             $this->config = $config;
 

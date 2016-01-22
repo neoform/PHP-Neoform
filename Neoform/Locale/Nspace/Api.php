@@ -13,56 +13,62 @@
 
             self::_validate_insert($input);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\Locale\Nspace')->insert([
-                    'name' => $input->name->val(),
-                ]);
+            if ($input->isValid()) {
+                return Dao::get()->insert(
+                    $input->getVals([
+                        'name',
+                    ])
+                );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
-        public static function update(Model $locale_namespace, array $info, $crush=false) {
+        public static function update(Model $locale_namespace, array $info, $includeEmpty=false) {
 
             $input = new Input\Collection($info);
 
-            self::_validate_update($locale_namespace, $input);
+            self::_validate_update($locale_namespace, $input, $includeEmpty);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\Locale\Nspace')->update(
+            if ($input->isValid()) {
+                return Dao::get()->update(
                     $locale_namespace,
-                    $input->vals(
+                    $input->getVals(
                         [
                             'name',
                         ],
-                        $crush
+                        $includeEmpty
                     )
                 );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         public static function delete(Model $locale_namespace) {
-            return Entity::dao('Neoform\Locale\Nspace')->delete($locale_namespace);
+            return Dao::get()->delete($locale_namespace);
         }
 
         public static function _validate_insert(Input\Collection $input) {
 
             // name
-            $input->name->cast('string')->length(1, 255)->callback(function($name) {
-                if (Entity::dao('Neoform\Locale\Nspace')->by_name($name->val())) {
-                    $name->errors('already in use');
-                }
-            });
+            $input->validate('name', 'string')
+                ->requireLength(1, 255)
+                ->callback(function(Input\Input $name) {
+                    if (Dao::get()->by_name($name->getVal())) {
+                        $name->setErrors('already in use');
+                    }
+                });
         }
 
-        public static function _validate_update(Model $locale_namespace, Input\Collection $input) {
+        public static function _validate_update(Model $locale_namespace, Input\Collection $input, $includeEmpty) {
 
             // name
-            $input->name->cast('string')->optional()->length(1, 255)->callback(function($name) use ($locale_namespace) {
-                $id_arr = Entity::dao('Neoform\Locale\Nspace')->by_name($name->val());
-                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $locale_namespace->id) {
-                    $name->errors('already in use');
-                }
-            });
+            $input->validate('name', 'string', !$includeEmpty)
+                ->requireLength(1, 255)
+                ->callback(function(Input\Input $name) use ($locale_namespace) {
+                    $id_arr = Dao::get()->by_name($name->getVal());
+                    if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $locale_namespace->id) {
+                        $name->setErrors('already in use');
+                    }
+                });
         }
     }

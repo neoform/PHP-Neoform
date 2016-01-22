@@ -3,10 +3,11 @@
     namespace Neoform\Entity\Holder;
 
     use Neoform\Entity\Exception;
+    use Neoform;
 
-    class Collection extends \arrayobject {
+    class Collection extends Neoform\Entity\Collection  {
 
-        protected $_vars = []; //caching
+        protected $_vars = [];
 
         /**
          * @param array  $infos
@@ -15,7 +16,7 @@
         public function __construct(array $infos=null, $map_field=null) {
 
             if ($infos) {
-                $model = '\\' . static::ENTITY_NAME . '\\Model';
+                $model = '\\' . static::getNamespace() . '\\Model';
                 foreach ($infos as $key => $info) {
                     try {
                         if (is_array($info)) {
@@ -39,7 +40,7 @@
          * @param null  $map_field
          */
         public function add(array $info, $map_field=null) {
-            $model = '\\' . static::ENTITY_NAME . '\\Model';
+            $model = '\\' . static::getNamespace() . '\\Model';
             $v = new $model($info);
 
             if ($map_field !== null) {

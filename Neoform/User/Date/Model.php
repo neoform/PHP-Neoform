@@ -13,9 +13,33 @@
      * @var datetime|null $email_verified_on
      * @var datetime|null $password_updated_on
      */
-    class Model extends Entity\Record\Model implements Definition {
+    class Model extends Entity\Record\Model {
+
+        // Load entity details into the class
+        use Details;
 
         public function __get($k) {
+
+            if (isset($this->vars[$k])) {
+                switch ($k) {
+                    // integers
+                    case 'user_id':
+                        return (int) $this->vars[$k];
+
+                    // dates
+                    case 'created_on':
+                    case 'last_login':
+                    case 'email_verified_on':
+                    case 'password_updated_on':
+                        return $this->_model($k, $this->vars[$k], 'Neoform\Type\Date');
+
+                    default:
+                        return $this->vars[$k];
+                }
+            }
+        }
+
+        public function get($k) {
 
             if (isset($this->vars[$k])) {
                 switch ($k) {

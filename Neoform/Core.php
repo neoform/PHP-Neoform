@@ -238,7 +238,7 @@
          */
         private function setErrorHandlers() {
             // Uncaught exception handler
-            set_exception_handler(function(PHPException $e) {
+            set_exception_handler(function($e) {
 
                 Error\Lib::log($e);
 
@@ -277,7 +277,7 @@
                     $file    = isset($error['file']) ? $error['file'] : null;
                     $line    = isset($error['line']) ? $error['line'] : null;
 
-                    Error\Lib::log(new PHPException("{$message} - {$file}:{$line}"), 'fatal shutdown error');
+                    Error\Lib::log(new PHPException("{$message} - {$file}:{$line}"));
 
                     if ((string) self::getContext() === 'web') {
                         self::show500();
@@ -359,8 +359,9 @@
          * Show a 500 error page according to configs
          */
         private static function show500() {
-            $request = (new Request\Builder(Http\Config::get()))
-                ->setPath('/', Locale\Config::get())
+            $request = (new Request\Builder(Router\Config::get()))
+                ->setServer([])
+                ->setPath('/')
                 ->build();
 
             $errorController       = Core\Config::get()->getDefaultErrorController();
@@ -368,7 +369,7 @@
 
             if ($errorController && $errorControllerAction) {
                 $response   = new Response\Http\Builder;
-                $controller = new $errorControllerAction($request, $response);
+                $controller = new $errorController($request, $response);
                 $response->setView($controller->$errorControllerAction());
                 $response->build()->render();
                 die;

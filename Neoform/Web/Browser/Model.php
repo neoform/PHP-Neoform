@@ -2,21 +2,39 @@
 
     namespace Neoform\Web\Browser;
 
-    use Neoform\Http;
-
     class Model {
 
+        /**
+         * @var string[]
+         */
+        protected static $cache = [];
+
+        /**
+         * @var array
+         */
         protected $info;
 
         /**
-         * @param string $agent_string
+         * @param string $agentString
          */
-        public function __construct($agent_string) {
+        public function __construct($agentString) {
+            if (isset(self::$cache[$agentString])) {
+                $this->info = self::$cache[$agentString];
+                return;
+            }
+
+            if (! $agentString) {
+                $this->info = [];
+                return;
+            }
+
             try {
-                $this->info = @get_browser($agent_string, true);
+                $this->info = @get_browser($agentString, true);
             } catch (\Exception $e) {
                 $this->info = [];
             }
+
+            self::$cache[$agentString] = $this->info;
         }
 
         /**
@@ -62,7 +80,28 @@
         /**
          * @return bool
          */
-        public function is_crawler() {
+        public function isCrawler() {
             return (bool) $this->crawler;
+        }
+
+        /**
+         * @return string|null
+         */
+        public function getBrowser() {
+            return (string) $this->browser ?: null;
+        }
+
+        /**
+         * @return string|null
+         */
+        public function getBrowserVersion() {
+            return (string) $this->version ?: null;
+        }
+
+        /**
+         * @return string|null
+         */
+        public function getOS() {
+            return (string) $this->platform ?: null;
         }
     }

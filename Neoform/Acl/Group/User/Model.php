@@ -10,9 +10,27 @@
      * @var int $acl_group_id
      * @var int $user_id
      */
-    class Model extends Entity\Link\Model implements Definition {
+    class Model extends Entity\Link\Model {
+
+        // Load entity details into the class
+        use Details;
 
         public function __get($k) {
+
+            if (isset($this->vars[$k])) {
+                switch ($k) {
+                    // integers
+                    case 'acl_group_id':
+                    case 'user_id':
+                        return (int) $this->vars[$k];
+
+                    default:
+                        return $this->vars[$k];
+                }
+            }
+        }
+
+        public function get($k) {
 
             if (isset($this->vars[$k])) {
                 switch ($k) {

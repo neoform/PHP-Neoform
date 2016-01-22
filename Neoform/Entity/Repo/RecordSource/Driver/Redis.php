@@ -38,8 +38,8 @@
             $this->redisServiceRead  = $redisServiceRead;
             $this->redisServiceWrite = $redisServiceWrite;
 
-            $this->primaryKey = $dao::PRIMARY_KEY;
-            $this->tableName  = $dao::TABLE;
+            $this->primaryKey = $dao::getPrimaryKeyName();
+            $this->tableName  = $dao::getSourceIdentifier();
         }
 
         /**
@@ -119,12 +119,12 @@
         /**
          * Get multiple counts
          *
-         * @param array $fieldvals_arr
+         * @param array $fieldvalsArr
          *
          * @return int[]
          * @throws Exception
          */
-        public function countMulti(array $fieldvals_arr) {
+        public function countMulti(array $fieldvalsArr) {
             throw new Exception('Count queries are not supported by redis driver.');
         }
 

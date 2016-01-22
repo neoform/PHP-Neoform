@@ -33,12 +33,12 @@
 
             try {
                 if ($this->auth = Neoform\Auth\Model::fromPk($this->sessionToken)) {
-                    if ((new DateTime)->getTimestamp() < $this->auth->expires_on->getTimestamp()) {
+                    if ((new DateTime) < $this->auth->expires_on) {
                         return;
                     }
 
                     // Expired session - delete
-                    Neoform\Entity::dao('Neoform\Auth')->delete($this->auth);
+                    Neoform\Auth\Dao::get()->delete($this->auth);
                 }
 
             } catch (Neoform\Auth\Exception $e) {
@@ -70,17 +70,17 @@
             }
 
             // Create session
-            $auth = Neoform\Entity::dao('Neoform\Auth')->insert([
+            $auth = Neoform\Auth\Dao::get()->insert([
                 'user_id'    => $user->id,
                 'expires_on' => $expires->format('Y-m-d H:i:s'),
                 'hash'       => $this->sessionToken,
             ]);
 
             // Update last login
-            Neoform\Entity::dao('Neoform\User\Date')->update(
+            Neoform\User\Date\Dao::get()->update(
                 $user->user_date(),
                 [
-                    'last_login' => (new Neoform\Type\Date)->timestamp(),
+                    'last_login' => (new Neoform\Type\Date)->getTimeStamp(),
                 ]
             );
 
@@ -92,7 +92,7 @@
          */
         public function destroy() {
             // Expired session - delete
-            Neoform\Entity::dao('Neoform\Auth')->delete($this->auth);
+            Neoform\Auth\Dao::get()->delete($this->auth);
         }
 
         /**

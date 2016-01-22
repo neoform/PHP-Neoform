@@ -9,7 +9,7 @@
      *
      * @package Neoform\Entity
      */
-    abstract class Dao {
+    abstract class Dao implements Entity {
 
         /**
          * @var array
@@ -50,6 +50,16 @@
          * @var bool
          */
         protected $useBinaryCacheKeys;
+
+        /**
+         * @var string
+         */
+        protected $cacheKeyPrefix;
+
+        /**
+         * @var static[]
+         */
+        private static $instance = [];
 
         /**
          * Order By
@@ -115,6 +125,60 @@
 
             $this->cacheDeleteExpireTtl = $config->getCacheDeleteExpireTtl();
             $this->useBinaryCacheKeys   = $config->isCacheUsingBinaryKeys();
+            $this->cacheKeyPrefix       = static::getCacheKeyPrefix();
+        }
+
+        /**
+         * Gets an instance of this DAO
+         *
+         * @return static
+         */
+        final public static function get() {
+
+            $namespace = static::getNamespace();
+
+            if (! isset(self::$instance[$namespace])) {
+                $config = Config::get();
+
+                if (isset($config->getOverrides()[$namespace])) {
+                    $configValues = $config->getOverrides()[$namespace] + $config->getDefaults();
+                } else {
+                    $configValues = $config->getDefaults();
+                }
+
+                self::$instance[$namespace] = new static(new Config\Overridden($configValues));
+            }
+
+            return self::$instance[$namespace];
+        }
+
+        /**
+         * Gets an instance of this DAO
+         *
+         * @return static
+         * @throws \Exception
+         */
+        final public static function dao($name) {
+
+            // @todo reactivate this when possible
+            //if (static::class !== 'Neoform\\Entity\\Dao') {
+            //    throw new \Exception('This function can only be used via Neoform\\Entity\\Dao::dao()');
+            //}
+
+            if (! isset(self::$instance[$name])) {
+                $config = Config::get();
+
+                if (isset($config->getOverrides()[$name])) {
+                    $configValues = $config->getOverrides()[$name] + $config->getDefaults();
+                } else {
+                    $configValues = $config->getDefaults();
+                }
+
+                $className = "{$name}\\Dao";
+                self::$instance[$name] = new $className(new Config\Overridden($configValues));
+            }
+
+            return self::$instance[$name];
         }
 
         /**
@@ -214,13 +278,13 @@
          *
          * @return string a cache key that is unqiue to the application
          */
-        final protected function _buildKey($cacheKey_name, array $fieldVals=[]) {
+        final protected function _buildKey($cacheKeyName, array $fieldVals=[]) {
             // each key is namespaced with the name of the class, then the name of the function ($cacheKey_name)
             $paramCount = count($fieldVals);
             if ($paramCount === 1) {
-                return static::CACHE_KEY . ":{$cacheKey_name}:" . md5(reset($fieldVals) . ':' . key($fieldVals), $this->useBinaryCacheKeys);
+                return "{$this->cacheKeyPrefix}:{$cacheKeyName}:" . md5(reset($fieldVals) . ':' . key($fieldVals), $this->useBinaryCacheKeys);
             } else if ($paramCount === 0) {
-                return static::CACHE_KEY . ":{$cacheKey_name}:";
+                return "{$this->cacheKeyPrefix}:{$cacheKeyName}:";
             }
 
             ksort($fieldVals);
@@ -228,7 +292,7 @@
                 $val = base64_encode($val);
             }
 
-            return static::CACHE_KEY . ":{$cacheKey_name}:" . md5(
+            return "{$this->cacheKeyPrefix}:{$cacheKeyName}:" . md5(
                 json_encode($fieldVals),
                 $this->useBinaryCacheKeys
             );
@@ -244,9 +308,9 @@
          */
         final protected function _buildKeyList($fieldName, $fieldVal) {
             if ($fieldVal === null) {
-                return static::CACHE_KEY . ':' . self::META . "[{$fieldName}]";
+                return "{$this->cacheKeyPrefix}:" . self::META . "[{$fieldName}]";
             } else {
-                return static::CACHE_KEY . ':' . self::META . "[{$fieldName}]:" . md5($fieldVal, $this->useBinaryCacheKeys);
+                return "{$this->cacheKeyPrefix}:" . self::META . "[{$fieldName}]:" . md5($fieldVal, $this->useBinaryCacheKeys);
             }
         }
 
@@ -258,7 +322,7 @@
          * @return string
          */
         final protected function _buildKeyListField($fieldName) {
-            return static::CACHE_KEY . ':' . self::META . ":{$fieldName}";
+            return "{$this->cacheKeyPrefix}:" . self::META . ":{$fieldName}";
         }
 
         /**
@@ -289,7 +353,7 @@
                     }
                 }
             } else {
-                $listKeys[] = static::CACHE_KEY . ':' . self::ALWAYS;
+                $listKeys[] = "{$this->cacheKeyPrefix}:" . self::ALWAYS;
             }
 
             // Create meta data lists
@@ -332,7 +396,7 @@
                         }
                     }
                 } else {
-                    $listKeys[$cacheKey][] = static::CACHE_KEY . ':' . self::ALWAYS;
+                    $listKeys[$cacheKey][] = "{$this->cacheKeyPrefix}:" . self::ALWAYS;
                 }
             }
 
@@ -352,7 +416,7 @@
         final protected function _deleteMetaCache(array $fieldVals) {
 
             // Always delete the stuff in the always list
-            $listKeys = [ static::CACHE_KEY . ':' . self::ALWAYS, ];
+            $listKeys = [ "{$this->cacheKeyPrefix}:" . self::ALWAYS, ];
 
             foreach ($fieldVals as $field => $value) {
 
@@ -397,7 +461,7 @@
          * @param array $fieldValsArr array containing lists of fields/values
          */
         final protected function _deleteMetaCacheMulti(array $fieldValsArr) {
-            $listKeys = [ static::CACHE_KEY . ':' . self::ALWAYS, ];
+            $listKeys = [ "{$this->cacheKeyPrefix}:" . self::ALWAYS, ];
 
             foreach ($fieldValsArr as $fieldVals) {
 

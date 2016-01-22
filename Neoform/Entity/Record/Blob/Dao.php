@@ -46,7 +46,7 @@
          * @param boolean $return_model           optional - return a model of the new record
          * @param boolean $load_model_from_source optional - after insert, load data from source - this is needed if the DB changes values on insert (eg, timestamps)
          *
-         * @return model|boolean if $return_model is set to true, the model created from the info is returned
+         * @return Model|boolean if $return_model is set to true, the model created from the info is returned
          */
         protected function _insert(array $info, $replace=false, $return_model=true, $load_model_from_source=false) {
             if (isset($info[static::BLOB]) && is_array($info[static::BLOB])) {
@@ -89,7 +89,7 @@
          * @param boolean      $return_model             optional - return a model of the new record
          * @param boolean      $reload_model_from_source optional - after update, load data from source - this is needed if the DB changes values on update (eg, timestamps)
          *
-         * @return model|bool if $return_model is true, an updated model is returned
+         * @return Model|bool if $return_model is true, an updated model is returned
          * @throws Record\Exception
          */
         protected function _update(Record\Model $model, array $new_info, $return_model=true,

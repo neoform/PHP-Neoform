@@ -3,48 +3,55 @@
     namespace Neoform\Entity\Link;
 
     use Neoform\Entity\Exception;
+    use Neoform;
 
     /**
      * Link Collection
      */
-    class Collection extends \arrayobject {
+    abstract class Collection
+        extends Neoform\Entity\Collection
+        implements Neoform\Entity\Link\Entity {
 
-        protected $_vars = []; //caching
+        /**
+         * @var string
+         */
         protected $type;
 
         /**
-         * @param array|null  $infos
-         * @param string|null $map_field
+         * @param array|null  $arrs
+         * @param string|null $mapField
          */
-        public function __construct(array $infos=null, $map_field=null) {
+        public static function fromArrays(array $arrs=null, $mapField=null) {
 
-            if (count($infos)) {
-                $model = '\\' . static::ENTITY_NAME . '\\Model';
-                $current = current($infos);
+            $collection = new static;
+
+            if (count($arrs)) {
+                $modelClassName = '\\' . static::getNamespace() . '\\Model';
+                $current = current($arrs);
                 if (is_array($current)) {
-                    $this->type = 'model';
-                } else if ($current instanceof $model) {
-                    $this->type = 'object';
+                    $collection->type = 'model';
+                } else if ($current instanceof $modelClassName) {
+                    $collection->type = 'object';
                 } else {
-                    $this->type = 'value';
+                    $collection->type = 'value';
                 }
 
-                foreach ($infos as $key => $info) {
-                    if ($this->type === 'model') {
+                foreach ($arrs as $key => $arr) {
+                    if ($collection->type === 'model') {
                         try {
-                            $v = new $model($info);
+                            $model = $modelClassName::fromArray($arr);
                         } catch (Exception $e) {
                         }
-                    } else if ($this->type === 'object') {
-                        $v = $info;
+                    } else if ($collection->type === 'object') {
+                        $model = $arr;
                     } else {
-                        $v = $info === null ? null : (int) $info;
+                        $model = $arr === null ? null : (int) $arr;
                     }
 
-                    if ($map_field !== null) {
-                        $this[$info[$map_field]] = $v;
+                    if ($mapField !== null) {
+                        $collection->models[$arr[$mapField]] = $model;
                     } else {
-                        $this[(int) $key] = $v;
+                        $collection->models[(int) $key] = $model;
                     }
                 }
             }
@@ -52,41 +59,25 @@
 
         /**
          * @param array       $info
-         * @param string|null $map_field
+         * @param string|null $mapField
          *
-         * @return collection
+         * @return Collection
          */
-        public function add(array $info, $map_field=null) {
+        public function add(array $info, $mapField=null) {
             if ($this->type === 'model') {
-                $model = '\\' . static::ENTITY_NAME . '\\Model';
-                $v = new $model($info);
+                $modelClassName = '\\' . static::getNamespace() . '\\Model';
+                $v = $modelClassName::fromArray($info);
             } else if ($this->type === 'object') {
                 $v = $info;
             } else {
                 $v = $info === null ? null : $info;
             }
 
-            if ($map_field !== null) {
-                $this[$info[$map_field]] = $v;
+            if ($mapField !== null) {
+                $this->models[$info[$mapField]] = $v;
             } else {
-                $this[] = $v;
+                $this->models[] = $v;
             }
-
-            //reset
-            $this->_vars = [];
-
-            return $this;
-        }
-
-        /**
-         * Delete row
-         *
-         * @param $k Key
-         *
-         * @return collection
-         */
-        public function del($k) {
-            unset($this[$k]);
 
             //reset
             $this->_vars = [];
@@ -99,7 +90,7 @@
          *
          * @param string $field
          *
-         * @return collection
+         * @return Collection
          * @throws exception
          */
         public function remap($field) {
@@ -108,10 +99,11 @@
             }
 
             $new = [];
-            foreach ($this as $record) {
-                $new[$record->$field] = $record;
+            foreach ($this->models as $model) {
+                $new[$model->get($field)] = $model;
             }
-            $this->exchangeArray($new);
+            $this->models = $new;
+
             return $this;
         }
 
@@ -130,50 +122,10 @@
 
             if (! array_key_exists($field, $this->_vars)) {
                 $this->_vars[$field] = [];
-                foreach ($this as $record) {
-                    $this->_vars[$field][] = $record->$field;
+                foreach ($this->models as $model) {
+                    $this->_vars[$field][] = $model->get($field);
                 }
             }
             return $this->_vars[$field];
-        }
-
-        /**
-         * Sort the collection
-         *
-         * @param callable|string $f
-         * @param string $order
-         */
-        public function sort($f, $order='asc') {
-            if (is_callable($f)) {
-                $this->uasort(function ($a, $b) use ($f, $order) {
-                    $a = $f($a);
-                    $b = $f($b);
-
-                    if ($a === $b) {
-                        return 0;
-                    }
-
-                    if ($order === 'asc') {
-                        return ($a < $b) ? -1 : 1;
-                    } else {
-                        return ($a > $b) ? -1 : 1;
-                    }
-                });
-            } else {
-                $this->uasort(function ($a, $b) use ($f, $order) {
-                    $a_field = $a->$f;
-                    $b_field = $b->$f;
-
-                    if ($a_field === $b_field) {
-                        return 0;
-                    }
-
-                    if ($order === 'asc') {
-                        return ($a_field < $b_field) ? -1 : 1;
-                    } else {
-                        return ($a_field > $b_field) ? -1 : 1;
-                    }
-                });
-            }
         }
     }

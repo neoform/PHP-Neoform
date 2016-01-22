@@ -9,7 +9,7 @@
         const SESSION_TOKEN_KEY = 'rc';
 
         /**
-         * @var Neoform\Request\Model
+         * @var Neoform\Request\Request
          */
         protected $request;
 
@@ -24,10 +24,10 @@
         protected $sessionToken;
 
         /**
-         * @param Neoform\Request\Model $request
-         * @param Neoform\Session\Config $config
+         * @param Neoform\Request\Request $request
+         * @param Neoform\Session\Config  $config
          */
-        public function __construct(Neoform\Request\Model $request, Neoform\Session\Config $config) {
+        public function __construct(Neoform\Request\Request $request, Neoform\Session\Config $config) {
             $this->request = $request;
             $this->config  = $config;
         }

@@ -5,7 +5,10 @@
     /**
      * User Site link DAO
      */
-    class Dao extends \Neoform\Entity\Link\Dao implements Definition {
+    class Dao extends \Neoform\Entity\Link\Dao {
+
+        // Load entity details into the class
+        use Details;
 
         const BY_SITE      = 'by_site';
         const BY_SITE_USER = 'by_site_user';

@@ -21,8 +21,14 @@
             "'t','f'"        => 't',
         ];
 
+        /**
+         * @var Table[]
+         */
         protected $tables = [];
 
+        /**
+         * @return Table[]
+         */
         public function tables() {
             return $this->tables;
         }
@@ -30,16 +36,16 @@
         public function dump() {
             $return = [];
             foreach ($this->tables as $table) {
-                foreach ($table->fields as $field) {
-                    $referencing_fields = [];
-                    foreach ($field->referencing_fields as $referencing_field) {
-                        $referencing_fields[] = "{$referencing_field->table->name}.{$referencing_field->name}";
+                foreach ($table->getFields() as $field) {
+                    $referencingFields = [];
+                    foreach ($field->getReferencedFields() as $referencingField) {
+                        $referencingFields[] = "{$referencingField->getTable()->getName()}.{$referencingField->getName()}";
                     }
 
-                    $return[$field->table->name][$field->name] = [
-                        'info'               => $field->info,
-                        'referenced_field'   => $field->referenced_field ? "{$field->referenced_field->table->name}.{$field->referenced_field->name}" : null,
-                        'referencing_fields' => $referencing_fields,
+                    $return[$field->getTable()->getName()][$field->getName()] = [
+                        'info'              => $field->getInfo(),
+                        'referencedField'   => $field->getReferencedField() ? "{$field->getReferencedField()->getTable()->getName()}.{$field->getReferencedField()->getName()}" : null,
+                        'referencingFields' => $referencingFields,
                     ];
                 }
             }

@@ -12,7 +12,7 @@
          *
          * @param array $info
          *
-         * @return model
+         * @return Model
          * @throws Input\Exception
          */
         public static function insert(array $info) {
@@ -21,55 +21,57 @@
 
             self::_validate_insert($input);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\Locale')->insert([
-                    'iso2' => $input->iso2->val(),
-                    'name' => $input->name->val(),
-                ]);
+            if ($input->isValid()) {
+                return Dao::get()->insert(
+                    $input->getVals([
+                        'iso2',
+                        'name',
+                    ])
+                );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         /**
          * Update a Locale model with $info
          *
-         * @param model $locale
+         * @param Model $locale
          * @param array $info
-         * @param bool  $crush
+         * @param bool  $includeEmpty
          *
-         * @return model
+         * @return Model
          * @throws Input\Exception
          */
-        public static function update(Model $locale, array $info, $crush=false) {
+        public static function update(Model $locale, array $info, $includeEmpty=false) {
 
             $input = new Input\Collection($info);
 
-            self::_validate_update($locale, $input);
+            self::_validate_update($locale, $input, $includeEmpty);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\Locale')->update(
+            if ($input->isValid()) {
+                return Dao::get()->update(
                     $locale,
-                    $input->vals(
+                    $input->getVals(
                         [
                             'iso2',
                             'name',
                         ],
-                        $crush
+                        $includeEmpty
                     )
                 );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         /**
          * Delete a Locale
          *
-         * @param model $locale
+         * @param Model $locale
          *
          * @return bool
          */
         public static function delete(Model $locale) {
-            return Entity::dao('Neoform\Locale')->delete($locale);
+            return Dao::get()->delete($locale);
         }
 
         /**
@@ -80,33 +82,40 @@
         public static function _validate_insert(Input\Collection $input) {
 
             // iso2
-            $input->iso2->cast('string')->length(1, 2)->callback(function($iso2) {
-                if (Entity::dao('Neoform\Locale')->record($iso2->val())) {
-                    $iso2->errors('already in use');
-                }
-            });
+            $input->validate('iso2', 'string')
+                ->requireLength(2, 2)
+                ->callback(function(Input\Input $iso2) {
+                    if (Dao::get()->record($iso2->getVal())) {
+                        $iso2->setErrors('already in use');
+                    }
+                });
 
             // name
-            $input->name->cast('string')->length(1, 255);
+            $input->validate('name', 'string')
+                ->requireLength(1, 255);
         }
 
         /**
          * Validates info to update a Locale model
          *
-         * @param model $locale
+         * @param Model $locale
          * @param Input\Collection $input
+         * @param bool $includeEmpty
          */
-        public static function _validate_update(Model $locale, Input\Collection $input) {
+        public static function _validate_update(Model $locale, Input\Collection $input, $includeEmpty) {
 
             // iso2
-            $input->iso2->cast('string')->optional()->length(1, 2)->callback(function($iso2) use ($locale) {
-                $locale_info = Entity::dao('Neoform\Locale')->record($iso2->val());
-                if ($locale_info && (string) $locale_info['iso2'] !== $locale->iso2) {
-                    $iso2->errors('already in use');
-                }
-            });
+            $input->validate('iso2', 'string', !$includeEmpty)
+                ->requireLength(2, 2)
+                ->callback(function(Input\Input $iso2) use ($locale) {
+                    $locale_info = Dao::get()->record($iso2->getVal());
+                    if ($locale_info && (string) $locale_info['iso2'] !== $locale->iso2) {
+                        $iso2->setErrors('already in use');
+                    }
+                });
 
             // name
-            $input->name->cast('string')->optional()->length(1, 255);
+            $input->validate('name', 'string', !$includeEmpty)
+                ->requireLength(1, 255);
         }
     }

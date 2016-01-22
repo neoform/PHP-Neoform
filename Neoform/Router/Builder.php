@@ -8,14 +8,14 @@
     class Builder {
 
         /**
-         * @var Neoform\Http\Config
+         * @var Neoform\Router\Config
          */
         protected $config;
 
         /**
-         * @var Request\Model
+         * @var Neoform\Request\Builder
          */
-        protected $request;
+        protected $requestBuilder;
 
         /**
          * @var ControllerDetails
@@ -43,15 +43,15 @@
         protected $userForbidden = false;
 
         /**
-         * @param Request\Model $request
-         * @param Neoform\Http\Config $config
-         * @param array $controllerMap
+         * @param Neoform\Request\Builder $requestBuilder
+         * @param Neoform\Router\Config   $config
+         * @param array                   $controllerMap
          */
-        public function __construct(Request\Model $request, Neoform\Http\Config $config, array $controllerMap) {
-            $this->request = $request;
-            $this->config  = $config;
+        public function __construct(Neoform\Request\Builder $requestBuilder, Neoform\Router\Config $config, array $controllerMap) {
+            $this->requestBuilder = $requestBuilder;
+            $this->config         = $config;
 
-            $slugs = $this->request->getPath()->getSlugs();
+            $slugs = $this->requestBuilder->getPath()->getSlugs();
 
             $this->determineController(
                 $slugs,
@@ -70,7 +70,7 @@
          * Determine which controller is to be loaded
          *
          * @param Request\Parameters\Slugs $slugs
-         * @param array $controllerMap
+         * @param array                    $controllerMap
          */
         protected function determineController(Request\Parameters\Slugs $slugs, array $controllerMap) {
 
@@ -133,7 +133,7 @@
         }
 
         /**
-         * Determines if this controller
+         * Determines if this controller is authenticated
          *
          * @param array $resourceIds
          *
@@ -141,7 +141,7 @@
          */
         protected function authenticated(array $resourceIds) {
 
-            $auth = $this->request->getSession()->getAuth();
+            $auth = $this->requestBuilder->getSession()->getAuth();
 
             // If user is logged in
             if (! $auth->isLoggedIn()) {
@@ -149,7 +149,7 @@
                 return false;
             }
 
-            if (! $auth->getUser()->has_access($resourceIds)) {
+            if (! $auth->getUser()->hasAccess($resourceIds)) {
                 $this->userForbidden = ! $this->config->isSilentAccessDenied();
                 return false;
             }
@@ -164,7 +164,7 @@
          */
         public function build() {
             return new Model(
-                $this->request,
+                $this->requestBuilder,
                 $this->controllerDetails,
                 new Request\Parameters\Slugs($this->nonControllerSlugs),
                 new Request\Parameters\Slugs($this->controllerSlugs),
@@ -178,7 +178,7 @@
          * @return bool
          */
         protected function isRedirectRequired() {
-            $baseUrl = $this->request->getBaseUrl();
+            $baseUrl = $this->requestBuilder->getBaseUrl();
 
             if (! $baseUrl->isValid()) {
                 return false;

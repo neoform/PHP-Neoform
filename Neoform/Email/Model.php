@@ -25,7 +25,7 @@
                     $this->_default_sender = '=?UTF-8?B?' . base64_encode($default_sender_name) . "?= <{$default_sender_email}>";
                 }
             } else {
-                $this->_default_sender = '=?UTF-8?B?' . base64_encode(Neoform\Core\Config::get()->getSiteName()) . '?= <noreply@' . Neoform\Http\Config::get()->getDomain() . '>';
+                $this->_default_sender = '=?UTF-8?B?' . base64_encode(Neoform\Core\Config::get()->getSiteName()) . '?= <noreply@' . Neoform\Router\Config::get()->getDomain() . '>';
             }
 
             $this->_vars = [];

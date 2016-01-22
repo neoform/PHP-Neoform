@@ -17,7 +17,7 @@
      * since that list is possibly no longer accurate. Also, since the result sets use limit/offsets, there are often
      * more than on result set cached away, so *all* cached result sets that used email to be ordered, most be destroyed.
      */
-    abstract class Dao extends Neoform\Entity\Dao {
+    abstract class Dao extends Neoform\Entity\Dao implements Neoform\Entity\Record\Entity {
 
         /**
          * @var bool
@@ -59,7 +59,7 @@
             );
 
             $this->sourceEngineTtl = $config->getSourceEngineTtl();
-            $this->binaryPk        = $this->fieldBindings[static::PRIMARY_KEY] === parent::TYPE_BINARY;
+            $this->binaryPk        = $this->fieldBindings[static::getPrimaryKeyName()] === parent::TYPE_BINARY;
         }
 
         /**
@@ -81,11 +81,11 @@
 
             // To speed up key creation, we have different ways of handling simpler keys that have fewer params
             if ($paramCount === 1) {
-                return static::CACHE_KEY . ":{$cacheKeyName}:{$offset},{$limit}:" .
+                return "{$this->cacheKeyPrefix}:{$cacheKeyName}:{$offset},{$limit}:" .
                     md5(json_encode($orderBy), $this->useBinaryCacheKeys) . ':' .
                     md5(reset($params) . ':' . key($params), $this->useBinaryCacheKeys);
             } else if ($paramCount === 0) {
-                return static::CACHE_KEY . ":{$cacheKeyName}:{$offset},{$limit}:" .
+                return "{$this->cacheKeyPrefix}:{$cacheKeyName}:{$offset},{$limit}:" .
                     md5(json_encode($orderBy), $this->useBinaryCacheKeys) . ':';
             } else {
                 ksort($params);
@@ -94,7 +94,7 @@
                 }
 
                 // Use only the array_values() and not the named array, since each $cacheKeyName is unique per function
-                return static::CACHE_KEY . ":{$cacheKeyName}:{$offset},{$limit}:" .
+                return "{$this->cacheKeyPrefix}:{$cacheKeyName}:{$offset},{$limit}:" .
                     md5(json_encode($orderBy), $this->useBinaryCacheKeys) . ':' .
                     md5(json_encode($params), $this->useBinaryCacheKeys);
             }
@@ -108,7 +108,7 @@
          * @return string
          */
         final protected function _buildKeyRecord($pk) {
-            return static::CACHE_KEY . ':' . self::RECORD . ':' . ($this->binaryPk ? md5($pk, $this->useBinaryCacheKeys) : $pk);
+            return "{$this->cacheKeyPrefix}:" . self::RECORD . ':' . ($this->binaryPk ? md5($pk, $this->useBinaryCacheKeys) : $pk);
         }
 
         /**
@@ -308,13 +308,15 @@
                     },
                     function($cacheKey, $pks) use ($fieldVals, $orderBy) {
 
-                        if (array_key_exists($this::PRIMARY_KEY, $fieldVals)) {
-                            $fieldVals[$this::PRIMARY_KEY] = array_unique(array_merge(
-                                is_array($fieldVals[$this::PRIMARY_KEY]) ? $fieldVals[$this::PRIMARY_KEY] : [ $fieldVals[$this::PRIMARY_KEY] ],
+                        $primaryKeyName = $this::getPrimaryKeyName();
+
+                        if (array_key_exists($primaryKeyName, $fieldVals)) {
+                            $fieldVals[$primaryKeyName] = array_unique(array_merge(
+                                is_array($fieldVals[$primaryKeyName]) ? $fieldVals[$primaryKeyName] : [ $fieldVals[$primaryKeyName], ],
                                 $pks
                             ));
                         } else {
-                            $fieldVals[$this::PRIMARY_KEY] = $pks;
+                            $fieldVals[$primaryKeyName] = $pks;
                         }
 
                         $this->_setMetaCache($cacheKey, $fieldVals, array_keys($orderBy));
@@ -326,18 +328,18 @@
                     function() use ($fieldVals) {
                         return $this->sourceEngine->byFields($fieldVals);
                     },
-                    function($cacheKey, $pks) use ($fieldVals) {
+                    function($cacheKey, $pkResultsArr) use ($fieldVals) {
 
-                        $pk = $this::PRIMARY_KEY;
+                        $primaryKeyName = $this::getPrimaryKeyName();
 
                         // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
-                        if (array_key_exists($pk, $fieldVals)) {
-                            $fieldVals[$pk] = array_unique(array_merge(
-                                is_array($fieldVals[$pk]) ? $fieldVals[$pk] : [ $fieldVals[$pk] ],
-                                $pks
+                        if (array_key_exists($primaryKeyName, $fieldVals)) {
+                            $fieldVals[$primaryKeyName] = array_unique(array_merge(
+                                is_array($fieldVals[$primaryKeyName]) ? $fieldVals[$primaryKeyName] : [ $fieldVals[$primaryKeyName], ],
+                                $pkResultsArr
                             ));
                         } else {
-                            $fieldVals[$pk] = $pks;
+                            $fieldVals[$primaryKeyName] = $pkResultsArr;
                         }
 
                         $this->_setMetaCache($cacheKey, $fieldVals);
@@ -384,7 +386,7 @@
                     },
                     function(array $cacheKeys, array $fieldValsArr, array $pkResultsArr) use ($orderBy) {
 
-                        $pk = $this::PRIMARY_KEY;
+                        $primaryKeyName = $this::getPrimaryKeyName();
 
                         $cacheKeysFieldVals = [];
                         foreach ($cacheKeys as $k => $cacheKey) {
@@ -392,13 +394,13 @@
                             // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
                             $fieldVals = & $fieldValsArr[$k];
 
-                            if (array_key_exists($pk, $fieldVals)) {
-                                $fieldVals[$pk] = array_unique(array_merge(
-                                    is_array($fieldVals[$pk]) ? $fieldVals[$pk] : [ $fieldVals[$pk] ],
+                            if (array_key_exists($primaryKeyName, $fieldVals)) {
+                                $fieldVals[$primaryKeyName] = array_unique(array_merge(
+                                    is_array($fieldVals[$primaryKeyName]) ? $fieldVals[$primaryKeyName] : [ $fieldVals[$primaryKeyName] ],
                                     $pkResultsArr[$k]
                                 ));
                             } else {
-                                $fieldVals[$pk] = $pkResultsArr[$k];
+                                $fieldVals[$primaryKeyName] = $pkResultsArr[$k];
                             }
 
                             $cacheKeysFieldVals[$cacheKey] = $fieldVals;
@@ -417,7 +419,8 @@
                         return $this->sourceEngine->byFieldsMulti($fieldValsArr);
                     },
                     function(array $cacheKeys, array $fieldValsArr, array $pkResultsArr) {
-                        $pk = $this::PRIMARY_KEY;
+
+                        $primaryKeyName = $this::getPrimaryKeyName();
 
                         $cacheKeysFieldVals = [];
                         foreach ($cacheKeys as $k => $cacheKey) {
@@ -425,13 +428,13 @@
                             // The PKs found in this result set must also be put in meta cache to handle record deletion/updates
                             $fieldVals = & $fieldValsArr[$k];
 
-                            if (array_key_exists($pk, $fieldVals)) {
-                                $fieldVals[$pk] = array_unique(array_merge(
-                                    is_array($fieldVals[$pk]) ? $fieldVals[$pk] : [ $fieldVals[$pk] ],
+                            if (array_key_exists($primaryKeyName, $fieldVals)) {
+                                $fieldVals[$primaryKeyName] = array_unique(array_merge(
+                                    is_array($fieldVals[$primaryKeyName]) ? $fieldVals[$primaryKeyName] : [ $fieldVals[$primaryKeyName], ],
                                     $pkResultsArr[$k]
                                 ));
                             } else {
-                                $fieldVals[$pk] = $pkResultsArr[$k];
+                                $fieldVals[$primaryKeyName] = $pkResultsArr[$k];
                             }
 
                             $cacheKeysFieldVals[$cacheKey] = $fieldVals;
@@ -446,14 +449,14 @@
         /**
          * Inserts a record into the database
          *
-         * @param array   $info                   an associative array of into to be put into the database
-         * @param boolean $replace                optional - user REPLACE INTO instead of INSERT INTO
-         * @param boolean $returnModel           optional - return a model of the new record
+         * @param array   $info                an associative array of into to be put into the database
+         * @param boolean $replace             optional - user REPLACE INTO instead of INSERT INTO
+         * @param boolean $returnModel         optional - return a model of the new record
          * @param boolean $loadModelFromSource optional - after insert, load data from source - this is needed if the DB changes values on insert (eg, timestamps)
          *
-         * @return model|boolean if $returnModel is set to true, the model created from the info is returned
+         * @return Model|boolean if $returnModel is set to true, the model created from the info is returned
          */
-        protected function _insert(array $info, $replace=false, $returnModel=true, $loadModelFromSource=false) {
+        protected function _insert(array $info, $replace=false, $returnModel=true, $loadModelFromSource=true) {
 
             try {
                 $info = $this->sourceEngine->insert(
@@ -468,15 +471,15 @@
 
             // In case a blank record was cached
             $this->cacheRepoWrite->set(
-                $this->_buildKeyRecord($info[static::PRIMARY_KEY]),
+                $this->_buildKeyRecord($info[static::getPrimaryKeyName()]),
                 $info
             );
 
             $this->_deleteMetaCache($info);
 
             if ($returnModel) {
-                $model = '\\' . static::ENTITY_NAME . '\\Model';
-                return new $model(null, $info);
+                $model = '\\' . static::getNamespace() . '\\Model';
+                return $model::fromArray($info);
             } else if ($loadModelFromSource) {
                 return $info;
             }
@@ -497,7 +500,7 @@
          * @throws Exception
          */
         protected function _insertMulti(array $infos, $keysMatch=true, $replace=false, $returnCollection=true,
-                                    $loadModelsFromSource=false) {
+                                    $loadModelsFromSource=true) {
             try {
                 $infos = $this->sourceEngine->insertMulti(
                     $infos,
@@ -512,7 +515,7 @@
 
             $insert_cache_data = [];
             foreach ($infos as $info) {
-                $insert_cache_data[$this->_buildKeyRecord($info[static::PRIMARY_KEY])] = $info;
+                $insert_cache_data[$this->_buildKeyRecord($info[static::getPrimaryKeyName()])] = $info;
             }
 
             $this->cacheRepoWrite->setMulti($insert_cache_data);
@@ -520,8 +523,8 @@
             $this->_deleteMetaCacheMulti($infos);
 
             if ($returnCollection) {
-                $collection = '\\' . static::ENTITY_NAME . '\\Collection';
-                return new $collection(null, $infos);
+                $collection = '\\' . static::getNamespace() . '\\Collection';
+                return $collection::fromArray($infos);
             } else if ($loadModelsFromSource) {
                 return $infos;
             }
@@ -557,8 +560,6 @@
                 return $returnModel ? $model : false;
             }
 
-            $pk = static::PRIMARY_KEY;
-
             try {
                 $reloadedInfo = $this->sourceEngine->update(
                     $model,
@@ -581,32 +582,34 @@
 
             $this->cacheRepoWrite->batchStart();
 
+            $primaryKeyName = static::getPrimaryKeyName();
+
             /**
              * If the primary key was changed, bust the cache for that new key too
              * technically the PK should never change though... that kinda defeats the purpose of a record PK...
              */
-            if (array_key_exists($pk, $newInfo)) {
+            if (array_key_exists($primaryKeyName, $newInfo)) {
                 // Set the cache record
                 $this->cacheRepoWrite->set(
-                    $this->_buildKeyRecord($newInfo[$pk]),
+                    $this->_buildKeyRecord($newInfo[$primaryKeyName]),
                     $newInfo + $oldInfo
                 );
 
                 // Destroy the old key
                 if ($this->cacheReposAreTheSame) {
                     $this->cacheRepoWrite->delete(
-                        $this->_buildKeyRecord($model->$pk)
+                        $this->_buildKeyRecord($model->$primaryKeyName)
                     );
                 } else {
                     $this->cacheRepoWrite->expire(
-                        $this->_buildKeyRecord($model->$pk),
+                        $this->_buildKeyRecord($model->$primaryKeyName),
                         $this->cacheDeleteExpireTtl
                     );
                 }
             } else {
                 // Update cache record
                 $this->cacheRepoWrite->set(
-                    $this->_buildKeyRecord($model->$pk),
+                    $this->_buildKeyRecord($model->$primaryKeyName),
                     $newInfo + $oldInfo
                 );
             }
@@ -626,7 +629,7 @@
 
             if ($returnModel) {
                 if ($loadModelFromSource) {
-                    return new $model(null, $newInfo);
+                    return $model::fromArray($newInfo);
                 } else {
                     $updated_model = clone $model;
                     $updated_model->_update($newInfo);
@@ -647,7 +650,7 @@
          */
         protected function _delete(Model $model) {
 
-            $pk = static::PRIMARY_KEY;
+            $primaryKeyName = static::getPrimaryKeyName();
 
             try {
                 $this->sourceEngine->delete($model);
@@ -657,11 +660,11 @@
 
             if ($this->cacheReposAreTheSame) {
                 $this->cacheRepoWrite->delete(
-                    $this->_buildKeyRecord($model->$pk)
+                    $this->_buildKeyRecord($model->$primaryKeyName)
                 );
             } else {
                 $this->cacheRepoWrite->expire(
-                    $this->_buildKeyRecord($model->$pk),
+                    $this->_buildKeyRecord($model->$primaryKeyName),
                     $this->cacheDeleteExpireTtl
                 );
             }
@@ -675,7 +678,7 @@
         /**
          * Deletes a record from the database
          *
-         * @param collection $collection the collection of models that is to be deleted
+         * @param Collection $collection the collection of models that is to be deleted
          *
          * @return boolean|null returns true on success
          * @throws Exception
@@ -693,8 +696,8 @@
             }
 
             $deleteCacheKeys = [];
-            foreach ($collection->field(static::PRIMARY_KEY) as $pk) {
-                $deleteCacheKeys[] = $this->_buildKeyRecord($pk);
+            foreach ($collection->field(static::getPrimaryKeyName()) as $primaryKeyName) {
+                $deleteCacheKeys[] = $this->_buildKeyRecord($primaryKeyName);
             }
 
             if ($this->cacheReposAreTheSame) {
@@ -709,7 +712,7 @@
             }
 
             // Destroy cache based on table fieldvals - do not wrap this function in a batch execution
-            $collectionData           = $collection->export();
+            $collectionData          = $collection->export();
             $collectionDataOrganized = [];
             foreach (array_keys(reset($collectionData)) as $field) {
                 $collectionDataOrganized[$field] = array_column($collectionData, $field);

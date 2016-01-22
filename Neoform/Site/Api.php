@@ -12,7 +12,7 @@
          *
          * @param array $info
          *
-         * @return model
+         * @return Model
          * @throws Input\Exception
          */
         public static function insert(array $info) {
@@ -21,55 +21,57 @@
 
             self::_validate_insert($input);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\Site')->insert([
-                    'id'   => $input->id->val(),
-                    'name' => $input->name->val(),
-                ]);
+            if ($input->isValid()) {
+                return Dao::get()->insert(
+                    $input->getVals([
+                        'id',
+                        'name',
+                    ])
+                );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         /**
          * Update a Site model with $info
          *
-         * @param model $site
+         * @param Model $site
          * @param array $info
-         * @param bool  $crush
+         * @param bool  $includeEmpty
          *
-         * @return model
+         * @return Model
          * @throws Input\Exception
          */
-        public static function update(Model $site, array $info, $crush=false) {
+        public static function update(Model $site, array $info, $includeEmpty=false) {
 
             $input = new Input\Collection($info);
 
-            self::_validate_update($site, $input);
+            self::_validate_update($site, $input, $includeEmpty);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\Site')->update(
+            if ($input->isValid()) {
+                return Dao::get()->update(
                     $site,
-                    $input->vals(
+                    $input->getVals(
                         [
                             'id',
                             'name',
                         ],
-                        $crush
+                        $includeEmpty
                     )
                 );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         /**
          * Delete a Site
          *
-         * @param model $site
+         * @param Model $site
          *
          * @return bool
          */
         public static function delete(Model $site) {
-            return Entity::dao('Neoform\Site')->delete($site);
+            return Dao::get()->delete($site);
         }
 
         /**
@@ -80,42 +82,51 @@
         public static function _validate_insert(Input\Collection $input) {
 
             // id
-            $input->id->cast('int')->digit(0, 65535)->callback(function($id) {
-                if (Entity::dao('Neoform\Site')->record($id->val())) {
-                    $id->errors('already in use');
-                }
-            });
+            $input->validate('id', 'int')
+                ->requireDigit(0, 65535)
+                ->callback(function(Input\Input $id) {
+                    if (Dao::get()->record($id->getVal())) {
+                        $id->setErrors('already in use');
+                    }
+                });
 
             // name
-            $input->name->cast('string')->length(1, 64)->callback(function($name) {
-                if (Entity::dao('Neoform\Site')->by_name($name->val())) {
-                    $name->errors('already in use');
-                }
-            });
+            $input->validate('name', 'string')
+                ->requireLength(1, 64)
+                ->callback(function(Input\Input $name) {
+                    if (Dao::get()->by_name($name->getVal())) {
+                        $name->setErrors('already in use');
+                    }
+                });
         }
 
         /**
          * Validates info to update a Site model
          *
-         * @param model $site
+         * @param Model $site
          * @param Input\Collection $input
+         * @param bool $includeEmpty
          */
-        public static function _validate_update(Model $site, Input\Collection $input) {
+        public static function _validate_update(Model $site, Input\Collection $input, $includeEmpty) {
 
             // id
-            $input->id->cast('int')->optional()->digit(0, 65535)->callback(function($id) use ($site) {
-                $site_info = Entity::dao('Neoform\Site')->record($id->val());
-                if ($site_info && (int) $site_info['id'] !== $site->id) {
-                    $id->errors('already in use');
-                }
-            });
+            $input->validate('id', 'int', !$includeEmpty)
+                ->requireDigit(0, 65535)
+                ->callback(function(Input\Input $id) use ($site) {
+                    $site_info = Dao::get()->record($id->getVal());
+                    if ($site_info && (int) $site_info['id'] !== $site->id) {
+                        $id->setErrors('already in use');
+                    }
+                });
 
             // name
-            $input->name->cast('string')->optional()->length(1, 64)->callback(function($name) use ($site) {
-                $id_arr = Entity::dao('Neoform\Site')->by_name($name->val());
-                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $site->id) {
-                    $name->errors('already in use');
-                }
-            });
+            $input->validate('name', 'string', !$includeEmpty)
+                ->requireLength(1, 64)
+                ->callback(function(Input\Input $name) use ($site) {
+                    $id_arr = Dao::get()->by_name($name->getVal());
+                    if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $site->id) {
+                        $name->setErrors('already in use');
+                    }
+                });
         }
     }

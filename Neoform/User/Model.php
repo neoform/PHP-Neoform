@@ -16,9 +16,35 @@
      * @var binary $password_salt
      * @var int $status_id
      */
-    class Model extends Entity\Record\Model implements Definition {
+    class Model extends Entity\Record\Model {
+
+        // Load entity details into the class
+        use Details;
 
         public function __get($k) {
+
+            if (isset($this->vars[$k])) {
+                switch ($k) {
+                    // integers
+                    case 'id':
+                    case 'password_hashmethod':
+                    case 'password_cost':
+                    case 'status_id':
+                        return (int) $this->vars[$k];
+
+                    // strings
+                    case 'email':
+                    case 'password_hash':
+                    case 'password_salt':
+                        return (string) $this->vars[$k];
+
+                    default:
+                        return $this->vars[$k];
+                }
+            }
+        }
+
+        public function get($k) {
 
             if (isset($this->vars[$k])) {
                 switch ($k) {
@@ -50,7 +76,7 @@
          *
          * @return bool
          */
-        public function has_access(array $resource_ids) {
+        public function hasAccess(array $resource_ids) {
 
             // No resources needed? You may proceed.
             if (! $resource_ids) {
@@ -95,15 +121,20 @@
          *
          * @return bool
          */
-        public function has_resource($resource_name) {
-            if (! isset($this->_vars['has_resource'][$resource_name])) {
-                $this->_vars['has_resource'][$resource_name] = (bool) in_array(
-                    Neoform\Acl\Resource\Lib::id_from_slug($resource_name),
-                    $this->role_resource_ids()
-                );
+        public function hasResource($resource_name) {
+            if (! isset($this->_vars['hasResource'][$resource_name])) {
+                try {
+                    $this->_vars['hasResource'][$resource_name] = (bool) in_array(
+                        Neoform\Acl\Resource\Lib::id_from_slug($resource_name),
+                        $this->role_resource_ids()
+                    );
+                } catch (Neoform\Acl\Resource\Exception $e) {
+                    Neoform\Core::log($e->getMessage());
+                    return false;
+                }
             }
 
-            return $this->_vars['has_resource'][$resource_name];
+            return $this->_vars['hasResource'][$resource_name];
         }
 
         /**
@@ -115,11 +146,11 @@
          * @return bool
          * @throws exception
          */
-        public function has_resources($mode, array $resource_names) {
+        public function hasResources($mode, array $resource_names) {
             switch ((string) $mode) {
                 case 'all':
                     foreach ($resource_names as $resource_name) {
-                        if (! $this->has_resource($resource_name)) {
+                        if (! $this->hasResource($resource_name)) {
                             return false;
                         }
                     }
@@ -128,7 +159,7 @@
 
                 case 'any':
                     foreach ($resource_names as $resource_name) {
-                        if ($this->has_resource($resource_name)) {
+                        if ($this->hasResource($resource_name)) {
                             return true;
                         }
                     }
@@ -148,12 +179,12 @@
             if (! isset($this->_vars['role_ids'])) {
 
                 // Get user's roles
-                $role_ids = Entity::dao('Neoform\User\Acl\Role')->by_user($this->vars['id']);
+                $role_ids = Neoform\User\Acl\Role\Dao::get()->by_user($this->vars['id']);
 
                 // Get user's groups
-                if ($group_ids = Entity::dao('Neoform\Acl\Group\User')->by_user($this->vars['id'])) {
+                if ($group_ids = Neoform\Acl\Group\User\Dao::get()->by_user($this->vars['id'])) {
                     // Get those group's roles
-                    foreach (Entity::dao('Neoform\Acl\Group\Role')->by_acl_group_multi($group_ids) as $group_role_ids) {
+                    foreach (Neoform\Acl\Group\Role\Dao::get()->by_acl_group_multi($group_ids) as $group_role_ids) {
                         foreach ($group_role_ids as $group_role_id) {
                             $role_ids[] = $group_role_id;
                         }
@@ -178,7 +209,7 @@
                 $role_ids = $this->role_ids();
 
                 $role_resource_ids = [];
-                foreach (Entity::dao('Neoform\Acl\Role\Resource')->by_acl_role_multi($role_ids) as $ids) {
+                foreach (Neoform\Acl\Role\Resource\Dao::get()->by_acl_role_multi($role_ids) as $ids) {
                     if ($ids) {
                         foreach ($ids as $role_resource_id) {
                             $role_resource_ids[] = (int) $role_resource_id;
@@ -204,8 +235,8 @@
         public function acl_group_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limitVarKey('acl_group_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = new \Neoform\Acl\Group\Collection(
-                    Entity::dao('Neoform\Acl\Group\User')->by_user($this->vars['id'], $order_by, $offset, $limit)
+                $this->_vars[$key] = Neoform\Acl\Group\Collection::fromPks(
+                    Neoform\Acl\Group\User\Dao::get()->by_user($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -223,7 +254,7 @@
 
             $key = parent::_countVarKey('acl_group_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = Entity::dao('Neoform\Acl\Group\User')->count($fieldvals);
+                $this->_vars[$key] = Neoform\Acl\Group\User\Dao::get()->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -240,8 +271,8 @@
         public function auth_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limitVarKey('auth_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = new \Neoform\Auth\Collection(
-                    Entity::dao('Neoform\Auth')->by_user($this->vars['id'], $order_by, $offset, $limit)
+                $this->_vars[$key] = Neoform\Auth\Collection::fromPks(
+                    Neoform\Auth\Dao::get()->by_user($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -259,7 +290,7 @@
 
             $key = parent::_countVarKey('auth_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = Entity::dao('Neoform\Auth')->count($fieldvals);
+                $this->_vars[$key] = Neoform\Auth\Dao::get()->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -276,8 +307,8 @@
         public function acl_role_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limitVarKey('acl_role_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = new \Neoform\Acl\Role\Collection(
-                    Entity::dao('Neoform\User\Acl\Role')->by_user($this->vars['id'], $order_by, $offset, $limit)
+                $this->_vars[$key] = Neoform\Acl\Role\Collection::fromPks(
+                    Neoform\User\Acl\Role\Dao::get()->by_user($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -295,7 +326,7 @@
 
             $key = parent::_countVarKey('acl_role_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = Entity::dao('Neoform\User\Acl\Role')->count($fieldvals);
+                $this->_vars[$key] = Neoform\User\Acl\Role\Dao::get()->count($fieldvals);
             }
             return $this->_vars[$key];
         }
@@ -330,8 +361,8 @@
         public function site_collection(array $order_by=null, $offset=null, $limit=null) {
             $key = self::_limitVarKey('site_collection', $order_by, $offset, $limit);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = new \Neoform\Site\Collection(
-                    Entity::dao('Neoform\User\Site')->by_user($this->vars['id'], $order_by, $offset, $limit)
+                $this->_vars[$key] = \Neoform\Site\Collection::fromPks(
+                    Neoform\User\Site\Dao::get()->by_user($this->vars['id'], $order_by, $offset, $limit)
                 );
             }
             return $this->_vars[$key];
@@ -349,7 +380,7 @@
 
             $key = parent::_countVarKey('site_count', $fieldvals);
             if (! array_key_exists($key, $this->_vars)) {
-                $this->_vars[$key] = Entity::dao('Neoform\User\Site')->count($fieldvals);
+                $this->_vars[$key] = Neoform\User\Site\Dao::get()->count($fieldvals);
             }
             return $this->_vars[$key];
         }

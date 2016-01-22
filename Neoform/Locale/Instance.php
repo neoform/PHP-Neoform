@@ -110,7 +110,7 @@
             }
 
             if (! isset($this->namespace_ids[$namespace_name])) {
-                $this->namespace_ids[$namespace_name] = (int) current(Neoform\Entity::dao('Neoform\Locale\Nspace')->by_name(
+                $this->namespace_ids[$namespace_name] = (int) current(Neoform\Locale\Nspace\Dao::get()->by_name(
                     $namespace_name
                 ));
             }
@@ -146,7 +146,7 @@
                 return $key;
             }
 
-            $crc32 = \crc32($key); // crc32 makes the keys in the array smaller (saves on memory)
+            $crc32 = crc32($key); // crc32 makes the keys in the array smaller (saves on memory)
 
             if ($namespace_name === null) {
                 if ($this->namespace_id && isset($this->messages[$this->namespace_id][$crc32])) {
@@ -158,7 +158,7 @@
                 if (isset($this->namespace_ids[$namespace_name])) {
                     $namespace_id = $this->namespace_ids[$namespace_name];
                 } else {
-                    $namespace_id = $this->namespace_ids[$namespace_name] = (int) current(\Neoform\Entity::dao('Neoform\Locale\Nspace')->by_name(
+                    $namespace_id = $this->namespace_ids[$namespace_name] = (int) current(Neoform\Locale\Nspace\Dao::get()->by_name(
                         $namespace_name
                     ));
                 }

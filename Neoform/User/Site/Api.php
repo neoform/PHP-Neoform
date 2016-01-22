@@ -31,7 +31,7 @@
             }
 
             if ($inserts) {
-                Entity::dao('Neoform\User\Site')->insertMulti($inserts);
+                Dao::get()->insertMulti($inserts);
             }
 
             // Delete
@@ -43,7 +43,7 @@
             }
 
             if ($deletes) {
-                Entity::dao('Neoform\User\Site')->deleteMulti($deletes);
+                Dao::get()->deleteMulti($deletes);
             }
         }
 
@@ -52,7 +52,7 @@
          *
          * @param array $info
          *
-         * @return model
+         * @return Model
          * @throws Input\Exception
          */
         public static function insert(array $info) {
@@ -61,13 +61,15 @@
 
             self::_validate_insert($input);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\User\Site')->insert([
-                    'user_id' => $input->user_id->val(),
-                    'site_id' => $input->site_id->val(),
-                ]);
+            if ($input->isValid()) {
+                return Dao::get()->insert(
+                    $input->getVals([
+                        'user_id',
+                        'site_id',
+                    ])
+                );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         /**
@@ -86,7 +88,7 @@
                     'site_id' => (int) $site->id,
                 ];
             }
-            return Entity::dao('Neoform\User\Site')->deleteMulti($keys);
+            return Dao::get()->deleteMulti($keys);
         }
 
         /**
@@ -105,7 +107,7 @@
                     'user_id' => (int) $user->id,
                 ];
             }
-            return Entity::dao('Neoform\User\Site')->deleteMulti($keys);
+            return Dao::get()->deleteMulti($keys);
         }
 
         /**
@@ -116,21 +118,25 @@
         public static function _validate_insert(Input\Collection $input) {
 
             // user_id
-            $input->user_id->cast('int')->digit(0, 4294967295)->callback(function($user_id) {
-                try {
-                    $user_id->data('model', new \Neoform\User\Model($user_id->val()));
-                } catch (\Neoform\User\Exception $e) {
-                    $user_id->errors($e->getMessage());
-                }
-            });
+            $input->validate('user_id', 'int')
+                ->requireDigit(0, 4294967295)
+                ->callback(function(Input\Input $user_id) {
+                    try {
+                        $user_id->setData('model', \Neoform\User\Model::fromPk($user_id->getVal()));
+                    } catch (\Neoform\User\Exception $e) {
+                        $user_id->setErrors($e->getMessage());
+                    }
+                });
 
             // site_id
-            $input->site_id->cast('int')->digit(0, 65535)->callback(function($site_id) {
-                try {
-                    $site_id->data('model', new \Neoform\Site\Model($site_id->val()));
-                } catch (\Neoform\Site\Exception $e) {
-                    $site_id->errors($e->getMessage());
-                }
-            });
+            $input->validate('site_id', 'int')
+                ->requireDigit(0, 65535)
+                ->callback(function(Input\Input $site_id) {
+                    try {
+                        $site_id->setData('model', \Neoform\Site\Model::fromPk($site_id->getVal()));
+                    } catch (\Neoform\Site\Exception $e) {
+                        $site_id->setErrors($e->getMessage());
+                    }
+                });
         }
     }

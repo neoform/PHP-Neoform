@@ -12,7 +12,7 @@
          *
          * @param array $info
          *
-         * @return model
+         * @return Model
          * @throws Input\Exception
          */
         public static function insert(array $info) {
@@ -21,53 +21,55 @@
 
             self::_validate_insert($input);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\Acl\Role')->insert([
-                    'name' => $input->name->val(),
-                ]);
+            if ($input->isValid()) {
+                return Dao::get()->insert(
+                    $input->getVals([
+                        'name',
+                    ])
+                );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         /**
          * Update a Acl Role model with $info
          *
-         * @param model $acl_role
+         * @param Model $acl_role
          * @param array $info
-         * @param bool  $crush
+         * @param bool  $includeEmpty
          *
-         * @return model
+         * @return Model
          * @throws Input\Exception
          */
-        public static function update(Model $acl_role, array $info, $crush=false) {
+        public static function update(Model $acl_role, array $info, $includeEmpty=false) {
 
             $input = new Input\Collection($info);
 
-            self::_validate_update($acl_role, $input);
+            self::_validate_update($acl_role, $input, $includeEmpty);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\Acl\Role')->update(
+            if ($input->isValid()) {
+                return Dao::get()->update(
                     $acl_role,
-                    $input->vals(
+                    $input->getVals(
                         [
                             'name',
                         ],
-                        $crush
+                        $includeEmpty
                     )
                 );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         /**
          * Delete a Acl Role
          *
-         * @param model $acl_role
+         * @param Model $acl_role
          *
          * @return bool
          */
         public static function delete(Model $acl_role) {
-            return Entity::dao('Neoform\Acl\Role')->delete($acl_role);
+            return Dao::get()->delete($acl_role);
         }
 
         /**
@@ -78,27 +80,32 @@
         public static function _validate_insert(Input\Collection $input) {
 
             // name
-            $input->name->cast('string')->length(1, 64)->callback(function($name) {
-                if (Entity::dao('Neoform\Acl\Role')->by_name($name->val())) {
-                    $name->errors('already in use');
-                }
-            });
+            $input->validate('name', 'string')
+                ->requireLength(1, 64)
+                ->callback(function(Input\Input $name) {
+                    if (Dao::get()->by_name($name->getVal())) {
+                        $name->setErrors('already in use');
+                    }
+                });
         }
 
         /**
          * Validates info to update a Acl Role model
          *
-         * @param model $acl_role
+         * @param Model $acl_role
          * @param Input\Collection $input
+         * @param bool $includeEmpty
          */
-        public static function _validate_update(Model $acl_role, Input\Collection $input) {
+        public static function _validate_update(Model $acl_role, Input\Collection $input, $includeEmpty) {
 
             // name
-            $input->name->cast('string')->optional()->length(1, 64)->callback(function($name) use ($acl_role) {
-                $id_arr = Entity::dao('Neoform\Acl\Role')->by_name($name->val());
-                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $acl_role->id) {
-                    $name->errors('already in use');
-                }
-            });
+            $input->validate('name', 'string', !$includeEmpty)
+                ->requireLength(1, 64)
+                ->callback(function(Input\Input $name) use ($acl_role) {
+                    $id_arr = Dao::get()->by_name($name->getVal());
+                    if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $acl_role->id) {
+                        $name->setErrors('already in use');
+                    }
+                });
         }
     }

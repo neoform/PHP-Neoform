@@ -9,14 +9,14 @@
         const HASH_LENGTH = 40;
 
         /**
-         * @var Neoform\Request\Model
+         * @var Neoform\Request\Request
          */
         protected $request;
 
         /**
-         * @var Neoform\Http\Config
+         * @var Neoform\Router\Config
          */
-        protected $httpConfig;
+        protected $routerConfig;
 
         /**
          * @var Neoform\Auth\Config
@@ -49,20 +49,20 @@
         protected $flash;
 
         /**
-         * @param Neoform\Request\Model  $request
-         * @param Neoform\Http\Config    $httpConfig
-         * @param Neoform\Auth\Config    $authConfig
-         * @param Neoform\Session\Config $sessionConfig
+         * @param Neoform\Request\Request $request
+         * @param Neoform\Router\Config   $routerConfig
+         * @param Neoform\Auth\Config     $authConfig
+         * @param Neoform\Session\Config  $sessionConfig
          */
-        public function __construct(Neoform\Request\Model $request, Neoform\Http\Config $httpConfig,
+        public function __construct(Neoform\Request\Request $request, Neoform\Router\Config $routerConfig,
                                     Neoform\Auth\Config $authConfig, Neoform\Session\Config $sessionConfig) {
             $this->request       = $request;
-            $this->httpConfig    = $httpConfig;
+            $this->routerConfig  = $routerConfig;
             $this->authConfig    = $authConfig;
             $this->sessionConfig = $sessionConfig;
 
             $this->token = $this->request->getCookies()->get(
-                $this->sessionCookieKey()
+                $this->getSessionCookieKey()
             );
 
             // No token, or token is malformed? Create a new one
@@ -118,7 +118,7 @@
         /**
          * @return string
          */
-        public function sessionCookieKey() {
+        public function getSessionCookieKey() {
             return $this->authConfig->getCookie();
         }
     }

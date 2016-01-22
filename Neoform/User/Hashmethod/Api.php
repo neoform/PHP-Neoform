@@ -12,7 +12,7 @@
          *
          * @param array $info
          *
-         * @return model
+         * @return Model
          * @throws Input\Exception
          */
         public static function insert(array $info) {
@@ -21,55 +21,57 @@
 
             self::_validate_insert($input);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\User\Hashmethod')->insert([
-                    'id'   => $input->id->val(),
-                    'name' => $input->name->val(),
-                ]);
+            if ($input->isValid()) {
+                return Dao::get()->insert(
+                    $input->getVals([
+                        'id',
+                        'name',
+                    ])
+                );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         /**
          * Update a User Hashmethod model with $info
          *
-         * @param model $user_hashmethod
+         * @param Model $user_hashmethod
          * @param array $info
-         * @param bool  $crush
+         * @param bool  $includeEmpty
          *
-         * @return model
+         * @return Model
          * @throws Input\Exception
          */
-        public static function update(Model $user_hashmethod, array $info, $crush=false) {
+        public static function update(Model $user_hashmethod, array $info, $includeEmpty=false) {
 
             $input = new Input\Collection($info);
 
-            self::_validate_update($user_hashmethod, $input);
+            self::_validate_update($user_hashmethod, $input, $includeEmpty);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\User\Hashmethod')->update(
+            if ($input->isValid()) {
+                return Dao::get()->update(
                     $user_hashmethod,
-                    $input->vals(
+                    $input->getVals(
                         [
                             'id',
                             'name',
                         ],
-                        $crush
+                        $includeEmpty
                     )
                 );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         /**
          * Delete a User Hashmethod
          *
-         * @param model $user_hashmethod
+         * @param Model $user_hashmethod
          *
          * @return bool
          */
         public static function delete(Model $user_hashmethod) {
-            return Entity::dao('Neoform\User\Hashmethod')->delete($user_hashmethod);
+            return Dao::get()->delete($user_hashmethod);
         }
 
         /**
@@ -80,42 +82,51 @@
         public static function _validate_insert(Input\Collection $input) {
 
             // id
-            $input->id->cast('int')->digit(0, 255)->callback(function($id) {
-                if (Entity::dao('Neoform\User\Hashmethod')->record($id->val())) {
-                    $id->errors('already in use');
-                }
+            $input->validate('id', 'int')
+                ->requireDigit(0, 255)
+                ->callback(function(Input\Input $id) {
+                    if (Dao::get()->record($id->getVal())) {
+                        $id->setErrors('already in use');
+                    }
             });
 
             // name
-            $input->name->cast('string')->length(1, 255)->callback(function($name) {
-                if (Entity::dao('Neoform\User\Hashmethod')->by_name($name->val())) {
-                    $name->errors('already in use');
-                }
-            });
+            $input->validate('name', 'string')
+                ->requireLength(1, 255)
+                ->callback(function(Input\Input $name) {
+                    if (Dao::get()->by_name($name->getVal())) {
+                        $name->setErrors('already in use');
+                    }
+                });
         }
 
         /**
          * Validates info to update a User Hashmethod model
          *
-         * @param model $user_hashmethod
+         * @param Model $user_hashmethod
          * @param Input\Collection $input
+         * @param bool $includeEmpty
          */
-        public static function _validate_update(Model $user_hashmethod, Input\Collection $input) {
+        public static function _validate_update(Model $user_hashmethod, Input\Collection $input, $includeEmpty) {
 
             // id
-            $input->id->cast('int')->optional()->digit(0, 255)->callback(function($id) use ($user_hashmethod) {
-                $user_hashmethod_info = Entity::dao('Neoform\User\Hashmethod')->record($id->val());
-                if ($user_hashmethod_info && (int) $user_hashmethod_info['id'] !== $user_hashmethod->id) {
-                    $id->errors('already in use');
-                }
-            });
+            $input->validate('id', 'int', !$includeEmpty)
+                ->requireDigit(0, 255)
+                ->callback(function(Input\Input $id) use ($user_hashmethod) {
+                    $user_hashmethod_info = Dao::get()->record($id->getVal());
+                    if ($user_hashmethod_info && (int) $user_hashmethod_info['id'] !== $user_hashmethod->id) {
+                        $id->setErrors('already in use');
+                    }
+                });
 
             // name
-            $input->name->cast('string')->optional()->length(1, 255)->callback(function($name) use ($user_hashmethod) {
-                $id_arr = Entity::dao('Neoform\User\Hashmethod')->by_name($name->val());
-                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $user_hashmethod->id) {
-                    $name->errors('already in use');
-                }
-            });
+            $input->validate('name', 'string', !$includeEmpty)
+                ->requireLength(1, 255)
+                ->callback(function(Input\Input $name) use ($user_hashmethod) {
+                    $id_arr = Dao::get()->by_name($name->getVal());
+                    if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $user_hashmethod->id) {
+                        $name->setErrors('already in use');
+                    }
+                });
         }
     }

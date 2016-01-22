@@ -13,14 +13,14 @@
 
             self::_validate_insert($input);
 
-            if ($input->is_valid()) {
+            if ($input->isValid()) {
                 $hashmethod      = Lib::default_hashmethod();
                 $hashmethod_cost = Lib::default_hashmethod_cost();
                 $salt            = Lib::generate_salt();
-                $hash            = $hashmethod->hash($input->password1->val(), $salt, $hashmethod_cost);
+                $hash            = $hashmethod->hash($input->password1->getVal(), $salt, $hashmethod_cost);
 
-                $user = Entity::dao('Neoform\User')->insert([
-                    'email'               => $input->email->val(),
+                $user = Dao::get()->insert([
+                    'email'               => $input->email->getVal(),
                     'password_hash'       => $hash,
                     'password_hashmethod' => $hashmethod->id,
                     'password_cost'       => $hashmethod_cost,
@@ -28,13 +28,13 @@
                     'status_id'           => Lib::default_status()->id,
                 ]);
 
-                Entity::dao('Neoform\User\Date')->insert([
+                Date\Dao::get()->insert([
                     'user_id' => $user->id,
                 ]);
 
                 return $user;
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         public static function update_email(Model $user, array $info) {
@@ -43,15 +43,15 @@
 
             self::_validate_update_email($user, $input);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\User')->update(
+            if ($input->isValid()) {
+                return Dao::get()->update(
                     $user,
                     [
-                        'email' => $input->email->val(),
+                        'email' => $input->email->getVal(),
                     ]
                 );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         public static function update_password(Model $user, array $info) {
@@ -60,27 +60,27 @@
 
             self::_validate_update_password($user, $input);
 
-            if ($input->is_valid()) {
+            if ($input->isValid()) {
 
                 $salt          = Lib::generate_salt();
                 $password_cost = Lib::default_hashmethod_cost();
                 $hash_method   = Lib::default_hashmethod();
 
-                return Entity::dao('Neoform\User')->update(
+                return Dao::get()->update(
                     $user,
                     [
                         'password_salt'       => $salt,
                         'password_cost'       => $password_cost,
                         'password_hashmethod' => $hash_method->id,
                         'password_hash'       => $hash_method->hash(
-                            $input->password1->val(),
+                            $input->password1->getVal(),
                             $salt,
                             $password_cost
                         ),
                     ]
                 );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         public static function admin_insert(array $info) {
@@ -89,30 +89,30 @@
 
             self::_validate_admin_insert($input);
 
-            if ($input->is_valid()) {
+            if ($input->isValid()) {
 
-                $hashmethod = $input->password_hashmethod->data('model');
+                $hashmethod = $input->password_hashmethod->getData('model');
 
-                $user = Entity::dao('Neoform\User')->insert([
-                    'email'               => $input->email->val(),
+                $user = Dao::get()->insert([
+                    'email'               => $input->email->getVal(),
                     'password_hash'       => $hashmethod->hash(
-                        $input->password->val(),
-                        $input->password_salt->val(),
-                        $input->password_cost->val()
+                        $input->password->getVal(),
+                        $input->password_salt->getVal(),
+                        $input->password_cost->getVal()
                     ),
                     'password_hashmethod' => $hashmethod->id,
-                    'password_cost'       => $input->password_cost->val(),
-                    'password_salt'       => $input->password_salt->val(),
-                    'status_id'           => $input->status_id->data('model')->id,
+                    'password_cost'       => $input->password_cost->getVal(),
+                    'password_salt'       => $input->password_salt->getVal(),
+                    'status_id'           => $input->status_id->getData('model')->id,
                 ]);
 
-                Entity::dao('Neoform\User\Date')->insert([
+                Date\Dao::get()->insert([
                     'user_id' => $user->id,
                 ]);
 
                 return $user;
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         public static function admin_update(Model $user, array $info) {
@@ -121,16 +121,16 @@
 
             self::_validate_admin_update($user, $input);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\User')->update(
+            if ($input->isValid()) {
+                return Dao::get()->update(
                     $user,
                     [
-                        'email'     => $input->email->val(),
-                        'status_id' => $input->status_id->val(),
+                        'email'     => $input->email->getVal(),
+                        'status_id' => $input->status_id->getVal(),
                     ]
                 );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         public static function admin_password_update(Model $user, array $info) {
@@ -139,163 +139,201 @@
 
             self::_validate_admin_password_update($user, $input);
 
-            if ($input->is_valid()) {
-
-                return Entity::dao('Neoform\User')->update(
+            if ($input->isValid()) {
+                return Dao::get()->update(
                     $user,
                     [
-                        'password_salt'       => $input->password_salt->val(),
-                        'password_cost'       => $input->password_cost->val(),
-                        'password_hashmethod' => $input->password_hashmethod->data('model')->id,
-                        'password_hash'       => $input->password_hashmethod->data('model')->hash(
-                            $input->password->val(),
-                            $input->password_salt->val(),
-                            $input->password_cost->val()
+                        'password_salt'       => $input->password_salt->getVal(),
+                        'password_cost'       => $input->password_cost->getVal(),
+                        'password_hashmethod' => $input->password_hashmethod->getData('model')->id,
+                        'password_hash'       => $input->password_hashmethod->getData('model')->hash(
+                            $input->password->getVal(),
+                            $input->password_salt->getVal(),
+                            $input->password_cost->getVal()
                         ),
                     ]
                 );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         public static function email_available(array $info) {
 
             $input = new Input\Collection($info);
 
-            $input->email->cast('string')->trim()->tolower()->is_email();
-            if ($input->is_valid()) {
-                return ! (bool) current(Entity::dao('Neoform\User')->by_email($input->email->val()));
+            $input->validate('email', 'string')
+                ->trim()
+                ->toLower()
+                ->isEmail();
+
+            if ($input->isValid()) {
+                return ! (bool) current(Dao::get()->by_email($input->email->getVal()));
             } else {
-                throw $input->exception();
+                throw $input->getException();
             }
         }
 
         public static function _validate_insert(Input\Collection $input) {
 
             // email
-            $input->email->cast('string')->length(1, 255)->is_email()->tolower()->callback(function($email) {
-                if (Entity::dao('Neoform\User')->by_email($email->val())) {
-                    $email->errors('already in use');
-                }
-            });
+            $input->validate('email', 'string')
+                ->requireLength(1, 255)
+                ->isEmail()
+                ->toLower()
+                ->callback(function(Input\Input $email) {
+                    if (Dao::get()->by_email($email->getVal())) {
+                        $email->setErrors('already in use');
+                    }
+                });
 
             // password1
-            $input->password1->cast('string')->length(6, 1000);
+            $input->validate('password1', 'string')
+                ->requireLength(6, 1000);
 
             // password2
-            $input->password2->cast('string')->length(6, 1000);
+            $input->validate('password2', 'string')
+                ->requireLength(6, 1000);
 
-            if ($input->password1->val() !== $input->password2->val()) {
-                $input->password2->errors('password does not match');
+            if ($input->password1->getVal() !== $input->password2->getVal()) {
+                $input->password2->setErrors('password does not match');
             }
         }
 
         public static function _validate_update_email(Model $user, Input\Collection $input) {
 
             // email
-            $input->email->cast('string')->length(1, 255)->is_email()->tolower()->callback(function($email) use ($user) {
-                $id_arr = Entity::dao('Neoform\User')->by_email($email->val());
-                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $user->id) {
-                    $email->errors('already in use');
-                }
-            });
+            $input->validate('email', 'string')
+                ->requireLength(1, 255)
+                ->isEmail()
+                ->toLower()
+                ->callback(function(Input\Input $email) use ($user) {
+                    $id_arr = Dao::get()->by_email($email->getVal());
+                    if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $user->id) {
+                        $email->setErrors('already in use');
+                    }
+                });
         }
 
         public static function _validate_update_password(Model $user, Input\Collection $input) {
 
             // current password
-            $input->current_password->cast('string')->callback(function($password) use ($user) {
-                if (! Lib::password_matches($user, $password->val())) {
-                    $password->errors('does not match');
-                }
-            });
+            $input->validate('current_password', 'string')
+                ->callback(function(Input\Input $password) use ($user) {
+                    if (! Lib::password_matches($user, $password->getVal())) {
+                        $password->setErrors('does not match');
+                    }
+                });
 
             // password1
-            $input->password1->cast('string')->length(6, 1000);
+            $input->validate('password1', 'string')
+                ->requireLength(6, 1000);
 
             // password2
-            $input->password2->cast('string')->length(6, 1000);
+            $input->validate('password2', 'string')
+                ->requireLength(6, 1000);
 
-            if (! $input->password1->errors() && ! $input->password2->errors() && $input->password1->val() !== $input->password2->val()) {
-                $input->password2->errors('password does not match');
+            if (! $input->password1->getErrors() && ! $input->password2->getErrors() && $input->password1->getVal() !== $input->password2->getVal()) {
+                $input->password2->setErrors('password does not match');
             }
         }
 
         public static function _validate_admin_insert(Input\Collection $input) {
 
             // email
-            $input->email->cast('string')->length(1, 255)->is_email()->tolower()->callback(function($email) {
-                if (Entity::dao('Neoform\User')->by_email($email->val())) {
-                    $email->errors('already in use');
-                }
-            });
+            $input->validate('email', 'string')
+                ->requireLength(1, 255)
+                ->isEmail()
+                ->toLower()
+                ->callback(function(Input\Input $email) {
+                    if (Dao::get()->by_email($email->getVal())) {
+                        $email->setErrors('already in use');
+                    }
+                });
 
             // password_hash
-            $input->password->cast('string')->length(6, 255);
+            $input->validate('password', 'string')
+                ->requireLength(6, 255);
 
             // password_hashmethod
-            $input->password_hashmethod->cast('int')->digit(0, 255)->callback(function($password_hashmethod){
-                try {
-                    $password_hashmethod->data('model', new Hashmethod\Model($password_hashmethod->val()));
-                } catch (Hashmethod\Exception $e) {
-                    $password_hashmethod->errors($e->getMessage());
-                }
-            });
+            $input->validate('password_hashmethod', 'int')
+                ->requireDigit(0, 255)
+                ->callback(function(Input\Input $password_hashmethod){
+                    try {
+                        $password_hashmethod->setData('model', Hashmethod\Model::fromPk($password_hashmethod->getVal()));
+                    } catch (Hashmethod\Exception $e) {
+                        $password_hashmethod->setErrors($e->getMessage());
+                    }
+                });
 
             // password_cost
-            $input->password_cost->cast('int')->digit(1, 4294967295);
+            $input->validate('password_cost', 'int')
+                ->requireDigit(1, 4294967295);
 
             // password_salt
-            $input->password_salt->cast('string')->length(1, 40);
+            $input->validate('password_salt', 'string')
+                ->requireLength(1, 40);
 
             // status
-            $input->status_id->cast('int')->digit(0, 255)->callback(function($status_id){
-                try {
-                    $status_id->data('model', new Status\Model($status_id->val()));
-                } catch (Status\Exception $e) {
-                    $status_id->errors($e->getMessage());
-                }
-            });
+            $input->validate('status_id', 'int')
+                ->requireDigit(0, 255)
+                ->callback(function(Input\Input $status_id){
+                    try {
+                        $status_id->setData('model', Status\Model::fromPk($status_id->getVal()));
+                    } catch (Status\Exception $e) {
+                        $status_id->setErrors($e->getMessage());
+                    }
+                });
         }
 
         public static function _validate_admin_update(Model $user, Input\Collection $input) {
 
             // email
-            $input->email->cast('string')->length(1, 255)->is_email()->tolower()->callback(function($email) use ($user) {
-                $id_arr = Entity::dao('Neoform\User')->by_email($email->val());
-                if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $user->id) {
-                    $email->errors('already in use');
-                }
-            });
+            $input->validate('email', 'string')
+                ->requireLength(1, 255)
+                ->isEmail()
+                ->toLower()
+                ->callback(function(Input\Input $email) use ($user) {
+                    $id_arr = Dao::get()->by_email($email->getVal());
+                    if (is_array($id_arr) && $id_arr && (int) current($id_arr) !== $user->id) {
+                        $email->setErrors('already in use');
+                    }
+                });
 
             // status
-            $input->status_id->cast('int')->digit(0, 255)->callback(function($status_id){
-                try {
-                    $status_id->data('model', new Status\Model($status_id->val()));
-                } catch (status\Exception $e) {
-                    $status_id->errors($e->getMessage());
-                }
-            });
+            $input->validate('status_id', 'int')
+                ->requireDigit(0, 255)
+                ->callback(function(Input\Input $status_id){
+                    try {
+                        $status_id->setData('model', Status\Model::fromPk($status_id->getVal()));
+                    } catch (status\Exception $e) {
+                        $status_id->setErrors($e->getMessage());
+                    }
+                });
         }
 
         public static function _validate_admin_password_update(Model $user, Input\Collection $input) {
 
             // password_hash
-            $input->password->cast('string')->length(6, 255);
+            $input->validate('password', 'string')
+                ->requireLength(6, 255);
 
             // password_hashmethod
-            $input->password_hashmethod->cast('int')->digit(0, 255)->callback(function($password_hashmethod){
-                try {
-                    $password_hashmethod->data('model', new Hashmethod\Model($password_hashmethod->val()));
-                } catch (hashmethod\Exception $e) {
-                    $password_hashmethod->errors($e->getMessage());
-                }
-            });
+            $input->validate('password_hashmethod', 'int')
+                ->requireDigit(0, 255)
+                ->callback(function(Input\Input $password_hashmethod){
+                    try {
+                        $password_hashmethod->setData('model', Hashmethod\Model::fromPk($password_hashmethod->getVal()));
+                    } catch (hashmethod\Exception $e) {
+                        $password_hashmethod->setErrors($e->getMessage());
+                    }
+                });
 
             // password_cost
-            $input->password_cost->cast('int')->digit(1, 4294967295);
+            $input->validate('password_cost', 'int')
+                ->requireDigit(1, 4294967295);
 
             // password_salt
-            $input->password_salt->cast('string')->length(1, 40);
+            $input->validate('password_salt', 'string')
+                ->requireLength(1, 40);
         }
     }

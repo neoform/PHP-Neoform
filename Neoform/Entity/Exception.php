@@ -6,27 +6,24 @@
 
     class Exception extends \Exception {
 
-        protected $message;
+        /**
+         * @var string|null
+         */
         protected $description;
 
+        /**
+         * @param string|null $message
+         * @param string|null $description
+         */
         public function __construct($message=null, $description=null) {
-            $this->message = $message;
+            $this->message     = $message;
             $this->description = $description;
         }
 
-        public function message($message=null) {
-            if ($message !== null) {
-                $this->message = $message;
-            } else {
-                return $this->message;
-            }
-        }
-
-        public function description($description=null) {
-            if ($description !== null) {
-                $this->description = $description;
-            } else {
-                return $this->description;
-            }
+        /**
+         * @return null|string
+         */
+        public function getDescription() {
+            return $this->description;
         }
     }

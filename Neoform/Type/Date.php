@@ -2,16 +2,17 @@
 
     namespace Neoform\Type;
 
-    use datetime;
-    use datetimezone;
+    use DateTime;
+    use DateTimeImmutable;
+    use DateTimeZone;
 
-    class date extends datetime {
+    class Date extends DateTimeImmutable {
 
         /**
          * @return string
          */
-        public function __tostring() {
-            return $this->human();
+        public function __toString() {
+            return $this->getHuman();
         }
 
         /**
@@ -19,7 +20,7 @@
          *
          * @return integer
          */
-        public function unix_timestamp() {
+        public function getUnixTimeStamp() {
             return (int) $this->format('U');
         }
 
@@ -28,21 +29,20 @@
          *
          * @return string
          */
-        public function timestamp() {
+        public function getTimeStamp() {
             return $this->format('Y-m-d H:i:s');
         }
 
         /**
          * Return a cloned $this with the timezone changed
          *
-         * @param datetimezone $tz
+         * @param DateTimeZone $tz
          *
          * @return date
          */
-        public function localized(DateTimeZone $tz) {
+        public function getLocalized(DateTimeZone $tz) {
             $dt = clone $this;
-            $dt->setTimezone($tz);
-            return $dt;
+            return $dt->setTimezone($tz);
         }
 
         /**
@@ -52,7 +52,7 @@
          *
          * @return string
          */
-        public function human($show_time=true) {
+        public function getHuman($show_time=true) {
 
             $timezone = new DateTimeZone('America/Montreal');
             $time_code = $show_time ? 'g:ia' : '';
@@ -142,7 +142,7 @@
         /**
          * @return string
          */
-        public function ago() {
+        public function getHumanAgo() {
 
             $now = new DateTime;
             $ago = $now->diff($this);
@@ -259,8 +259,8 @@
         /**
          * @return int
          */
-        public function age() {
-            $now = new DateTime();
+        public function getAsAge() {
+            $now = new DateTime;
             $age = $now->diff($this, true);
 
             return (int) $age->y;
@@ -271,8 +271,8 @@
          *
          * @return bool
          */
-        public function older_than(Date $date) {
-            return $this->timestamp() < $date->timestamp();
+        public function isMorePastThan(Date $date) {
+            return $this < $date;
         }
 
         /**
@@ -280,8 +280,8 @@
          *
          * @return bool
          */
-        public function newer_than(Date $date) {
-            return $this->timestamp() > $date->timestamp();
+        public function isMoreFutureThan(Date $date) {
+            return $this > $date;
         }
 
         /**
@@ -289,22 +289,22 @@
          *
          * @return bool
          */
-        public function equals(Date $date) {
-            return $this->timestamp() === $date->timestamp();
+        public function isEqual(Date $date) {
+            return $this == $date;
         }
 
         /**
          * @return bool
          */
-        public function is_past() {
-            return $this->older_than(new Date);
+        public function isInThePast() {
+            return $this->isMorePastThan(new Date);
         }
 
         /**
          * @return bool
          */
-        public function is_future() {
-            return $this->newer_than(new Date);
+        public function isInTheFuture() {
+            return $this->isMoreFutureThan(new Date);
         }
 
         /**
@@ -312,7 +312,7 @@
          *
          * @return string
          */
-        public static function seconds_to_human($seconds) {
+        public static function secondsToHuman($seconds) {
             if ($seconds < 60) {
                 return "{$seconds} second" . ($seconds === 1.0 ? '' : 's');
             } else if ($seconds < 3600) {

@@ -31,7 +31,7 @@
             }
 
             if ($inserts) {
-                Entity::dao('Neoform\Acl\Role\Resource')->insertMulti($inserts);
+                Dao::get()->insertMulti($inserts);
             }
 
             // Delete
@@ -43,7 +43,7 @@
             }
 
             if ($deletes) {
-                Entity::dao('Neoform\Acl\Role\Resource')->deleteMulti($deletes);
+                Dao::get()->deleteMulti($deletes);
             }
         }
 
@@ -70,7 +70,7 @@
             }
 
             if ($inserts) {
-                Entity::dao('Neoform\Acl\Role\Resource')->insertMulti($inserts);
+                Dao::get()->insertMulti($inserts);
             }
 
             // Delete
@@ -82,7 +82,7 @@
             }
 
             if ($deletes) {
-                Entity::dao('Neoform\Acl\Role\Resource')->deleteMulti($deletes);
+                Dao::get()->deleteMulti($deletes);
             }
         }
 
@@ -91,7 +91,7 @@
          *
          * @param array $info
          *
-         * @return model
+         * @return Model
          * @throws Input\Exception
          */
         public static function insert(array $info) {
@@ -100,13 +100,15 @@
 
             self::_validate_insert($input);
 
-            if ($input->is_valid()) {
-                return Entity::dao('Neoform\Acl\Role\Resource')->insert([
-                    'acl_role_id'     => $input->acl_role_id->val(),
-                    'acl_resource_id' => $input->acl_resource_id->val(),
-                ]);
+            if ($input->isValid()) {
+                return Dao::get()->insert(
+                    $input->getVals([
+                        'acl_role_id',
+                        'acl_resource_id',
+                    ])
+                );
             }
-            throw $input->exception();
+            throw $input->getException();
         }
 
         /**
@@ -125,7 +127,7 @@
                     'acl_resource_id' => (int) $acl_resource->id,
                 ];
             }
-            return Entity::dao('Neoform\Acl\Role\Resource')->deleteMulti($keys);
+            return Dao::get()->deleteMulti($keys);
         }
 
         /**
@@ -144,7 +146,7 @@
                     'acl_role_id'     => (int) $acl_role->id,
                 ];
             }
-            return Entity::dao('Neoform\Acl\Role\Resource')->deleteMulti($keys);
+            return Dao::get()->deleteMulti($keys);
         }
 
         /**
@@ -155,21 +157,25 @@
         public static function _validate_insert(Input\Collection $input) {
 
             // acl_role_id
-            $input->acl_role_id->cast('int')->digit(0, 4294967295)->callback(function($acl_role_id) {
-                try {
-                    $acl_role_id->data('model', new \Neoform\Acl\Role\Model($acl_role_id->val()));
-                } catch (\Neoform\Acl\Role\Exception $e) {
-                    $acl_role_id->errors($e->getMessage());
-                }
-            });
+            $input->validate('acl_role_id', 'int')
+                ->requireDigit(0, 4294967295)
+                ->callback(function(Input\Input $acl_role_id) {
+                    try {
+                        $acl_role_id->setData('model', \Neoform\Acl\Role\Model::fromPk($acl_role_id->getVal()));
+                    } catch (\Neoform\Acl\Role\Exception $e) {
+                        $acl_role_id->setErrors($e->getMessage());
+                    }
+                });
 
             // acl_resource_id
-            $input->acl_resource_id->cast('int')->digit(0, 4294967295)->callback(function($acl_resource_id) {
-                try {
-                    $acl_resource_id->data('model', new \Neoform\Acl\Resource\Model($acl_resource_id->val()));
-                } catch (\Neoform\Acl\Resource\Exception $e) {
-                    $acl_resource_id->errors($e->getMessage());
-                }
-            });
+            $input->validate('acl_resource_id', 'int')
+                ->requireDigit(0, 4294967295)
+                ->callback(function(Input\Input $acl_resource_id) {
+                    try {
+                        $acl_resource_id->setData('model', \Neoform\Acl\Resource\Model::fromPk($acl_resource_id->getVal()));
+                    } catch (\Neoform\Acl\Resource\Exception $e) {
+                        $acl_resource_id->setErrors($e->getMessage());
+                    }
+                });
         }
     }

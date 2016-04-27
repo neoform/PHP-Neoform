@@ -238,7 +238,7 @@
          */
         private function setErrorHandlers() {
             // Uncaught exception handler
-            set_exception_handler(function($e) {
+            set_exception_handler(function(PHPException $e) {
 
                 Error\Lib::log($e);
 

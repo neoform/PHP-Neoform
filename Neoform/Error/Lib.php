@@ -10,7 +10,7 @@
         /**
          * @param Exception $e
          */
-        public static function log($e) {
+        public static function log(Exception $e) {
 
             // This prevents obnoxious timezone warnings if the timezone has not been set
             date_default_timezone_set(@date_default_timezone_get());

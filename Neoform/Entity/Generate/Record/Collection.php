@@ -271,10 +271,10 @@
             $this->code .= "\t\t * Preload the {$referencedField->getReferencedField()->getTable()->getNameLabel()} counts\n";
             $this->code .= "\t\t *\n";
             $this->code .= "\t\t * @return array counts\n";
+            $this->code .= "\t\t * @deprecated\n";
             $this->code .= "\t\t */\n";
             $this->code .= "\t\tpublic function {$name}() {\n";
             $this->code .= "\t\t\treturn \$this->_preloadCounts(\n";
-            $this->code .= "\t\t * @deprecated\n";
             $this->code .= "\t\t\t\t'{$_varKey}',\n";
             $this->code .= "\t\t\t\t'{$this->namespace}\\{$field->getTable()->getNameAsClass()}',\n";
             $this->code .= "\t\t\t\t'{$field->getName()}'\n";

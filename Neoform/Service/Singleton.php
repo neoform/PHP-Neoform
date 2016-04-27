@@ -15,7 +15,7 @@
         /**
          * @param string $name
          *
-         * @return mixed
+         * @return static
          * @deprecated use self::getService()->get() instead
          */
         public static function instance($name=null) {
@@ -25,7 +25,7 @@
         /**
          * @param string $name
          *
-         * @return Service
+         * @return static
          */
         public static function getService($name) {
             if (! isset(self::$instances[static::class][$name])) {

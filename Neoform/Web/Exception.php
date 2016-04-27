@@ -2,4 +2,6 @@
 
     namespace Neoform\Web;
 
-    class Exception extends \Exception {};
+    class Exception extends \Exception {
+
+    }

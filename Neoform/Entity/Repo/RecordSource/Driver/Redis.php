@@ -3,8 +3,6 @@
     namespace Neoform\Entity\Repo\RecordSource\Driver;
 
     use Neoform\Entity\Repo\Exception;
-    use Neoform\Entity\Record;
-    use Neoform\Entity;
     use Neoform;
 
     class Redis implements Neoform\Entity\Repo\RecordSource\Driver {
@@ -30,9 +28,9 @@
         protected $primaryKey;
 
         /**
-         * @param Entity\Dao    $dao
-         * @param Neoform\Redis $redisServiceRead
-         * @param Neoform\Redis $redisServiceWrite
+         * @param Neoform\Entity\Dao $dao
+         * @param Neoform\Redis      $redisServiceRead
+         * @param Neoform\Redis      $redisServiceWrite
          */
         public function __construct(Neoform\Entity\Dao $dao, Neoform\Redis $redisServiceRead, Neoform\Redis $redisServiceWrite) {
             $this->redisServiceRead  = $redisServiceRead;
@@ -266,15 +264,15 @@
         /**
          * Update a record
          *
-         * @param Record\Model $model
-         * @param array        $info
-         * @param int          $ttl
-         * @param bool         $reloadFromSource
+         * @param Neoform\Entity\Record\Model $model
+         * @param array                       $info
+         * @param int                         $ttl
+         * @param bool                        $reloadFromSource
          *
          * @return array|bool
          * @throws Exception
          */
-        public function update(Record\Model $model, array $info, $ttl, $reloadFromSource) {
+        public function update(Neoform\Entity\Record\Model $model, array $info, $ttl, $reloadFromSource) {
             $redis     = $this->redisServiceWrite->get();
             $cacheKey = "_db_:{$this->tableName}:{$model->{$this->primaryKey}}";
 
@@ -302,12 +300,12 @@
         /**
          * Delete a record
          *
-         * @param Record\Model $model
+         * @param Neoform\Entity\Record\Model $model
          *
          * @return bool
          * @throws Exception
          */
-        public function delete(Record\Model $model) {
+        public function delete(Neoform\Entity\Record\Model $model) {
             if (! $this->redisServiceWrite->get()->delete("_db_:{$this->tableName}:{$model->{$this->primaryKey}}")) {
                 $message = $this->redisServiceWrite->get()->getLastError();
                 $this->redisServiceWrite->get()->clearLastError();
@@ -320,12 +318,12 @@
         /**
          * Delete multiple records
          *
-         * @param Record\Collection $collection
+         * @param Neoform\Entity\Record\Collection $collection
          *
          * @return bool
          * @throws Exception
          */
-        public function deleteMulti(Record\Collection $collection) {
+        public function deleteMulti(Neoform\Entity\Record\Collection $collection) {
             $keys = [];
             foreach ($collection as $model) {
                 $keys[] = "_db_:{$this->tableName}:{$model->{$this->primaryKey}}";

@@ -269,7 +269,7 @@
             $this->code .= "\t\t\treturn \$this->_model('{$name}', \$this->vars['{$field->getName()}'], '{$this->namespace}\\{$referencedField->getTable()->getNameAsClass()}\\Model');\n";
             $this->code .= "\t\t}\n\n";
 
-            $fName    = $this->used($selfReference ? "Parent" : '') . $referencedField->getTable()->getNameTitleCase();
+            $fName = $this->used(($selfReference ? "Parent" : '') . $referencedField->getTable()->getNameTitleCase());
 
             $this->code .= "\t\t/**\n";
             $this->code .= "\t\t * " . ($selfReference ? 'Parent ' : '') . "{$referencedField->getTable()->getNameLabel()} Model based on \$this->var['{$field->getName()}']\n";

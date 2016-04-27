@@ -371,7 +371,7 @@
 
                 case 'int':
                 case 'integer':
-                    if (! is_int($this->val) && ! ctype_digit((string) $this->val)) {
+                    if (! is_int($this->val) && ! preg_match('`^-?(?:[1-9]+)(?:[0-9]*)$`', $this->val) && $this->val !== '0') {
                         $this->setErrors('Invalid number');
                         break;
                     }
@@ -379,7 +379,7 @@
                     break;
 
                 case 'float':
-                    if (! is_float($this->val + 0) && ! is_int($this->val) && ! ctype_digit((string) $this->val)) {
+                    if (! is_float($this->val + 0) && ! is_int($this->val) && ! preg_match('`^-?(?:[1-9]+)(?:[0-9]*)(?:\.?[0-9]+)?$`', $this->val)) {
                         $this->setErrors('Invalid number');
                         break;
                     }

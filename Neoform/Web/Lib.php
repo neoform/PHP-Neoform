@@ -7,26 +7,42 @@
     class Lib {
 
         /**
+         * @var resource Curl handle - for reuse between connections (to avoid exhausting the PHP resource pool)
+         */
+        private static $curl;
+
+        /**
+         * @return resource
+         */
+        private static function getCurl() {
+            if (! self::$curl) {
+                self::$curl = curl_init();
+            }
+
+            return self::$curl;
+        }
+
+        /**
          * Get the contents of a URL
          *
-         * @param string      $url
-         * @param array       $post
-         * @param string|null $bind_to_ip
-         * @param array|null  $cookies
-         * @param string|null $user_agent
+         * @param string       $url
+         * @param array|string $post
+         * @param string|null  $bindToIp
+         * @param array|null   $cookies
+         * @param string|null  $userAgent
          *
          * @return string
          * @throws exception
          */
-        public static function wget($url, array $post=null, $bind_to_ip=null, array $cookies=null, $user_agent=null) {
+        public static function wget($url, $post=null, $bindToIp=null, array $cookies=null, $userAgent=null) {
 
-            if (! self::valid_url($url)) {
+            if (! self::validUrl($url)) {
                 throw new Exception('Invalid URL');
             }
 
             $curl = curl_init($url);
 
-            curl_setopt($curl, CURLOPT_USERAGENT, $user_agent ?: Neoform\Web\Config::get()->getUserAgent());
+            curl_setopt($curl, CURLOPT_USERAGENT, $userAgent ?: Neoform\Web\Config::get()->getUserAgent());
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($curl, CURLOPT_TIMEOUT, 20);
@@ -34,13 +50,13 @@
             // Weird glitch causes gzipped requests to ncix.com to not be decoded if this is not set (even though it's empty)
             curl_setopt($curl, CURLOPT_ENCODING , '');
 
-            if ($bind_to_ip) {
-                curl_setopt($curl, CURLOPT_INTERFACE, $bind_to_ip);
+            if ($bindToIp) {
+                curl_setopt($curl, CURLOPT_INTERFACE, $bindToIp);
             }
 
-            if ($post) {
+            if ($post !== null) {
                 curl_setopt($curl, CURLOPT_POST, true);
-                curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($post));
+                curl_setopt($curl, CURLOPT_POSTFIELDS, is_array($post) ? http_build_query($post) : $post);
             }
 
             if ($cookies) {
@@ -54,11 +70,71 @@
             $contents = curl_exec($curl);
             $info     = curl_getinfo($curl);
 
+            curl_close($curl);
+
             if ($info['http_code'] === 200) {
                 return $contents;
             }
 
-            throw new Exception("Server returned HTTP/{$info['http_code']}", (int) $info['http_code']);
+            throw new Exception("Server returned HTTP/{$info['http_code']}" . ($contents ? " - {$contents}" : ''), (int) $info['http_code']);
+        }
+
+        /**
+         * Get the contents of a URL
+         *
+         * @param string       $url
+         * @param array|string $post
+         * @param string|null  $bindToIp
+         * @param array|null   $cookies
+         * @param string|null  $userAgent
+         *
+         * @return string
+         * @throws exception
+         */
+        public static function get($url, $post=null, $bindToIp=null, array $cookies=null, $userAgent=null) {
+
+            if (! self::validUrl($url)) {
+                throw new Exception('Invalid URL');
+            }
+
+            $curl = self::getCurl();
+
+            curl_setopt($curl, CURLOPT_URL, $url);
+            curl_setopt($curl, CURLOPT_USERAGENT, $userAgent ?: Neoform\Web\Config::get()->getUserAgent());
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($curl, CURLOPT_TIMEOUT, 20);
+
+            // Weird glitch causes gzipped requests to ncix.com to not be decoded if this is not set (even though it's empty)
+            curl_setopt($curl, CURLOPT_ENCODING , '');
+
+            if ($bindToIp) {
+                curl_setopt($curl, CURLOPT_INTERFACE, $bindToIp);
+            }
+
+            // Post
+            curl_setopt($curl, CURLOPT_POST, $post !== null);
+            if ($post) {
+                curl_setopt($curl, CURLOPT_POSTFIELDS, is_array($post) ? http_build_query($post) : $post);
+            }
+
+            // Cookies
+            $arr = [];
+            if ($cookies) {
+                foreach ($cookies as $k => $v) {
+                    $arr[] = rawurlencode($k) . '=' . rawurlencode($v);
+                }
+            }
+            curl_setopt($curl, CURLOPT_COOKIE, join('; ', $arr) ?: null);
+
+            $contents = curl_exec($curl);
+            $info     = curl_getinfo($curl);
+
+            if ($info['http_code'] === 200) {
+                return $contents;
+            }
+
+            throw new Exception("Server returned HTTP/{$info['http_code']}" . ($contents ? " - {$contents}" : ''), (int) $info['http_code']);
         }
 
         /**
@@ -73,7 +149,7 @@
          */
         public static function wget_info($url, array $post=null, $bind_to_ip=null) {
 
-            if (! self::valid_url($url)) {
+            if (! self::validUrl($url)) {
                 throw new Exception('Invalid URL');
             }
 
@@ -104,6 +180,8 @@
             curl_exec($curl);
             $info = curl_getinfo($curl);
 
+            curl_close($curl);
+
             if ($info['http_code'] === 200) {
                 return $info;
             }
@@ -123,7 +201,7 @@
          */
         public static function wget_full($url, array $post=null, $bind_to_ip=null) {
 
-            if (! self::valid_url($url)) {
+            if (! self::validUrl($url)) {
                 throw new Exception('Invalid URL');
             }
 
@@ -163,7 +241,7 @@
          *
          * @return bool
          */
-        public static function valid_url($url) {
+        public static function validUrl($url) {
             if (! $info = parse_url($url)) {
                 return false;
             }
@@ -239,5 +317,41 @@
 
             // page access is allowed
             return true;
+        }
+
+        /**
+         * The reverse of parse_url() - doesn't handle port numbers.. cause... meh who uses port numbers these days?
+         * 
+         * @param array $url
+         *
+         * @return string
+         */
+        public static function unparseUrl(array $url) {
+            return "{$url['scheme']}://{$url['host']}" . (isset($url['path']) ? $url['path'] : '') . (isset($url['query']) ? "?{$url['query']}" : '');
+        }
+
+        /**
+         * Take a URL and add a GET query parameter. If the parameter already exists, it is overwritten/replaced.
+         * 
+         * @param string $url
+         * @param array  $queryValues
+         *
+         * @return string
+         */
+        public static function addQueryValue($url, array $queryValues) {
+            $parsed = parse_url($url);
+
+            if (!empty($parsed['query'])) {
+                parse_str($parsed['query'], $query);
+                foreach ($queryValues as $k => $v) {
+                    $query[$k] = $v;
+                }
+            } else {
+                $query = $queryValues;
+            }
+
+            $parsed['query'] = http_build_query($query);
+
+            return self::unparseUrl($parsed);
         }
     }

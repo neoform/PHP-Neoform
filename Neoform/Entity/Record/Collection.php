@@ -144,20 +144,59 @@
         /**
          * Add a model to the collection
          *
-         * @param array|Model|string|int $info
+         * @param Model $model
          * @param string|null $mapField Assign collection keys based on this field (taken from the models)
          *
          * @return $this
          */
-        public function add($info, $mapField=null) {
-            $modelClassName = '\\' . static::getNamespace() . '\\Model';
-            if ($info instanceof $modelClassName) {
-                $model = $info;
-            } else if (is_array($info)) {
-                $model = $modelClassName::fromArray($info);
+        public function add($model, $mapField=null) {
+            if ($mapField !== null) {
+                $this->models[$model->get($mapField)] = $model;
             } else {
-                $model = $modelClassName::fromPk($info);
+                $this->models[] = $model;
             }
+
+            // Reset
+            $this->_vars = [];
+
+            return $this;
+        }
+
+        /**
+         * Add a model to the collection by info array
+         *
+         * @param array $info
+         * @param string|null $mapField Assign collection keys based on this field (taken from the models)
+         *
+         * @return $this
+         */
+        public function addByArray(array $info, $mapField=null) {
+            $modelClassName = '\\' . static::getNamespace() . '\\Model';
+            $model = $modelClassName::fromArray($info);
+
+            if ($mapField !== null) {
+                $this->models[$model->get($mapField)] = $model;
+            } else {
+                $this->models[] = $model;
+            }
+
+            //reset
+            $this->_vars = [];
+
+            return $this;
+        }
+
+        /**
+         * Add a model to the collection by PK
+         *
+         * @param string|int $pk
+         * @param string|null $mapField Assign collection keys based on this field (taken from the models)
+         *
+         * @return $this
+         */
+        public function addByPk($pk, $mapField=null) {
+            $modelClassName = '\\' . static::getNamespace() . '\\Model';
+            $model = $modelClassName::fromPk($pk);
 
             if ($mapField !== null) {
                 $this->models[$model->get($mapField)] = $model;

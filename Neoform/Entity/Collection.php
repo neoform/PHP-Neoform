@@ -59,6 +59,30 @@
         }
 
         /**
+         * Return a slice/section of the Collection (as a new Collection)
+         * 
+         * @param int $limit
+         * @param int $offset
+         *
+         * @return Collection
+         */
+        public function slice($limit, $offset=0) {
+            $collection = new static;
+            $collection->models = array_slice($this->models, $offset, $limit);
+            return $collection;
+        }
+
+        /**
+         * Randomizes the order of the Models in this Collection
+         * 
+         * @return $this
+         */
+        public function shuffle() {
+            shuffle($this->models);
+            return $this;
+        }
+
+        /**
          * Sort the collection based on $f (function) or $f field name
          *
          * @param callable|string $f

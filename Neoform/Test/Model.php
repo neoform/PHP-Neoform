@@ -21,9 +21,9 @@
             echo "Passed Assertions: {$this->passedAssertionCount()}/{$this->assertionCount()}\n";
 
             if ($this->failedTestCount()) {
-                echo "\n" . self::color_text('TESTS CONTAINED FAILURES', 'red', true, true) . "\n";
+                echo "\n" . self::colorText('TESTS CONTAINED FAILURES', 'red', true, true) . "\n";
             } else {
-                echo "\n" . self::color_text('ALL TESTS PASSED', 'green', true, true) . "\n";
+                echo "\n" . self::colorText('ALL TESTS PASSED', 'green', true, true) . "\n";
             }
 
             echo "\n";
@@ -83,7 +83,7 @@
 
             $this->tests[$testName][$testLine] = (bool) $result;
 
-            echo $result ? self::color_text('PASSED:', 'green') : self::color_text('FAILED:', 'red');
+            echo $result ? self::colorText('PASSED:', 'green') : self::colorText('FAILED:', 'red');
             echo "\t{$testName} [{$testLine}] Test: {$message}";
             echo "\n";
         }

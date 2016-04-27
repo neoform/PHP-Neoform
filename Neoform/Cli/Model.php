@@ -23,6 +23,14 @@
         protected $opts;
 
         /**
+         * Array of CLI args
+         *
+         * @var array
+         * @access protected
+         */
+        protected $argv;
+
+        /**
          * Abstract initialization function
          *
          * @return void
@@ -34,7 +42,7 @@
          *
          * @return string
          */
-        protected function shortopts() {
+        protected function shortOptsDefintions() {
             return '';
         }
 
@@ -43,25 +51,29 @@
          *
          * @return array
          */
-        protected function longopts() {
+        protected function longOptsDefinitions() {
             return [];
         }
 
         /**
-         * Construct
+         * Model constructor.
+         *
+         * @param Neoform\Core $core
+         * @param array $argv
          */
-        final public function __construct(Neoform\Core $core) {
+        final public function __construct(Neoform\Core $core, array $argv=[]) {
             if (! defined('STDIN')) {
                 echo "This script must be run via CLI";
                 exit(2);
             }
 
             $this->core = $core;
+            $this->argv = $argv;
 
             // no funny business
             umask(0);
 
-            $this->opts = getopt($this->shortopts(), $this->longopts());
+            $this->opts = getopt($this->shortOptsDefintions(), $this->longOptsDefinitions());
 
             $this->init();
         }
@@ -73,7 +85,7 @@
          *
          * @return string|null
          */
-        public function opt($k) {
+        public function getOpt($k) {
             if (isset($this->opts[$k])) {
                 return $this->opts[$k];
             }
@@ -86,8 +98,30 @@
          *
          * @return boolean
          */
-        public function opt_set($k) {
+        public function optSet($k) {
             return array_key_exists($k, $this->opts);
+        }
+
+        /**
+         * Get the value of an argv send from console
+         *
+         * @param int $k
+         *
+         * @return string|null
+         */
+        public function getArg($k) {
+            if (isset($this->argv[$k])) {
+                return $this->argv[$k];
+            }
+        }
+
+        /**
+         * Get an array of argv values
+         *
+         * @return string[]
+         */
+        public function getArgs() {
+            return $this->argv;
         }
 
         /**
@@ -95,7 +129,7 @@
          *
          * @return string
          */
-        public static function get_user() {
+        public static function getUser() {
             static $user;
             if (! $user) {
                 $info = posix_getpwuid(posix_geteuid());
@@ -114,7 +148,7 @@
          *
          * @return string
          */
-        public static function color_text($str, $color, $bold=false, $reverse=false) {
+        public static function colorText($str, $color, $bold=false, $reverse=false) {
             if ($bold) {
                 $x = 1;
             } elseif ($reverse) {
@@ -149,7 +183,7 @@
             exec($command, $resp, $exit_code);
 
             if ((int) $exit_code !== 0) {
-                echo self::color_text("FAILED: ", 'red', true);
+                echo self::colorText("FAILED: ", 'red', true);
                 echo $command . "\n";
                 exit($exit_code);
             }
@@ -169,11 +203,9 @@
         /**
          * Get as password from console
          *
-         * @param string $prompt
-         *
          * @return string
          */
-        public static function readpassword($prompt = 'Enter Password:') {
+        public static function readPassword() {
             system('stty -echo');
             $password = trim(fgets(STDIN));
             system('stty echo');

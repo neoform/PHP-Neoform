@@ -21,27 +21,15 @@
     umask(0);
 
     /**
-     * PHP extension
+     * PHP file extension
      */
     define('EXT', 'php');
 
     /**
-    * Register autoloader
-    */
-    spl_autoload_register(
-        function($name) {
-            if (! include(str_replace(['\\', '_'], DIRECTORY_SEPARATOR, $name) . '.' . EXT)) {
-                throw new PHPException("Could not load file \"{$name}\"");
-            }
-        },
-        true,
-        true
-    );
-
-    /**
-    * Core - first script loaded by main index.php file
-    *        handles init of framework
-    */
+     * Class Core - used to initialize the framework
+     *
+     * @package Neoform
+     */
     class Core {
 
         /**
@@ -90,29 +78,31 @@
         /**
          * @param string $documentRoot
          * @param string $environmentClass
+         * @param callable|null $autoloader
          *
          * @return Core
          * @throws PHPException
          */
-        public static function build($documentRoot, $environmentClass) {
+        public static function build($documentRoot, $environmentClass, callable $autoloader=null) {
             if (self::$instance) {
                 throw new PHPException('Neoform core has already been set up');
             }
 
-            $root = realpath($documentRoot);
+            $documentRoot = realpath($documentRoot);
 
-            if (! $root) {
+            if (! $documentRoot) {
                 throw new PHPException('Document root is invalid');
             }
 
             self::$instance = $self = new self;
 
-            $self->docRootPath     = $root;
-            $self->applicationPath = "{$root}/application";
-            $self->libraryPath     = "{$root}/library";
-            $self->loggingPath     = "{$root}/logs";
+            $self->docRootPath     = $documentRoot;
+            $self->applicationPath = "{$documentRoot}/application";
+            $self->libraryPath     = "{$documentRoot}/library";
+            $self->loggingPath     = "{$documentRoot}/logs";
 
             $self->loadIncludePaths();
+            $self->loadAutoloader($autoloader);
             $self->setEnvironment(new $environmentClass);
 
             return $self;
@@ -231,6 +221,23 @@
                 PATH_SEPARATOR .
                 $this->libraryPath // Library classes
             );
+        }
+
+        /**
+         * Assign an autoloader, or use the default one
+         *
+         * @param callable|null $autoloader
+         */
+        private function loadAutoloader(callable $autoloader=null) {
+            if (! $autoloader) {
+                $autoloader = function($name) {
+                    if (!include(str_replace([ '\\', '_' ], DIRECTORY_SEPARATOR, $name) . '.' . EXT)) {
+                        throw new \Exception("Could not load file \"{$name}\"");
+                    }
+                };
+            }
+
+            spl_autoload_register($autoloader, true, true);
         }
 
         /**

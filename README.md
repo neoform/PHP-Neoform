@@ -59,13 +59,12 @@ Examples
 
 ```PHP
 <?php
-
-    // Load some common classes/handlers
-    require_once(realpath("{$_SERVER['DOCUMENT_ROOT']}/../library/Neoform/Core.php"));
+    // Include the framework's core
+    require_once(realpath(__DIR__ . "/../library/Neoform/Core.php"));
 
     $core = Neoform\Core::build(
-        "{$_SERVER['DOCUMENT_ROOT']}/..",
-        'MyApp\Environment\\' . getenv('CORE_ENVIRONMENT_NAME') // Provided by Nginx fastcgi_param
+        __DIR__ . '/..',
+        'MyApp\Environment\\ProductionEnvironment'
     );
 
     // Create bootstrap for the MVC
@@ -88,9 +87,7 @@ Examples
 
 ```PHP
 <?php
-
     namespace MyApp;
-
     use Neoform;
 
     /*
@@ -135,7 +132,6 @@ Examples
          * @return Neoform\Response\Response
          */
         public function buildResponse() {
-
             try {
                 // Get locale from URL
                 $locale = Neoform\Locale::instance();
@@ -173,7 +169,6 @@ Examples
                 );
 
             } catch (Neoform\Router\Exception $e) {
-
                 switch ((int) $e->getCode()) {
                     case 401: // Login required
                         // Bounce back to current URL after login
@@ -223,7 +218,6 @@ Examples
          * @return Neoform\Response\Response
          */
         private function requireLogin(Neoform\Request\Model $request, $message=null) {
-
             $request->getSession()->getFlash()->set('login_bounce', $request->getServer()->getUri());
 
             if ($message) {
@@ -256,16 +250,13 @@ Examples
 
 ```PHP
 <?php
-
     namespace MyApp\Controller;
-
     use Neoform;
     use MyApp;
 
     class Info extends MyApp\Controller {
 
         public function defaultAction() {
-
             $view = new Neoform\Render\Html;
             $this->applyDefaults($view);
 
@@ -303,19 +294,15 @@ Examples
 
 ```PHP
 <?php
-
     namespace MyApp;
-
     use Neoform\Router\Route\Model as Route;
     use Neoform;
 
     class Routes extends Neoform\Router\Routes {
-
         /**
          * @return Route
          */
         public function get() {
-
             return new Route([
                 'controller' => 'MyApp\Controller\Index',
                 'children'   => [
@@ -357,14 +344,11 @@ Examples
 
 ```PHP
 <?php
-
     namespace MyApp\Environment;
-
     use MyApp;
     use Neoform;
 
     class Production extends Neoform\Config\Environment {
-
         public function getName() {
             return 'Production';
         }

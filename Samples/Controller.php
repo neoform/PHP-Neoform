@@ -87,7 +87,7 @@
 
             // Default to HTML
             } else {
-                $locale = Locale::instance();
+                $locale = Locale::getService()->get();
                 $locale->set_namespace('main');
 
                 $view = new Neoform\Render\Html;
@@ -127,7 +127,7 @@
 
             // Default to HTML
             } else {
-                $locale = Locale::instance();
+                $locale = Locale::getService()->get();
                 $locale->set_namespace('main');
 
                 $view = new Neoform\Render\Html;
@@ -167,7 +167,7 @@
 
             // Default to HTML
             } else {
-                $locale = Locale::instance();
+                $locale = Locale::getService()->get();
                 $locale->set_namespace('main');
 
                 $view = new Neoform\Render\Html;
@@ -204,7 +204,7 @@
                      ->setResponseCode($statusCode);
 
             if (! $hardError) {
-                $locale = Locale::instance();
+                $locale = Locale::getService()->get();
                 $locale->set_namespace('main');
             }
 

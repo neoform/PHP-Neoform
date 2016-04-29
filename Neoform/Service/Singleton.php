@@ -23,11 +23,11 @@
         }
 
         /**
-         * @param string $name
+         * @param string|null $name
          *
          * @return static
          */
-        public static function getService($name) {
+        public static function getService($name=null) {
             if (! isset(self::$instances[static::class][$name])) {
                 return self::$instances[static::class][$name] = new static($name);
             }

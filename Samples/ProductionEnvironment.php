@@ -6,10 +6,6 @@
 
     class ProductionEnvironment extends Neoform\Config\Environment {
 
-        public function getName() {
-            return 'ProductionEnvironment';
-        }
-
         protected function definitions() {
 
             // Core

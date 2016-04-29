@@ -230,6 +230,13 @@
          */
         private function loadAutoloader(callable $autoloader=null) {
             if (! $autoloader) {
+                /**
+                 * Default autoloader
+                 * 
+                 * @param string $name
+                 *
+                 * @throws PHPException
+                 */
                 $autoloader = function($name) {
                     if (!include(str_replace([ '\\', '_' ], DIRECTORY_SEPARATOR, $name) . '.' . EXT)) {
                         throw new \Exception("Could not load file \"{$name}\"");

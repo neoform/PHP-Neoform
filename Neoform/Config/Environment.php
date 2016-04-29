@@ -21,16 +21,18 @@
         protected $dao;
 
         /**
+         * Config values/definitions go here
+         */
+        abstract protected function definitions();
+
+        /**
          * A string to identify this environment
          *
          * @return string
          */
-        abstract public function getName();
-
-        /**
-         * Config values/definitions go here
-         */
-        abstract protected function definitions();
+        final public function getName() {
+            return str_replace('\\', '', static::CLASS);
+        }
 
         /**
          * @param Dao $dao

@@ -49,7 +49,7 @@
 
             try {
                 // Get locale from URL
-                $locale = Neoform\Locale::instance();
+                $locale = Neoform\Locale::getService()->get();
                 if ($localeIso2 = $this->requestBuilder->getPath()->getSlugs()->getLocaleIso2()) {
                     $locale->set($localeIso2);
                 }

@@ -62,7 +62,7 @@
 
                 // Get routes based on locale
                 $routeInfo = $dao->get($locale->get());
-                $locale->set_routes($routeInfo['routes']);
+                $locale->setRoutes($routeInfo['routes']);
 
                 // Router Builder
                 $routerBuilder = new Neoform\Router\Builder(

@@ -42,7 +42,7 @@
          *
          * @return string
          */
-        protected function shortOptsDefintions() {
+        protected function shortOptsDefinitions() {
             return '';
         }
 
@@ -73,7 +73,7 @@
             // no funny business
             umask(0);
 
-            $this->opts = getopt($this->shortOptsDefintions(), $this->longOptsDefinitions());
+            $this->opts = getopt($this->shortOptsDefinitions(), $this->longOptsDefinitions());
 
             $this->init();
         }

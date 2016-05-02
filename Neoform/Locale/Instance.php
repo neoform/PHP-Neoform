@@ -14,27 +14,27 @@
         /**
          * @var array all iso2's allowed
          */
-        protected $all_iso2;
+        protected $allIso2;
 
         /**
          * @var string locale iso2
          */
-        protected $default_iso2;
+        protected $defaultIso2;
 
         /**
          * @var string locale iso2
          */
-        protected $current_iso2;
+        protected $currentIso2;
 
         /**
-         * @var integer
+         * @var int
          */
-        protected $namespace_id;
+        protected $namespaceId;
 
         /**
-         * @var array id translation (name to id)
+         * @var int[] id translation (name to id)
          */
-        protected $namespace_ids = [];
+        protected $namespaceIds = [];
 
         /**
          * @var array translations
@@ -55,9 +55,9 @@
          * @param Config $config
          */
         public function __construct(Neoform\Locale\Config $config) {
-            $this->active       = (bool) $config->isActive();
-            $this->all_iso2     = array_merge([], $config->getAllowed());
-            $this->default_iso2 = (string) $config->getDefault();
+            $this->active      = (bool) $config->isActive();
+            $this->allIso2     = array_merge([], $config->getAllowed());
+            $this->defaultIso2 = (string) $config->getDefault();
             $this->set((string) $config->getDefault());
         }
 
@@ -67,7 +67,7 @@
          * @return mixed
          */
         public function get() {
-            return $this->current_iso2;
+            return $this->currentIso2;
         }
 
         /**
@@ -75,8 +75,8 @@
          *
          * @return mixed
          */
-        public function get_default() {
-            return $this->default_iso2;
+        public function getDefault() {
+            return $this->defaultIso2;
         }
 
         /**
@@ -85,7 +85,7 @@
          * @return array
          */
         public function all() {
-            return $this->all_iso2;
+            return $this->allIso2;
         }
 
         /**
@@ -94,31 +94,31 @@
          * @param $iso2
          */
         public function set($iso2) {
-            $this->current_iso2 = $iso2;
-            $this->slug         = $iso2 === $this->default_iso2 ? '' : "/{$iso2}";
+            $this->currentIso2 = $iso2;
+            $this->slug        = $iso2 === $this->defaultIso2 ? '' : "/{$iso2}";
         }
 
         /**
          * Set the current namespace by name
          *
-         * @param string $namespace_name
+         * @param string $namespaceName
          */
-        public function set_namespace($namespace_name) {
+        public function setNamespace($namespaceName) {
 
             if (! $this->active) {
                 return;
             }
 
-            if (! isset($this->namespace_ids[$namespace_name])) {
-                $this->namespace_ids[$namespace_name] = (int) current(Neoform\Locale\Nspace\Dao::get()->by_name(
-                    $namespace_name
+            if (! isset($this->namespaceIds[$namespaceName])) {
+                $this->namespaceIds[$namespaceName] = (int) current(Neoform\Locale\Nspace\Dao::get()->by_name(
+                    $namespaceName
                 ));
             }
 
-            $this->namespace_id = $this->namespace_ids[$namespace_name];
+            $this->namespaceId = $this->namespaceIds[$namespaceName];
 
-            if (! isset($this->messages[$this->namespace_id])) {
-                $this->_load_translations($this->namespace_id);
+            if (! isset($this->messages[$this->namespaceId])) {
+                $this->_loadTranslations($this->namespaceId);
             }
         }
 
@@ -127,7 +127,7 @@
          *
          * @param array $routes
          */
-        public function set_routes(array $routes) {
+        public function setRoutes(array $routes) {
             $this->routes = $routes;
         }
 
@@ -142,30 +142,30 @@
         public function translate($key, $namespace_name=null) {
 
             // If locale is either not active, or the current locale is the default one, no translation happens
-            if (! $this->active || $this->default_iso2 === $this->current_iso2) {
+            if (! $this->active || $this->defaultIso2 === $this->currentIso2) {
                 return $key;
             }
 
             $crc32 = crc32($key); // crc32 makes the keys in the array smaller (saves on memory)
 
             if ($namespace_name === null) {
-                if ($this->namespace_id && isset($this->messages[$this->namespace_id][$crc32])) {
-                    return $this->messages[$this->namespace_id][$crc32];
+                if ($this->namespaceId && isset($this->messages[$this->namespaceId][$crc32])) {
+                    return $this->messages[$this->namespaceId][$crc32];
                 }
             } else {
 
                 // Look up the namespace id by name - incase we don't know it yet
-                if (isset($this->namespace_ids[$namespace_name])) {
-                    $namespace_id = $this->namespace_ids[$namespace_name];
+                if (isset($this->namespaceIds[$namespace_name])) {
+                    $namespace_id = $this->namespaceIds[$namespace_name];
                 } else {
-                    $namespace_id = $this->namespace_ids[$namespace_name] = (int) current(Neoform\Locale\Nspace\Dao::get()->by_name(
+                    $namespace_id = $this->namespaceIds[$namespace_name] = (int) current(Neoform\Locale\Nspace\Dao::get()->by_name(
                         $namespace_name
                     ));
                 }
 
                 // Check if we have this translation dictionary loaded
                 if (! isset($this->messages[$namespace_id])) {
-                    $this->_load_translations($namespace_id);
+                    $this->_loadTranslations($namespace_id);
                 }
 
                 // Return the translation if we have it
@@ -193,10 +193,10 @@
          *
          * @param integer $namespace_id
          */
-        protected function _load_translations($namespace_id) {
-            if ($this->current_iso2) {
+        protected function _loadTranslations($namespace_id) {
+            if ($this->currentIso2) {
                 $this->messages[$namespace_id] = Lib::byLocaleNamespace(
-                    $this->current_iso2,
+                    $this->currentIso2,
                     $namespace_id
                 );
             }

@@ -36,7 +36,7 @@
 
             $view->suppressMain = true;
 
-            $view->meta_title = "{$validPages[$slug]} - Example.com";
+            $view->metaTitle = "{$validPages[$slug]} - Example.com";
 
             $view->applyTemplate('info');
             $this->response->setView($view);

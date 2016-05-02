@@ -88,7 +88,7 @@
             // Default to HTML
             } else {
                 $locale = Locale::getService()->get();
-                $locale->set_namespace('main');
+                $locale->setNamespace('main');
 
                 $view = new Neoform\Render\Html;
 
@@ -128,7 +128,7 @@
             // Default to HTML
             } else {
                 $locale = Locale::getService()->get();
-                $locale->set_namespace('main');
+                $locale->setNamespace('main');
 
                 $view = new Neoform\Render\Html;
                 $view->meta_title = $locale->translate('Page Not Found');
@@ -168,7 +168,7 @@
             // Default to HTML
             } else {
                 $locale = Locale::getService()->get();
-                $locale->set_namespace('main');
+                $locale->setNamespace('main');
 
                 $view = new Neoform\Render\Html;
                 $view->meta_title = $locale->translate('Server Error');

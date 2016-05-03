@@ -52,8 +52,22 @@ groups (`Entity\Records` and `Entity\Links`) you can interact with the
 Entities in a very natural way, and the code is all generated for you
 with a simple CLI script.
 
+Composer Install
+----------------
+If you wish you can install PHP Neoform via [Composer](http://getcomposer.org).
+
+1. Add ``neoform/neoform`` as a dependency in your project's ``composer.json`` file:
+
+```json
+{
+    "require": {
+        "neoform/neoform": "1.0"
+    }
+}
+```
+
 Examples
-========
+--------
 
 ### Sample Index:
 
@@ -408,7 +422,7 @@ Examples
 ```
 
 Questions/Comments
-==================
+------------------
 
 Since this is a pet project of mine and the toolbox is relatively simple, 
 if you need any help with it, feel free to contact me at: ian@oshaughnessy.cc

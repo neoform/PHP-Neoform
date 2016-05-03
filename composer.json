@@ -1,0 +1,29 @@
+{
+  "name": "Neoform",
+  "description": "PHP MVC Toolbox",
+  "keywords": ["mvc","toolbox","caching"],
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Ian O'Shaughnessy"
+    }
+  ],
+  "require": {
+    "php": ">=5.6"
+  },
+  "suggest": {
+    "ext-curl": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Neoform\\": "Neoform/"
+    }
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/neoform/PHP-Neoform"
+    }
+  ]
+}

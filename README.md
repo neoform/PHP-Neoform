@@ -56,12 +56,12 @@ Composer Install
 ----------------
 If you wish you can install PHP Neoform via [Composer](http://getcomposer.org).
 
-1. Add ``neoform/neoform`` as a dependency in your project's ``composer.json`` file:
+Add ``neoform/neoform`` as a dependency in your project's ``composer.json`` file:
 
 ```json
 {
     "require": {
-        "neoform/neoform": "1.0"
+        "neoform/neoform": "dev-master"
     }
 }
 ```

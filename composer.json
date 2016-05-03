@@ -1,5 +1,5 @@
 {
-  "name": "Neoform/Neoform",
+  "name": "neoform/neoform",
   "description": "PHP MVC Toolbox",
   "keywords": ["mvc","toolbox","caching"],
   "type": "library",

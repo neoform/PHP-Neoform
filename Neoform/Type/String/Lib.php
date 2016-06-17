@@ -280,6 +280,25 @@
 
             return (substr($haystack, -$length) === $needle);
         }
+
+        /**
+         * @param string $str
+         * @param int    $length
+         * @param bool   $clip
+         *
+         * @return string
+         */
+        public static function forcedWidth($str, $length, $clip=true) {
+            if (strlen($str) <= $length) {
+                return str_pad($str, $length);
+            }
+
+            if ($clip) {
+                return substr($str, $length);
+            }
+
+            return $str;
+        }
     }
 
 

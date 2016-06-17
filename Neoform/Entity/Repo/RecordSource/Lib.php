@@ -39,6 +39,13 @@
                         Neoform\Redis::getService($enginePoolWrite)
                     );
 
+                case 'ElasticSearch':
+                    return new Driver\ElasticSearch(
+                        $dao,
+                        Neoform\ElasticSearch::getService($enginePoolRead),
+                        Neoform\ElasticSearch::getService($enginePoolWrite)
+                    );
+
                 default:
                     throw new Neoform\Entity\Repo\Exception('No source driver specified');
             }

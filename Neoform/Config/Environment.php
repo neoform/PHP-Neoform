@@ -35,6 +35,15 @@
         }
 
         /**
+         * A string to identify this environment
+         *
+         * @return string
+         */
+        final public function getShortName() {
+            return substr(static::CLASS, strrpos(static::CLASS, '\\') + 1);
+        }
+
+        /**
          * @param Dao $dao
          */
         final public function setDao(Dao $dao) {

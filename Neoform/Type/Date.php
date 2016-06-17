@@ -48,14 +48,14 @@
         /**
          * Date to human readable
          *
-         * @param bool $show_time
+         * @param bool $showTime
          *
          * @return string
          */
-        public function getHuman($show_time=true) {
+        public function getHuman($showTime=true) {
 
             $timezone = new DateTimeZone('America/Montreal');
-            $time_code = $show_time ? 'g:ia' : '';
+            $timeCode = $showTime ? 'g:ia' : '';
 
             $self = clone $this;
             $self->setTimezone($timezone);
@@ -68,11 +68,11 @@
             if ($diff->invert === 1) {
                 //more than a year from now
                 if ($diff->y) {
-                    return $self->format('M j, Y' . ($time_code ? ", {$time_code}" : ''));
+                    return $self->format('M j, Y' . ($timeCode ? ", {$timeCode}" : ''));
                 } else {
                     //more than a month from now
                     if ($diff->m) {
-                        return $self->format('D M j' . ($time_code ? ", {$time_code}" : ''));
+                        return $self->format('D M j' . ($timeCode ? ", {$timeCode}" : ''));
                     } else {
 
                         $today = $now->format('Y-m-d');
@@ -81,16 +81,16 @@
 
                         //today
                         if ($this_date === $today) {
-                            return 'Today' . ($time_code ? ' ' . $self->format($time_code) : '');
+                            return 'Today' . ($timeCode ? ' ' . $self->format($timeCode) : '');
                         //tomorrow
                         } else if ($this_date === $yesterday) {
-                            return 'Yesterday' . ($time_code ? ' ' . $self->format($time_code) : '');
+                            return 'Yesterday' . ($timeCode ? ' ' . $self->format($timeCode) : '');
                         //this week
                         //} else if ($diff->d < 7) {
                         //    return 'This past ' . $self->format('l'. ($time_code ? ' ' . $time_code : ''));
                         //the rest of the month
                         } else {
-                            return $self->format('D M j' . ($time_code ? ", {$time_code}" : ''));
+                            return $self->format('D M j' . ($timeCode ? ", {$timeCode}" : ''));
                         }
                     }
                 }
@@ -99,14 +99,14 @@
             } else {
                 //more than a year from now
                 if ($diff->y) {
-                    return $self->format('M j, Y' . ($time_code ? ", {$time_code}" : ''));
+                    return $self->format('M j, Y' . ($timeCode ? ", {$timeCode}" : ''));
                 } else {
                     //more than a month from now
                     if ($diff->m) {
                         if ((int) $now->format('Y') === (int) $self->format('Y')) {
-                            return $self->format('D M j' . ($time_code ? ", {$time_code}" : ''));
+                            return $self->format('D M j' . ($timeCode ? ", {$timeCode}" : ''));
                         } else {
-                            return $self->format('D M j, Y' . ($time_code ? ", {$time_code}" : ''));
+                            return $self->format('D M j, Y' . ($timeCode ? ", {$timeCode}" : ''));
                         }
                     } else {
 
@@ -116,16 +116,16 @@
 
                         //today
                         if ($this_date === $today) {
-                            return 'Today' . ($time_code ? ' ' . $self->format($time_code) : '');
+                            return 'Today' . ($timeCode ? ' ' . $self->format($timeCode) : '');
                         //tomorrow
                         } else if ($this_date === $tomorrow) {
-                            return 'Tomorrow' . ($time_code ? ' ' . $self->format($time_code) : '');
+                            return 'Tomorrow' . ($timeCode ? ' ' . $self->format($timeCode) : '');
                         //this week
                         } else if ($diff->d < 7) {
-                            return $self->format('l' . ($time_code ? " {$time_code}" : ''));
+                            return $self->format('l' . ($timeCode ? " {$timeCode}" : ''));
                         //the rest of the month
                         } else {
-                            return $self->format('D M j' . ($time_code ? ", {$time_code}" : ''));
+                            return $self->format('D M j' . ($timeCode ? ", {$timeCode}" : ''));
                         }
                     }
                 }

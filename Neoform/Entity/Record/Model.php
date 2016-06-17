@@ -2,7 +2,6 @@
 
     namespace Neoform\Entity\Record;
 
-    use ArrayAccess;
     use Neoform\Entity\Exception;
     use Neoform;
 

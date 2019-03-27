@@ -205,7 +205,6 @@
 
             $config = Core\Config::get();
 
-            mb_internal_encoding($config->getEncoding());
             date_default_timezone_set($config->GetTimezone());
         }
 
